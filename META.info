@@ -1,0 +1,12 @@
+{
+    "name"        : "PDF::Writer",
+    "version"     : "*",
+    "description" : "AST Serializer; compatible with PDF::Grammar",
+    "depends"     : [ "PDF::Grammar", "JSON::Tiny"  ],
+    "source-url"  : "git://github.com/dwarring/perl6-PDF-Writer.git",
+    "provides"    : {
+        "PDF::Writer" : "lib/PDF/Writer.pm"
+     }
+}
+
+ 
