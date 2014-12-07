@@ -20,6 +20,19 @@ class PDF::Writer {
 
     multi method write( Any :$false! ) { 'false' }
 
+    multi method write( Str :$hex-char! ) {
+        sprintf '#%02X', $hex-char.ord
+    }
+
+    multi method write( Str :$hex-string! ) {
+        [~] '<', $hex-string.comb.map({ 
+            my $ord = .ord;
+            die "illegal non-latin character in string: U+" ~ $ord.base(16)
+                if $ord > 0xFF;
+            sprintf '%02X', $ord;
+        }), '>';
+    }
+
     multi method write(Int :$integer!) {sprintf "%d", $integer}
 
     BEGIN my %escapes = "\b" => 'b', "\f" => 'f', "\n" => 'n', "\r" => 'r', "\t" => 't'
@@ -34,7 +47,7 @@ class PDF::Writer {
                     !! do {
                         when $_ ge ' ' && $_ le '~' { $_ }
                         when $_ ge "\o0" && $_ le "\o377" { sprintf "\\%03o", .ord }
-                        default {die "illegal non-latin character in string: \\x" ~ .ord.base(16)}
+                        default {die "illegal non-latin character in string: U+" ~ .ord.base(16)}
                     }
             }),
            ')';
