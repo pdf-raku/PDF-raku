@@ -118,6 +118,17 @@ class PDF::Writer {
         die "unable to handle struct: {%opts.perl}"
     }
 
+    multi method write(Array :$xref!) {
+        ( $xref.map({
+            'xref',
+            ( .<object-first-num> ~ ' ' ~ .<object-count>,
+              .<entries>.map({
+                  sprintf '%010d %05d %s', .<offset>, .<gen>, .<status>
+              }),
+            )
+        }), '').join: "\n";
+    }
+
     # helper methods
 
     method write-obj($ast, :$node) {
