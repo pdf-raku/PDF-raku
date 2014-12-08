@@ -33,7 +33,11 @@ class PDF::Writer {
         }), '>';
     }
 
-    multi method write(Int :$integer!) {sprintf "%d", $integer}
+    multi method write(Array :$ind-ref!) {
+        ($ind-ref[0], $ind-ref[1], 'R').join: ' ';
+    }
+
+    multi method write(Int :$int!) {sprintf "%d", $int}
 
     BEGIN my %escapes = "\b" => 'b', "\f" => 'f', "\n" => 'n', "\r" => 'r', "\t" => 't'
         , "\n" => 'n', '(' => '(', ')' => ')', '\\' => '\\';
@@ -67,14 +71,19 @@ class PDF::Writer {
 
     multi method write( Numeric :$number! ) {
         my $int = $number.Int;
-        return ($int == $number ?? $int !! $number);
+        return ~($int == $number ?? $int !! $number);
+    }
+
+    multi method write( Numeric :$real! ) {
+        ~$real
     }
 
     multi method write( Hash :$trailer! ) {
         [~] "trailer\n",
-        $.writeX( :dict( $trailer<dict> ), :keys<Size Root>),
-        "startxref\n",
-        $.writeX( :integer( $trailer<byte-offset>) );
+        $.write( :dict( $trailer<dict> ), :keys<Size Root>),
+        "\nstartxref\n",
+        $.write( :int( $trailer<offset>) ),
+        "\n";
     }
 
     multi method write( Any :$true! ) { 'true' }

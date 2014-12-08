@@ -1,3 +1,3 @@
 { "ast" : { "literal-string" : "Hello World!" }, "pdf" : "(Hello World!)" }
 { "ast" : { "array" : [ { "hex-string" : "hi" }, { "true" : true }, { "false" : false }, { "null" : null} ] }, "pdf" : "[ <6869> true false null ]" }
-{ "ast" : { "dict" : { "foo" : { "literal-string" : "bar" }, "baz" : { "array" : [ { "integer" : 42 }, { "number" : 4.2 } ] } } }, "pdf" : "<< /baz [ 42 4.2 ] /foo (bar) >>" }
+{ "ast" : { "dict" : { "foo" : { "literal-string" : "bar" }, "baz" : { "array" : [ { "int" : 42 }, { "real" : 4.2 } ] } } }, "pdf" : "<< /baz [ 42 4.2 ] /foo (bar) >>" }
