@@ -2,6 +2,8 @@ use v6;
 
 class PDF::Writer {
 
+    has Str $.input;
+
     use PDF::Grammar;
 
     multi method write( Array :$array! ) {
@@ -31,6 +33,15 @@ class PDF::Writer {
                 if $ord > 0xFF;
             sprintf '%02X', $ord;
         }), '>';
+    }
+
+    multi method write(Array :$ind-obj! ) {
+        my ($obj-num, $gen-num, @objects) = @$ind-obj;
+
+        (sprintf('%d %d obj', $obj-num, $gen-num),
+         @objects.map({ $.write-obj($_) }),
+         'endobj',
+        ).join: "\n";
     }
 
     multi method write(Array :$ind-ref!) {
@@ -78,6 +89,17 @@ class PDF::Writer {
         ~$real
     }
 
+    multi method write( Hash :$stream! ) {
+
+        my $start = $stream<start>;
+        my $end = $stream<end>;
+
+        [~] (($stream<dict>.defined ?? $.write-obj( $stream, :node<dict>) !! ''),
+             "\nstream\n",
+             $.input.substr($start - 1, $end - $start) ~ "\n",
+             "endstream\n");
+    }
+
     multi method write( Hash :$trailer! ) {
         [~] "trailer\n",
         $.write( :dict( $trailer<dict> ), :keys<Size Root>),
@@ -103,7 +125,7 @@ class PDF::Writer {
         if $ast.isa(Hash) || $ast.isa(Pair) {
             # it's a token represented by a type/value pair
             my %params = $node.defined
-                ?? $node => %params{$node}
+                ?? $node => $ast{$node}
                 !! $ast.flat;
 
             $.write( |%params );
