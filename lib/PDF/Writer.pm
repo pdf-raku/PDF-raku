@@ -10,6 +10,18 @@ class PDF::Writer {
         ('[', $array.map({ $.write-obj($_) }), ']').join: ' ';
     }
 
+    multi method write( Array :$body! ) {
+        $body.map({ $.write( :body($_) )}).join: "\n";
+    }
+
+    multi method write( Hash :$body! ) {
+       (
+        $body<objects>.map({ $.write-obj( $_ ) }),
+        $body<xref>.defined ?? @( $.write-obj( $body, :node<xref> ) ) !! @(),
+        $.write-obj( $body, :node<trailer> ),
+       ).join: "\n";
+    }
+
     multi method write(Hash :$dict!, :@keys = $dict.keys.sort) {
 
         ('<<',
@@ -85,6 +97,10 @@ class PDF::Writer {
         return ~($int == $number ?? $int !! $number);
     }
 
+    multi method write( Hash :$pdf-header! ) {
+        sprintf '%%PDF-%.1f', $pdf-header<pdf-version>;
+    }
+
     multi method write( Numeric :$real! ) {
         ~$real
     }
@@ -97,7 +113,7 @@ class PDF::Writer {
         [~] (($stream<dict>.defined ?? $.write-obj( $stream, :node<dict>) !! ''),
              "\nstream\n",
              $.input.substr($start - 1, $end - $start) ~ "\n",
-             "endstream\n");
+             "endstream");
     }
 
     multi method write( Hash :$trailer! ) {

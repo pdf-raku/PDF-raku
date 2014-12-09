@@ -1,0 +1,94 @@
+{
+  "body" : {
+    "objects" : [
+      {
+        "ind-obj" : [
+          1,
+          0,
+          {
+            "dict" : {
+              "Outlines" : {
+                "ind-ref" : [
+                  2,
+                  0
+                ]
+              },
+              "Pages" : {
+                "ind-ref" : [
+                  3,
+                  0
+                ]
+              },
+              "Type" : {
+                "name" : "Catalog"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "ind-obj" : [
+          5,
+          0,
+          {
+            "stream" : {
+              "dict" : {
+                "Length" : {
+                  "int" : 68
+                }
+              },
+              "start" : 98,
+              "end" : 166
+            }
+          }
+        ]
+      },
+      {
+        "ind-obj" : [
+          3,
+          0,
+          {
+            "dict" : {
+              "Count" : {
+                "int" : 0
+              },
+              "Type" : {
+                "name" : "Outlines"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "ind-obj" : [
+          4,
+          2,
+          {
+            "array" : [
+              {
+                "name" : "PDF"
+              },
+              {
+                "name" : "Text"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "trailer" : {
+      "dict" : {
+        "Size" : {
+          "int" : 8
+        },
+        "Root" : {
+          "ind-ref" : [
+            1,
+            0
+          ]
+        }
+      },
+      "offset" : 553
+    }
+  }
+}
