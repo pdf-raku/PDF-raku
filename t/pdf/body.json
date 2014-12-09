@@ -76,6 +76,34 @@
         ]
       }
     ],
+    "xref" : [
+      {
+        "object-first-num" : 1,
+        "object-count" : 4,
+        "entries" : [
+          {
+            "offset" : 0,
+            "gen" : 0,
+            "status" : "n"
+          },
+          {
+            "offset" : 65,
+            "gen" : 0,
+            "status" : "n"
+          },
+          {
+            "offset" : 183,
+            "gen" : 0,
+            "status" : "n"
+          },
+          {
+            "offset" : 229,
+            "gen" : 2,
+            "status" : "n"
+          }
+        ]
+      }
+    ],
     "trailer" : {
       "dict" : {
         "Size" : {
@@ -88,7 +116,7 @@
           ]
         }
       },
-      "offset" : 553
+      "offset" : 259
     }
   }
 }

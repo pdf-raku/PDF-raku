@@ -10,16 +10,39 @@ class PDF::Writer {
         ('[', $array.map({ $.write-obj($_) }), ']').join: ' ';
     }
 
-    multi method write( Array :$body! ) {
-        $body.map({ $.write( :body($_) )}).join: "\n";
+    multi method write( Array :$body!, :$offset! is rw ) {
+        $body.map({ $.write( :body($_),  )}).join: "\n";
     }
 
-    multi method write( Hash :$body! ) {
-       (
-        $body<objects>.map({ $.write-obj( $_ ) }),
-        $body<xref>.defined ?? @( $.write-obj( $body, :node<xref> ) ) !! @(),
-        $.write-obj( $body, :node<trailer> ),
-       ).join: "\n";
+    multi method write( Hash :$body!, :$offset! is rw ) {
+        my $object-count;
+        my $object-first-num;
+        my @entries;
+        my @out;
+
+        for $body<objects>.map({ .values[0] }) -> $ind-obj {
+            my $object-num = $ind-obj[0].Int;
+            my $gen = $ind-obj[1].Int;
+
+            $object-count++;
+            $object-first-num //= $object-num;
+            # hardcode status, for now
+            @entries.push: %( :$offset, :$gen, :status<n> ).item;
+
+            @out.push: $.write( :$ind-obj );
+            $offset += @out[*-1].chars + 1;
+        };
+
+        my $xref-offset = $offset;
+
+        my %xref = :$object-first-num, :$object-count, :@entries;
+        @out.push: $.write( :%xref );
+        $offset += @out[*-1].chars + 1;
+
+        @out.push: $.write( :trailer($body<trailer>), :$xref-offset );
+        $offset += @out[*-1].chars + 1;
+
+        return @out.join: "\n";
     }
 
     multi method write(Hash :$dict!, :@keys = $dict.keys.sort) {
@@ -97,8 +120,16 @@ class PDF::Writer {
         return ~($int == $number ?? $int !! $number);
     }
 
-    multi method write( Hash :$pdf-header! ) {
-        sprintf '%%PDF-%.1f', $pdf-header<pdf-version>;
+    multi method write( Hash :$pdf! ) {
+        my $header = $.write-obj( $pdf, :node<header> );
+        my $offset = $header.chars + 1;  # since format is byte orientated
+        my @xref;
+        my $body = $.write( :body($pdf<body>), :@xref, :$offset );
+        ($header, $body, '%%EOF', '').join: "\n";
+    }
+
+    multi method write( Hash :$header! ) {
+        sprintf '%%PDF-%.1f', $header<version>;
     }
 
     multi method write( Numeric :$real! ) {
@@ -116,15 +147,37 @@ class PDF::Writer {
              "endstream");
     }
 
-    multi method write( Hash :$trailer! ) {
-        [~] "trailer\n",
-        $.write( :dict( $trailer<dict> ), :keys<Size Root>),
-        "\nstartxref\n",
-        $.write( :int( $trailer<offset>) ),
-        "\n";
+    multi method write( Hash :$trailer!, :$xref-offset is copy ) {
+
+        $xref-offset //= $trailer<offset>;
+
+        [~] ( "trailer\n",
+              $.write( :dict( $trailer<dict> ), :keys<Size Root>),
+              ( $xref-offset.defined
+                ?? ( "\nstartxref\n",
+                     $.write( :int( $xref-offset) )
+                   )
+                !! ()
+              ),
+              "\n",
+            );
     }
 
     multi method write( Any :$true! ) { 'true' }
+
+    multi method write(Array :$xref!) {
+        ( $xref.map({ $.write( :xref($_) ) }), '').join: "\n";
+    }
+
+    multi method write(Hash :$xref!) {
+        (
+         'xref',
+         $xref<object-first-num> ~ ' ' ~ $xref<object-count>,
+         $xref<entries>.map({
+             sprintf '%010d %05d %s', .<offset>, .<gen>, .<status>
+         }),
+        ).join: "\n";
+    }
 
     multi method write( *@args, *%opts ) is default {
 
@@ -132,17 +185,6 @@ class PDF::Writer {
             if @args;
         
         die "unable to handle struct: {%opts.perl}"
-    }
-
-    multi method write(Array :$xref!) {
-        ( $xref.map({
-            'xref',
-            ( .<object-first-num> ~ ' ' ~ .<object-count>,
-              .<entries>.map({
-                  sprintf '%010d %05d %s', .<offset>, .<gen>, .<status>
-              }),
-            )
-        }), '').join: "\n";
     }
 
     # helper methods
