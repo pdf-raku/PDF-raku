@@ -14,7 +14,6 @@ for 't/pdf'.IO.dir.list {
 
     next unless / [\w|'-']*? '.json'$/;
     my $json-file = ~$_;
-    note "[$json-file]";
     my %pdf-data = %( from-json( $json-file.IO.slurp ) );
 
     my $pdf-input-file = $json-file.subst( /'.json'$/, '.in' );
@@ -31,8 +30,8 @@ for 't/pdf'.IO.dir.list {
     my %expected = ast => %pdf-data;
     my $class = PDF::Grammar::PDF;
 
-    PDF::Grammar::Test::parse-tests($class, $pdf-input, :$rule, :$actions, :suite('pdf load'), :%expected );
-    PDF::Grammar::Test::parse-tests($class, $pdf-output, :$rule, :$actions, :suite('pdf write'), :%expected );
+    PDF::Grammar::Test::parse-tests($class, $pdf-input, :$rule, :$actions, :suite("[$pdf-input-file]"), :%expected );
+    PDF::Grammar::Test::parse-tests($class, $pdf-output, :$rule, :$actions, :suite("[$pdf-output-file]"), :%expected );
 
 }
 

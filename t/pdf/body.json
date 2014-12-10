@@ -78,9 +78,14 @@
     ],
     "xref" : [
       {
-        "object-first-num" : 1,
-        "object-count" : 4,
+        "object-first-num" : 0,
+        "object-count" : 5,
         "entries" : [
+          {
+            "offset" : 0,
+            "gen" : 65535,
+            "status" : "f"
+          },
           {
             "offset" : 0,
             "gen" : 0,

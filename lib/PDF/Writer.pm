@@ -11,13 +11,13 @@ class PDF::Writer {
     }
 
     multi method write( Array :$body!, :$offset! is rw ) {
-        $body.map({ $.write( :body($_),  )}).join: "\n";
+        $body.map({ $.write( :body($_), :$offset )}).join: "\n";
     }
 
     multi method write( Hash :$body!, :$offset! is rw ) {
-        my $object-count;
-        my $object-first-num;
-        my @entries;
+        my $object-count = 1;
+        my $object-first-num = 0;
+        my @entries = %( :offset(0), :gen(65535), :status<f> ).item;
         my @out;
 
         for $body<objects>.map({ .values[0] }) -> $ind-obj {
@@ -25,7 +25,6 @@ class PDF::Writer {
             my $gen = $ind-obj[1].Int;
 
             $object-count++;
-            $object-first-num //= $object-num;
             # hardcode status, for now
             @entries.push: %( :$offset, :$gen, :status<n> ).item;
 
@@ -123,12 +122,11 @@ class PDF::Writer {
     multi method write( Hash :$pdf! ) {
         my $header = $.write-obj( $pdf, :node<header> );
         my $offset = $header.chars + 1;  # since format is byte orientated
-        my @xref;
-        my $body = $.write( :body($pdf<body>), :@xref, :$offset );
-        ($header, $body, '%%EOF', '').join: "\n";
+        my $body = $.write( :body($pdf<body>), :$offset );
+        [~] ($header, "\n", $body, '%%EOF', '');
     }
 
-    multi method write( Hash :$header! ) {
+    multi method write(Any :$header! ) {
         sprintf '%%PDF-%.1f', $header<version>;
     }
 
@@ -184,7 +182,7 @@ class PDF::Writer {
         die "unexpected arguments: {[@args].perl}"
             if @args;
         
-        die "unable to handle struct: {%opts.perl}"
+        die "unable to handle {%opts.keys} struct: {%opts.perl}"
     }
 
     # helper methods
