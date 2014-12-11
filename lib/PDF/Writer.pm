@@ -22,7 +22,6 @@ class PDF::Writer {
 
         for $body<objects>.list -> $obj {
             if my $ind-obj = $obj<ind-obj> {
-                note {ind-obj => $ind-obj}.perl;
                 my $object-num = $ind-obj[0].Int;
                 my $gen = $ind-obj[1].Int;
 
@@ -38,7 +37,7 @@ class PDF::Writer {
                 $offset += @out[*-1].chars + 1;
             }
             else {
-                die "don't know how to serilize body component: {$obj.perl}"
+                die "don't know how to serialize body component: {$obj.perl}"
             }
         }
 
@@ -48,10 +47,11 @@ class PDF::Writer {
         @out.push: $.write( :%xref );
         $offset += @out[*-1].chars + 1;
 
-        if $body<trailer>.defined {
-            @out.push: $.write( :trailer($body<trailer>), :$xref-offset );
-            $offset += @out[*-1].chars + 1;
-        }
+        my $trailer = $body<trailer>
+            // die "body does not have a trailer";
+
+        @out.push: $.write( :$trailer, :$xref-offset );
+        $offset += @out[*-1].chars + 1;
 
         return @out.join: "\n";
     }
@@ -166,7 +166,7 @@ class PDF::Writer {
         $xref-offset //= $trailer<offset>;
 
         [~] ( "trailer\n",
-              $.write( :dict( $trailer<dict> ), :keys<Size Root>),
+              $.write( :dict( $trailer<dict> )),
               ( $xref-offset.defined
                 ?? ( "\nstartxref\n",
                      $.write( :int( $xref-offset) )

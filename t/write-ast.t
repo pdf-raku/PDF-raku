@@ -23,9 +23,7 @@ for 't/write-ast.json'.IO.lines {
 
     my $pdf = $pdf-writer.write( |%node );
     is $pdf, $expected-pdf, "serialize {%node.keys}"
-        or diag {node => %node, pdf => $pdf}.perl;
-
-    note (eqv => $pdf eqv $expected-pdf);
+        or diag {node => %node}.perl;
 
 }
 
