@@ -12,7 +12,7 @@ for 't/write-ast.json'.IO.lines {
     next if .substr(0,2) eq '//';
 
     my $test = from-json($_);
-    my $pdf = $test<pdf>;
+    my $expected-pdf = $test<pdf>;
     my %node = %( $test<ast> );
     my $opt = $test<opt> // {};
 
@@ -21,8 +21,11 @@ for 't/write-ast.json'.IO.lines {
         next;
     }
 
-    is $pdf-writer.write( |%node ), $pdf, "serialize {%node.keys} to: $pdf"
-        or diag {node => %node}.perl;
+    my $pdf = $pdf-writer.write( |%node );
+    is $pdf, $expected-pdf, "serialize {%node.keys}"
+        or diag {node => %node, pdf => $pdf}.perl;
+
+    note (eqv => $pdf eqv $expected-pdf);
 
 }
 

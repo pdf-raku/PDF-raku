@@ -20,17 +20,27 @@ class PDF::Writer {
         my @entries = %( :offset(0), :gen(65535), :status<f> ).item;
         my @out;
 
-        for $body<objects>.map({ .values[0] }) -> $ind-obj {
-            my $object-num = $ind-obj[0].Int;
-            my $gen = $ind-obj[1].Int;
+        for $body<objects>.list -> $obj {
+            if my $ind-obj = $obj<ind-obj> {
+                note {ind-obj => $ind-obj}.perl;
+                my $object-num = $ind-obj[0].Int;
+                my $gen = $ind-obj[1].Int;
 
-            $object-count++;
-            # hardcode status, for now
-            @entries.push: %( :$offset, :$gen, :status<n> ).item;
+                $object-count++;
+                # hardcode status, for now
+                @entries.push: %( :$offset, :$gen, :status<n> ).item;
 
-            @out.push: $.write( :$ind-obj );
-            $offset += @out[*-1].chars + 1;
-        };
+                @out.push: $.write( :$ind-obj );
+                $offset += @out[*-1].chars + 1;
+            }
+            elsif my $comment = $obj<comment> {
+                @out.push: $.write( :$comment );
+                $offset += @out[*-1].chars + 1;
+            }
+            else {
+                die "don't know how to serilize body component: {$obj.perl}"
+            }
+        }
 
         my $xref-offset = $offset;
 
@@ -38,10 +48,16 @@ class PDF::Writer {
         @out.push: $.write( :%xref );
         $offset += @out[*-1].chars + 1;
 
-        @out.push: $.write( :trailer($body<trailer>), :$xref-offset );
-        $offset += @out[*-1].chars + 1;
+        if $body<trailer>.defined {
+            @out.push: $.write( :trailer($body<trailer>), :$xref-offset );
+            $offset += @out[*-1].chars + 1;
+        }
 
         return @out.join: "\n";
+    }
+
+    multi method write(Str :$comment!) {
+        $comment ~~ /^ '%'/ ?? $comment !! '% ' ~ $comment;
     }
 
     multi method write(Hash :$dict!, :@keys = $dict.keys.sort) {
@@ -172,7 +188,7 @@ class PDF::Writer {
          'xref',
          $xref<object-first-num> ~ ' ' ~ $xref<object-count>,
          $xref<entries>.map({
-             sprintf '%010d %05d %s', .<offset>, .<gen>, .<status>
+             sprintf '%010d %05d %s ', .<offset>, .<gen>, .<status>
          }),
         ).join: "\n";
     }

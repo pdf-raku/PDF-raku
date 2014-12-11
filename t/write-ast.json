@@ -2,3 +2,4 @@
 { "ast" : { "array" : [ { "hex-string" : "hi" }, { "true" : true }, { "false" : false }, { "null" : null} ] }, "pdf" : "[ <6869> true false null ]" }
 { "ast" : { "dict" : { "foo" : { "literal-string" : "bar" }, "baz" : { "array" : [ { "int" : 42 }, { "real" : 4.2 } ] } } }, "pdf" : "<< /baz [ 42 4.2 ] /foo (bar) >>" }
 { "ast" : { "header" : { "version" : 1.5 } }, "pdf" : "%PDF-1.5" }
+//{ "ast" : { "body" : { "objects" : [ { "ind-obj" : [ 5, 0, { "dict" : { "Length" : { "int" : 42 } }} ] }, { "comment" : "I hope..." }, { "comment" : "% ..this works" }, { "ind-obj" : [ 3, 0, { "literal-string" : "bye!" } ] } ] }, "offset" : 0 }, "pdf" : "5 0 obj\n<< /Length 42 >>\nendobj\n% I hope...\n% ..this works\n3 0 obj\n(bye!)\nendobj\nxref\n0 3\n0000000000 65535 f \n0000000150 00000 n \n0000000209 00000 n " }
