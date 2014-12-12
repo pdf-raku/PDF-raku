@@ -155,10 +155,18 @@ class PDF::Writer {
         my $start = $stream<start>;
         my $end = $stream<end>;
 
-        [~] (($stream<dict>.defined ?? $.write-obj( $stream, :node<dict>) !! ''),
-             "\nstream\n",
-             $.input.substr($start - 1, $end - $start) ~ "\n",
-             "endstream");
+        my $length = $end - $start + 1;
+        my %dict = %( $stream<dict> // { } );
+        %dict<Length> //= $length;
+        
+        warn "parsed stream length $length differs from dictionary %dict<Length>"
+            unless $length == %dict<Length>;
+
+        ($.write( :%dict ),
+         "stream",
+         $.input.substr($start - 1, $length - 1 ),
+         "endstream",
+        ).join: "\n";
     }
 
     multi method write( Hash :$trailer!, :$xref-offset is copy ) {
