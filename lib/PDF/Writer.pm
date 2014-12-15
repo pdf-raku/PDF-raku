@@ -169,10 +169,10 @@ class PDF::Writer {
 
         my $length = $end - $start + 1;
         my %dict = %( $stream<dict> // { } );
-        %dict<Length> //= $length;
-        
-        warn "parsed stream length $length differs from dictionary %dict<Length>"
-            unless $length == %dict<Length>;
+        %dict<Length> //= :int($length);
+
+        warn "parsed stream length $length differs from dictionary %dict<Length>.value"
+            unless $length == + $.write-obj( %dict<Length> ) + 1;
 
         ($.write( :%dict ),
          "stream",
