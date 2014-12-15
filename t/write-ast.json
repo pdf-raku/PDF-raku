@@ -1,6 +1,7 @@
 { "ast" : { "literal" : "Hello World!" }, "pdf" : "(Hello World!)" }
 { "ast" : { "array" : [ { "hex-string" : "hi" }, { "true" : true }, { "false" : false }, { "null" : null} ] }, "pdf" : "[ <6869> true false null ]" }
 { "ast" : { "dict" : { "foo" : { "literal" : "bar" }, "baz" : { "array" : [ { "int" : 42 }, { "real" : 4.2 } ] } } }, "pdf" : "<< /baz [ 42 4.2 ] /foo (bar) >>" }
+{ "ast" : { "dict" : { "True" : { "true" : true }, "False" : { "false" : false }, "Null" : { "null" : null } } }, "pdf" : "<< /False false /Null null /True true >>" }
 { "ast" : { "header" : { "version" : 1.5 } }, "pdf" : "%PDF-1.5" }
 { "ast" : { "name" : "Zsófia"}, "pdf" : "/Zs#c3#b3fia" }
 { "ast" : { "comment" : "I hope this works" }, "pdf" : "% I hope this works" }

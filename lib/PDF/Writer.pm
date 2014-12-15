@@ -17,10 +17,10 @@ class PDF::Writer {
     multi method write( Hash :$body!, :$offset! is rw ) {
         my $object-count = 1;
         my $object-first-num = 0;
-        my @entries = %( :offset(0), :gen(65535), :status<f>, :obj(0), :gen(0) ).item;
+        my @entries = %( :offset(0), :gen(65535), :status<f>, :obj(0) ).item;
         my @out;
 
-        for $body<objects>.sort -> $obj {
+        for $body<objects>.list -> $obj {
 
             if my $ind-obj = $obj<ind-obj> {
                 my $obj = $ind-obj[0].Int;
