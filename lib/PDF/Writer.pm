@@ -61,6 +61,10 @@ class PDF::Writer {
         $.write( :$body, :$offset );
     }
 
+    multi method write( Bool :$bool! ) {
+        $bool ?? 'true' !! 'false';
+    }
+
     multi method write(List :$comment!) {
         $comment.map({ $.write( :comment($_) ) }).join: "\n";
     }
@@ -112,10 +116,10 @@ class PDF::Writer {
     BEGIN my %escapes = "\b" => 'b', "\f" => 'f', "\n" => 'n', "\r" => 'r', "\t" => 't'
         , "\n" => 'n', '(' => '(', ')' => ')', '\\' => '\\';
 
-    multi method write( Str :$literal-string! ) {
+    multi method write( Str :$literal! ) {
 
         [~] '(',
-            $literal-string.comb.map({
+            $literal.comb.map({
                 %escapes{$_}:exists
                     ?? '\\' ~ %escapes{$_}
                     !! do {
@@ -170,9 +174,6 @@ class PDF::Writer {
         my $length = $end - $start + 1;
         my %dict = %( $stream<dict> // { } );
         %dict<Length> //= :int($length);
-
-        warn "parsed stream length $length differs from dictionary %dict<Length>.value"
-            unless $length == + $.write-obj( %dict<Length> ) + 1;
 
         ($.write( :%dict ),
          "stream",
