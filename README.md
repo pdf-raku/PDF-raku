@@ -16,16 +16,15 @@ my $input-file = "t/pdf/pdf.out";
 my $output-file = "examples/helloworld.pdf";
 
 my $actions = PDF::Grammar::PDF::Actions.new;
-my $pdf-image = $input-file.IO.slurp( :encoding<latin1> );
-PDF::Grammar::PDF.parse($pdf-image, :$actions)
+my $pdf-content = $input-file.IO.slurp( :enc<latin1> );
+PDF::Grammar::PDF.parse($pdf-content, :$actions)
     or die "unable to load pdf: $input-file";
 
 my $pdf-ast = $/.ast;
 $pdf-ast<comment> = "This PDF was brought to you by CSS::Writer!!";
-use JSON::Tiny;note to-json($pdf-ast);
 
-my $pdf-writer = PDF::Writer.new( :input($pdf-image) );
-$output-file.IO.spurt( $pdf-writer.write( :pdf($pdf-ast) ), :encoding<latin1> );
+my $pdf-writer = PDF::Writer.new( :input($pdf-content) );
+$output-file.IO.spurt( $pdf-writer.write( :pdf($pdf-ast) ), :enc<latin1> );
 ```
 
 ## Description
