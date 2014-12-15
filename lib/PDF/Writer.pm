@@ -17,18 +17,18 @@ class PDF::Writer {
     multi method write( Hash :$body!, :$offset! is rw ) {
         my $object-count = 1;
         my $object-first-num = 0;
-        my @entries = %( :offset(0), :gen(65535), :status<f> ).item;
+        my @entries = %( :offset(0), :gen(65535), :status<f>, :obj(0), :gen(0) ).item;
         my @out;
 
-        for $body<objects>.list -> $obj {
+        for $body<objects>.sort -> $obj {
 
             if my $ind-obj = $obj<ind-obj> {
-                my $object-num = $ind-obj[0].Int;
+                my $obj = $ind-obj[0].Int;
                 my $gen = $ind-obj[1].Int;
 
                 $object-count++;
                 # hardcode status, for now
-                @entries.push: %( :$offset, :$gen, :status<n> ).item;
+                @entries.push: %( :$offset, :$gen, :status<n>, :$obj, :$gen ).item;
                 @out.push: $.write( :$ind-obj );
             }
             elsif my $comment = $obj<comment> {
@@ -42,6 +42,8 @@ class PDF::Writer {
         }
 
         my $xref-offset = $offset;
+
+        @entries = @entries.sort: { $^a<obj> <=> $^b<obj> || $^a<gen> <=> $b<gen> };
 
         my %xref = :$object-first-num, :$object-count, :@entries;
         @out.push: $.write( :%xref );
