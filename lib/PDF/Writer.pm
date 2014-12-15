@@ -21,6 +21,7 @@ class PDF::Writer {
         my @out;
 
         for $body<objects>.list -> $obj {
+
             if my $ind-obj = $obj<ind-obj> {
                 my $object-num = $ind-obj[0].Int;
                 my $gen = $ind-obj[1].Int;
@@ -28,17 +29,16 @@ class PDF::Writer {
                 $object-count++;
                 # hardcode status, for now
                 @entries.push: %( :$offset, :$gen, :status<n> ).item;
-
                 @out.push: $.write( :$ind-obj );
-                $offset += @out[*-1].chars + 1;
             }
             elsif my $comment = $obj<comment> {
                 @out.push: $.write( :$comment );
-                $offset += @out[*-1].chars + 1;
             }
             else {
                 die "don't know how to serialize body component: {$obj.perl}"
             }
+
+            $offset += @out[*-1].chars + 1;
         }
 
         my $xref-offset = $offset;
@@ -132,7 +132,7 @@ class PDF::Writer {
             when '#' { '##' }
             when /<PDF::Grammar::name-reg-char>/ { $_ }
             default {
-                sprintf '\\%x', .ord;
+                .encode.list.map({ sprintf '#%02x', $_ }).join('');
             }
         } )
     }
@@ -167,10 +167,18 @@ class PDF::Writer {
         my $start = $stream<start>;
         my $end = $stream<end>;
 
-        [~] (($stream<dict>.defined ?? $.write-obj( $stream, :node<dict>) !! ''),
-             "\nstream\n",
-             $.input.substr($start - 1, $end - $start) ~ "\n",
-             "endstream");
+        my $length = $end - $start + 1;
+        my %dict = %( $stream<dict> // { } );
+        %dict<Length> //= $length;
+        
+        warn "parsed stream length $length differs from dictionary %dict<Length>"
+            unless $length == %dict<Length>;
+
+        ($.write( :%dict ),
+         "stream",
+         $.input.substr($start - 1, $length - 1 ),
+         "endstream",
+        ).join: "\n";
     }
 
     multi method write( Hash :$trailer!, :$xref-offset is copy ) {
