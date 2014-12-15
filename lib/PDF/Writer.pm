@@ -153,11 +153,11 @@ class PDF::Writer {
     multi method write( Hash :$pdf! ) {
         my $header = $.write-obj( $pdf, :node<header> );
         my $comment = $pdf<comment>:exists
-            ?? $.write-obj( $pdf, :node<comment> ) ~ "\n"
-            !! '';
+            ?? $.write-obj( $pdf, :node<comment> )
+            !! $.write( :comment<%¥±ë> );
         my $offset = $header.chars + $comment.chars + 1;  # since format is byte orientated
         my $body = $.write( :body($pdf<body>), :$offset );
-        [~] ($header, "\n", $comment, $body, '%%EOF', '');
+        [~] ($header, "\n", $comment, "\n", $body, '%%EOF', '');
     }
 
     multi method write(Any :$header! ) {
@@ -188,16 +188,15 @@ class PDF::Writer {
 
         $xref-offset //= $trailer<offset>;
 
-        [~] ( "trailer\n",
-              $.write( :dict( $trailer<dict> )),
-              ( $xref-offset.defined
-                ?? ( "\nstartxref\n",
-                     $.write( :int( $xref-offset) )
-                   )
-                !! ()
-              ),
-              "\n",
-            );
+        ( "trailer",
+          $.write( :dict( $trailer<dict> )),
+          ( $xref-offset.defined
+            ?? ( "startxref",
+                 $.write( :int( $xref-offset) )
+            )
+            !! (),
+          '')
+        ).join: "\n";
     }
 
     multi method write( Any :$true! ) { 'true' }

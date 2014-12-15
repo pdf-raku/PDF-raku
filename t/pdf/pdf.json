@@ -1,7 +1,7 @@
 {
   "pdf" : {
     "header" : {
-      "version" : 1
+      "version" : 1.2
     },
     "body" : [
       {
@@ -145,8 +145,8 @@
                       "int" : 45
                     }
                   },
-                  "start" : 355,
-                  "end" : 400
+                  "start" : 360,
+                  "end" : 405
                 }
               }
             ]
@@ -204,37 +204,37 @@
                 "status" : "f"
               },
               {
-                "offset" : 9,
+                "offset" : 13,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 74,
+                "offset" : 78,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 120,
+                "offset" : 124,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 179,
+                "offset" : 183,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 322,
+                "offset" : 326,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 417,
+                "offset" : 421,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 447,
+                "offset" : 451,
                 "gen" : 0,
                 "status" : "n"
               }
@@ -253,7 +253,7 @@
               ]
             }
           },
-          "offset" : 555
+          "offset" : 559
         }
       }
     ]
