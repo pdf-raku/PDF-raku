@@ -56,6 +56,15 @@ class PDF::Writer {
         return @out.join: "\n";
     }
 
+    multi method write( :$body! ) {
+        my $offset = 0;
+        $.write( :$body, :$offset );
+    }
+
+    multi method write(List :$comment!) {
+        $comment.map({ $.write( :comment($_) ) }).join: "\n";
+    }
+
     multi method write(Str :$comment!) {
         $comment ~~ /^ '%'/ ?? $comment !! '% ' ~ $comment;
     }
@@ -137,13 +146,16 @@ class PDF::Writer {
 
     multi method write( Hash :$pdf! ) {
         my $header = $.write-obj( $pdf, :node<header> );
-        my $offset = $header.chars + 1;  # since format is byte orientated
+        my $comment = $pdf<comment>:exists
+            ?? $.write-obj( $pdf, :node<comment> ) ~ "\n"
+            !! '';
+        my $offset = $header.chars + $comment.chars + 1;  # since format is byte orientated
         my $body = $.write( :body($pdf<body>), :$offset );
-        [~] ($header, "\n", $body, '%%EOF', '');
+        [~] ($header, "\n", $comment, $body, '%%EOF', '');
     }
 
     multi method write(Any :$header! ) {
-        sprintf '%%PDF-%.1f', $header<version>;
+        sprintf '%%PDF-%.1f', $header<version> // 1.2;
     }
 
     multi method write( Numeric :$real! ) {
