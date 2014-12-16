@@ -30,6 +30,15 @@ class PDF::Writer {
                 # hardcode status, for now
                 @entries.push: %( :$offset, :$gen, :status<n>, :$obj, :$gen ).item;
                 @out.push: $.write( :$ind-obj );
+
+                for $ind-obj[2..*] {
+                    my ($type, $val) = .kv;
+                    my $dict = do given $type { when 'dict' {$val}; when 'stream' {$val<dict>} };
+                    if $dict.defined && (my $obj-type = $dict<Type>).defined {
+                        die "Can't yet handle cross reference streams (/Type /XRef)"
+                            if $obj-type<name> eq 'XRef';
+                    }
+                }
             }
             elsif my $comment = $obj<comment> {
                 @out.push: $.write( :$comment );
