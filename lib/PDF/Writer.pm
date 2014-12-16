@@ -52,8 +52,10 @@ class PDF::Writer {
         my $trailer = $body<trailer>
             // die "body does not have a trailer";
 
-        @out.push: $.write( :$trailer, :$xref-offset );
+        @out.push: $.write( :$trailer, :$xref-offset, :size(+@entries) );
         $offset += @out[*-1].chars + 1;
+
+        $offset++;
 
         return @out.join: "\n";
     }
@@ -184,18 +186,21 @@ class PDF::Writer {
         ).join: "\n";
     }
 
-    multi method write( Hash :$trailer!, :$xref-offset is copy ) {
+    multi method write( Hash :$trailer!, :$xref-offset is copy, :$size ) {
 
-        $xref-offset //= $trailer<offset>;
+        $xref-offset //= $trailer<offset> // 0;
 
-        ( "trailer",
-          $.write( :dict( $trailer<dict> )),
-          ( $xref-offset.defined
-            ?? ( "startxref",
-                 $.write( :int( $xref-offset) )
-            )
-            !! (),
-          '')
+        my %dict = %( $trailer<dict> // {} );
+
+        %dict<Size> = :int($size)
+            if $size.defined;
+
+        die "unable to locate document root"
+            unless %dict<Root>.defined;
+
+        ( "trailer", $.write( :%dict ),
+          "startxref", $.write( :int( $xref-offset) ),
+          ''
         ).join: "\n";
     }
 
@@ -236,8 +241,7 @@ class PDF::Writer {
             $.write( |%params );
         }
         else {
-            warn "dunno how to write-obj: {$ast.perl}";
-            '';
+            die "unable to write-obj: {$ast.perl}";
         }
 
     }

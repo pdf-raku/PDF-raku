@@ -112,7 +112,7 @@
     "trailer" : {
       "dict" : {
         "Size" : {
-          "int" : 8
+          "int" : 5
         },
         "Root" : {
           "ind-ref" : [
