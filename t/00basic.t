@@ -1,5 +1,5 @@
 use Test;
-use PDF::Writer;
+use PDF::Basic::Writer;
 
 pass('compiles');
 

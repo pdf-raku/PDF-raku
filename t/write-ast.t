@@ -3,9 +3,9 @@
 use Test;
 use JSON::Tiny;
 
-use PDF::Writer;
+use PDF::Basic::Writer;
 
-my $pdf-writer = PDF::Writer.new;
+my $pdf-writer = PDF::Basic::Writer.new;
 
 for 't/write-ast.json'.IO.lines {
 

@@ -1,6 +1,6 @@
 use v6;
 
-class PDF::Writer {
+class PDF::Basic::Writer {
 
     has Str $.input;
 

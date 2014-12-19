@@ -1,11 +1,11 @@
 {
-    "name"        : "PDF::Writer",
+    "name"        : "PDF::Basic",
     "version"     : "*",
-    "description" : "AST Serializer; compatible with PDF::Grammar",
+    "description" : "Basic PDF Tools for construction and serialization etc.",
     "depends"     : [ "PDF::Grammar", "JSON::Tiny"  ],
-    "source-url"  : "git://github.com/p6-css/p6-PDF-Writer.git",
+    "source-url"  : "git://github.com/p6-css/p6-PDF-Basic.git",
     "provides"    : {
-        "PDF::Writer" : "lib/PDF/Writer.pm"
+        "PDF::Basic::Writer" : "lib/PDF/Basic/Writer.pm"
      }
 }
 
