@@ -45,9 +45,7 @@ my $pdf-writer = PDF::Writer.new( :input($pdf-content) );
 $output-file.IO.spurt( $pdf-writer.write( :pdf($pdf-ast) ), :enc<latin1> );
 ```
 
-## Description
-
-This module performs the inverse operation to PDF::Grammar. It reserializes a PDF AST back to an image;
+Performs the inverse operation to PDF::Grammar. It reserializes a PDF AST back to an image;
 with rebuilt cross reference tables.
 
 
