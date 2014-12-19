@@ -1,9 +1,27 @@
-perl6-PDF-Writer
-================
+perl6-PDF
+=========
 
-Experimental AST reserializer for PDF::Grammar::PDF
+** Under Construction ** This module aims to be a base class for basic PDF manipulation and construction. It aims to perform a similar role to Perl 5 Text::PDF module (as used by CAM::PDF and PDF::Reuse) or the PDF::API2::PDF subclassess.
 
-## Example
+## PDF::File
+
+tba
+
+## PDF::Page / PDF::Pages
+
+tba
+
+## PDF::Filter
+
+Utility filter methods, based on PDF::API2::PDF::Filter / Text::PDF::Filter
+
+## PDF::Objind
+
+tba
+
+## PDF::Writer
+
+AST reserializer, compatible with PDF::Grammar::PDF
 
 ```
 # Simple round trip read and rewrite a PDF
