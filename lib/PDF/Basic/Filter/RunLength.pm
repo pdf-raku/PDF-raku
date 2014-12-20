@@ -68,6 +68,9 @@ method decode($input is copy, Bool :$eod) {
             }
         }
 
+        die "missing end-of-data at end of run-length encoding"
+            if $eod && (!@in  || @in[*-1].ord != 128);
+
     }
 
     return @chunks.join: '';
