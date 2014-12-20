@@ -17,17 +17,18 @@ method encode($input, Bool :$eod) {
         die "illegal non-latin character in encoding"
             if $0.ord > 255;
 
-        if $len > 1 && $0.ord <= 127 {
+        if $len > 1 {
+            # run of repeating characters
             @chunks.push: [257 - $len, $0.ord];
         }
         else {
-            if @chunks && @chunks[*-1][0] < 127 {
-                @chunks[*-1][0]++;
-                @chunks[*-1].push: $0.ord;
-            }
-            else {
-                @chunks.push: [0, $0.ord]
-                    for 1 .. $len;
+            # literal sequence
+            @chunks.push: [-1]
+                unless @chunks && @chunks[*-1][0] < 127;
+
+            for @chunks[*-1] {
+                .[0]++;
+                .push: $0.ord;
             }
         }
     }
@@ -53,10 +54,12 @@ method decode($input is copy, Bool :$eod) {
     while $idx < +@in {
         given @in[$idx].ord {
             when $_ < 128 {
+                # run of repeating characters
                 @chunks.push: @in[($idx + 1)..($idx + $_ + 1)];
                 $idx += $_ + 2;
             }
             when $_ > 128 {
+                # literal sequence
                 @chunks.push: @in[$idx + 1] x (257 - $_);
                 $idx += 2;
             }
