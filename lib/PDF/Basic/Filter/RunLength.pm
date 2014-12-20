@@ -43,9 +43,6 @@ method decode($input is copy, Bool :$eod) {
     my $output;
     my $length;
 
-    $input ~~ s/\x80$//
-        if $eod;
-
     my @in = $input.comb;
     my @chunks;
 
@@ -53,17 +50,18 @@ method decode($input is copy, Bool :$eod) {
 
     while $idx < +@in {
         given @in[$idx].ord {
-            when $_ < 128 {
+            when * < 128 {
                 # run of repeating characters
                 @chunks.push: @in[($idx + 1)..($idx + $_ + 1)];
                 $idx += $_ + 2;
             }
-            when $_ > 128 {
+            when * > 128 {
                 # literal sequence
                 @chunks.push: @in[$idx + 1] x (257 - $_);
                 $idx += 2;
             }
-            default {
+            when 128 {
+                #eod
                 die "unexpected end-of-data marker (0x80)"
                     unless $idx = +@in - 1;
                 last;
