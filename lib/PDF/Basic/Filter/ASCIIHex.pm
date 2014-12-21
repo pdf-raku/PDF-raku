@@ -13,7 +13,7 @@ method encode($input, Bool :$eod) {
 
     $input.subst(/(.)/, {
         my $ord = $0.ord;
-        die 'illegal non-byte character > \xFF' if $ord > 0xFF;
+        die 'illegal character(s) > \xFF' if $ord > 0xFF;
         sprintf '%02x', $ord;
     }, :g) ~ ($eod ?? '>' !! '');
 

@@ -2,12 +2,13 @@
     "name"        : "PDF::Basic",
     "version"     : "*",
     "description" : "Basic PDF Tools for construction and serialization etc.",
-    "depends"     : [ "PDF::Grammar", "JSON::Tiny"  ],
+    "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Tiny"  ],
     "source-url"  : "git://github.com/p6-css/p6-PDF-Basic.git",
     "provides"    : {
         "PDF::Basic::Writer" : "lib/PDF/Basic/Writer.pm",
         "PDF::Basic::Writer" : "lib/PDF/Basic/Filter.pm",
         "PDF::Basic::Writer" : "lib/PDF/Basic/Filter/ASCIIHex.pm",
+        "PDF::Basic::Writer" : "lib/PDF/Basic/Filter/Flate.pm",
         "PDF::Basic::Writer" : "lib/PDF/Basic/Filter/RunLength.pm"
      }
 }

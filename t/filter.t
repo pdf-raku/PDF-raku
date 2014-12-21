@@ -1,18 +1,20 @@
 use Test;
 
-plan 12;
+plan 18;
 
 use PDF::Basic::Filter::ASCIIHex;
+use PDF::Basic::Filter::Flate;
 use PDF::Basic::Filter::RunLength;
 
 my $empty = '';
 my $latin-chars = [~] chr(0)..chr(0xFF);
-my $longish = 'abc' x 200;
 my $low-repeat = 'A' x 200;
 my $high-repeat = chr(180) x 200;
+my $longish = [~] (map { $_ x 3 }, $latin-chars.comb ) x 2;
 my $wide-chars = "Τη γλώσσα μου έδωσαν ελληνική";
 
 for ( :run-length(PDF::Basic::Filter::RunLength),
+      :flate(PDF::Basic::Filter::Flate),
       :ascii-hex(PDF::Basic::Filter::ASCIIHex),
     ) {
     my ($filter-type, $class) = .kv;
@@ -21,7 +23,7 @@ for ( :run-length(PDF::Basic::Filter::RunLength),
 
     dies_ok { $filter.encode($wide-chars) }, $filter-type ~' input chars > \xFF - dies';
 
-    for :$empty, :$latin-chars, :$longish, :$low-repeat, :$high-repeat {
+    for :$empty, :$latin-chars, :$low-repeat, :$high-repeat, :$longish {
         my ($name, $input) = .kv;
 
         my $output = $filter.encode($input);
