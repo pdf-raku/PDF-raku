@@ -11,7 +11,12 @@ class PDF::Basic::Filter::ASCIIHex
 
 method encode($input, Bool :$eod) {
 
-    $input.subst(/(.)/, {sprintf '%02x', $0.ord}, :g) ~ ($eod ?? '>' !! '');
+    $input.subst(/(.)/, {
+        my $ord = $0.ord;
+        die 'illegal non-byte character > \xFF' if $ord > 0xFF;
+        sprintf '%02x', $ord;
+    }, :g) ~ ($eod ?? '>' !! '');
+
 }
 
 method decode($input, Bool :$eod) {
