@@ -18,7 +18,7 @@ method decode($input, Bool :$eod) {
 
     my $str = $input.subst(/\s/, '', :g);
 
-    if $str.substr(*-1,1) eq '>' {
+    if $str && $str.substr(*-1,1) eq '>' {
         $str = $str.chop;
 
         # "If the filter encounters the EOD marker after reading an odd

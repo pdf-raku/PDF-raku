@@ -1,7 +1,7 @@
 perl6-PDF-Basic
 ===============
 
-** Under Construction ** This module provides PDF manipulation and construction primitives. It performs a similar role to Perl 5's PDF::API2::Basic::PDF subclasses, which are in turn, based on Text::PDF.
+** Under Construction ** This module provides low-level PDF manipulation and construction primitives. It performs a similar role to Perl 5's PDF::API2::Basic::PDF (PDF::API2 distribution) or Text::PDF.
 
 ## PDF::Basic::File
 
@@ -14,6 +14,21 @@ tba
 ## PDF::Basic::Filter
 
 Utility filter methods, based on PDF::API2::Basic::PDF::Filter / Text::PDF::Filter
+
+PDF::Basic::Filter::RunLength, PDF::Basic::Filter::ASCII85, PDF::Basic::Filter::Flate, ...
+
+Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding
+is recommended to enforce this.
+
+`encode` and `decode` both return latin-1 encoded strings.
+
+    ```
+    my $filter = PDF::Basic::Filter::RunLength.new;
+    my $data = $filter.encode("This    is waaay toooooo loooong!", :eod);
+    say $data.chars;
+    ```
+
+(future versions may also support buf8 input/output).
 
 ## PDF::Basic::Objind
 

@@ -51,3 +51,4 @@ my $actual_bytes = PDF::Basic::Filter::ASCIIHex.decode($odd_out).comb>>.ord.join
 is($actual_bytes,
    $expected_bytes,
    q{ASCIIHex handles odd numbers of characters correctly});
+
