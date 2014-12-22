@@ -96,8 +96,6 @@ class PDF::Basic::Writer {
 
     }
 
-    multi method write( Any :$false! ) { 'false' }
-
     multi method write( Str :$hex-char! ) {
         sprintf '#%02X', $hex-char.ord
     }
@@ -212,8 +210,6 @@ class PDF::Basic::Writer {
           ''
         ).join: "\n";
     }
-
-    multi method write( Any :$true! ) { 'true' }
 
     multi method write(Array :$xref!) {
         ( $xref.map({ $.write( :xref($_) ) }), '').join: "\n";

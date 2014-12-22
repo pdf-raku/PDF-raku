@@ -13,9 +13,10 @@ my $high-repeat = chr(180) x 200;
 my $longish = [~] (map { $_ x 3 }, $latin-chars.comb ) x 2;
 my $wide-chars = "Τη γλώσσα μου έδωσαν ελληνική";
 
-for ( :run-length(PDF::Basic::Filter::RunLength),
-      :flate(PDF::Basic::Filter::Flate),
-      :ascii-hex(PDF::Basic::Filter::ASCIIHex),
+for (
+    :ascii-hex(PDF::Basic::Filter::ASCIIHex),
+    :flate(PDF::Basic::Filter::Flate),
+    :run-length(PDF::Basic::Filter::RunLength),
     ) {
     my ($filter-type, $class) = .kv;
 
