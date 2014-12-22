@@ -13,7 +13,8 @@ method encode($input, Bool :$eod) {
 
     $input.subst(/(.)/, {
         my $ord = $0.ord;
-        die 'illegal character(s) > \xFF' if $ord > 0xFF;
+        die 'illegal wide byte: U+' ~ $ord.base(16)
+            if $ord > 0xFF;
         sprintf '%02x', $ord;
     }, :g) ~ ($eod ?? '>' !! '');
 
@@ -38,7 +39,7 @@ method decode($input, Bool :$eod) {
            if $eod
     }
 
-    die "Illegal character found in ASCII hex-encoded stream"
+    die "Illegal character(s) found in ASCII hex-encoded stream"
         if $str ~~ m:i/< -[0..9 A..F]>/;
 
     return $str.subst( /(..?)/, -> $/ { :16(~$0).chr }, :g );

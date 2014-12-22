@@ -13,15 +13,14 @@ use Compress::Zlib;
 
 method encode($input) {
 
-    die 'illegal character(s) > \xFF'
-        if $input.comb.grep({$_ gt "\xFF"});
+    if $input ~~ m{(<-[\x0 .. \xFF]>)} {
+        die 'illegal wide byte: U+' ~ $0.ord.base(16)
+    }
 
-    compress( $input.encode('latin-1' ) ).decode( 'latin-1' );
-
+    compress( $input.encode('latin-1') ).decode('latin-1');
 }
 
 method decode($input) {
 
-    uncompress( $input.encode('latin-1' ) ).decode( 'latin-1' );
-
+    uncompress( $input.encode('latin-1') ).decode('latin-1');
 }

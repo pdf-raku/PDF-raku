@@ -1,8 +1,9 @@
 use v6;
 
-class PDF::Basic::Writer {
+use PDF::Basic::Object;
 
-    has Str $.input;
+class PDF::Basic::Writer
+    is PDF::Basic::Object {
 
     use PDF::Grammar;
 
@@ -33,10 +34,11 @@ class PDF::Basic::Writer {
 
                 for $ind-obj[2..*] {
                     my ($type, $val) = .kv;
-                    my $dict = do given $type { when 'dict' {$val}; when 'stream' {$val<dict>} };
-                    if $dict.defined && (my $obj-type = $dict<Type>).defined {
+                    my $dict = do given $type { when 'stream' {$val<dict>} };
+                    if $dict.defined && $dict<Type>.defined {
+                        $dict = $.unbox( :$dict ) ;
                         die "Can't yet handle cross reference streams (/Type /XRef)"
-                            if $obj-type<name> eq 'XRef';
+                            if $obj<Type> eq 'XRef';
                     }
                 }
             }

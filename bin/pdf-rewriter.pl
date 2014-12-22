@@ -19,6 +19,6 @@ sub MAIN ($input-file, $output-file) {
     my $pdf-ast = $/.ast;
 
     note "writing {$output-file}...";
-    my $pdf-writer = PDF::Basic::Writer.new( :input($pdf-content) );
+    my $pdf-writer = PDF::Basic::Writer.new( :root($pdf-ast), :input($pdf-content) );
     $output-file.IO.spurt( $pdf-writer.write( :pdf($pdf-ast) ), :enc<latin1> );
 }

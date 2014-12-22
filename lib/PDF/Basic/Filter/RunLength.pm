@@ -13,22 +13,25 @@ method encode($input, Bool :$eod) {
     my @chunks;
 
     for $input.comb(/(.)$0**0..127/) -> $/ {
+
+        my $ord = $0.ord;
         my $len = $/.chars;
-        die "illegal non-latin character in encoding"
-            if $0.ord > 255;
+
+        die 'illegal wide byte: U+' ~ $ord.base(16)
+            if $ord > 0xFF;
 
         if $len > 1 {
             # run of repeating characters
-            @chunks.push: [257 - $len, $0.ord];
+            @chunks.push: [257 - $len, $ord];
         }
         else {
             # literal sequence
             @chunks.push: [-1]
                 unless @chunks && @chunks[*-1][0] < 127;
 
-            for @chunks[*-1] {
+            given @chunks[*-1] {
                 .[0]++;
-                .push: $0.ord;
+                .push: $ord;
             }
         }
     }

@@ -20,7 +20,7 @@ for 't/pdf'.IO.dir.list {
     my $pdf-output-file = $json-file.subst( /'.json'$/, '.out' );
     my $pdf-input = $pdf-input-file.IO.slurp;
 
-    my $pdf-writer = PDF::Basic::Writer.new( :input($pdf-input) );
+    my $pdf-writer = PDF::Basic::Writer.new( :root(%pdf-data), :input($pdf-input) );
     %pdf-data<offset> = 0;
     my $pdf-output = $pdf-writer.write( |%pdf-data );
     $pdf-output-file.IO.spurt: $pdf-output;

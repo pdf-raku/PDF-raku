@@ -25,6 +25,12 @@ for 't/write-ast.json'.IO.lines {
     is $pdf, $expected-pdf, "serialize {%node.keys}"
         or diag {node => %node}.perl;
 
+    if my $unboxed = $test<unboxed> {
+        my $perl = $pdf-writer.unbox( |%node );
+        is_deeply $perl, $unboxed, "unboxed {%node.keys}"
+            or diag {node => %node}.perl;
+    }
+
 }
 
 done;
