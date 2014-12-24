@@ -44,7 +44,7 @@ with rebuilt cross reference tables.
 use v6;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Basic::Writer;
+use PDF::Basic;
 
 my $input-file = "t/pdf/pdf.out";
 my $output-file = "examples/helloworld.pdf";
@@ -57,6 +57,6 @@ PDF::Grammar::PDF.parse($pdf-content, :$actions)
 my $pdf-ast = $/.ast;
 $pdf-ast<comment> = "This PDF was brought to you by CSS::Basic::Writer!!";
 
-my $pdf-writer = PDF::Basic::Writer.new( :input($pdf-content) );
-$output-file.IO.spurt( $pdf-writer.write( :pdf($pdf-ast) ), :enc<latin1> );
+my $pdf = PDF::Basic.new( :input($pdf-content) );
+$output-file.IO.spurt( $pdf.write( :pdf($pdf-ast) ), :enc<latin1> );
 ```
