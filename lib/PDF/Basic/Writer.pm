@@ -29,15 +29,6 @@ class PDF::Basic::Writer {
                 @entries.push: %( :$offset, :$gen, :status<n>, :$obj, :$gen ).item;
                 @out.push: $.write( :$ind-obj );
 
-                for $ind-obj[2..*] {
-                    my ($type, $val) = .kv;
-                    my $dict = do given $type { when 'stream' {$val<dict>} };
-                    if $dict.defined && $dict<Type>.defined {
-                        $dict = $.unbox( :$dict ) ;
-                        warn "Can't yet handle cross reference streams (/Type /XRef)"
-                            if $dict<Type> eq 'XRef';
-                    }
-                }
             }
             elsif my $comment = $obj<comment> {
                 @out.push: $.write( :$comment );
@@ -200,6 +191,9 @@ class PDF::Basic::Writer {
 
         %dict<Size> = :int($size)
             if $size.defined;
+
+        %dict<Root> //= $.root-obj
+            if $.root-obj.defined;
 
         die "unable to locate document root"
             unless %dict<Root>.defined;

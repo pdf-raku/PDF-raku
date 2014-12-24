@@ -50,6 +50,12 @@ multi method unbox( Any :$null! ) { $null }
 
 multi method unbox( Numeric :$real! ) { $real }
 
+multi method unbox( Hash :$stream! ) {
+    my $dict = $stream<dict>;
+    # ignore stream body
+    $.unbox( :$dict );
+}
+
 multi method unbox( *@args, *%opts ) is default {
 
     die "unexpected unbox arguments: {[@args].perl}"
