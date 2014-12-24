@@ -1,10 +1,8 @@
 use Test;
 
-plan 18;
+plan 33;
 
-use PDF::Basic::Filter::ASCIIHex;
-use PDF::Basic::Filter::Flate;
-use PDF::Basic::Filter::RunLength;
+use PDF::Basic::Filter;
 
 my $empty = '';
 my $latin-chars = [~] chr(0)..chr(0xFF);
@@ -13,23 +11,19 @@ my $high-repeat = chr(180) x 200;
 my $longish = [~] (map { $_ x 3 }, $latin-chars.comb ) x 2;
 my $wide-chars = "Τη γλώσσα μου έδωσαν ελληνική";
 
-for (
-    :ascii-hex(PDF::Basic::Filter::ASCIIHex),
-    :flate(PDF::Basic::Filter::Flate),
-    :run-length(PDF::Basic::Filter::RunLength),
-    ) {
-    my ($filter-type, $class) = .kv;
+for qw<ASCIIHexDecode FlateDecode RunLengthDecode> -> $filter-name {
 
-    my $filter = $class.new;
+    my %dict = Filter => $filter-name;
 
-    dies_ok { $filter.encode($wide-chars) }, $filter-type ~' input chars > \xFF - dies';
+    dies_ok { PDF::Basic::Filter.encode($wide-chars, :%dict) }, $filter-name ~' input chars > \xFF - dies';
 
     for :$empty, :$latin-chars, :$low-repeat, :$high-repeat, :$longish {
         my ($name, $input) = .kv;
 
-        my $output = $filter.encode($input);
+        my $output;
+        lives_ok { $output = PDF::Basic::Filter.encode($input, :%dict) }, "$filter-name encoding - lives";
 
-        is_deeply $filter.decode($output), $input, "$filter-type roundtrip: $name"
+        is_deeply PDF::Basic::Filter.decode($output, :%dict), $input, "$filter-name roundtrip: $name"
             or diag :$input.perl;
 
     }

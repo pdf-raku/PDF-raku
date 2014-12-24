@@ -1,24 +1,6 @@
 use v6;
 
-class PDF::Basic::Object;
-
-has Str $.input;  # raw PDF image (latin-1 encoding)
-has Hash %.ind-obj-idx;
-
-submethod BUILD(Hash :$root, Str :$!input) {
-
-    if $root.defined {
-        for $root<body>.list  {
-            #= build object index
-            for <objects>.list {
-                next unless my $ind-obj = .<ind-obj>;
-                my $obj = $ind-obj[0].Int;
-                my $gen = $ind-obj[1].Int;
-                %!ind-obj-idx{$obj}{$gen} = $ind-obj;
-            }
-        }
-    }
-}
+class PDF::Basic::Unbox;
 
 # unbox convert PDF objects to native Perl structs
 # - only supports a subset of token types
@@ -43,11 +25,11 @@ multi method unbox( Str :$hex-string! ) { $hex-string }
 multi method unbox( Array :$ind-ref! ) {
 
     # dereference
-    my $obj = $ind-ref[0].Int;
-    my $gen = $ind-ref[1].Int;
+    my $obj-num = $ind-ref[0].Int;
+    my $gen-num = $ind-ref[1].Int;
 
-    my $ind-obj = %.ind-obj-idx{$obj}{$gen}
-        or die "unresolved indirect object reference: obj-num:$obj  gen:$gen";
+    my $ind-obj = %.ind-obj-idx{$obj-num}{$gen-num}
+    // return;
 
     $.unbox( |%$ind-obj );
 }

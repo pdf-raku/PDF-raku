@@ -1,15 +1,12 @@
 use v6;
 # based on PDF::API::Basic::PDF::Filter::RunLengthDecode
 
-use PDF::Basic::Filter;
-
-class PDF::Basic::Filter::RunLength
-    is PDF::Basic::Filter;
+class PDF::Basic::Filter::RunLength;
 
 # Maintainer's Note: RunLengthDecode is described in the PDF 1.7 spec
 # in section 7.4.5.
 
-method encode($input, Bool :$eod) {
+method encode(Str $input, Bool :$eod --> Str) {
     my @chunks;
 
     for $input.comb(/(.)$0**0..127/) -> $/ {
@@ -42,39 +39,35 @@ method encode($input, Bool :$eod) {
     return $buf.decode('latin1');
 }
 
-method decode($input is copy, Bool :$eod) {
-    my $output;
-    my $length;
-
-    my @in = $input.comb;
-    my @chunks;
+method decode(Str $input, Bool :$eod --> Str) {
 
     my $idx = 0;
+    my @in = $input.comb;
+    my @out;
 
     while $idx < +@in {
-        given @in[$idx].ord {
+        given @in[ $idx++ ].ord {
             when * < 128 {
-                # run of repeating characters
-                @chunks.push: @in[($idx + 1)..($idx + $_ + 1)];
-                $idx += $_ + 2;
+                # literal sequence
+                @out.push: @in[ $idx++ ] for 0 .. $_;
             }
             when * > 128 {
-                # literal sequence
-                @chunks.push: @in[$idx + 1] x (257 - $_);
-                $idx += 2;
+                # run of repeating characters
+                @out.push: @in[ $idx ] x (257 - $_);
+                $idx++;
             }
             when 128 {
                 #eod
                 die "unexpected end-of-data marker (0x80)"
-                    unless $idx = +@in - 1;
+                    unless $idx == +@in;
                 last;
             }
         }
 
         die "missing end-of-data at end of run-length encoding"
-            if $eod && (!@in  || @in[*-1].ord != 128);
+            if $eod && (+@in == 0 || @in[*-1].ord != 128);
 
     }
 
-    return @chunks.join: '';
+    return @out.join: '';
 }

@@ -1,8 +1,32 @@
 use Test;
 
-plan 2;
+plan 4;
 
 use PDF::Basic::Filter::Flate;
+
+my $prediction = buf8.new: [
+    0x2, 0x1, 0x0, 0x10, 0x0,
+    0x2, 0x0, 0x2, 0xcd, 0x0,
+    0x2, 0x0, 0x1, 0x51, 0x0,
+    0x1, 0x0, 0x1, 0x70, 0x0,
+    0x3, 0x0, 0x5, 0x7a, 0x0,
+    0,   1,   2,   3,    4,
+    ];
+
+my $post-prediction = buf8.new: [
+    0x1, 0x0, 0x10, 0x0,
+    0x1, 0x2, 0xdd, 0x0,
+    0x1, 0x3, 0x2e, 0x0,
+    0x0, 0x1, 0x71, 0x71,
+    0x0, 0x5, 0xb5, 0x93,
+    1,   2,   3,    4,
+    ];
+
+is_deeply PDF::Basic::Filter::Flate.post-prediction( $prediction,
+                                                     :Columns(4),
+                                                     :Predictor(12), ),
+    $post-prediction,
+    "PNG predictive filter sanity";
 
 my $sample-decoded = "  /TT3 1 Tf\n-0.0016 Tc 0.1771 Tw 0.46 0 Td\n[( )-1087(Desig)-5(n)1( s)-8(e)1(ssio)-5(n)1(s to i)-6(n)1(clu)-5(d)1(e)-5( i)-6(n)1(teractivit)-10(y )-7(an)-5(d inc)-8(l)1(u)-5(de v)-8(a)1(rie)-5(t)-10(y)12( of c)-8(onte)-5(n)1(t)-10( )]TJ\n-0.0017 Tc 0.0305 Tw 1.54 -1.333 Td\n[(and)-5( int)-10(e)1(ractio)-5(n)-5( in)-5( )-7(your)-9( sess)-8(io)-5(n.  Pr)]TJ\n-0.0006 Tc 0.0294 Tw 15.527 0 Td\n[(ov)-7(ide)-4( o)-4(p)2(p)-4(o)2(rtuniti)-5(es for )-7(p)-4(a)2(rticip)-4(ants to)-4( )]TJ\n-0.001 Tc 0.0032 Tw -15.527 -1.333 Td\n[(interact an)-5(d col)-5(l)1(ab)-5(orate )-13(w)15(i)1(th )-7(e)-5(a)2(ch other. )]TJ\nET\nEMC \n/P <</MCID 20 >>BDC \nBT\n/C2_0 1 Tf\n0 Tc 0 Tw 0 9 -9 0 150.8997 414 Tm\n<0083>Tj\n/TT3 1 Tf\n-0.0012 Tc 0.0034 Tw 0.46 0 Td\n[( )-1260(Practice befor)-8(e)-5( lead)-5(ing )-7(yo)-5(ur fi)-6(rst session)-12(!)10( )]TJ\nET\nEMC \n/P <</MCID 21 >>BDC \nBT\n/C2_0 1 Tf\n0 Tc 0 Tw 0 9 -9 0 165.9 414 Tm\n<0083>Tj\n/TT3 1 Tf\n-0.0009 Tc 0.0031 Tw 0.46 0 Td\n[( )-1260(Become fami)-5(li)-5(ar )-7(w)15(i)1(t)-10(h)2( the ses)-8(s)-1(ion co)-5(ntent. )]TJ\nET\nEMC \n/P <</MCID 22 >>BDC \nBT\n/C2_0 1 Tf\n0 Tc 0 Tw 0 9 -9 0 180.9003 414 Tm\n<0083>Tj\n/TT3 1 Tf\n-0.0018 Tc 0.3506 Tw 0.46 0 Td\n[( )-913(Open )7(W)-5(e)-6(b p)-6(ages, ap)-6(plic)-8(ati)-6(ons nee)]TJ\n0.344 Tw 18.487 0 Td\n[(de)-6(d f)-11(o)1(r a)-6(ppl)-6(icatio)-6(n)-6( shari)-6(n)1(g)-6( a)-6(nd )]TJ\n-0.001 Tc 0.0032 Tw -16.947 -1.333 Td\n[(screen ca)-5(pture)-5(s)-1( before sessi)-5(o)-5(n)2( beg)-5(ins. )]  ";
 
@@ -54,6 +78,25 @@ my $sample-encoded = [72, 137, 140, 84, 77, 111, 219, 48, 12, 189,
 
 is PDF::Basic::Filter::Flate.decode($sample-encoded), $sample-decoded,
     q{Flate decompression - larger sample};
+
+my $flate-enc = [104, 222, 98, 98, 100, 16, 96, 96, 98, 96,
+186, 10, 34, 20, 129, 4, 227, 2, 32, 193, 186, 22, 72, 48, 203, 131,
+8, 37, 16, 33, 13, 34, 50, 65, 74, 30, 128, 88, 203, 64, 196, 82, 16,
+119, 23, 144, 224, 206, 7, 18, 82, 7, 128, 4, 251, 121, 32, 97, 117,
+6, 72, 84, 1, 13, 96, 100, 72, 5, 178, 24, 24, 24, 169, 78, 252, 103,
+20, 123, 15, 16, 96, 0, 153, 243, 13, 60].chrs;
+
+my $flate-dec = [1, 0, 16, 0, 1, 2, 229, 0, 1, 4, 6, 0, 1, 5, 166, 0,
+1, 10, 83, 0, 1, 13, 114, 0, 1, 16, 148, 0, 1, 19, 175, 0, 1, 22, 24,
+0, 1, 24, 248, 0, 1, 27, 158, 0, 1, 30, 67, 0, 1, 32, 253, 0, 1, 43,
+108, 0, 1, 69, 44, 0, 1, 76, 251, 0, 1, 134, 199, 0, 1, 0, 116, 0, 2,
+0, 217, 0, 2, 0, 217, 1, 2, 0, 217, 2, 2, 0, 217, 3, 2, 0, 217, 4, 2,
+0, 217, 5, 2, 0, 217, 6, 2, 0, 217, 7, 2, 0, 217, 8, 2, 0, 217, 9, 2,
+0, 217, 10, 2, 0, 217, 11, 2, 0, 217, 12, 2, 0, 217, 13, 2, 0, 217,
+14, 2, 0, 217, 15, 2, 0, 217, 16, 2, 0, 217, 17, 1, 1, 239, 0].chrs;
+
+is PDF::Basic::Filter::Flate.decode($flate-enc, :dict{ :Predictor(12), :Columns(4) }),
+    $flate-dec, "Flate with PNG predictors";
 
 dies_ok { PDF::Basic::Filter::Flate.decode('This is not valid input') },
     q{Flate dies if invalid characters are passed to decode};

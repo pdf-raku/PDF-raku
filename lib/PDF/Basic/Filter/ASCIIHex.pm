@@ -1,15 +1,12 @@
 use v6;
 # based on Perl 5's PDF::API::Basic::PDF::Filter::ASCIIHexDecode
 
-use PDF::Basic::Filter;
-
-class PDF::Basic::Filter::ASCIIHex
-    is PDF::Basic::Filter;
+class PDF::Basic::Filter::ASCIIHex;
 
 # Maintainer's Note: ASCIIHexDecode is described in the PDF 1.7 spec
 # in section 7.4.2.
 
-method encode($input, Bool :$eod) {
+method encode(Str $input, Bool :$eod --> Str) {
 
     $input.subst(/(.)/, {
         my $ord = $0.ord;
@@ -20,7 +17,7 @@ method encode($input, Bool :$eod) {
 
 }
 
-method decode($input, Bool :$eod) {
+method decode(Str $input, Bool :$eod --> Str) {
 
     my $str = $input.subst(/\s/, '', :g);
 

@@ -1,9 +1,6 @@
 use v6;
 
-use PDF::Basic::Object;
-
-class PDF::Basic::Writer
-    is PDF::Basic::Object {
+class PDF::Basic::Writer {
 
     use PDF::Grammar;
 
@@ -37,8 +34,8 @@ class PDF::Basic::Writer
                     my $dict = do given $type { when 'stream' {$val<dict>} };
                     if $dict.defined && $dict<Type>.defined {
                         $dict = $.unbox( :$dict ) ;
-                        die "Can't yet handle cross reference streams (/Type /XRef)"
-                            if $obj<Type> eq 'XRef';
+                        warn "Can't yet handle cross reference streams (/Type /XRef)"
+                            if $dict<Type> eq 'XRef';
                     }
                 }
             }

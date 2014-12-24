@@ -3,9 +3,9 @@
 use Test;
 use JSON::Tiny;
 
-use PDF::Basic::Writer;
+use PDF::Basic;
 
-my $pdf-writer = PDF::Basic::Writer.new;
+my $pdf = PDF::Basic.new;
 
 for 't/write-ast.json'.IO.lines {
 
@@ -21,12 +21,12 @@ for 't/write-ast.json'.IO.lines {
         next;
     }
 
-    my $pdf = $pdf-writer.write( |%node );
-    is $pdf, $expected-pdf, "serialize {%node.keys}"
+    my $pdf-data = $pdf.write( |%node );
+    is $pdf-data, $expected-pdf, "serialize {%node.keys}"
         or diag {node => %node}.perl;
 
     if my $unboxed = $test<unboxed> {
-        my $perl = $pdf-writer.unbox( |%node );
+        my $perl = $pdf.unbox( |%node );
         is_deeply $perl, $unboxed, "unboxed {%node.keys}"
             or diag {node => %node}.perl;
     }
