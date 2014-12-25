@@ -1,7 +1,7 @@
 perl6-PDF-Basic
 ===============
 
-** Under Construction ** This module provides low-level PDF manipulation and construction primitives. It performs a similar role to Perl 5's PDF::API2::Basic::PDF (PDF::API2 distribution) or Text::PDF.
+** Under Construction ** This module provides low-level PDF reading, manipulation and construction primitives. It performs a similar role to Perl 5's PDF::API2::Basic::PDF (PDF::API2 distribution) or Text::PDF.
 
 ## PDF::Basic::File
 
@@ -28,8 +28,6 @@ is recommended to enforce this.
     say $data.chars;
     ```
 
-(future versions may also support buf8 input/output).
-
 ## PDF::Basic::Objind
 
 tba
@@ -55,7 +53,7 @@ PDF::Grammar::PDF.parse($pdf-content, :$actions)
     or die "unable to load pdf: $input-file";
 
 my $pdf-ast = $/.ast;
-$pdf-ast<comment> = "This PDF was brought to you by CSS::Basic::Writer!!";
+$pdf-ast<comment> = "This PDF was brought to you by CSS::Basic!!";
 
 my $pdf = PDF::Basic.new( :input($pdf-content) );
 $output-file.IO.spurt( $pdf.write( :pdf($pdf-ast) ), :enc<latin1> );

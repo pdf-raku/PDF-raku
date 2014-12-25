@@ -1,8 +1,15 @@
 use Test;
 
-plan 4;
+plan 9;
 
 use PDF::Basic::Filter::Flate;
+
+my $bytes = (10, 20, 30, 40, 50, 60).list.item;
+
+is_deeply PDF::Basic::Filter::Flate.sample($bytes, 4), (0, 10, 1, 4, 1, 14, 2, 8, 3, 2, 3, 12).list.item, '4 bit sample';
+is_deeply PDF::Basic::Filter::Flate.sample($bytes, 8), $bytes, '8 bit sample';
+is_deeply PDF::Basic::Filter::Flate.sample($bytes, 16), (2580, 7720, 12860).list.item, '16 bit sample';
+is_deeply PDF::Basic::Filter::Flate.sample($bytes, 6), (20, 2, 33, 56, 5, 4, 48, 60).list.item, '6 bit sample';
 
 my $prediction = buf8.new: [
     0x2, 0x1, 0x0, 0x10, 0x0,
@@ -13,7 +20,13 @@ my $prediction = buf8.new: [
     0,   1,   2,   3,    4,
     ];
 
-my $post-prediction = buf8.new: [
+my $tiff-post-prediction = buf8.new: [
+0x02,0x01,0x00, 0x10,0x00,0x02, 0x00,0x02,0xCD, 0x00,0x02,0x00,
+0x01,0x51,0x00, 0x01,0x00,0x01, 0x70,0x00,0x03, 0x00,0x05,0x7A,
+0x0,0x00,0x01,  0x02,0x03,0x04,
+    ];
+
+my $png-post-prediction = buf8.new: [
     0x1, 0x0, 0x10, 0x0,
     0x1, 0x2, 0xdd, 0x0,
     0x1, 0x3, 0x2e, 0x0,
@@ -24,8 +37,15 @@ my $post-prediction = buf8.new: [
 
 is_deeply PDF::Basic::Filter::Flate.post-prediction( $prediction,
                                                      :Columns(4),
+                                                     :Colors(3),
+                                                     :Predictor(1), ),
+    $tiff-post-prediction,
+    "PNG predictive filter sanity";
+
+is_deeply PDF::Basic::Filter::Flate.post-prediction( $prediction,
+                                                     :Columns(4),
                                                      :Predictor(12), ),
-    $post-prediction,
+    $png-post-prediction,
     "PNG predictive filter sanity";
 
 my $sample-decoded = "  /TT3 1 Tf\n-0.0016 Tc 0.1771 Tw 0.46 0 Td\n[( )-1087(Desig)-5(n)1( s)-8(e)1(ssio)-5(n)1(s to i)-6(n)1(clu)-5(d)1(e)-5( i)-6(n)1(teractivit)-10(y )-7(an)-5(d inc)-8(l)1(u)-5(de v)-8(a)1(rie)-5(t)-10(y)12( of c)-8(onte)-5(n)1(t)-10( )]TJ\n-0.0017 Tc 0.0305 Tw 1.54 -1.333 Td\n[(and)-5( int)-10(e)1(ractio)-5(n)-5( in)-5( )-7(your)-9( sess)-8(io)-5(n.  Pr)]TJ\n-0.0006 Tc 0.0294 Tw 15.527 0 Td\n[(ov)-7(ide)-4( o)-4(p)2(p)-4(o)2(rtuniti)-5(es for )-7(p)-4(a)2(rticip)-4(ants to)-4( )]TJ\n-0.001 Tc 0.0032 Tw -15.527 -1.333 Td\n[(interact an)-5(d col)-5(l)1(ab)-5(orate )-13(w)15(i)1(th )-7(e)-5(a)2(ch other. )]TJ\nET\nEMC \n/P <</MCID 20 >>BDC \nBT\n/C2_0 1 Tf\n0 Tc 0 Tw 0 9 -9 0 150.8997 414 Tm\n<0083>Tj\n/TT3 1 Tf\n-0.0012 Tc 0.0034 Tw 0.46 0 Td\n[( )-1260(Practice befor)-8(e)-5( lead)-5(ing )-7(yo)-5(ur fi)-6(rst session)-12(!)10( )]TJ\nET\nEMC \n/P <</MCID 21 >>BDC \nBT\n/C2_0 1 Tf\n0 Tc 0 Tw 0 9 -9 0 165.9 414 Tm\n<0083>Tj\n/TT3 1 Tf\n-0.0009 Tc 0.0031 Tw 0.46 0 Td\n[( )-1260(Become fami)-5(li)-5(ar )-7(w)15(i)1(t)-10(h)2( the ses)-8(s)-1(ion co)-5(ntent. )]TJ\nET\nEMC \n/P <</MCID 22 >>BDC \nBT\n/C2_0 1 Tf\n0 Tc 0 Tw 0 9 -9 0 180.9003 414 Tm\n<0083>Tj\n/TT3 1 Tf\n-0.0018 Tc 0.3506 Tw 0.46 0 Td\n[( )-913(Open )7(W)-5(e)-6(b p)-6(ages, ap)-6(plic)-8(ati)-6(ons nee)]TJ\n0.344 Tw 18.487 0 Td\n[(de)-6(d f)-11(o)1(r a)-6(ppl)-6(icatio)-6(n)-6( shari)-6(n)1(g)-6( a)-6(nd )]TJ\n-0.001 Tc 0.0032 Tw -16.947 -1.333 Td\n[(screen ca)-5(pture)-5(s)-1( before sessi)-5(o)-5(n)2( beg)-5(ins. )]  ";

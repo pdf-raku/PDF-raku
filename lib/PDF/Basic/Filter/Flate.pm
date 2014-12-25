@@ -23,10 +23,60 @@ multi method post-prediction(Buf $decoded,
     $decoded; # noop
 }
 
+multi method sample( $bytes, 4) { $bytes.map: { ($_ +> 4, $_ +& 15).flat } }
+multi method sample( $bytes, 8) { $bytes }
+multi method sample( $bytes, 16) {
+    $bytes.map: -> $hi, $lo {
+        $hi +< 8  + $lo;
+    } }
+multi method sample( $bytes, $bits) is default {
+    warn "unoptimised $bits bit sampling";
+    gather {
+        my $bit = 0;
+        my $sample = 0;
+
+        for $bytes.list {
+            my $byte = $_;
+
+            for (0 .. 7) {
+                $sample = $sample * 2  + $byte +& 1;
+                $byte +>= 1;
+
+                if ++$bit >= $bits {
+                    take $sample;
+                    $sample = 0;
+                    $bit = 0;
+                }
+            }
+        }
+
+        take $sample
+            if $bit;
+    }
+}
+
 multi method post-prediction(Buf $decoded, 
                              Int :$Predictor! where { $_ == 2}, #| predictor function
+                             Int :$Columns = 1,          #| number of samples per row
+                             Int :$Colors = 1,           #| number of colors per sample
+                             Int :$BitsPerComponent = 8, #| number of bits per color
     ) {
-    die "Flate/LZW TIFF predictive filters - NYI";
+    my $bit-mask = 2 ** $BitsPerComponent  -  1;
+    my @output;
+    my $idx = 0;
+    my $nums = $.sample( $decoded, $BitsPerComponent );
+
+    while $idx < +$nums {
+        my @pixels = 0 xx $Colors;
+
+        for 0 .. $Colors-1 {
+            @pixels[$_] = (@pixels[$_] + $nums[ $idx++ ]) +& $bit-mask;
+        }
+
+        @output.push: @pixels;
+    }
+
+    return buf8.new: @output;
 }
 
 multi method post-prediction(Buf $decoded,               #| input stream
@@ -44,9 +94,8 @@ multi method post-prediction(Buf $decoded,               #| input stream
     my $idx = 0;
     my @up = 0 xx $bytes-per-row;
 
-    loop {
+    while $idx < +$decoded {
         # PNG prediction can vary from row to row
-        last unless $idx < +$decoded;
         my $filter-byte = $decoded[$idx++];
         my @out;
 

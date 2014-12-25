@@ -28,10 +28,16 @@ class PDF::Basic
                         my ($type, $val) = .kv;
                         my $dict = do given $type { when 'stream' {$val<dict>} };
                         if $dict.defined && $dict<Type>.defined {
-                            if $dict<Type><name> eq 'XRef' {
-                                # attempt to locate document root
-                                warn "TBA cross reference streams (/Type /XRef)";
-                                $!root-obj //= $dict<Root>;
+                            given $dict<Type><name> {
+                                when 'XRef' {
+                                    warn "obj $obj-num $gen-num: TBA cross reference streams (/Type /$_)";
+                                    # locate document root
+                                    $!root-obj //= $dict<Root>;
+                                }
+                                when 'ObjStm' {
+                                    # these contain nested objects
+                                    warn "obj $obj-num $gen-num: TBA object streams (/Type /$_)";
+                                }
                             }
                         }
                     }
