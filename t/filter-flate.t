@@ -1,6 +1,6 @@
 use Test;
 
-plan 9;
+plan 10;
 
 use PDF::Basic::Filter::Flate;
 
@@ -21,9 +21,10 @@ my $prediction = buf8.new: [
     ];
 
 my $tiff-post-prediction = buf8.new: [
-0x02,0x01,0x00, 0x10,0x00,0x02, 0x00,0x02,0xCD, 0x00,0x02,0x00,
-0x01,0x51,0x00, 0x01,0x00,0x01, 0x70,0x00,0x03, 0x00,0x05,0x7A,
-0x0,0x00,0x01,  0x02,0x03,0x04,
+    0x02,0x01,0x00, 0x12,0x01,0x02, 0x12,0x03,0xCF,
+    0x12,0x05,0xCF, 0x13,0x56,0xCF, 0x14,0x56,0xD0,
+    0x84,0x56,0xD3, 0x84,0x5B,0x4D, 0x84,0x5B,0x4E,
+    0x86,0x5E,0x52,
     ];
 
 my $png-post-prediction = buf8.new: [
@@ -39,8 +40,15 @@ is_deeply PDF::Basic::Filter::Flate.post-prediction( $prediction,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(1), ),
+    $prediction,
+    "NOOP predictive filter sanity";
+
+is_deeply PDF::Basic::Filter::Flate.post-prediction( $prediction,
+                                                     :Columns(4),
+                                                     :Colors(3),
+                                                     :Predictor(2), ),
     $tiff-post-prediction,
-    "PNG predictive filter sanity";
+    "TIFF predictive filter sanity";
 
 is_deeply PDF::Basic::Filter::Flate.post-prediction( $prediction,
                                                      :Columns(4),

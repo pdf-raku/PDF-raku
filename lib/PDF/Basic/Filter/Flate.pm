@@ -55,6 +55,12 @@ multi method sample( $bytes, $bits) is default {
     }
 }
 
+multi method post-prediction(Buf $decoded,
+                             Int :$Predictor! where { $_ == 1}, #| predictor function 
+    ) {
+    $decoded;
+}
+
 multi method post-prediction(Buf $decoded, 
                              Int :$Predictor! where { $_ == 2}, #| predictor function
                              Int :$Columns = 1,          #| number of samples per row
@@ -65,9 +71,9 @@ multi method post-prediction(Buf $decoded,
     my @output;
     my $idx = 0;
     my $nums = $.sample( $decoded, $BitsPerComponent );
+    my @pixels = 0 xx $Colors;
 
     while $idx < +$nums {
-        my @pixels = 0 xx $Colors;
 
         for 0 .. $Colors-1 {
             @pixels[$_] = (@pixels[$_] + $nums[ $idx++ ]) +& $bit-mask;
