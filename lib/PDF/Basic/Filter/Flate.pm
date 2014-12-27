@@ -3,6 +3,8 @@ use v6;
 
 class PDF::Basic::Filter::Flate;
 
+use PDF::Basic::Util :resample;
+
 use Compress::Zlib;
 
 # Maintainer's Note: Flate is described in the PDF 1.7 spec in section 3.3.3.
@@ -17,50 +19,94 @@ method encode(Str $input) {
     compress( $input.encode('latin-1') ).decode('latin-1');
 }
 
+# post prediction functions as described in the PDF 1.7 spec, table 3.8
 multi method post-prediction(Buf $decoded, 
                              Int :$Predictor! where { $_ <= 1}, #| predictor function
     ) {
     $decoded; # noop
 }
 
-multi method sample( $bytes, 4) { $bytes.map: { ($_ +> 4, $_ +& 15).flat } }
-multi method sample( $bytes, 8) { $bytes }
-multi method sample( $bytes, 16) {
-    $bytes.map: -> $hi, $lo {
-        $hi +< 8  + $lo;
-    } }
-multi method sample( $bytes, $bits) is default {
-    warn "unoptimised $bits bit sampling";
-    gather {
-        my $bit = 0;
-        my $sample = 0;
+multi method prediction(Buf $decoded, 
+                        Int :$Predictor! where { $_ == 2}, #| predictor function
+                        Int :$Columns = 1,          #| number of samples per row
+                        Int :$Colors = 1,           #| number of colors per sample
+                        Int :$BitsPerComponent = 8, #| number of bits per color
+    ) {
+    my $bit-mask = 2 ** $BitsPerComponent  -  1;
+    my @output;
+    my $ptr = 0;
+    my $nums = resample( $decoded, 8, $BitsPerComponent );
 
-        for $bytes.list {
-            my $byte = $_;
-
-            for (0 .. 7) {
-                $sample = $sample * 2  + $byte +& 1;
-                $byte +>= 1;
-
-                if ++$bit >= $bits {
-                    take $sample;
-                    $sample = 0;
-                    $bit = 0;
-                }
+    while $ptr < +$nums {
+        for 1 .. $Columns -> $i {
+            for 1 .. $Colors {
+                my $prev-color = $i > 1 ?? $nums[ $ptr - $Colors] !! 0;
+                my $result = ($nums[ $ptr++ ] - $prev-color) +& $bit-mask;
+                @output.push: $result;
             }
         }
-
-        take $sample
-            if $bit;
     }
+
+    return buf8.new: resample( @output, $BitsPerComponent, 8);
 }
 
-multi method post-prediction(Buf $decoded,
-                             Int :$Predictor! where { $_ == 1}, #| predictor function 
+multi method prediction( Buf $encoded,
+                         Int :$Predictor! where { $_ >= 10 and $_ <= 15}, #| predictor function
+                         Int :$Columns = 1,          #| number of samples per row
+                         Int :$Colors = 1,           #| number of colors per sample
+                         Int :$BitsPerComponent = 8, #| number of bits per color
     ) {
-    $decoded;
+
+    my $bytes-per-col = ($Colors * $BitsPerComponent  +  7) div 8;
+    my $bytes-per-row = $bytes-per-col * $Columns;
+    my @output;
+
+    my $ptr = 0;
+    my $row = 0;
+
+    while $ptr < +$encoded {
+
+        $row++;
+        @output.push: 4; # Paeth indicator
+
+        for 1 .. $bytes-per-row -> $i {
+            my $left-byte = $i <= $bytes-per-col ?? 0 !! $encoded[$ptr - $bytes-per-col];
+            my $up-byte = $row > 1 ?? $encoded[$ptr - $bytes-per-row] !! 0;
+            my $up-left-byte = $row > 1 && $i > $bytes-per-col ?? $encoded[$ptr - $bytes-per-row -1] !! 0;
+
+            my $p = $left-byte + $up-byte - $up-left-byte;
+                    
+            my $pa = abs($p - $left-byte);
+            my $pb = abs($p - $up-byte);
+            my $pc = abs($p - $up-left-byte);
+            my $nearest;
+
+            if $pa <= $pb and $pa <= $pc {
+                $nearest = $left-byte;
+            }
+            elsif $pb <= $pc {
+                $nearest = $up-byte;
+            }
+            else {
+                $nearest = $up-left-byte
+            }
+
+            @output.push: ($encoded[$ptr++] - $nearest) % 256;
+        }
+    }
+    return buf8.new: @output;
 }
 
+# prediction filters, see PDF 1.7 sepc table 3.8
+multi method prediction( Buf $encoded,
+                         Int :$Predictor=1, #| predictor function
+    ) {
+    die "Uknown Flate/LZW predictor function: $Predictor"
+        unless $Predictor == 1;
+    $encoded;
+}
+
+# prediction filters, see PDF 1.7 sepc table 3.8
 multi method post-prediction(Buf $decoded, 
                              Int :$Predictor! where { $_ == 2}, #| predictor function
                              Int :$Columns = 1,          #| number of samples per row
@@ -69,20 +115,24 @@ multi method post-prediction(Buf $decoded,
     ) {
     my $bit-mask = 2 ** $BitsPerComponent  -  1;
     my @output;
-    my $idx = 0;
-    my $nums = $.sample( $decoded, $BitsPerComponent );
-    my @pixels = 0 xx $Colors;
+    my $ptr = 0;
+    my $nums = resample( $decoded, 8, $BitsPerComponent );
 
-    while $idx < +$nums {
+    while $ptr < +$nums {
 
-        for 0 .. $Colors-1 {
-            @pixels[$_] = (@pixels[$_] + $nums[ $idx++ ]) +& $bit-mask;
+        my @pixels = 0 xx $Colors;
+
+        for 1  .. $Columns {
+
+            for 0 .. $Colors-1 {
+                @pixels[$_] = (@pixels[$_] + $nums[ $ptr++ ]) +& $bit-mask;
+            }
+
+            @output.push: @pixels;
         }
-
-        @output.push: @pixels;
     }
 
-    return buf8.new: @output;
+    return buf8.new: resample( @output, $BitsPerComponent, 8);
 }
 
 multi method post-prediction(Buf $decoded,               #| input stream
@@ -92,49 +142,48 @@ multi method post-prediction(Buf $decoded,               #| input stream
                              Int :$BitsPerComponent = 8, #| number of bits per color
     ) {
 
-
-    my $bytes-per-col = floor(($Colors * $BitsPerComponent  +  7) / 8);
+    my $bytes-per-col = ($Colors * $BitsPerComponent  +  7) div 8;
     my $bytes-per-row = $bytes-per-col * $Columns;
     my @output;
 
-    my $idx = 0;
+    my $ptr = 0;
     my @up = 0 xx $bytes-per-row;
 
-    while $idx < +$decoded {
+    while $ptr < +$decoded {
         # PNG prediction can vary from row to row
-        my $filter-byte = $decoded[$idx++];
+        my $filter-byte = $decoded[$ptr++];
         my @out;
 
         given $filter-byte {
             when 0 {
                 # None
-                @out.push: $decoded[$idx++]
+                @out.push: $decoded[$ptr++]
                     for 1 .. $bytes-per-row;
             }
             when 1 {
-                # Sub - 11
+                # Sub - 1
                 for 1 .. $bytes-per-row -> $i {
                     my $left-byte = $i <= $bytes-per-col ?? 0 !! @out[* - $bytes-per-col];
-                    @out.push: ($decoded[$idx++] + $left-byte) % 256;
+                    @out.push: ($decoded[$ptr++] + $left-byte) % 256;
                 }
             }
             when 2 {
-                # Up - 12
+                # Up - 2
                 for 1 .. $bytes-per-row {
                     my $up-byte = @up[ +@out ];
-                    @out.push: ($decoded[$idx++] + $up-byte) % 256;
+                    @out.push: ($decoded[$ptr++] + $up-byte) % 256;
                 }
             }
             when  3 {
-                # Average - 13
+                # Average - 3
                 for 1 .. $bytes-per-row -> $i {
                     my $left-byte = $i <= $bytes-per-col ?? 0 !! @out[* - $bytes-per-col];
                     my $up-byte = @up[ +@out ];
-                    @out.push: ($decoded[$idx++] + floor( ($left-byte + $up-byte)/2 )) % 256;
+                    @out.push: ($decoded[$ptr++] + ( ($left-byte + $up-byte) div 2 )) % 256;
                 }
             }
             when 4 {
-                # Paeth - 14
+                # Paeth - 4
                 for 1 .. $bytes-per-row -> $i {
                     my $left-byte = $i <= $bytes-per-col ?? 0 !! @out[* - $bytes-per-col];
                     my $up-byte = @up[ +@out ];
@@ -156,7 +205,7 @@ multi method post-prediction(Buf $decoded,               #| input stream
                         $nearest = $up-left-byte
                     }
 
-                    @out.push: ($decoded[$idx++] + $nearest) % 256;
+                    @out.push: ($decoded[$ptr++] + $nearest) % 256;
                 }
             }
             default {
@@ -170,10 +219,12 @@ multi method post-prediction(Buf $decoded,               #| input stream
     return buf8.new: @output;
 }
 
-multi method post-prediction(Buf $decoded, 
-                             Int :$Predictor
+multi method post-prediction(Buf $decoded,
+                             Int :$Predictor=1, #| predictor function 
     ) {
-    die "Uknown Flate/LZW predictor function: $Predictor";
+    die "Uknown Flate/LZW predictor function: $Predictor"
+        unless $Predictor == 1;
+    $decoded;
 }
 
 method decode(Str $input, Hash :$dict = {} --> Str) {
