@@ -137,7 +137,7 @@ my $flate-dec = [1, 0, 16, 0, 1, 2, 229, 0, 1, 4, 6, 0, 1, 5, 166, 0,
 0, 217, 10, 2, 0, 217, 11, 2, 0, 217, 12, 2, 0, 217, 13, 2, 0, 217,
 14, 2, 0, 217, 15, 2, 0, 217, 16, 2, 0, 217, 17, 1, 1, 239, 0].chrs;
 
-is PDF::Basic::Filter::Flate.decode($flate-enc, :dict{ :Predictor(12), :Columns(4) }),
+is PDF::Basic::Filter::Flate.decode($flate-enc, :Predictor(12), :Columns(4)),
     $flate-dec, "Flate with PNG predictors";
 
 dies_ok { PDF::Basic::Filter::Flate.decode('This is not valid input') },

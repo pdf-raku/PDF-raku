@@ -10,13 +10,18 @@ use Compress::Zlib;
 # Maintainer's Note: Flate is described in the PDF 1.7 spec in section 3.3.3.
 # See also http://www.libpng.org/pub/png/book/chapter09.html - PNG predictors
 
-method encode(Str $input) {
+method encode(Str $input, *%params) {
 
     if $input ~~ m{(<-[\x0 .. \xFF]>)} {
         die 'illegal wide byte: U+' ~ $0.ord.base(16)
     }
 
-    compress( $input.encode('latin-1') ).decode('latin-1');
+    my $buf = $input.encode('latin-1');
+
+    $buf = $.prediction( $buf, |%params )
+        if %params.keys;
+
+    compress( $buf ).decode('latin-1');
 }
 
 # post prediction functions as described in the PDF 1.7 spec, table 3.8
@@ -227,14 +232,12 @@ multi method post-prediction(Buf $decoded,
     $decoded;
 }
 
-method decode(Str $input, Hash :$dict = {} --> Str) {
+method decode(Str $input, Hash *%params --> Str) {
 
     my $buf = uncompress( $input.encode('latin-1') );
 
-    my $decode-params = $dict<DecodeParams> // $dict;
-
-    $buf = $.post-prediction( $buf, |%$decode-params )
-        if $dict<Predictor>.defined;
+    $buf = $.post-prediction( $buf, |%params )
+        if %params.keys;
 
     $buf.decode('latin-1');
 }

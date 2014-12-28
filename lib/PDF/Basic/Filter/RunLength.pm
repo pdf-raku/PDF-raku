@@ -35,7 +35,7 @@ method encode(Str $input, Bool :$eod --> Str) {
 
     @chunks.push: [128] if $eod;
 
-    my $buf = Buf.new: [ @chunks.map: { @$_ } ];
+    my $buf = buf8.new: [ @chunks.map: { @$_ } ];
     return $buf.decode('latin1');
 }
 
