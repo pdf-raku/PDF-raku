@@ -19,19 +19,19 @@ method encode(Str $input, *%params) {
     my $buf = $input.encode('latin-1');
 
     $buf = $.prediction( $buf, |%params )
-        if %params.keys;
+        if %params<Predictor>:exists;
 
     compress( $buf ).decode('latin-1');
 }
 
 # post prediction functions as described in the PDF 1.7 spec, table 3.8
-multi method post-prediction(Buf $decoded, 
+multi method post-prediction($decoded, 
                              Int :$Predictor! where { $_ <= 1}, #| predictor function
     ) {
     $decoded; # noop
 }
 
-multi method prediction(Buf $decoded, 
+multi method prediction($decoded, 
                         Int :$Predictor! where { $_ == 2}, #| predictor function
                         Int :$Columns = 1,          #| number of samples per row
                         Int :$Colors = 1,           #| number of colors per sample
@@ -55,7 +55,7 @@ multi method prediction(Buf $decoded,
     return buf8.new: resample( @output, $BitsPerComponent, 8);
 }
 
-multi method prediction( Buf $encoded,
+multi method prediction($encoded,
                          Int :$Predictor! where { $_ >= 10 and $_ <= 15}, #| predictor function
                          Int :$Columns = 1,          #| number of samples per row
                          Int :$Colors = 1,           #| number of colors per sample
@@ -103,7 +103,7 @@ multi method prediction( Buf $encoded,
 }
 
 # prediction filters, see PDF 1.7 sepc table 3.8
-multi method prediction( Buf $encoded,
+multi method prediction( $encoded,
                          Int :$Predictor=1, #| predictor function
     ) {
     die "Uknown Flate/LZW predictor function: $Predictor"
@@ -112,7 +112,7 @@ multi method prediction( Buf $encoded,
 }
 
 # prediction filters, see PDF 1.7 sepc table 3.8
-multi method post-prediction(Buf $decoded, 
+multi method post-prediction($decoded, 
                              Int :$Predictor! where { $_ == 2}, #| predictor function
                              Int :$Columns = 1,          #| number of samples per row
                              Int :$Colors = 1,           #| number of colors per sample
@@ -140,7 +140,7 @@ multi method post-prediction(Buf $decoded,
     return buf8.new: resample( @output, $BitsPerComponent, 8);
 }
 
-multi method post-prediction(Buf $decoded,               #| input stream
+multi method post-prediction($decoded,               #| input stream
                              Int :$Predictor! where { $_ >= 10 and $_ <= 15}, #| predictor function
                              Int :$Columns = 1,          #| number of samples per row
                              Int :$Colors = 1,           #| number of colors per sample
@@ -224,7 +224,7 @@ multi method post-prediction(Buf $decoded,               #| input stream
     return buf8.new: @output;
 }
 
-multi method post-prediction(Buf $decoded,
+multi method post-prediction($decoded,
                              Int :$Predictor=1, #| predictor function 
     ) {
     die "Uknown Flate/LZW predictor function: $Predictor"
@@ -237,7 +237,7 @@ method decode(Str $input, Hash *%params --> Str) {
     my $buf = uncompress( $input.encode('latin-1') );
 
     $buf = $.post-prediction( $buf, |%params )
-        if %params.keys;
+        if %params<Predictor>:exists;
 
     $buf.decode('latin-1');
 }

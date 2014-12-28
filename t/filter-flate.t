@@ -1,7 +1,8 @@
 use Test;
 
-plan 9;
+plan 10;
 
+use PDF::Basic::Filter;
 use PDF::Basic::Filter::Flate;
 
 my $prediction-in = buf8.new: [
@@ -137,8 +138,15 @@ my $flate-dec = [1, 0, 16, 0, 1, 2, 229, 0, 1, 4, 6, 0, 1, 5, 166, 0,
 0, 217, 10, 2, 0, 217, 11, 2, 0, 217, 12, 2, 0, 217, 13, 2, 0, 217,
 14, 2, 0, 217, 15, 2, 0, 217, 16, 2, 0, 217, 17, 1, 1, 239, 0].chrs;
 
-is PDF::Basic::Filter::Flate.decode($flate-enc, :Predictor(12), :Columns(4)),
-    $flate-dec, "Flate with PNG predictors";
+my %dict = :Filter<FlateDecode>, :DecodeParams{ :Predictor(12), :Columns(4) };
 
-dies_ok { PDF::Basic::Filter::Flate.decode('This is not valid input') },
+is my $result=PDF::Basic::Filter.decode($flate-enc, :%dict),
+    $flate-dec, "Flate with PNG predictors - decode";
+
+my $re-encoded = PDF::Basic::Filter.encode($result, :%dict);
+
+is PDF::Basic::Filter.decode($re-encoded, :%dict),
+    $flate-dec, "Flate with PNG predictors - encode/decode round-trip";
+
+dies_ok { PDF::Basic::Filter.decode('This is not valid input', :%dict) },
     q{Flate dies if invalid characters are passed to decode};

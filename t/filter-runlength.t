@@ -1,8 +1,9 @@
 use Test;
 # this test based on PDF-API2/t/filter-runlengthdecode.t
-plan 5;
+plan 7;
 
 use PDF::Basic::Filter::RunLength;
+use PDF::Basic::Filter;
 
 my $in = '--- Look at this test string. ---';
 my $out = "\x[fe]-\x01 L\xffo\x16k at this test string. \xfe-";
@@ -18,6 +19,16 @@ is_deeply $filter.decode($out),
 
 dies_ok { $filter.decode($out, :eod) },
     q{RunLength missing EOD marker is handled correctly};
+
+my %dict = :Filter<RunLengthDecode>;
+
+is(PDF::Basic::Filter.decode($out, :%dict),
+   $in,
+   q{ASCIIHex test string is decoded correctly});
+
+is(PDF::Basic::Filter.encode($in, :%dict),
+   $out,
+   q{ASCIIHex test string is encoded correctly});
 
 # Add the end-of-document marker
 $out ~= "\x80";

@@ -33,7 +33,7 @@ class PDF::Basic::Filter {
 
     multi method decode( $input, Hash :$dict! ) {
         my %params = %( $dict<DecodeParams> )
-            if $dict<FilterParams>; 
+            if $dict<DecodeParams>:exists; 
         $.filter-class( $dict<Filter> ).decode( $input, |%params);
     }
 
@@ -59,7 +59,7 @@ class PDF::Basic::Filter {
 
     multi method encode( $input, Hash :$dict! ) {
         my %params = %( $dict<DecodeParams> )
-            if $dict<FilterParams>; 
+            if $dict<DecodeParams>:exists;
         $.filter-class( $dict<Filter> ).encode( $input, |%params);
     }
 
