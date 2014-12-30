@@ -29,7 +29,7 @@ multi method unbox( Array :$ind-ref! ) {
     my $gen-num = $ind-ref[1].Int;
 
     my $ind-obj = %.ind-obj-idx{$obj-num}{$gen-num}
-    // return;
+        // die "unresolved object reference: $obj-num $gen-num R";
 
     $.unbox( |%$ind-obj );
 }

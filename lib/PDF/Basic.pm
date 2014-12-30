@@ -13,6 +13,25 @@ class PDF::Basic
     has Hash %.ind-obj-idx;
     has $.root-obj is rw;
 
+    #| retrieves raw stream data from the input object
+    multi method stream-data( Array :$ind-obj! ) {
+        $ind-obj[2..*].grep({ .key eq 'stream'}).map: { $.stream-data( |%$_ ) };
+    }
+    multi method stream-data( Hash :$stream! ) {
+        my $start = $stream<start>;
+        my $end = $stream<end>;
+        my $length = $end - $start + 1;
+        $.input.substr($start - 1, $length - 1 );
+    }
+    multi method stream-data( *@args, *%opts ) is default {
+
+        die "unexpected arguments: {[@args].perl}"
+            if @args;
+        
+        die "unable to handle {%opts.keys} struct: {%opts.perl}"
+    }
+
+
     submethod BUILD(Hash :$ast, Str :$!input) {
 
         if $ast.defined {

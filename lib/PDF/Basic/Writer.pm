@@ -169,16 +169,13 @@ class PDF::Basic::Writer {
 
     multi method write( Hash :$stream! ) {
 
-        my $start = $stream<start>;
-        my $end = $stream<end>;
-
-        my $length = $end - $start + 1;
-        my %dict = %( $stream<dict> // { } );
-        %dict<Length> //= :int($length);
+        my %dict = %( $stream<dict> );
+        my $data = $.stream-data( :$stream ),
+        %dict<Length> //= :int($data.chars);
 
         ($.write( :%dict ),
          "stream",
-         $.input.substr($start - 1, $length - 1 ),
+         $data,
          "endstream",
         ).join: "\n";
     }
