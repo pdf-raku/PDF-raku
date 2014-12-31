@@ -88,12 +88,12 @@ my $dict = $pdf.unbox( |%$ast );
 my $raw-content = $pdf.stream-data( |%$ast )[0];
 my $content;
 
-lives_ok { $content = PDF::Basic::Filter.decode( $raw-content, :$dict ) }, 'content decode - lives';
+lives_ok { $content = PDF::Basic::Filter.decode( $raw-content, :$dict ) }, 'basic content decode - lives';
 
 my $content-expected = "16 0 17 141 <</BaseFont/CourierNewPSMT/Encoding/WinAnsiEncoding/FirstChar 111/FontDescriptor 15 0 R/LastChar 111/Subtype/TrueType/Type/Font/Widths[600]>><</BaseFont/TimesNewRomanPSMT/Encoding/WinAnsiEncoding/FirstChar 32/FontDescriptor 14 0 R/LastChar 32/Subtype/TrueType/Type/Font/Widths[250]>>";
 
 is $content, $content-expected,
-    q{Flate decompression - larger sample};
+    q{basic Flate decompression};
 
 my $flate-enc = [104, 222, 98, 98, 100, 16, 96, 96, 98, 96,
 186, 10, 34, 20, 129, 4, 227, 2, 32, 193, 186, 22, 72, 48, 203, 131,
@@ -111,7 +111,7 @@ my $flate-dec = [1, 0, 16, 0, 1, 2, 229, 0, 1, 4, 6, 0, 1, 5, 166, 0,
 0, 217, 10, 2, 0, 217, 11, 2, 0, 217, 12, 2, 0, 217, 13, 2, 0, 217,
 14, 2, 0, 217, 15, 2, 0, 217, 16, 2, 0, 217, 17, 1, 1, 239, 0].chrs;
 
-my %dict = :Filter<FlateDecode>, :DecodeParams{ :Predictor(12), :Columns(4) };
+my %dict = :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) };
 
 is my $result=PDF::Basic::Filter.decode($flate-enc, :%dict),
     $flate-dec, "Flate with PNG predictors - decode";

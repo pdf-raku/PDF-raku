@@ -14,16 +14,16 @@ class PDF::Basic::Filter {
     # object may have an array of filters PDF 1.7 spec Table 3.4 
     multi method decode( $data is copy, Hash :$dict! where .<Filter>.isa(List) ) {
 
-        if $dict<DecodeParams>:exists {
-            die "Filter array {.<Filter>} does not have a corresponding DecodeParams array"
-                if $dict<DecodeParams>:exists
-                && (!$dict<DecodeParams>.isa(List) || +$dict<Filter> != +$dict<DecodeParams>);
+        if $dict<DecodeParms>:exists {
+            die "Filter array {.<Filter>} does not have a corresponding DecodeParms array"
+                if $dict<DecodeParms>:exists
+                && (!$dict<DecodeParms>.isa(List) || +$dict<Filter> != +$dict<DecodeParms>);
         }
 
         for $dict<Filter>.keys -> $i {
             my %dict = Filter => $dict<Filter>[$i];
-            %dict<DecodeParams> = %( $dict<DecodeParams>[$i] )
-                if $dict<DecodeParams>:exists;
+            %dict<DecodeParms> = %( $dict<DecodeParms>[$i] )
+                if $dict<DecodeParms>:exists;
 
             $data = $.decode( $data, :%dict )
         }
@@ -32,24 +32,24 @@ class PDF::Basic::Filter {
     }
 
     multi method decode( $input, Hash :$dict! ) {
-        my %params = %( $dict<DecodeParams> )
-            if $dict<DecodeParams>:exists; 
+        my %params = %( $dict<DecodeParms> )
+            if $dict<DecodeParms>:exists; 
         $.filter-class( $dict<Filter> ).decode( $input, |%params);
     }
 
     # object may have an array of filters PDF 1.7 spec Table 3.4 
     multi method encode( $data is copy, Hash :$dict! where .<Filter>.isa(List) ) {
 
-        if $dict<DecodeParams>:exists {
-            die "Filter array {.<Filter>} does not have a corresponding DecodeParams array"
-                if $dict<DecodeParams>:exists
-                && (!$dict<DecodeParams>.isa(List) || +$dict<Filter> != +$dict<DecodeParams>);
+        if $dict<DecodeParms>:exists {
+            die "Filter array {.<Filter>} does not have a corresponding DecodeParms array"
+                if $dict<DecodeParms>:exists
+                && (!$dict<DecodeParms>.isa(List) || +$dict<Filter> != +$dict<DecodeParms>);
         }
 
         for $dict<Filter>.keys.reverse -> $i {
             my %dict = Filter => $dict<Filter>[$i];
-            %dict<DecodeParams> = %( $dict<DecodeParams>[$i] )
-                if $dict<DecodeParams>:exists;
+            %dict<DecodeParms> = %( $dict<DecodeParms>[$i] )
+                if $dict<DecodeParms>:exists;
 
             $data = $.encode( $data, :%dict )
         }
@@ -58,8 +58,8 @@ class PDF::Basic::Filter {
     }
 
     multi method encode( $input, Hash :$dict! ) {
-        my %params = %( $dict<DecodeParams> )
-            if $dict<DecodeParams>:exists;
+        my %params = %( $dict<DecodeParms> )
+            if $dict<DecodeParms>:exists;
         $.filter-class( $dict<Filter> ).encode( $input, |%params);
     }
 

@@ -10,9 +10,9 @@ multi sub resample( $nums, 8, 16) {
     $nums.list.map: -> $hi, $lo {
         $hi +< 8  + $lo;
     } }
-multi sub resample( $nums, 16, 8) { $nums.list.map: { ($_ +> 8, $_ +& 255).flat } }
-multi sub resample( $nums, $n, $m where $_ == $n) { $nums }
-multi sub resample( $nums, $n, $m) is default {
+multi sub resample( $nums!, 16, 8) { $nums.list.map: { ($_ +> 8, $_ +& 255).flat } }
+multi sub resample( $nums!, $n!, $m where $_ == $n) { $nums }
+multi sub resample( $nums!, $n!, $m!) is default {
     warn "unoptimised $n => $m bit sampling";
     gather {
         my $m0 = 1;
@@ -42,5 +42,37 @@ multi sub resample( $nums, $n, $m) is default {
         }
 
         take $sample if $m0 > 1;
+    }
+}
+#| variable resampling, e.g. to decode/encode:
+#|   obj 123 0 << /Type /XRef /W [1, 3, 1]
+multi sub resample( $nums!, 8, Array $W!)  {
+    my $j = 0;
+    my @samples;
+    while $j < +$nums {
+        my @sample = $W.keys.map: -> $i {
+            my $s = 0;
+            for 1 .. $W[$i] {
+                $s *= 256;
+                $s += $nums[$j++];
+            }
+            $s;
+        }
+        @samples.push: @sample.item;
+    }
+    @samples;
+}
+
+multi sub resample( $num-sets, Array $W!, 8)  {
+    $num-sets.list.map: -> $nums {
+        my $i = 0;
+        $nums.list.map: -> $num is copy {
+            my @bytes;
+            for 1..$W[$i++] {
+                @bytes.unshift: $num +& 255;
+                $num div= 256;
+            }
+            @bytes;
+        }
     }
 }

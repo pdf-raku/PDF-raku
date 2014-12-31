@@ -2,6 +2,7 @@ use v6;
 
 use PDF::Basic::Filter;
 
+#| Stream - base class for specific indirect objects, e.g. ObjStm, XRef, ...
 class PDF::Basic::IndObj::Stream {
 
     has %.dict;
@@ -24,8 +25,8 @@ class PDF::Basic::IndObj::Stream {
         %.dict<Filter>;
     }
 
-    method DecodeParams is rw {
-        %.dict<DecodeParams>;
+    method DecodeParms is rw {
+        %.dict<DecodeParms>;
     }
 
     method Type is rw {
