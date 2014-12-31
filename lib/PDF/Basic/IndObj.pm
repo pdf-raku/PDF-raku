@@ -7,8 +7,9 @@ use PDF::Basic::IndObj::ObjStm;
 use PDF::Basic::IndObj::Stream;
 use PDF::Basic::IndObj::XRef;
 
-method indobj-new( Hash :$dict ) {
-    $.indobj-class( :$dict ).new( :$dict );
+method indobj-new( *%params ) {
+    my $dict = %params<dict>;
+    $.indobj-class( :$dict ).new( |%params );
 }
 
 method indobj-class( Hash :$dict! ) {

@@ -31,7 +31,6 @@ class PDF::Basic
         die "unable to handle {%opts.keys} struct: {%opts.perl}"
     }
 
-
     submethod BUILD(Hash :$ast, Str :$!input) {
 
         if $ast.defined {
@@ -49,9 +48,14 @@ class PDF::Basic
                         if $dict.defined && $dict<Type>.defined {
                             given $dict<Type><name> {
                                 when 'XRef' {
+                                    use PDF::Basic::IndObj::XRef;
                                     warn "obj $obj-num $gen-num: TBA cross reference streams (/Type /$_)";
                                     # locate document root
                                     $!root-obj //= $dict<Root>;
+                                    my %params = %( PDF::Basic::Unbox.unbox( :$ind-obj ) );
+                                    my $xref-obj = PDF::Basic::IndObj::XRef.new( |%params, :$!input );
+                                    my $xref = $xref-obj.decode;
+                                    warn :$xref.perl;
                                 }
                                 when 'ObjStm' {
                                     # these contain nested objects

@@ -6,7 +6,7 @@ use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Basic;
 
-sub MAIN ($input-file, $output-file) {
+sub MAIN (Str $input-file, Str $output-file) {
 
     my $actions = PDF::Grammar::PDF::Actions.new;
     note "loading {$input-file}...";

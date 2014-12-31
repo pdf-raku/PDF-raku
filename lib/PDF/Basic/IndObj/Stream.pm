@@ -5,9 +5,17 @@ use PDF::Basic::Filter;
 #| Stream - base class for specific indirect objects, e.g. ObjStm, XRef, ...
 class PDF::Basic::IndObj::Stream {
 
-    has %.dict;
+    has $.dict;
     has $.encoded;
     has $.decoded;
+
+    multi submethod BUILD( :$!dict!, :$start!, :$end!, :$input!) {
+        my $length = $end - $start + 1;
+        $!encoded = $input.substr($start - 1, $length - 1 );
+    }
+
+    multi submethod BUILD( :$!dict!, :$!decoded, :$!encoded ) {
+    }
 
     method encoded {
         $!encoded //= $.encode( $!decoded )
@@ -33,11 +41,11 @@ class PDF::Basic::IndObj::Stream {
         %.dict<Type>;
     }
 
-    method decode( $input ) {
-        PDF::Basic::Filter.decode( $input, :$.dict );
+    method decode( $encoded = $.encoded ) {
+        PDF::Basic::Filter.decode( $encoded, :$.dict );
     }
 
-    method encode( $input ) {
-        PDF::Basic::Filter.encode( $input, :$.dict );
+    method encode( $decoded = $.decoded) {
+        PDF::Basic::Filter.encode( $decoded, :$.dict );
     }
 }

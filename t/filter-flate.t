@@ -84,7 +84,7 @@ my $ast = $/.ast;
 
 my $pdf = PDF::Basic.new( :$input );
 
-my $dict = $pdf.unbox( |%$ast );
+my $dict = $pdf.unbox( |%$ast )<dict>;
 my $raw-content = $pdf.stream-data( |%$ast )[0];
 my $content;
 
@@ -92,7 +92,7 @@ lives_ok { $content = PDF::Basic::Filter.decode( $raw-content, :$dict ) }, 'basi
 
 my $content-expected = "16 0 17 141 <</BaseFont/CourierNewPSMT/Encoding/WinAnsiEncoding/FirstChar 111/FontDescriptor 15 0 R/LastChar 111/Subtype/TrueType/Type/Font/Widths[600]>><</BaseFont/TimesNewRomanPSMT/Encoding/WinAnsiEncoding/FirstChar 32/FontDescriptor 14 0 R/LastChar 32/Subtype/TrueType/Type/Font/Widths[250]>>";
 
-is $content, $content-expected,
+is_deeply $content, $content-expected,
     q{basic Flate decompression};
 
 my $flate-enc = [104, 222, 98, 98, 100, 16, 96, 96, 98, 96,
@@ -113,12 +113,12 @@ my $flate-dec = [1, 0, 16, 0, 1, 2, 229, 0, 1, 4, 6, 0, 1, 5, 166, 0,
 
 my %dict = :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) };
 
-is my $result=PDF::Basic::Filter.decode($flate-enc, :%dict),
+is_deeply my $result=PDF::Basic::Filter.decode($flate-enc, :%dict),
     $flate-dec, "Flate with PNG predictors - decode";
 
 my $re-encoded = PDF::Basic::Filter.encode($result, :%dict);
 
-is PDF::Basic::Filter.decode($re-encoded, :%dict),
+is_deeply PDF::Basic::Filter.decode($re-encoded, :%dict),
     $flate-dec, "Flate with PNG predictors - encode/decode round-trip";
 
 dies_ok { PDF::Basic::Filter.decode('This is not valid input', :%dict) },

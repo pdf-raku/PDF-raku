@@ -24,6 +24,8 @@ multi method unbox( Str :$hex-string! ) { $hex-string }
 
 multi method unbox( Array :$ind-ref! ) {
 
+    # can dereference if we're not a class
+    return unless $.defined;
     # dereference
     my $obj-num = $ind-ref[0].Int;
     my $gen-num = $ind-ref[1].Int;
@@ -52,8 +54,10 @@ multi method unbox( Numeric :$real! ) { $real }
 
 multi method unbox( Hash :$stream! ) {
     my $dict = $stream<dict>;
-    # ignore stream body
-    $.unbox( :$dict );
+    my %stream = (dict => $.unbox( :$dict ),
+                  start => $stream<start>,
+                  end => $stream<end>,
+        );
 }
 
 multi method unbox( *@args, *%opts ) is default {
