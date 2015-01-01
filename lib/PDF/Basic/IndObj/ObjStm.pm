@@ -11,6 +11,14 @@ use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Basic::Writer;
 
+method First is rw {
+    %.dict<First>;
+}
+
+method N is rw {
+    %.dict<N>;
+}
+
 method encode($objstm = $.decoded --> Str) {
     my @idx;
     my $objects-str = '';
@@ -24,18 +32,18 @@ method encode($objstm = $.decoded --> Str) {
         $objects-str ~= PDF::Basic::Writer.write-obj( $object );
     }
     my $idx-str = @idx.join: ' ';
-    $.dict<Type> = 'ObjStm';
-    $.dict<First> = $idx-str.chars + 1;
-    $.dict<N> = +$objstm;
+    $.Type = 'ObjStm';
+    $.First = $idx-str.chars + 1;
+    $.N = +$objstm;
     
     nextwith( [~] $idx-str, ' ', $objects-str );
 }
 
 method decode($? --> Array) {
     my $chars = callsame;
-    my $first = $.dict<First>
+    my $first = $.First
         // die "missing mandatory /ObjStm param: /First";
-    my $n = $.dict<N>
+    my $n = $.N
         // die "missing mandatory /ObjStm param: /N";
 
     my $object-index-str = substr($chars, 0, $first - 1);
@@ -44,7 +52,7 @@ method decode($? --> Array) {
     my $actions = PDF::Grammar::PDF::Actions.new;
     PDF::Grammar::PDF.parse($object-index-str, :rule<object-stream-index>, :$actions)
         // die "unable to parse object stream index: $object-index-str";
-    my $object-index = @( $/.ast );
+    my $object-index = $/.ast;
     [ $object-index.keys.map: -> $i {
         my $obj-num = $object-index[$i][0].Int;
         my $start = $object-index[$i][1];

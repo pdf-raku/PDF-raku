@@ -7,18 +7,21 @@ use PDF::Basic::IndObj::Stream;
 class PDF::Basic::IndObj::XRef
     is PDF::Basic::IndObj::Stream;
 
+method W is rw {
+    %.dict<W>;
+}
+
 use PDF::Basic::Util :resample;
 
 method encode($xref = $.decoded --> Str) {
-    my $W = $.dict<W>
-        // die "missing mandatory /XRef param: /W";
-    my $str = resample( $xref, $W, 8 ).chrs;
+    $.W //= [1, 2, 1]; 
+    my $str = resample( $xref, $.W, 8 ).chrs;
     nextwith( $str );
 }
 
 method decode($? --> Array) {
     my $chars = callsame;
-    my $W = $.dict<W>
+    my $W = $.W
         // die "missing mandatory /XRef param: /W";
     resample( $chars.encode('latin-1'), 8, $W );
 }
