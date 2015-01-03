@@ -1,13 +1,37 @@
 use v6;
 
 use PDF::Basic::Filter;
+use PDF::Basic::IndObj ;
 
 #| Stream - base class for specific indirect objects, e.g. ObjStm, XRef, ...
-class PDF::Basic::IndObj::Stream {
+our class PDF::Basic::IndObj::Stream
+    is PDF::Basic::IndObj {
 
     has $.dict;
     has $.encoded;
     has $.decoded;
+
+    method indobj-new( *%params ) {
+        my $dict = %params<dict>;
+        $.indobj-class( :$dict ).new( |%params );
+    }
+
+    method indobj-class( Hash :$dict! ) {
+
+        BEGIN my $Types = set <Stream Catalog ObjStm XRef>;
+
+        my $type = $dict<Type>
+            // 'Stream';
+
+        unless $type (elem) $Types {
+            warn "unimplemented Indirect Stream Object: /Type /$type";
+            $type = 'Stream';
+        }
+
+        # autoload
+        require ::("PDF::Basic::IndObj")::($type);
+        return ::("PDF::Basic::IndObj")::($type);
+    }
 
     multi submethod BUILD( :$!dict!, :$start!, :$end!, :$input!) {
         my $length = $end - $start + 1;

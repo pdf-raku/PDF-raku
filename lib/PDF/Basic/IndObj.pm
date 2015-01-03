@@ -2,33 +2,15 @@ use v6;
 
 class PDF::Basic::IndObj;
 
-use PDF::Basic::IndObj::Catalog;
-use PDF::Basic::IndObj::ObjStm;
-use PDF::Basic::IndObj::Stream;
-use PDF::Basic::IndObj::XRef;
+has Int $obj-num;
+has Int $gen-num;
 
-method indobj-new( *%params ) {
-    my $dict = %params<dict>;
-    $.indobj-class( :$dict ).new( |%params );
+multi method indobj-new( Hash :$dict, *%params) {
+    # it's a stream of some sort
+    require ::("PDF::Basic::IndObj::Stream");
+    return ::("PDF::Basic::IndObj::Stream").indobj-new( :$dict, |%params );
 }
 
-method indobj-class( Hash :$dict! ) {
-
-    BEGIN our %Classes =
-        Catalog => PDF::Basic::IndObj::Catalog,
-        ObjStm => PDF::Basic::IndObj::ObjStm,
-        XRef => PDF::Basic::IndObj::XRef,
-        ;
-
-    my $type = $dict<Type>
-        // die "mandatory /Type entry missing from Indirect Object dictionary";
-
-    my $class = %Classes{ $type }:exists
-        ?? %Classes{ $type }
-        !! do {
-            warn "unimplemented Indirect Object type: $type";
-            PDF::Basic::IndObj::Stream;
-        };
-
-    return $class;
+multi method indobj-new( *%params ) is default {
+    die "unable to construct indirect object: {%params.perl}";
 }

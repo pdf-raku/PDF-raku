@@ -46,7 +46,7 @@ class PDF::Basic
                         my ($token-type, $val) = .kv;
                         if $token-type eq 'stream' && $val<dict><Type>.defined {
                             my %params = %( PDF::Basic::Unbox.unbox( :$ind-obj ) );
-                            given %params<dict><Type> {
+                            given $val<dict><Type>.value {
                                 when 'XRef' {
                                     use PDF::Basic::IndObj::XRef;
                                     warn "obj $obj-num $gen-num: TBA cross reference streams (/Type /$_)";
