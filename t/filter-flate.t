@@ -74,6 +74,7 @@ for None => 1, TIFF => 2, PNG => 10 {
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Basic;
+use PDF::Basic::Util :unbox;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -84,7 +85,7 @@ my $ast = $/.ast;
 
 my $pdf = PDF::Basic.new( :$input );
 
-my $dict = $pdf.unbox( |%$ast )<dict>;
+my $dict = unbox( |%$ast )<dict>;
 my $raw-content = $pdf.stream-data( |%$ast )[0];
 my $content;
 

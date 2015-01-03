@@ -76,3 +76,71 @@ multi sub resample( $num-sets, Array $W!, 8)  {
         }
     }
 }
+
+proto sub unbox(*@,*%) is export(:unbox) {*};
+
+multi sub unbox( Pair $p! ) {
+    unbox( |%( $p.kv ) );
+}
+
+multi sub unbox( Hash $h! ) {
+    unbox( |%( $h ) );
+}
+
+multi sub unbox( Array :$array! ) {
+    [ $array.map: { unbox( $_ ) } ];
+}
+
+multi sub unbox( Bool :$bool! ) {
+    $bool;
+}
+
+multi sub unbox( Hash :$dict!, :$keys ) {
+    my @keys = $keys.defined
+        ?? $keys.grep: {$dict{$_}:exists}
+        !! $dict.keys;
+    my %hash = @keys.map: { $_ => unbox( $dict{$_} ) };
+    %hash;
+}
+
+multi sub unbox( Str :$hex-string! ) { $hex-string }
+
+multi sub unbox( Array :$ind-ref! ) {
+
+    my $obj-num = $ind-ref[0].Int;
+    my $gen-num = $ind-ref[1].Int;
+    die "unresolved object reference: $obj-num $gen-num R";
+
+}
+
+multi sub unbox( Array :$ind-obj! ) {
+    # hmm, throw array trailing objects?
+    my %first-obj = $ind-obj[2].kv;
+    unbox( |%first-obj )
+}
+
+multi sub unbox( Numeric :$int! ) { $int.Int }
+
+multi sub unbox( Str :$literal! ) { $literal }
+
+multi sub unbox( Str :$name! ) { $name }
+
+multi sub unbox( Any :$null! ) { $null }
+
+multi sub unbox( Numeric :$real! ) { $real }
+
+multi sub unbox( Hash :$stream! ) {
+    my $dict = $stream<dict>;
+    my %stream = (dict => unbox( :$dict ),
+                  start => $stream<start>,
+                  end => $stream<end>,
+        );
+}
+
+multi sub unbox( *@args, *%opts ) is default {
+
+    die "unexpected unbox arguments: {[@args].perl}"
+        if @args;
+        
+    die "unable to unbox {%opts.keys} struct: {%opts.perl}"
+}

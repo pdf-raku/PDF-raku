@@ -32,19 +32,17 @@ method encode($objstm = $.decoded --> Str) {
         $objects-str ~= PDF::Basic::Writer.write-obj( $object );
     }
     my $idx-str = @idx.join: ' ';
-    $.Type = 'ObjStm';
-    $.First = $idx-str.chars + 1;
-    $.N = +$objstm;
+    $.Type = :name<ObjStm>;
+    $.First = :int( $idx-str.chars + 1 );
+    $.N = :int( +$objstm );
     
     nextwith( [~] $idx-str, ' ', $objects-str );
 }
 
 method decode($? --> Array) {
     my $chars = callsame;
-    my $first = $.First
-        // die "missing mandatory /ObjStm param: /First";
-    my $n = $.N
-        // die "missing mandatory /ObjStm param: /N";
+    my $first = ( $.First // die "missing mandatory /ObjStm param: /First" ).value;
+    my $n = ( $.N // die "missing mandatory /ObjStm param: /N" ).value;
 
     my $object-index-str = substr($chars, 0, $first - 1);
     my $objects-str = substr($chars, $first);
@@ -53,7 +51,7 @@ method decode($? --> Array) {
     PDF::Grammar::PDF.parse($object-index-str, :rule<object-stream-index>, :$actions)
         // die "unable to parse object stream index: $object-index-str";
     my $object-index = $/.ast;
-    [ $object-index.keys.map: -> $i {
+    [ (0 .. ($n-1)).map: -> $i {
         my $obj-num = $object-index[$i][0].Int;
         my $start = $object-index[$i][1];
         my $end = $object-index[$i + 1]:exists

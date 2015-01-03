@@ -4,6 +4,7 @@ use Test;
 use JSON::Tiny;
 
 use PDF::Basic;
+use PDF::Basic::Util :unbox;
 
 my $pdf = PDF::Basic.new;
 
@@ -26,7 +27,7 @@ for 't/write-ast.json'.IO.lines {
         or diag {node => %node}.perl;
 
     if my $unboxed = $test<unboxed> {
-        my $perl = $pdf.unbox( |%node );
+        my $perl = unbox( |%node );
         is_deeply $perl, $unboxed, "unboxed {%node.keys}"
             or diag {node => %node}.perl;
     }

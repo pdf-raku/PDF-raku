@@ -6,8 +6,8 @@ use PDF::Basic::IndObj::Stream;
 
 my $stream-obj;
 
-my %dict = :Filter<ASCIIHexDecode>,
-    :DecodeParms{ :BitsPerComponent(4), :Predictor(10), :Colors(3) };
+my %dict = :Filter( :name<ASCIIHexDecode> ),
+    :DecodeParms( :dict{ :BitsPerComponent( :int(4) ), :Predictor( :int(10) ), :Colors( :int(3) ) } );
 
 lives_ok { $stream-obj = PDF::Basic::IndObj::Stream.new( :decoded("100 100 Td (Hello, world!) Tj"), :%dict) }, 'basic stream object construction';
 

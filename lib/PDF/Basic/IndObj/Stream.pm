@@ -2,6 +2,7 @@ use v6;
 
 use PDF::Basic::Filter;
 use PDF::Basic::IndObj ;
+use PDF::Basic::Util :unbox;
 
 #| Stream - base class for specific indirect objects, e.g. ObjStm, XRef, ...
 our class PDF::Basic::IndObj::Stream
@@ -20,7 +21,7 @@ our class PDF::Basic::IndObj::Stream
 
         BEGIN my $Types = set <Stream Catalog ObjStm XRef>;
 
-        my $type = $dict<Type>
+        my $type = $dict<Type>.value
             // 'Stream';
 
         unless $type (elem) $Types {
@@ -38,7 +39,7 @@ our class PDF::Basic::IndObj::Stream
         $!encoded = $input.substr($start - 1, $length - 1 );
     }
 
-    multi submethod BUILD( :$!dict!, :$!decoded, :$!encoded ) {
+    multi submethod BUILD( :$!dict!, :$!decoded, :$!encoded) {
     }
 
     method encoded {
@@ -66,10 +67,12 @@ our class PDF::Basic::IndObj::Stream
     }
 
     method decode( $encoded = $.encoded ) {
-        PDF::Basic::Filter.decode( $encoded, :$.dict );
+        my $dict = unbox( :$.dict, :keys<Filter DecodeParms> );
+        PDF::Basic::Filter.decode( $encoded, :$dict );
     }
 
     method encode( $decoded = $.decoded) {
-        PDF::Basic::Filter.encode( $decoded, :$.dict );
+        my $dict = unbox( :$.dict, :keys<Filter DecodeParms> );
+        PDF::Basic::Filter.encode( $decoded, :$dict );
     }
 }

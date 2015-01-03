@@ -2,12 +2,12 @@ use v6;
 
 use PDF::Basic::Filter;
 use PDF::Basic::Writer;
-use PDF::Basic::Unbox;
+use PDF::Basic::IndObj;
+use PDF::Basic::Util :unbox;
 
 class PDF::Basic
     is PDF::Basic::Filter
-    is PDF::Basic::Writer
-    is PDF::Basic::Unbox {
+    is PDF::Basic::Writer {
 
     has Str $.input;  # raw PDF image (latin-1 encoding)
     has Hash %.ind-obj-idx;
@@ -45,22 +45,20 @@ class PDF::Basic
                     for $ind-obj[2..*] {
                         my ($token-type, $val) = .kv;
                         if $token-type eq 'stream' && $val<dict><Type>.defined {
-                            my %params = %( PDF::Basic::Unbox.unbox( :$ind-obj ) );
+
                             given $val<dict><Type>.value {
                                 when 'XRef' {
-                                    use PDF::Basic::IndObj::XRef;
                                     warn "obj $obj-num $gen-num: TBA cross reference streams (/Type /$_)";
                                     # locate document root
                                     $!root-obj //= $val<dict><Root>;
-                                    my $xref-obj = PDF::Basic::IndObj::XRef.new( |%params, :$!input );
+                                    my $xref-obj = PDF::Basic::IndObj.indobj-new( :$ind-obj, :$!input );
                                     my $xref-data = $xref-obj.decode;
                                     warn :$xref-data.perl;
                                 }
                                 when 'ObjStm' {
-                                    use PDF::Basic::IndObj::ObjStm;
                                     # these contain nested objects
                                     warn "obj $obj-num $gen-num: TBA object streams (/Type /$_)";
-                                    my $objstm-obj = PDF::Basic::IndObj::ObjStm.new( |%params, :$!input );
+                                    my $objstm-obj = PDF::Basic::IndObj.indobj-new( :$ind-obj, :$!input );
                                     my $objstm-data = $objstm-obj.decode;
                                     warn :$objstm-data.perl;
                                 }

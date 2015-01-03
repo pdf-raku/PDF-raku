@@ -4,7 +4,6 @@ use Test;
 plan 4;
 
 use PDF::Basic::IndObj;
-use PDF::Basic::Unbox;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
@@ -16,9 +15,8 @@ my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my %params = %( PDF::Basic::Unbox.unbox( |%$ast ) );
-my $ind-obj = PDF::Basic::IndObj.indobj-new( |%params, :$input );
-isa_ok $ind-obj, PDF::Basic::IndObj::ObjStm;
+my $ind-obj = PDF::Basic::IndObj.indobj-new( |%$ast, :$input );
+isa_ok $ind-obj, ::('PDF::Basic::IndObj')::('ObjStm');
 
 my $objstm;
 lives_ok { $objstm = $ind-obj.decode }, 'basic content decode - lives';
@@ -47,7 +45,7 @@ my $expected-objstm = [
 is_deeply $objstm, $expected-objstm, 'decoded index as expected';
 my $objstm-recompressed = $ind-obj.encode;
 
-my $ind-obj2 = PDF::Basic::IndObj.indobj-new( |%params);
+my $ind-obj2 = PDF::Basic::IndObj.indobj-new( |%$ast );
 my $objstm-roundtrip = $ind-obj2.decode( $objstm-recompressed );
 
 is_deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';

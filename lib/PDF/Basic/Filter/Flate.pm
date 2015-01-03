@@ -4,7 +4,6 @@ use v6;
 class PDF::Basic::Filter::Flate;
 
 use PDF::Basic::Util :resample;
-
 use Compress::Zlib;
 
 # Maintainer's Note: Flate is described in the PDF 1.7 spec in section 3.3.3.
