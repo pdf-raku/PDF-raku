@@ -16,7 +16,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $indobj-ast = $/.ast;
 
-my $ind-obj = PDF::Basic::IndObj.indobj-new( |%( $indobj-ast.kv ) );
+my $ind-obj = PDF::Basic::IndObj.new-delegate( |%( $indobj-ast.kv ) );
 isa_ok $ind-obj, ::('PDF::Basic::IndObj')::('Stream');
 isa_ok $ind-obj.dict, Hash, '$.dict';
 is $ind-obj.dict<Length>.value, 167, '$.dict<Length>';

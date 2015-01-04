@@ -15,7 +15,7 @@ my $input = 't/pdf/ind-obj-XRef.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = %( $/.ast );
-my $ind-obj = PDF::Basic::IndObj.indobj-new( |%ast, :$input );
+my $ind-obj = PDF::Basic::IndObj.new-delegate( |%ast, :$input );
 isa_ok $ind-obj, ::('PDF::Basic::IndObj')::('XRef');
 
 my $xref;
@@ -29,7 +29,7 @@ my $xref-recompressed = $ind-obj.encode;
 my %ast2;
 lives_ok { %ast2 = %( $ind-obj.ast ) }, '$.ast - lives';
 
-my $ind-obj2 = PDF::Basic::IndObj.indobj-new( |%ast2);
+my $ind-obj2 = PDF::Basic::IndObj.new-delegate( |%ast2);
 my $xref-roundtrip = $ind-obj2.decode( $xref-recompressed );
 
 is_deeply $xref, $xref-roundtrip, 'encode/decode round-trip';

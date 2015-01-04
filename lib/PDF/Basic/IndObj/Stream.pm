@@ -4,24 +4,24 @@ use PDF::Basic::Filter;
 use PDF::Basic::IndObj ;
 use PDF::Basic::Util :unbox;
 
-#| Stream - base class for specific indirect objects, e.g. ObjStm, XRef, ...
+#| Stream - base class for specific stream objects, e.g. ObjStm, XRef, ...
 our class PDF::Basic::IndObj::Stream
     is PDF::Basic::IndObj {
 
-    has $.dict;
+    has Hash $.dict;
     has $.encoded;
     has $.decoded;
 
-    method indobj-new( :$stream, *%params ) {
+    method new-delegate( :$stream, *%params ) {
         for <dict start end encoded decoded> {
             %params{$_} = $stream{$_}
             if $stream{$_}:exists;
         }
         my $dict = $stream<dict>;
-        $.indobj-class( :$dict ).new( |%params );
+        $.delegate-class( :$dict ).new( |%params );
     }
 
-    method indobj-class( Hash :$dict! ) {
+    method delegate-class( Hash :$dict! ) {
 
         BEGIN my $Types = set <Stream Catalog ObjStm XRef>;
 

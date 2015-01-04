@@ -15,7 +15,7 @@ stream_tests( $stream-obj );
 
 my $ind-obj-ast = $stream-obj.ast;
 
-lives_ok { $stream-obj = PDF::Basic::IndObj.indobj-new( |%$ind-obj-ast ); }, 'stream object rebuilt';
+lives_ok { $stream-obj = PDF::Basic::IndObj.new-delegate( |%$ind-obj-ast ); }, 'stream object rebuilt';
 stream_tests( $stream-obj );
 
 sub stream_tests( $stream-obj) {

@@ -15,7 +15,7 @@ my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my $ind-obj = PDF::Basic::IndObj.indobj-new( |%$ast, :$input );
+my $ind-obj = PDF::Basic::IndObj.new-delegate( |%$ast, :$input );
 isa_ok $ind-obj, ::('PDF::Basic::IndObj')::('ObjStm');
 
 my $objstm;
@@ -48,7 +48,7 @@ my $objstm-recompressed = $ind-obj.encode;
 my $ast2;
 lives_ok { $ast2 = $ind-obj.ast }, '$.ast - lives';
 
-my $ind-obj2 = PDF::Basic::IndObj.indobj-new( |%$ast2 );
+my $ind-obj2 = PDF::Basic::IndObj.new-delegate( |%$ast2 );
 my $objstm-roundtrip = $ind-obj2.decode( $objstm-recompressed );
 
 is_deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';

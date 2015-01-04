@@ -8,10 +8,6 @@ our class PDF::Basic::IndObj::Array
 
     has Array $.array;
 
-    method indobj-new( *%params ) {
-        $.new( |%params );
-    }
-
     method content {
         return { :$.array };
     }

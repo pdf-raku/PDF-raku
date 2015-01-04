@@ -53,14 +53,14 @@ class PDF::Basic
                                     warn "obj $obj-num $gen-num: TBA cross reference streams (/Type /$_)";
                                     # locate document root
                                     $!root-obj //= $val<dict><Root>;
-                                    my $xref-obj = PDF::Basic::IndObj.indobj-new( :$ind-obj, :$!input );
+                                    my $xref-obj = PDF::Basic::IndObj.new-delegate( :$ind-obj, :$!input );
                                     my $xref-data = $xref-obj.decode;
                                     warn :$xref-data.perl;
                                 }
                                 when 'ObjStm' {
                                     # these contain nested objects
                                     warn "obj $obj-num $gen-num: TBA object streams (/Type /$_)";
-                                    my $objstm-obj = PDF::Basic::IndObj.indobj-new( :$ind-obj, :$!input );
+                                    my $objstm-obj = PDF::Basic::IndObj.new-delegate( :$ind-obj, :$!input );
                                     my $objstm-data = $objstm-obj.decode;
                                     warn :$objstm-data.perl;
                                 }
