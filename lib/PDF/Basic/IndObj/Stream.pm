@@ -12,8 +12,12 @@ our class PDF::Basic::IndObj::Stream
     has $.encoded;
     has $.decoded;
 
-    method indobj-new( *%params ) {
-        my $dict = %params<dict>;
+    method indobj-new( :$stream, *%params ) {
+        for <dict start end encoded decoded> {
+            %params{$_} = $stream{$_}
+            if $stream{$_}:exists;
+        }
+        my $dict = $stream<dict>;
         $.indobj-class( :$dict ).new( |%params );
     }
 
@@ -21,7 +25,7 @@ our class PDF::Basic::IndObj::Stream
 
         BEGIN my $Types = set <Stream Catalog ObjStm XRef>;
 
-        my $type = $dict<Type>.value
+        my $type = $dict<Type> && $dict<Type>.value
             // 'Stream';
 
         unless $type (elem) $Types {
@@ -74,5 +78,10 @@ our class PDF::Basic::IndObj::Stream
     method encode( $decoded = $.decoded) {
         my $dict = unbox( :$.dict, :keys<Filter DecodeParms> );
         PDF::Basic::Filter.encode( $decoded, :$dict );
+    }
+
+    method content {
+        my $s = :stream{ :$.dict, :$.encoded };
+        return $s;
     }
 }

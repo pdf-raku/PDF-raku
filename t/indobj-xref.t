@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 4;
+plan 5;
 
 use PDF::Basic::IndObj;
 
@@ -26,7 +26,10 @@ my $expected-xref = [[1, 16, 0], [1, 741, 0], [1, 1030, 0], [1, 1446, 0], [1, 26
 is_deeply $xref, $expected-xref, 'decoded index as expected';
 my $xref-recompressed = $ind-obj.encode;
 
-my $ind-obj2 = PDF::Basic::IndObj.indobj-new( |%ast);
+my %ast2;
+lives_ok { %ast2 = %( $ind-obj.ast ) }, '$.ast - lives';
+
+my $ind-obj2 = PDF::Basic::IndObj.indobj-new( |%ast2);
 my $xref-roundtrip = $ind-obj2.decode( $xref-recompressed );
 
 is_deeply $xref, $xref-roundtrip, 'encode/decode round-trip';

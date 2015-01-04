@@ -18,6 +18,8 @@ class PDF::Basic
         $ind-obj[2..*].grep({ .key eq 'stream'}).map: { $.stream-data( |%$_ ) };
     }
     multi method stream-data( Hash :$stream! ) {
+        return $stream<encoded>
+            if $stream<encoded>.defined;
         my $start = $stream<start>;
         my $end = $stream<end>;
         my $length = $end - $start + 1;

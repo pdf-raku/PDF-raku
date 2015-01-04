@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 4;
+plan 5;
 
 use PDF::Basic::IndObj;
 
@@ -45,7 +45,10 @@ my $expected-objstm = [
 is_deeply $objstm, $expected-objstm, 'decoded index as expected';
 my $objstm-recompressed = $ind-obj.encode;
 
-my $ind-obj2 = PDF::Basic::IndObj.indobj-new( |%$ast );
+my $ast2;
+lives_ok { $ast2 = $ind-obj.ast }, '$.ast - lives';
+
+my $ind-obj2 = PDF::Basic::IndObj.indobj-new( |%$ast2 );
 my $objstm-roundtrip = $ind-obj2.decode( $objstm-recompressed );
 
 is_deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';

@@ -2,13 +2,13 @@ use v6;
 
 class PDF::Basic::IndObj;
 
-has Int $.obj-num;
-has Int $.gen-num;
+has Int $.obj-num is rw;
+has Int $.gen-num is rw;
 
 #| construct and object instancefrom a PDF::Grammar::PDF ast representation of
 #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
 multi method indobj-new( Array :$ind-obj!, :$input ) {
-    my $obj-num = $ind-obj[0];
+     my $obj-num = $ind-obj[0];
     my $gen-num = $ind-obj[1];
     my %params = $ind-obj[2].kv;
     %params<input> = $input
@@ -23,10 +23,10 @@ multi method indobj-new( Array :$array!, *%params) {
 }
 
 multi method indobj-new( Hash :$stream!, *%params) {
-    for <dict start end> {
-        %params{$_} = $stream{$_}
-        if $stream{$_}:exists;
-    }
     require ::("PDF::Basic::IndObj::Stream");
-    return ::("PDF::Basic::IndObj::Stream").indobj-new( |%params );
+    return ::("PDF::Basic::IndObj::Stream").indobj-new( :$stream, |%params );
+}
+
+method ast {
+    :ind-obj[ $.obj-num, $.gen-num, %$.content ]
 }
