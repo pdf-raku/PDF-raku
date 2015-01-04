@@ -1,6 +1,6 @@
 use v6;
 
-class PDF::Basic::IndObj;
+class PDF::Core::IndObj;
 
 has Int $.obj-num is rw;
 has Int $.gen-num is rw;
@@ -18,18 +18,18 @@ multi method new-delegate( Array :$ind-obj!, :$input ) {
 }
 
 multi method new-delegate( Array :$array!, *%params) {
-    require ::("PDF::Basic::IndObj::Array");
-    return ::("PDF::Basic::IndObj::Array").new( :$array, |%params );
+    require ::("PDF::Core::IndObj::Array");
+    return ::("PDF::Core::IndObj::Array").new( :$array, |%params );
 }
 
 multi method new-delegate( Hash :$dict!, *%params) {
-    require ::("PDF::Basic::IndObj::Dict");
-    return ::("PDF::Basic::IndObj::Dict").new-delegate( :$dict, |%params );
+    require ::("PDF::Core::IndObj::Dict");
+    return ::("PDF::Core::IndObj::Dict").new-delegate( :$dict, |%params );
 }
 
 multi method new-delegate( Hash :$stream!, *%params) {
-    require ::("PDF::Basic::IndObj::Stream");
-    return ::("PDF::Basic::IndObj::Stream").new-delegate( :$stream, |%params );
+    require ::("PDF::Core::IndObj::Stream");
+    return ::("PDF::Core::IndObj::Stream").new-delegate( :$stream, |%params );
 }
 
 method ast {

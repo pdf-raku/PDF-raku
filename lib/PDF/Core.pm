@@ -1,13 +1,13 @@
 use v6;
 
-use PDF::Basic::Filter;
-use PDF::Basic::Writer;
-use PDF::Basic::IndObj;
-use PDF::Basic::Util :unbox;
+use PDF::Core::Filter;
+use PDF::Core::Writer;
+use PDF::Core::IndObj;
+use PDF::Core::Util :unbox;
 
-class PDF::Basic
-    is PDF::Basic::Filter
-    is PDF::Basic::Writer {
+class PDF::Core
+    is PDF::Core::Filter
+    is PDF::Core::Writer {
 
     has Str $.input;  # raw PDF image (latin-1 encoding)
     has Hash %.ind-obj-idx;
@@ -55,14 +55,14 @@ class PDF::Basic
                                     warn "obj $obj-num $gen-num: TBA cross reference streams (/Type /$_)";
                                     # locate document root
                                     $!root-obj //= $val<dict><Root>;
-                                    my $xref-obj = PDF::Basic::IndObj.new-delegate( :$ind-obj, :$!input );
+                                    my $xref-obj = PDF::Core::IndObj.new-delegate( :$ind-obj, :$!input );
                                     my $xref-data = $xref-obj.decode;
                                     warn :$xref-data.perl;
                                 }
                                 when 'ObjStm' {
                                     # these contain nested objects
                                     warn "obj $obj-num $gen-num: TBA object streams (/Type /$_)";
-                                    my $objstm-obj = PDF::Basic::IndObj.new-delegate( :$ind-obj, :$!input );
+                                    my $objstm-obj = PDF::Core::IndObj.new-delegate( :$ind-obj, :$!input );
                                     my $objstm-data = $objstm-obj.decode;
                                     warn :$objstm-data.perl;
                                 }

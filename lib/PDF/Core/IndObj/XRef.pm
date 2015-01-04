@@ -1,18 +1,18 @@
 use v6;
 
-use PDF::Basic::IndObj::Stream;
-use PDF::Basic::Util :unbox;
+use PDF::Core::IndObj::Stream;
+use PDF::Core::Util :unbox;
 
 # /Type /XRef - cross reference stream
 # introduced with PDF 1.5
-our class PDF::Basic::IndObj::XRef
-    is PDF::Basic::IndObj::Stream;
+our class PDF::Core::IndObj::XRef
+    is PDF::Core::IndObj::Stream;
 
 method W is rw {
     %.dict<W>;
 }
 
-use PDF::Basic::Util :resample;
+use PDF::Core::Util :resample;
 
 method encode($xref = $.decoded --> Str) {
     $.W //= :array[ :int(1), :int(2), :int(1) ];

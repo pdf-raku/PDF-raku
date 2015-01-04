@@ -1,10 +1,10 @@
 use v6;
 
-class PDF::Basic::Filter {
+class PDF::Core::Filter {
 
-    use PDF::Basic::Filter::ASCIIHex;
-    use PDF::Basic::Filter::Flate;
-    use PDF::Basic::Filter::RunLength;
+    use PDF::Core::Filter::ASCIIHex;
+    use PDF::Core::Filter::Flate;
+    use PDF::Core::Filter::RunLength;
 
     multi method decode( $input, Hash :$dict! where !.<Filter>.defined) {
         # nothing to do
@@ -66,15 +66,15 @@ class PDF::Basic::Filter {
     method filter-class( Str $filter-name is copy ) {
 
         BEGIN my %Filters =
-            ASCIIHexDecode => PDF::Basic::Filter::ASCIIHex,
+            ASCIIHexDecode => PDF::Core::Filter::ASCIIHex,
             ASCII85Decode  => Mu,
             CCITTFaxDecode => Mu,
             Crypt          => Mu,
             DCTDecode      => Mu,
-            FlateDecode    => PDF::Basic::Filter::Flate,
+            FlateDecode    => PDF::Core::Filter::Flate,
             JBIG2Decode    => Mu,
             JPXDecode      => Mu,
-            RunLengthDecode => PDF::Basic::Filter::RunLength,
+            RunLengthDecode => PDF::Core::Filter::RunLength,
             ;
 
         BEGIN my %FilterAbbreviations =

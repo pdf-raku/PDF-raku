@@ -1,17 +1,17 @@
 {
-    "name"        : "PDF::Basic",
+    "name"        : "PDF::Core",
     "version"     : "0.1",
     "description" : "Basic PDF Tools for reading, construction and serialization etc.",
     "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Tiny"  ],
-    "source-url"  : "git://github.com/p6-css/p6-PDF-Basic.git",
+    "source-url"  : "git://github.com/p6-css/p6-PDF-Core.git",
     "provides"    : {
-        "PDF::Basic" : "lib/PDF/Basic.pm",
-        "PDF::Basic::Unbox" : "lib/PDF/Basic/Unbox.pm",
-        "PDF::Basic::Writer" : "lib/PDF/Basic/Writer.pm",
-        "PDF::Basic::Writer::Filter" : "lib/PDF/Basic/Filter.pm",
-        "PDF::Basic::Writer::Filter::ASCIIHex" : "lib/PDF/Basic/Filter/ASCIIHex.pm",
-        "PDF::Basic::Writer::Filter::Flate" : "lib/PDF/Basic/Filter/Flate.pm",
-        "PDF::Basic::Writer::Filter::RunLength" : "lib/PDF/Basic/Filter/RunLength.pm"
+        "PDF::Core" : "lib/PDF/Core.pm",
+        "PDF::Core::Unbox" : "lib/PDF/Core/Unbox.pm",
+        "PDF::Core::Writer" : "lib/PDF/Core/Writer.pm",
+        "PDF::Core::Writer::Filter" : "lib/PDF/Core/Filter.pm",
+        "PDF::Core::Writer::Filter::ASCIIHex" : "lib/PDF/Core/Filter/ASCIIHex.pm",
+        "PDF::Core::Writer::Filter::Flate" : "lib/PDF/Core/Filter/Flate.pm",
+        "PDF::Core::Writer::Filter::RunLength" : "lib/PDF/Core/Filter/RunLength.pm"
      }
 }
 

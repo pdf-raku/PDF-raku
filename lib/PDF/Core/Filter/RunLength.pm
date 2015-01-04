@@ -1,7 +1,7 @@
 use v6;
-# based on PDF::API::Basic::PDF::Filter::RunLengthDecode
+# based on PDF::API::Core::PDF::Filter::RunLengthDecode
 
-class PDF::Basic::Filter::RunLength;
+class PDF::Core::Filter::RunLength;
 
 # Maintainer's Note: RunLengthDecode is described in the PDF 1.7 spec
 # in section 7.4.5.

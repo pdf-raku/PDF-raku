@@ -2,8 +2,8 @@ use Test;
 
 plan 11;
 
-use PDF::Basic::Filter;
-use PDF::Basic::Filter::Flate;
+use PDF::Core::Filter;
+use PDF::Core::Filter::Flate;
 
 my $prediction-in = buf8.new: [
     0x2, 0x1, 0x0, 0x10, 0x0,
@@ -30,21 +30,21 @@ my $png-post-prediction = buf8.new: [
     1,   2,   3,    4,
     ];
 
-is_deeply PDF::Basic::Filter::Flate.post-prediction( $prediction-in,
+is_deeply PDF::Core::Filter::Flate.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(1), ),
     $prediction-in,
     "NOOP predictive filter sanity";
 
-is_deeply PDF::Basic::Filter::Flate.post-prediction( $prediction-in,
+is_deeply PDF::Core::Filter::Flate.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(2), ),
     $tiff-post-prediction,
     "TIFF predictive filter sanity";
 
-is_deeply PDF::Basic::Filter::Flate.post-prediction( $prediction-in,
+is_deeply PDF::Core::Filter::Flate.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Predictor(12), ),
     $png-post-prediction,
@@ -60,11 +60,11 @@ my $rand-data = buf8.new: [
 for None => 1, TIFF => 2, PNG => 10 {
     my ($desc, $Predictor) = .kv;
 
-    my $prediction = PDF::Basic::Filter::Flate.prediction( $rand-data,
+    my $prediction = PDF::Core::Filter::Flate.prediction( $rand-data,
                                                            :Columns(4),
                                                            :$Predictor, );
 
-    my $post-prediction = PDF::Basic::Filter::Flate.post-prediction( $prediction,
+    my $post-prediction = PDF::Core::Filter::Flate.post-prediction( $prediction,
                                                                      :Columns(4),
                                                                      :$Predictor, );
 
@@ -73,8 +73,8 @@ for None => 1, TIFF => 2, PNG => 10 {
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Basic;
-use PDF::Basic::Util :unbox;
+use PDF::Core;
+use PDF::Core::Util :unbox;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -83,13 +83,13 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 
-my $pdf = PDF::Basic.new( :$input );
+my $pdf = PDF::Core.new( :$input );
 
 my $dict = unbox( |%$ast )<dict>;
 my $raw-content = $pdf.stream-data( |%$ast )[0];
 my $content;
 
-lives_ok { $content = PDF::Basic::Filter.decode( $raw-content, :$dict ) }, 'basic content decode - lives';
+lives_ok { $content = PDF::Core::Filter.decode( $raw-content, :$dict ) }, 'basic content decode - lives';
 
 my $content-expected = "16 0 17 141 <</BaseFont/CourierNewPSMT/Encoding/WinAnsiEncoding/FirstChar 111/FontDescriptor 15 0 R/LastChar 111/Subtype/TrueType/Type/Font/Widths[600]>><</BaseFont/TimesNewRomanPSMT/Encoding/WinAnsiEncoding/FirstChar 32/FontDescriptor 14 0 R/LastChar 32/Subtype/TrueType/Type/Font/Widths[250]>>";
 
@@ -114,13 +114,13 @@ my $flate-dec = [1, 0, 16, 0, 1, 2, 229, 0, 1, 4, 6, 0, 1, 5, 166, 0,
 
 my %dict = :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) };
 
-is_deeply my $result=PDF::Basic::Filter.decode($flate-enc, :%dict),
+is_deeply my $result=PDF::Core::Filter.decode($flate-enc, :%dict),
     $flate-dec, "Flate with PNG predictors - decode";
 
-my $re-encoded = PDF::Basic::Filter.encode($result, :%dict);
+my $re-encoded = PDF::Core::Filter.encode($result, :%dict);
 
-is_deeply PDF::Basic::Filter.decode($re-encoded, :%dict),
+is_deeply PDF::Core::Filter.decode($re-encoded, :%dict),
     $flate-dec, "Flate with PNG predictors - encode/decode round-trip";
 
-dies_ok { PDF::Basic::Filter.decode('This is not valid input', :%dict) },
+dies_ok { PDF::Core::Filter.decode('This is not valid input', :%dict) },
     q{Flate dies if invalid characters are passed to decode};

@@ -6,7 +6,7 @@ use JSON::Tiny;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test;
-use PDF::Basic;
+use PDF::Core;
 
 my $actions = PDF::Grammar::PDF::Actions.new();
 
@@ -20,7 +20,7 @@ for 't/pdf'.IO.dir.list {
     my $pdf-output-file = $json-file.subst( /'.json'$/, '.out' );
     my $pdf-input = $pdf-input-file.IO.slurp;
 
-    my $pdf = PDF::Basic.new( :root(%pdf-data), :input($pdf-input) );
+    my $pdf = PDF::Core.new( :root(%pdf-data), :input($pdf-input) );
     %pdf-data<offset> = 0;
     my $pdf-output = $pdf.write( |%pdf-data );
     $pdf-output-file.IO.spurt: $pdf-output;

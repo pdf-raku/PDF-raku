@@ -3,11 +3,11 @@ use Test;
 
 plan 5;
 
-use PDF::Basic::IndObj;
+use PDF::Core::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Basic;
+use PDF::Core;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -15,8 +15,8 @@ my $input = 't/pdf/ind-obj-XRef.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = %( $/.ast );
-my $ind-obj = PDF::Basic::IndObj.new-delegate( |%ast, :$input );
-isa_ok $ind-obj, ::('PDF::Basic::IndObj')::('XRef');
+my $ind-obj = PDF::Core::IndObj.new-delegate( |%ast, :$input );
+isa_ok $ind-obj, ::('PDF::Core::IndObj')::('XRef');
 
 my $xref;
 lives_ok { $xref = $ind-obj.decode }, 'basic content decode - lives';
@@ -29,7 +29,7 @@ my $xref-recompressed = $ind-obj.encode;
 my %ast2;
 lives_ok { %ast2 = %( $ind-obj.ast ) }, '$.ast - lives';
 
-my $ind-obj2 = PDF::Basic::IndObj.new-delegate( |%ast2);
+my $ind-obj2 = PDF::Core::IndObj.new-delegate( |%ast2);
 my $xref-roundtrip = $ind-obj2.decode( $xref-recompressed );
 
 is_deeply $xref, $xref-roundtrip, 'encode/decode round-trip';

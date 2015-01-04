@@ -1,9 +1,9 @@
 use v6;
-# based on Perl 5's PDF::API::Basic::PDF::Filter::ASCIIHexDecode
+# based on Perl 5's PDF::API::Core::PDF::Filter::ASCIIHexDecode
 
-class PDF::Basic::Filter::Flate;
+class PDF::Core::Filter::Flate;
 
-use PDF::Basic::Util :resample;
+use PDF::Core::Util :resample;
 use Compress::Zlib;
 
 # Maintainer's Note: Flate is described in the PDF 1.7 spec in section 3.3.3.

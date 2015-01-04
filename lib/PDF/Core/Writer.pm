@@ -1,6 +1,6 @@
 use v6;
 
-class PDF::Basic::Writer {
+class PDF::Core::Writer {
 
     use PDF::Grammar;
 

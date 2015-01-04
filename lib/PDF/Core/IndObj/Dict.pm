@@ -1,12 +1,12 @@
 use v6;
 
-use PDF::Basic::Filter;
-use PDF::Basic::IndObj ;
-use PDF::Basic::Util :unbox;
+use PDF::Core::Filter;
+use PDF::Core::IndObj ;
+use PDF::Core::Util :unbox;
 
 #| Dict - base class for dictionary objects, e.g. Catalog Page ...
-our class PDF::Basic::IndObj::Dict
-    is PDF::Basic::IndObj {
+our class PDF::Core::IndObj::Dict
+    is PDF::Core::IndObj {
 
     has Hash $.dict;
 
@@ -27,8 +27,8 @@ our class PDF::Basic::IndObj::Dict
         }
 
         # autoload
-        require ::("PDF::Basic::IndObj")::($type);
-        return ::("PDF::Basic::IndObj")::($type);
+        require ::("PDF::Core::IndObj")::($type);
+        return ::("PDF::Core::IndObj")::($type);
     }
 
     method content {

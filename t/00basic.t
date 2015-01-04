@@ -1,8 +1,8 @@
 use Test;
-use PDF::Basic::Writer;
-use PDF::Basic::Filter::ASCIIHex;
-use PDF::Basic::Filter::Flate;
-use PDF::Basic::Filter::RunLength;
+use PDF::Core::Writer;
+use PDF::Core::Filter::ASCIIHex;
+use PDF::Core::Filter::Flate;
+use PDF::Core::Filter::RunLength;
 
 pass('compiles');
 
