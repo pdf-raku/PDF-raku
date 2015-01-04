@@ -23,7 +23,6 @@ multi method new-delegate( Array :$array!, *%params) {
 }
 
 multi method new-delegate( Hash :$dict!, *%params) {
-    warn :$dict.perl;
     require ::("PDF::Basic::IndObj::Dict");
     return ::("PDF::Basic::IndObj::Dict").new-delegate( :$dict, |%params );
 }

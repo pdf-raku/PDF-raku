@@ -15,7 +15,9 @@ class PDF::Basic
 
     #| retrieves raw stream data from the input object
     multi method stream-data( Array :$ind-obj! ) {
-        $ind-obj[2..*].grep({ .key eq 'stream'}).map: { $.stream-data( |%$_ ) };
+        return
+            unless $ind-obj[2].key eq 'stream';
+        $.stream-data( |%( $ind-obj[2] ) );
     }
     multi method stream-data( Hash :$stream! ) {
         return $stream<encoded>
@@ -44,7 +46,7 @@ class PDF::Basic
                     my $gen-num = $ind-obj[1].Int;
                     %!ind-obj-idx{$obj-num}{$gen-num} = $ind-obj;
 
-                    for $ind-obj[2..*] {
+                    for $ind-obj[2] {
                         my ($token-type, $val) = .kv;
                         if $token-type eq 'stream' && $val<dict><Type>.defined {
 

@@ -100,10 +100,10 @@ class PDF::Basic::Writer {
     }
 
     multi method write(Array :$ind-obj! ) {
-        my ($obj-num, $gen-num, @objects) = @$ind-obj;
+        my ($obj-num, $gen-num, $object) = @$ind-obj;
 
         (sprintf('%d %d obj', $obj-num, $gen-num),
-         @objects.map({ $.write-obj($_) }),
+         $.write-obj( $object ),
          'endobj',
         ).join: "\n";
     }

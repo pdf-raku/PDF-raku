@@ -115,8 +115,8 @@ multi sub unbox( Array :$ind-ref! ) {
 
 multi sub unbox( Array :$ind-obj! ) {
     # hmm, throw array trailing objects?
-    my %first-obj = $ind-obj[2].kv;
-    unbox( |%first-obj )
+    my %content = $ind-obj[2].kv;
+    unbox( |%content )
 }
 
 multi sub unbox( Numeric :$int! ) { $int.Int }
