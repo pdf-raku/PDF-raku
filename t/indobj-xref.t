@@ -14,8 +14,8 @@ my $actions = PDF::Grammar::PDF::Actions.new;
 my $input = 't/pdf/ind-obj-XRef.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
-my $ast = $/.ast;
-my $ind-obj = PDF::Basic::IndObj.indobj-new( |%$ast, :$input );
+my %ast = %( $/.ast );
+my $ind-obj = PDF::Basic::IndObj.indobj-new( |%ast, :$input );
 isa_ok $ind-obj, ::('PDF::Basic::IndObj')::('XRef');
 
 my $xref;
@@ -26,7 +26,7 @@ my $expected-xref = [[1, 16, 0], [1, 741, 0], [1, 1030, 0], [1, 1446, 0], [1, 26
 is_deeply $xref, $expected-xref, 'decoded index as expected';
 my $xref-recompressed = $ind-obj.encode;
 
-my $ind-obj2 = PDF::Basic::IndObj.indobj-new( |%$ast);
+my $ind-obj2 = PDF::Basic::IndObj.indobj-new( |%ast);
 my $xref-roundtrip = $ind-obj2.decode( $xref-recompressed );
 
 is_deeply $xref, $xref-roundtrip, 'encode/decode round-trip';
