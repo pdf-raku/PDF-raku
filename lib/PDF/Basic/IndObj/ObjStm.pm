@@ -51,7 +51,7 @@ method decode($? --> Array) {
     PDF::Grammar::PDF.parse($object-index-str, :rule<object-stream-index>, :$actions)
         // die "unable to parse object stream index: $object-index-str";
     my $object-index = $/.ast;
-    [ (0 .. ($n-1)).map: -> $i {
+    [ (0 ..^ $n).map: -> $i {
         my $obj-num = $object-index[$i][0].Int;
         my $start = $object-index[$i][1];
         my $end = $object-index[$i + 1]:exists

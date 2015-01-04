@@ -68,7 +68,7 @@ multi sub resample( $num-sets, Array $W!, 8)  {
         my $i = 0;
         $nums.list.map: -> $num is copy {
             my @bytes;
-            for 1..$W[$i++] {
+            for 1 .. $W[$i++] {
                 @bytes.unshift: $num +& 255;
                 $num div= 256;
             }

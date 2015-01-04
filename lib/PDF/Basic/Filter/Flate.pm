@@ -128,7 +128,7 @@ multi method post-prediction($decoded,
 
         for 1  .. $Columns {
 
-            for 0 .. $Colors-1 {
+            for 0 ..^ $Colors {
                 @pixels[$_] = (@pixels[$_] + $nums[ $ptr++ ]) +& $bit-mask;
             }
 
