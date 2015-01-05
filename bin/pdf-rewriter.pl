@@ -4,7 +4,7 @@ use v6;
 use v6;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Basic;
+use PDF::Core;
 
 sub MAIN (Str $input-file, Str $output-file) {
 
@@ -19,6 +19,6 @@ sub MAIN (Str $input-file, Str $output-file) {
     my $pdf-ast = $/.ast;
 
     note "writing {$output-file}...";
-    my $pdf = PDF::Basic.new( :ast($pdf-ast), :input($pdf-content) );
+    my $pdf = PDF::Core.new( :ast($pdf-ast), :input($pdf-content) );
     $output-file.IO.spurt( $pdf.write( :pdf($pdf-ast) ), :enc<latin1> );
 }
