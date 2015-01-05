@@ -1,17 +1,11 @@
 use v6;
 
-use PDF::Core::Filter;
-use PDF::Core::Writer;
-use PDF::Core::IndObj;
-use PDF::Core::Util :unbox;
-
-class PDF::Core
-    is PDF::Core::Filter
-    is PDF::Core::Writer {
+class PDF::Core {
 
     has Str $.input;  # raw PDF image (latin-1 encoding)
     has Hash %.ind-obj-idx;
     has $.root-obj is rw;
+    has $.writer is rw;
 
     #| retrieves raw stream data from the input object
     multi method stream-data( Array :$ind-obj! ) {
@@ -35,7 +29,15 @@ class PDF::Core
         die "unable to handle {%opts.keys} struct: {%opts.perl}"
     }
 
+    method write( *%opt ) {
+        require PDF::Core::Writer;
+        $.writer //= ::('PDF::Core::Writer').new( :pdf(self) );
+        $.writer.write( |%opt );
+    }
+
     submethod BUILD(Hash :$ast, Str :$!input) {
+
+        use PDF::Core::IndObj;
 
         if $ast.defined {
             for $ast<body>.list  {

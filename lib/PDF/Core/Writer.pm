@@ -3,6 +3,11 @@ use v6;
 class PDF::Core::Writer {
 
     use PDF::Grammar;
+    use PDF::Core;
+
+    has PDF::Core $.pdf;
+
+    submethod BUILD( :$!pdf! ) {}
 
     multi method write( Array :$array! ) {
         ('[', $array.map({ $.write($_) }), ']').join: ' ';
@@ -170,7 +175,7 @@ class PDF::Core::Writer {
     multi method write( Hash :$stream! ) {
 
         my %dict = %( $stream<dict> );
-        my $data = $.stream-data( :$stream ),
+        my $data = $.pdf.stream-data( :$stream ),
         %dict<Length> //= :int($data.chars);
 
         ($.write( :%dict ),
@@ -189,8 +194,8 @@ class PDF::Core::Writer {
         %dict<Size> = :int($size)
             if $size.defined;
 
-        %dict<Root> //= $.root-obj
-            if $.root-obj.defined;
+        %dict<Root> //= $.pdf.root-obj
+            if $.pdf.root-obj.defined;
 
         die "unable to locate document root"
             unless %dict<Root>.defined;
