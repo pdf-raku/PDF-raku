@@ -5,7 +5,7 @@ class PDF::Core::Writer {
     use PDF::Grammar;
 
     multi method write( Array :$array! ) {
-        ('[', $array.map({ $.write-obj($_) }), ']').join: ' ';
+        ('[', $array.map({ $.write($_) }), ']').join: ' ';
     }
 
     multi method write( Array :$body!, :$offset! is rw ) {
@@ -80,7 +80,7 @@ class PDF::Core::Writer {
 
         ('<<',
          @keys.map( -> $key {
-             [~] $.write( :name($key)), ' ', $.write-obj( $dict{$key} ),
+             [~] $.write( :name($key)), ' ', $.write( $dict{$key} ),
                     }),
          '>>').join: ' ';
 
@@ -103,7 +103,7 @@ class PDF::Core::Writer {
         my ($obj-num, $gen-num, $object) = @$ind-obj;
 
         (sprintf('%d %d obj', $obj-num, $gen-num),
-         $.write-obj( $object ),
+         $.write( $object ),
          'endobj',
         ).join: "\n";
     }
@@ -150,9 +150,9 @@ class PDF::Core::Writer {
     }
 
     multi method write( Hash :$pdf! ) {
-        my $header = $.write-obj( $pdf, :node<header> );
+        my $header = $.write( $pdf, :node<header> );
         my $comment = $pdf<comment>:exists
-            ?? $.write-obj( $pdf, :node<comment> )
+            ?? $.write( $pdf, :node<comment> )
             !! $.write( :comment<%¥±ë> );
         my $offset = $header.chars + $comment.chars + 1;  # since format is byte orientated
         my $body = $.write( :body($pdf<body>), :$offset );
@@ -215,30 +215,24 @@ class PDF::Core::Writer {
         ).join: "\n";
     }
 
+    multi method write( Pair $ast!) {
+        $.write( %$ast );
+    }
+
+    multi method write( Hash $ast!, :$node) {
+        my %params = $node.defined
+            ?? $node => $ast{$node}
+        !! $ast.flat;
+
+        $.write( |%params );
+    }
+
     multi method write( *@args, *%opts ) is default {
 
         die "unexpected arguments: {[@args].perl}"
             if @args;
         
         die "unable to handle {%opts.keys} struct: {%opts.perl}"
-    }
-
-    # helper methods
-
-    method write-obj($ast, :$node) {
-
-        if $ast.isa(Hash) || $ast.isa(Pair) {
-            # it's a token represented by a type/value pair
-            my %params = $node.defined
-                ?? $node => $ast{$node}
-                !! $ast.flat;
-
-            $.write( |%params );
-        }
-        else {
-            die "unable to write-obj: {$ast.perl}";
-        }
-
     }
 
 }

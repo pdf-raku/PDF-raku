@@ -29,7 +29,7 @@ method encode($objstm = $.decoded --> Str) {
         my $object-str = 
         @idx.push: $obj-num;
         @idx.push: $objects-str.chars;
-        $objects-str ~= PDF::Core::Writer.write-obj( $object );
+        $objects-str ~= PDF::Core::Writer.write( $object );
     }
     my $idx-str = @idx.join: ' ';
     $.Type = :name<ObjStm>;
