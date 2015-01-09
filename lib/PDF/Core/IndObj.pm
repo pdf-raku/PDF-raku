@@ -22,6 +22,21 @@ multi method new-delegate( Array :$array!, *%params) {
     return ::("PDF::Core::IndObj::Array").new( :$array, |%params );
 }
 
+multi method new-delegate( Bool :$bool!, *%params) {
+    require ::("PDF::Core::IndObj::Bool");
+    return ::("PDF::Core::IndObj::Bool").new( :$bool, |%params );
+}
+
+multi method new-delegate( Str :$name!, *%params) {
+    require ::("PDF::Core::IndObj::Name");
+    return ::("PDF::Core::IndObj::Name").new( :$name, |%params );
+}
+
+multi method new-delegate( Any :$null!, *%params) {
+    require ::("PDF::Core::IndObj::Null");
+    return ::("PDF::Core::IndObj::Null").new( :$null, |%params );
+}
+
 multi method new-delegate( Hash :$dict!, *%params) {
     require ::("PDF::Core::IndObj::Dict");
     return ::("PDF::Core::IndObj::Dict").new-delegate( :$dict, |%params );
