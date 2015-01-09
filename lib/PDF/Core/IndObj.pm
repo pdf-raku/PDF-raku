@@ -27,6 +27,16 @@ multi method new-delegate( Bool :$bool!, *%params) {
     return ::("PDF::Core::IndObj::Bool").new( :$bool, |%params );
 }
 
+multi method new-delegate( Str :$hex-string!, *%params) {
+    require ::("PDF::Core::IndObj::String");
+    return ::("PDF::Core::IndObj::String").new( :$hex-string, |%params );
+}
+
+multi method new-delegate( Str :$literal!, *%params) {
+    require ::("PDF::Core::IndObj::String");
+    return ::("PDF::Core::IndObj::String").new( :$literal, |%params );
+}
+
 multi method new-delegate( Str :$name!, *%params) {
     require ::("PDF::Core::IndObj::Name");
     return ::("PDF::Core::IndObj::Name").new( :$name, |%params );
