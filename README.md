@@ -9,11 +9,11 @@ Also not so concerned with optimization, but will support basic reading from ind
 
 ## TODO
 
-PDF is a pretty big standard to cover in it's entirity. Just some of the things and initial release needs to cover to be useful in a good percentage of cases, and to foster futher open source development:
+PDF is a pretty big standard to cover in it's entirity. Initial release will be a minimal proof of concept. Handle enough funtionality to be useful in a good percentage of cases:
 
 - reading and writing of PDF 1.4 documents
 - reading and writing of PDF 1.5 - 1.7 PDFs
-- inter-conversion and compatiblity from PDF 1.4 to PDF 1.5+. I.e. the ability to read/writer interconvert between classic cross reference tables and compressed and filter cross reference and object streams.
+- inter-conversion and compatiblity from PDF 1.4 to PDF 1.5+. I.e. the ability to read/write with interconversion between classic cross reference tables and compressed and filter cross reference and object streams.
 - lazy reading from cross reference tables and streams (via the Root Catalog and Pages tables etc).
 - Linearized PDFs as input. These will probably have the Linearized preamble stripped on output. 
 - Filters. A basic ability to input and output filters commonly associated with Object / Cross Reference streams and content. Flate (LZW?), RunLength, ASCIIHex + PNG and TIFF predictors. Other formats can be copied without the need to re-encode
@@ -23,8 +23,6 @@ PDF is a pretty big standard to cover in it's entirity. Just some of the things 
 - Content - insertion of text and basic grpahics markup.
 - Images - insertion of TIFF, PNG and JPEG images
 - Fonts - font metrics for core fonts. Basic encoding.
-
-This is a minimal function set  
 
 ## PDF::Core::Filter
 
