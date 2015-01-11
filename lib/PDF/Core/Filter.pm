@@ -80,7 +80,7 @@ class PDF::Core::Filter {
         BEGIN my %FilterAbbreviations =
             AHx => 'ASCIIHexDecode',
             A85 => 'ASCII85Decode',
-            LZW => 'LZWDecode LZW',
+            LZW => 'LZWDecode',
             Fl  => 'FlateDecode',
             RL  => 'RunLengthDecode',
             CCF => 'CCITTFaxDecode',
