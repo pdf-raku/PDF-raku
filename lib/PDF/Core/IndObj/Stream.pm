@@ -70,12 +70,12 @@ our class PDF::Core::IndObj::Stream
         %.dict<Type>;
     }
 
-    method decode( $encoded = $.encoded ) {
+    method decode( Str $encoded = $.encoded ) {
         my $dict = unbox( :$.dict, :keys<Filter DecodeParms> );
         PDF::Core::Filter.decode( $encoded, :$dict );
     }
 
-    method encode( $decoded = $.decoded) {
+    method encode( Str $decoded = $.decoded) {
         my $dict = unbox( :$.dict, :keys<Filter DecodeParms> );
         PDF::Core::Filter.encode( $decoded, :$dict );
     }
