@@ -1,11 +1,53 @@
 perl6-PDF-Core
 ==============
 
-** Under Construction ** This module provides low-level PDF reading, manipulation and construction primitives. It performs a similar role to Perl 5's PDF::API2::Basic::PDF (PDF::API2 distribution) or Text::PDF.
+** Under Construction ** An experimental Perl 6 module that provides low-level primitives for the reading, manipulation and construction of PDF content. It performs a similar role to Perl 5's Text::PDF or PDF::API2::Basic::PDF (PDF::API2 distribution).
 
-This is a core module. As such, it's main purpose is to implement the [PDF 1.7 specification](http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf). It aims to make PDF authoring as easy and high-level as possible, but not to hide details of the PDF Specification. You will need to refer to the specification to refer to, or maintain this module. Other higher level modules (PDF::API6?) will provide a high-level abstract interface and implement additional functionality (non-core fonts, kerning, high level graphics, forms, etc).
+This is intended as a low-level module. As such, it's main purpose is to implement the [PDF 1.7 specification](http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf). It aims to make PDF authoring as simple as possible, but not to hide details of the PDF Specification. Other higher level modules can potentially provide a high-level abstract interface and implement additional functionality (non-core fonts, kerning, high level graphics, forms, etc).
 
-Also not so concerned with optimization, but will support basic reading from index and lazy streams and general content handling. It many cases, stream content will be copied verbatim from input to output PDF's without the need to fully read or re-encode.
+I'm also referring to Perl 5's Text::PDF and PDF::API2 code bases. Also looking at xpdf on occasions.
+
+Unlike (the older) Text::PDF and PDF::API2, this module will support PDF 1.5+ object and content streams and should hopefully accept linearized PDFs as input. 
+
+Also not so concerned with optimization, but will support basic reading from index and lazy streams and general content handling. It many cases, stream content will be copied verbatim from input to output PDF's without the need to fully process or re-encode.
+
+## Status / Development Notes
+
+This module is a proof of concept in the early stages of development.  It is also subject to change, refactoring or widthdrawal atany time.
+
+PDF::Core uses the PDF::Grammar as a toolkit to parse individual PDF components. Both for parsing the top level structure of a PDF and to interpret paticular stream data, such as Object Streams and Content Streams. It isshares AST data structures with PDF::Grammar. E.g. bin/pdf-rewriter uses PDF::Grammar::PDF to read a PDF then rewrites it using PDF::Core::Writer.
+
+## Use Cases
+
+These are some basic use examples/cases that an initial release of PDF::Core could be expected cover.
+
+### 1. create simple content from a PDF::Grammar compatible data structure. Reserialize 1.4 PDF.
+<blockquote>done - see `t/write.ast` and `t/pdf/pdf.json`</blockquote>
+
+#### 1a. create a simple PDF using API. Output simple "Hello World" text <em>(See Text::PDF `examples/hello.pl`)</em>
+<blockquote>Discussion: This will involve creating a PDF with a adding a Page, and inserting content.</blockquote>
+
+#### 1b. extend 1a by loading a simple image graphic. E.g. load a JPEG image from the filesystem.
+<blockquote>I'll need to delve into PDF::API2. Text::PDF doesn't seem to cover this</blockquote>
+
+#### 1c. extend 1b by adding a wrapping text-block.
+<blockquote>This will require the keeping of font metrics for core fonts (to determine character sizes word-wrapping bounadries. </blockquote>
+
+### 2. reading and writing of PDF files (bin/pdf-rewriter.pl)
+
+#### 2a. read a version 1.4 PDF. Detect it's a 1.4 fromat. Locate xref at the tail of file. Load index then load
+
+#### 2b. Read a version 1.5+ PDF with cross reference and object streams. Detect as 1.5+ load and parse trailer and cross reference stream. Load Object Streams. Rewrite output PDF as 1.5+ with regenerated index.
+
+#### 2c. Read as version 1.5+ as per 2a. Rewrite as a version 1.4 PDF.
+
+### 3. Port of scripts / examples from Perl 5's Text::PDF module
+
+#### 3a. scripts/pdfstamp - overprint text on each page of a PDF.
+
+#### 3b. scripts/pdfrevert - revert last changeset from a PDF
+
+#### 3c. scripts/pdfbooklet - convert a PDF file into a booklet
 
 ## TODO
 
