@@ -29,9 +29,9 @@ class PDF::Core {
         die "unable to handle {%opts.keys} struct: {%opts.perl}"
     }
 
-    method write( *%opt ) {
+    method write( :$offset = 0, *%opt ) {
         require PDF::Core::Writer;
-        $.writer //= ::('PDF::Core::Writer').new( :pdf(self) );
+        $.writer //= ::('PDF::Core::Writer').new( :pdf(self), :$offset );
         $.writer.write( |%opt );
     }
 

@@ -21,10 +21,8 @@ for 't/pdf'.IO.dir.list {
     my $pdf-input = $pdf-input-file.IO.slurp;
 
     my $pdf = PDF::Core.new( :root(%pdf-data), :input($pdf-input) );
-    %pdf-data<offset> = 0;
-    my $pdf-output = $pdf.write( |%pdf-data );
+    my $pdf-output = $pdf.write( :offset(0), |%pdf-data );
     $pdf-output-file.IO.spurt: $pdf-output;
-    %pdf-data<offset>:delete;
 
     my ($rule) = %pdf-data.keys;
     my %expected = ast => %pdf-data;

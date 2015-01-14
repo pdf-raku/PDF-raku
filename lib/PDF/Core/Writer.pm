@@ -6,6 +6,8 @@ class PDF::Core::Writer {
     use PDF::Core;
 
     has PDF::Core $.pdf;
+    has $.offset is rw = 0;
+    has $.prev-xref-offset is rw;
 
     submethod BUILD( :$!pdf! ) {}
 
@@ -13,11 +15,11 @@ class PDF::Core::Writer {
         ('[', $array.map({ $.write($_) }), ']').join: ' ';
     }
 
-    multi method write( Array :$body!, :$offset! is rw ) {
-        $body.map({ $.write( :body($_), :$offset )}).join: "\n";
+    multi method write( Array :$body! ) {
+        $body.map({ $.write( :body($_) )}).join: "\n";
     }
 
-    multi method write( Hash :$body!, :$offset! is rw ) {
+    multi method write( Hash :$body! ) {
         my $object-count = 1;
         my $object-first-num = 0;
         my @entries = %( :offset(0), :gen(65535), :status<f>, :obj(0) ).item;
@@ -31,7 +33,7 @@ class PDF::Core::Writer {
 
                 $object-count++;
                 # hardcode status, for now
-                @entries.push: %( :$offset, :$gen, :status<n>, :$obj, :$gen ).item;
+                @entries.push: %( :$.offset, :$gen, :status<n>, :$obj, :$gen ).item;
                 @out.push: $.write( :$ind-obj );
 
             }
@@ -42,31 +44,29 @@ class PDF::Core::Writer {
                 die "don't know how to serialize body component: {$obj.perl}"
             }
 
-            $offset += @out[*-1].chars + 1;
+            $.offset += @out[*-1].chars + 1;
         }
 
-        my $xref-offset = $offset;
+        my $xref-offset = $.offset;
+        my $prev-xref-offset = $.prev-xref-offset;
 
         @entries = @entries.sort: { $^a<obj> <=> $^b<obj> || $^a<gen> <=> $b<gen> };
 
         my %xref = :$object-first-num, :$object-count, :@entries;
         @out.push: $.write( :%xref );
-        $offset += @out[*-1].chars + 1;
-
+        $.offset += @out[*-1].chars + 1;
         my $trailer = $body<trailer>
             // die "body does not have a trailer";
-
-        @out.push: $.write( :$trailer, :$xref-offset, :size(+@entries) );
-        $offset += @out[*-1].chars + 1;
-
-        $offset++;
+        @out.push: $.write( :$trailer, :$xref-offset, :$prev-xref-offset, :size(+@entries) );
+        $.prev-xref-offset = $xref-offset;
+        $.offset += @out[*-1].chars + 2;
 
         return @out.join: "\n";
     }
 
     multi method write( :$body! ) {
-        my $offset = 0;
-        $.write( :$body, :$offset );
+        $.offset = 0;
+        $.write( :$body );
     }
 
     multi method write( Bool :$bool! ) {
@@ -159,8 +159,8 @@ class PDF::Core::Writer {
         my $comment = $pdf<comment>:exists
             ?? $.write( $pdf, :node<comment> )
             !! $.write( :comment<%¥±ë> );
-        my $offset = $header.chars + $comment.chars + 1;  # since format is byte orientated
-        my $body = $.write( :body($pdf<body>), :$offset );
+        $.offset = $header.chars + $comment.chars + 1;  # since format is byte orientated
+        my $body = $.write( :body($pdf<body>) );
         [~] ($header, "\n", $comment, "\n", $body, '%%EOF', '');
     }
 
@@ -185,11 +185,14 @@ class PDF::Core::Writer {
         ).join: "\n";
     }
 
-    multi method write( Hash :$trailer!, :$xref-offset is copy, :$size ) {
+    multi method write( Hash :$trailer!, :$xref-offset is copy, :$prev-xref-offset, :$size ) {
 
         $xref-offset //= $trailer<offset> // 0;
 
         my %dict = %( $trailer<dict> // {} );
+
+        %dict<Prev> = :int($prev-xref-offset)
+            if $prev-xref-offset.defined;
 
         %dict<Size> = :int($size)
             if $size.defined;
