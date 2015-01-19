@@ -35,39 +35,46 @@ class PDF::Core {
         $.writer.write( |%opt );
     }
 
-    submethod BUILD(Hash :$ast, Str :$!input) {
+    multi submethod BUILD(Hash :$ast, Str :$!input) {
 
         use PDF::Core::IndObj;
 
         if $ast.defined {
+            # pass 1: index top level objects
             for $ast<body>.list  {
-                #= build object index
                 for .<objects>.list {
                     next unless my $ind-obj = .<ind-obj>;
+               warn :$ind-obj.perl;
                     my $obj-num = $ind-obj[0].Int;
                     my $gen-num = $ind-obj[1].Int;
                     %!ind-obj-idx{$obj-num}{$gen-num} = $ind-obj;
+                }
+            }
 
-                    for $ind-obj[2] {
-                        my ($token-type, $val) = .kv;
-                        if $token-type eq 'stream' && $val<dict><Type>.defined {
+            # pass 2: reconcile XRefs (Cross Rereference Streams), Handle ObjStm (Object Streams) 
+            for %!ind-obj-idx.values.sort.map: { .values.sort } -> $ind-obj {
+                my $obj-num = $ind-obj[0].Int;
+                my $gen-num = $ind-obj[1].Int;
 
-                            given $val<dict><Type>.value {
-                                when 'XRef' {
-                                    warn "obj $obj-num $gen-num: TBA cross reference streams (/Type /$_)";
-                                    # locate document root
-                                    $!root-obj //= $val<dict><Root>;
-                                    my $xref-obj = PDF::Core::IndObj.new-delegate( :$ind-obj, :$!input );
-                                    my $xref-data = $xref-obj.decode;
-                                    warn :$xref-data.perl;
-                                }
-                                when 'ObjStm' {
-                                    # these contain nested objects
-                                    warn "obj $obj-num $gen-num: TBA object streams (/Type /$_)";
-                                    my $objstm-obj = PDF::Core::IndObj.new-delegate( :$ind-obj, :$!input );
-                                    my $objstm-data = $objstm-obj.decode;
-                                    warn :$objstm-data.perl;
-                                }
+                for $ind-obj[2] {
+                    my ($token-type, $val) = .kv;
+                    if $token-type eq 'stream' && $val<dict><Type>.defined {
+
+                        given $val<dict><Type>.value {
+                            when 'XRef' {
+                                warn "obj $obj-num $gen-num: TBA cross reference streams (/Type /$_)";
+                                # locate document root
+                                $!root-obj //= $val<dict><Root>;
+                                my $xref-obj = PDF::Core::IndObj.new-delegate( :$ind-obj, :$!input );
+                                my $xref-data = $xref-obj.decode;
+                                warn :$xref-data.perl;
+                            }
+                            when 'ObjStm' {
+                                # these contain nested objects
+                                warn "obj $obj-num $gen-num: TBA object streams (/Type /$_)";
+                                my $objstm-obj = PDF::Core::IndObj.new-delegate( :$ind-obj, :$!input );
+                                my $objstm-data = $objstm-obj.decode;
+                                warn :$objstm-data.perl;
                             }
                         }
                     }

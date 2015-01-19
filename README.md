@@ -15,7 +15,7 @@ Also not so concerned with optimization, but will support basic reading from ind
 
 This module is a proof of concept in the early stages of development.  It is also subject to change, refactoring or widthdrawal atany time.
 
-PDF::Core uses the PDF::Grammar as a toolkit to parse individual PDF components. Both for parsing the top level structure of a PDF and to interpret paticular stream data, such as Object Streams and Content Streams. It isshares AST data structures with PDF::Grammar. E.g. bin/pdf-rewriter uses PDF::Grammar::PDF to read a PDF then rewrites it using PDF::Core::Writer.
+PDF::Core uses the existing PDF::Grammar as a toolkit to parse individual PDF components. Both for parsing the top level structure of a PDF and to interpret paticular stream data, such as Object Streams and Content Streams. It shares AST data structures with PDF::Grammar. E.g. bin/pdf-rewriter uses PDF::Grammar::PDF to read a PDF then rewrites it using PDF::Core::Writer.
 
 ## Use Cases
 
@@ -31,11 +31,11 @@ These are some basic use examples/cases that an initial release of PDF::Core cou
 <blockquote>I'll need to delve into PDF::API2. Text::PDF doesn't seem to cover this</blockquote>
 
 #### 1c. extend 1b by adding a wrapping text-block.
-<blockquote>This will require the keeping of font metrics for core fonts (to determine character sizes word-wrapping bounadries. </blockquote>
+<blockquote>This will require the keeping of font metrics for core fonts (to determine character sizes word-wrapping boundaries. </blockquote>
 
 ### 2. reading and writing of PDF files (bin/pdf-rewriter.pl)
 
-#### 2a. read a version 1.4 PDF. Detect it's a 1.4 fromat. Locate xref at the tail of file. Load index then load
+#### 2a. read a version 1.4 PDF. Detect it's a 1.4 fromat. Locate xref at the tail of file. Load index then seed AST
 
 #### 2b. Read a version 1.5+ PDF with cross reference and object streams. Detect as 1.5+ load and parse trailer and cross reference stream. Load Object Streams. Rewrite output PDF as 1.5+ with regenerated index.
 
