@@ -43,7 +43,10 @@ our class PDF::Core::IndObj::Stream
         $!encoded = $input.substr($start - 1, $length - 1 );
     }
 
-    multi submethod BUILD( :$!dict!, :$!decoded, :$!encoded) {
+    multi submethod BUILD( :$!dict!, :$!decoded!) {
+    }
+
+    multi submethod BUILD( :$!dict!, :$!encoded!) {
     }
 
     method encoded {

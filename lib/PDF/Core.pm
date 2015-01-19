@@ -5,7 +5,6 @@ class PDF::Core {
     has Str $.input;  # raw PDF image (latin-1 encoding)
     has Hash %.ind-obj-idx;
     has $.root-obj is rw;
-    has $.writer is rw;
 
     #| retrieves raw stream data from the input object
     multi method stream-data( Array :$ind-obj! ) {
@@ -29,10 +28,13 @@ class PDF::Core {
         die "unable to handle {%opts.keys} struct: {%opts.perl}"
     }
 
-    method write( :$offset = 0, *%opt ) {
+    method writer(:$offset) {
         require PDF::Core::Writer;
-        $.writer //= ::('PDF::Core::Writer').new( :pdf(self), :$offset );
-        $.writer.write( |%opt );
+        ::('PDF::Core::Writer').new( :pdf(self), :$offset );
+    }
+
+    method write( :$offset = 0, *%opt ) {
+        $.writer(:$offset).write( |%opt );
     }
 
     multi submethod BUILD(Hash :$ast, Str :$!input) {

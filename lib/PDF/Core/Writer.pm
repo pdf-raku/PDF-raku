@@ -4,6 +4,7 @@ class PDF::Core::Writer {
 
     use PDF::Grammar;
     use PDF::Core;
+    use PDF::Core::IndObj;
 
     has PDF::Core $.pdf;
     has $.offset is rw = 0;
@@ -221,6 +222,10 @@ class PDF::Core::Writer {
              sprintf '%010d %05d %s ', .<offset>, .<gen>, .<status>
          }),
         ).join: "\n";
+    }
+
+    multi method write( PDF::Core::IndObj $ind-obj ) {
+        $.write( $ind-obj.ast );
     }
 
     multi method write( Pair $ast!) {
