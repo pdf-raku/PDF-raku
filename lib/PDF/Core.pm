@@ -3,8 +3,61 @@ use v6;
 class PDF::Core {
 
     has Str $.input;  # raw PDF image (latin-1 encoding)
+    has Int $.xref-offset is rw;
     has Hash %.ind-obj-idx;
     has $.root-obj is rw;
+    has Rat $.version is rw;
+    has Bool $.debug is rw;
+
+    multi method open(Str $fname) {
+        $.open( $fname.IO.open( :r, :enc<latin1> ) );
+    }
+
+    multi method open( IO::Handle $ioh ) {
+        use PDF::Grammar::PDF;
+        use PDF::Grammar::PDF::Actions;
+
+        my $actions = PDF::Grammar::PDF::Actions.new;
+
+        {
+            # file should start with: %PDF-n.m
+            # (n, m are single digits giving the major and minor version numbers.
+            my $preamble-buf = $ioh.read: 8;
+            die "eompty or truncated PDF"
+                unless +$preamble-buf == 8;
+
+            my $preamble = $preamble-buf.decode("latin-1");
+
+            PDF::Grammar::PDF.parse($preamble, :$actions, :rule<header>)
+                or die "expected file header '%PDF-n.m', got: {$preamble.perl}";
+
+            $.version = $/.ast.value;
+            warn "pdf version is: {$.version}"
+                if $.debug || True;
+        }
+
+        {
+            # now locate and read the file trailer
+            # hmm, avbritary random number
+            BEGIN constant SEEK-FROM-EOF = 2;
+            $ioh.seek( 0, SEEK-FROM-EOF );
+            my $bytes = min( $ioh.tell-8, 512);
+            
+            $ioh.seek( -$bytes, SEEK-FROM-EOF );
+            my $postamble-buf = $ioh.read: $bytes;
+            my $postamble = $postamble-buf.decode("latin-1");
+            warn "postamble: {$postamble.perl}"
+                if $.debug || True;
+
+            PDF::Grammar::PDF.parse($postamble, :$actions, :rule<postamble>)
+                or die "expected file trailer 'startxref ... \%\%EOF', got: {$postamble.perl}";
+            $.xref-offset = $/.ast.value;
+        }
+
+        warn "under construction...";
+        # stub
+        self;
+    }
 
     #| retrieves raw stream data from the input object
     multi method stream-data( Array :$ind-obj! ) {
