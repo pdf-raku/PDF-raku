@@ -2,7 +2,9 @@ use v6;
 
 class PDF::Core {
 
-    has Str $.input;  # raw PDF image (latin-1 encoding)
+    use PDF::Core::Input;
+
+    has PDF::Core::Input $.input is rw;  # raw PDF image (latin-1 encoding)
     has Int $.xref-offset is rw;
     has Hash %.ind-obj-idx;
     has $.root-obj is rw;
@@ -10,23 +12,25 @@ class PDF::Core {
     has Bool $.debug is rw;
 
     multi method open(Str $fname) {
-        $.open( $fname.IO.open( :r, :enc<latin1> ) );
+        my $ioh = $fname.IO.open( :r, :enc<latin1> );
+        $.open( $ioh );
     }
 
     multi method open( IO::Handle $ioh ) {
         use PDF::Grammar::PDF;
         use PDF::Grammar::PDF::Actions;
+        use PDF::Core::Input;
+
+        $.input = PDF::Core::Input.new-delegate( :value($ioh) );
 
         my $actions = PDF::Grammar::PDF::Actions.new;
 
         {
-            # file should start with: %PDF-n.m
-            # (n, m are single digits giving the major and minor version numbers.
-            my $preamble-buf = $ioh.read: 8;
-            die "eompty or truncated PDF"
-                unless +$preamble-buf == 8;
-
-            my $preamble = $preamble-buf.decode("latin-1");
+            # file should start with: %PDF-n.m, (where n, m are single
+            # digits giving the major and minor version numbers).
+            
+            my $preamble = $.input.substr(0, 8);
+            warn :$preamble.perl;
 
             PDF::Grammar::PDF.parse($preamble, :$actions, :rule<header>)
                 or die "expected file header '%PDF-n.m', got: {$preamble.perl}";
@@ -38,14 +42,8 @@ class PDF::Core {
 
         {
             # now locate and read the file trailer
-            # hmm, avbritary random number
-            BEGIN constant SEEK-FROM-EOF = 2;
-            $ioh.seek( 0, SEEK-FROM-EOF );
-            my $bytes = min( $ioh.tell-8, 512);
-            
-            $ioh.seek( -$bytes, SEEK-FROM-EOF );
-            my $postamble-buf = $ioh.read: $bytes;
-            my $postamble = $postamble-buf.decode("latin-1");
+            # hmm, arbritary random number
+            my $postamble = $.input.substr(* - 512);
             warn "postamble: {$postamble.perl}"
                 if $.debug || True;
 
@@ -90,7 +88,10 @@ class PDF::Core {
         $.writer(:$offset).write( |%opt );
     }
 
-    multi submethod BUILD(Hash :$ast, Str :$!input) {
+    multi submethod BUILD(Hash :$ast, :$input) {
+
+        $!input = PDF::Core::Input.new-delegate( :value($input) )
+            if $input.defined;
 
         use PDF::Core::IndObj;
 
@@ -99,7 +100,6 @@ class PDF::Core {
             for $ast<body>.list  {
                 for .<objects>.list {
                     next unless my $ind-obj = .<ind-obj>;
-               warn :$ind-obj.perl;
                     my $obj-num = $ind-obj[0].Int;
                     my $gen-num = $ind-obj[1].Int;
                     %!ind-obj-idx{$obj-num}{$gen-num} = $ind-obj;
