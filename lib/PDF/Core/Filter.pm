@@ -3,7 +3,9 @@ use v6;
 class PDF::Core::Filter {
 
     use PDF::Core::Filter::ASCIIHex;
+    use PDF::Core::Filter::ASCII85;
     use PDF::Core::Filter::Flate;
+    use PDF::Core::Filter::LZW;
     use PDF::Core::Filter::RunLength;
 
     multi method decode( $input, Hash :$dict! where !.<Filter>.defined) {
@@ -67,11 +69,12 @@ class PDF::Core::Filter {
 
         BEGIN my %Filters =
             ASCIIHexDecode => PDF::Core::Filter::ASCIIHex,
-            ASCII85Decode  => Mu,
+            ASCII85Decode  => PDF::Core::Filter::ASCII85,
             CCITTFaxDecode => Mu,
             Crypt          => Mu,
             DCTDecode      => Mu,
             FlateDecode    => PDF::Core::Filter::Flate,
+            LZWDecode      => PDF::Core::Filter::LZW,
             JBIG2Decode    => Mu,
             JPXDecode      => Mu,
             RunLengthDecode => PDF::Core::Filter::RunLength,

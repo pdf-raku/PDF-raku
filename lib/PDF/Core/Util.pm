@@ -4,12 +4,10 @@ module PDF::Core::Util;
 
 #= resample a buffer as n-bit to m-bit unsigned integers
 proto sub resample($,$,$) is export(:resample) {*};
-multi sub resample( $nums, 8, 4)  { $nums.list.map: { ($_ +> 4, $_ +& 15).flat } }
-multi sub resample( $nums, 4, 8)  { $nums.list.map: -> $hi, $lo { $hi * 16 + $lo } }
-multi sub resample( $nums, 8, 16) {
-    $nums.list.map: -> $hi, $lo {
-        $hi +< 8  + $lo;
-    } }
+multi sub resample( $nums!, 8, 4)  { $nums.list.map: { ($_ +> 4, $_ +& 15).flat } }
+multi sub resample( $nums!, 4, 8)  { $nums.list.map: -> $hi, $lo { $hi +< 4  +  $lo } }
+multi sub resample( $nums!, 8, 16) { $nums.list.map: -> $hi, $lo { $hi +< 8  +  $lo } }
+multi sub resample( $nums!, 8, 32) { $nums.list.map: -> $b1, $b2, $b3, $b4 { $b1 +< 24  +  $b2 +< 16  +  $b3 +< 8  +  $b4 } }
 multi sub resample( $nums!, 16, 8) { $nums.list.map: { ($_ +> 8, $_ +& 255).flat } }
 multi sub resample( $nums!, $n!, $m where $_ == $n) { $nums }
 multi sub resample( $nums!, $n!, $m!) is default {

@@ -13,12 +13,12 @@ our class PDF::Core::IndObj::Stream
     has $.decoded;
 
     method new-delegate( :$stream, *%params ) {
-        for <dict start end encoded decoded> {
+        for <start end encoded decoded> {
             %params{$_} = $stream{$_}
             if $stream{$_}:exists;
         }
         my $dict = $stream<dict>;
-        $.delegate-class( :$dict ).new( |%params );
+        $.delegate-class( :$dict ).new( :$dict, |%params );
     }
 
     method delegate-class( Hash :$dict! ) {
