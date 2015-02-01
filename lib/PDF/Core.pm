@@ -3,7 +3,6 @@ use v6;
 class PDF::Core {
 
     use PDF::Core::Input;
-    use PDF::Core::Edit;
 
     has PDF::Core::Input $.input is rw;  # raw PDF image (latin-1 encoding)
     has Int $.xref-offset is rw;
@@ -11,7 +10,6 @@ class PDF::Core {
     has $.root-obj is rw;
     has Rat $.version is rw;
     has Bool $.debug is rw;
-    has PDF::Core::Edit @.edits is rw;
 
     multi method open(Str $fname) {
         my $ioh = $fname.IO.open( :r, :enc<latin1> );
@@ -53,8 +51,6 @@ class PDF::Core {
                 or die "expected file trailer 'startxref ... \%\%EOF', got: {$postamble.perl}";
             $.xref-offset = $/.ast.value;
         }
-
-        @.edits = [];
 
         warn "under construction...";
         # stub
