@@ -1,9 +1,9 @@
 use v6;
 # code adapted from http://rosettacode.org/wiki/LZW_compression#Perl_6
-use PDF::Core::Filter::_Predictors;
+use PDF::Core::Filter::Mixin::Predictors;
 
 class PDF::Core::Filter::LZW
-    is PDF::Core::Filter::_Predictors; # to get predictor methods
+    is PDF::Core::Filter::Mixin::Predictors; # to get predictor methods
 
 # Maintainer's Note: LZW is described in the PDF 1.7 spec
 # in section 3.3.3.

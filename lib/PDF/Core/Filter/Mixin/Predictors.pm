@@ -1,6 +1,6 @@
 use v6;
 
-class PDF::Core::Filter::_Predictors;
+class PDF::Core::Filter::Mixin::Predictors;
 
 use PDF::Core::Util :resample;
 # post prediction functions as described in the PDF 1.7 spec, table 3.8
