@@ -3,10 +3,10 @@
 use Test;
 use JSON::Tiny;
 
-use PDF::Core;
-use PDF::Core::Util :unbox;
+use PDF::Tools;
+use PDF::Tools::Util :unbox;
 
-my $pdf = PDF::Core.new;
+my $pdf = PDF::Tools.new;
 
 for 't/write-ast.json'.IO.lines {
 

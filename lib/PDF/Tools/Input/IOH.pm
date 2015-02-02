@@ -1,9 +1,9 @@
 use v6;
 
-use PDF::Core::Input;
+use PDF::Tools::Input;
 
-class PDF::Core::Input::IOH
-    is PDF::Core::Input {
+class PDF::Tools::Input::IOH
+    is PDF::Tools::Input {
 
     has IO::Handle $.value is rw;
     has Int $!bytes;

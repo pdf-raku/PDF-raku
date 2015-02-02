@@ -1,8 +1,8 @@
 use v6;
-use PDF::Core::IndObj;
+use PDF::Tools::IndObj;
 
-class PDF::Core::IndObj::String
-    is PDF::Core::IndObj {
+class PDF::Tools::IndObj::String
+    is PDF::Tools::IndObj {
     has Str $.type is rw;
     has Str $.value is rw;
 

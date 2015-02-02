@@ -2,8 +2,8 @@ use Test;
 
 plan 12;
 
-use PDF::Core::Filter::Mixin::Predictors;
-use PDF::Core::Filter;
+use PDF::Tools::Filter::Mixin::Predictors;
+use PDF::Tools::Filter;
 
 my $prediction-in = buf8.new: [
     0x2, 0x1, 0x0, 0x10, 0x0,
@@ -30,21 +30,21 @@ my $png-post-prediction = buf8.new: [
     1,   2,   3,    4,
     ];
 
-is_deeply PDF::Core::Filter::Mixin::Predictors.post-prediction( $prediction-in,
+is_deeply PDF::Tools::Filter::Mixin::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(1), ),
     $prediction-in,
     "NOOP predictive filter sanity";
 
-is_deeply PDF::Core::Filter::Mixin::Predictors.post-prediction( $prediction-in,
+is_deeply PDF::Tools::Filter::Mixin::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(2), ),
     $tiff-post-prediction,
     "TIFF predictive filter sanity";
 
-is_deeply PDF::Core::Filter::Mixin::Predictors.post-prediction( $prediction-in,
+is_deeply PDF::Tools::Filter::Mixin::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Predictor(12), ),
     $png-post-prediction,
@@ -60,11 +60,11 @@ my $rand-data = buf8.new: [
 for None => 1, TIFF => 2, PNG => 10 {
     my ($desc, $Predictor) = .kv;
 
-    my $prediction = PDF::Core::Filter::Mixin::Predictors.prediction( $rand-data,
+    my $prediction = PDF::Tools::Filter::Mixin::Predictors.prediction( $rand-data,
                                                            :Columns(4),
                                                            :$Predictor, );
 
-    my $post-prediction = PDF::Core::Filter::Mixin::Predictors.post-prediction( $prediction,
+    my $post-prediction = PDF::Tools::Filter::Mixin::Predictors.post-prediction( $prediction,
                                                                      :Columns(4),
                                                                      :$Predictor, );
 
@@ -79,10 +79,10 @@ my $rand-chrs = [~] $rand-data.list.grep({ $_ <= 0xFF }).map: { .chr };
 for $flate-dict, $lzw-dict -> $dict {
 
     my $encoded;
-    lives_ok {$encoded = PDF::Core::Filter.encode($rand-chrs, :$dict)}, "$dict<Filter> encode with prediction";
+    lives_ok {$encoded = PDF::Tools::Filter.encode($rand-chrs, :$dict)}, "$dict<Filter> encode with prediction";
 
     my $decoded;
-    lives_ok {$decoded = PDF::Core::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with prediction";
+    lives_ok {$decoded = PDF::Tools::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with prediction";
 
     is $decoded, $rand-chrs, "$dict<Filter> round-trip with prediction";
 }

@@ -1,12 +1,12 @@
 use v6;
 
-class PDF::Core::Filter {
+class PDF::Tools::Filter {
 
-    use PDF::Core::Filter::ASCIIHex;
-    use PDF::Core::Filter::ASCII85;
-    use PDF::Core::Filter::Flate;
-    use PDF::Core::Filter::LZW;
-    use PDF::Core::Filter::RunLength;
+    use PDF::Tools::Filter::ASCIIHex;
+    use PDF::Tools::Filter::ASCII85;
+    use PDF::Tools::Filter::Flate;
+    use PDF::Tools::Filter::LZW;
+    use PDF::Tools::Filter::RunLength;
 
     multi method decode( $input, Hash :$dict! where !.<Filter>.defined) {
         # nothing to do
@@ -68,16 +68,16 @@ class PDF::Core::Filter {
     method filter-class( Str $filter-name is copy ) {
 
         BEGIN my %Filters =
-            ASCIIHexDecode => PDF::Core::Filter::ASCIIHex,
-            ASCII85Decode  => PDF::Core::Filter::ASCII85,
+            ASCIIHexDecode => PDF::Tools::Filter::ASCIIHex,
+            ASCII85Decode  => PDF::Tools::Filter::ASCII85,
             CCITTFaxDecode => Mu,
             Crypt          => Mu,
             DCTDecode      => Mu,
-            FlateDecode    => PDF::Core::Filter::Flate,
-            LZWDecode      => PDF::Core::Filter::LZW,
+            FlateDecode    => PDF::Tools::Filter::Flate,
+            LZWDecode      => PDF::Tools::Filter::LZW,
             JBIG2Decode    => Mu,
             JPXDecode      => Mu,
-            RunLengthDecode => PDF::Core::Filter::RunLength,
+            RunLengthDecode => PDF::Tools::Filter::RunLength,
             ;
 
         BEGIN my %FilterAbbreviations =

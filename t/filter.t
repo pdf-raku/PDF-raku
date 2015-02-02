@@ -2,7 +2,7 @@ use Test;
 
 plan 44;
 
-use PDF::Core::Filter;
+use PDF::Tools::Filter;
 
 my $empty = '';
 my $latin-chars = [~] chr(0)..chr(0xFF);
@@ -16,15 +16,15 @@ for 'ASCIIHexDecode', 'FlateDecode', 'RunLengthDecode', ['FlateDecode', 'RunLeng
     my $filter-name = $filter.join: ', ';
     my %dict = Filter => $filter;
 
-    dies_ok { PDF::Core::Filter.encode($wide-chars, :%dict) }, $filter-name ~' decode chars > \xFF - dies';
+    dies_ok { PDF::Tools::Filter.encode($wide-chars, :%dict) }, $filter-name ~' decode chars > \xFF - dies';
 
     for :$empty, :$latin-chars, :$low-repeat, :$high-repeat, :$longish {
         my ($name, $input) = .kv;
 
         my $output;
-        lives_ok { $output = PDF::Core::Filter.encode($input, :%dict) }, $filter-name ~' encoding - lives';
+        lives_ok { $output = PDF::Tools::Filter.encode($input, :%dict) }, $filter-name ~' encoding - lives';
 
-        is_deeply PDF::Core::Filter.decode($output, :%dict), $input, "$filter-name roundtrip: $name"
+        is_deeply PDF::Tools::Filter.decode($output, :%dict), $input, "$filter-name roundtrip: $name"
             or diag :$input.perl;
 
     }

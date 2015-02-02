@@ -1,12 +1,12 @@
 use v6;
 
-class PDF::Core::Writer {
+class PDF::Tools::Writer {
 
     use PDF::Grammar;
-    use PDF::Core::Input;
-    use PDF::Core::IndObj;
+    use PDF::Tools::Input;
+    use PDF::Tools::IndObj;
 
-    has PDF::Core::Input $.input;
+    has PDF::Tools::Input $.input;
     has $.root-object is rw;
     has $.offset is rw = 0;
     has $.prev-xref-offset is rw;
@@ -223,7 +223,7 @@ class PDF::Core::Writer {
         ).join: "\n";
     }
 
-    multi method write( PDF::Core::IndObj $ind-obj ) {
+    multi method write( PDF::Tools::IndObj $ind-obj ) {
         $.write( $ind-obj.ast );
     }
 

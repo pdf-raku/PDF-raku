@@ -1,10 +1,10 @@
 use v6;
 # based on Perl 5's PDF::API::Core::PDF::Filter::ASCIIHexDecode
 
-use PDF::Core::Filter::Mixin::Predictors;
+use PDF::Tools::Filter::Mixin::Predictors;
 
-class PDF::Core::Filter::Flate
-    is PDF::Core::Filter::Mixin::Predictors;
+class PDF::Tools::Filter::Flate
+    is PDF::Tools::Filter::Mixin::Predictors;
 
 use Compress::Zlib;
 

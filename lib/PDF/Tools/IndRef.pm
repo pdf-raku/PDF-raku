@@ -1,6 +1,6 @@
 use v6;
 
-class PDF::Core::IndRef {
+class PDF::Tools::IndRef {
 
     has Int $.obj-num is rw;
     has Int $.gen-num is rw;

@@ -1,6 +1,6 @@
 use v6;
 
-module PDF::Core::Util;
+module PDF::Tools::Util;
 
 #= resample a buffer as n-bit to m-bit unsigned integers
 proto sub resample($,$,$) is export(:resample) {*};

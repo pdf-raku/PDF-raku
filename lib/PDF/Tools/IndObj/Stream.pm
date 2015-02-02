@@ -1,12 +1,12 @@
 use v6;
 
-use PDF::Core::Filter;
-use PDF::Core::IndObj ;
-use PDF::Core::Util :unbox;
+use PDF::Tools::Filter;
+use PDF::Tools::IndObj ;
+use PDF::Tools::Util :unbox;
 
 #| Stream - base class for specific stream objects, e.g. ObjStm, XRef, ...
-our class PDF::Core::IndObj::Stream
-    is PDF::Core::IndObj {
+our class PDF::Tools::IndObj::Stream
+    is PDF::Tools::IndObj {
 
     has Hash $.dict;
     has $.encoded;
@@ -34,8 +34,8 @@ our class PDF::Core::IndObj::Stream
         }
 
         # autoload
-        require ::("PDF::Core::IndObj")::($type);
-        return ::("PDF::Core::IndObj")::($type);
+        require ::("PDF::Tools::IndObj")::($type);
+        return ::("PDF::Tools::IndObj")::($type);
     }
 
     multi submethod BUILD( :$!dict!, :$start!, :$end!, :$input!) {
@@ -75,12 +75,12 @@ our class PDF::Core::IndObj::Stream
 
     method decode( Str $encoded = $.encoded ) {
         my $dict = unbox( :$.dict, :keys<Filter DecodeParms> );
-        PDF::Core::Filter.decode( $encoded, :$dict );
+        PDF::Tools::Filter.decode( $encoded, :$dict );
     }
 
     method encode( Str $decoded = $.decoded) {
         my $dict = unbox( :$.dict, :keys<Filter DecodeParms> );
-        PDF::Core::Filter.encode( $decoded, :$dict );
+        PDF::Tools::Filter.encode( $decoded, :$dict );
     }
 
     method content {

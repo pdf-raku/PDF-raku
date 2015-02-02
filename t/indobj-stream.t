@@ -2,24 +2,24 @@ use v6;
 use Test;
 plan 14;
 
-use PDF::Core::IndObj::Stream;
-use PDF::Core::IndObj;
+use PDF::Tools::IndObj::Stream;
+use PDF::Tools::IndObj;
 
 my $stream-obj;
 
 my %dict = :Filter( :name<ASCIIHexDecode> ),
     :DecodeParms( :dict{ :BitsPerComponent( :int(4) ), :Predictor( :int(10) ), :Colors( :int(3) ) } );
 
-lives_ok { $stream-obj = PDF::Core::IndObj::Stream.new( :decoded("100 100 Td (Hello, world!) Tj"), :%dict, :obj-num(123), :gen-num(1)) }, 'basic stream object construction';
+lives_ok { $stream-obj = PDF::Tools::IndObj::Stream.new( :decoded("100 100 Td (Hello, world!) Tj"), :%dict, :obj-num(123), :gen-num(1)) }, 'basic stream object construction';
 stream_tests( $stream-obj );
 
 my $ind-obj-ast = $stream-obj.ast;
 
-lives_ok { $stream-obj = PDF::Core::IndObj.new-delegate( |%$ind-obj-ast ); }, 'stream object rebuilt';
+lives_ok { $stream-obj = PDF::Tools::IndObj.new-delegate( |%$ind-obj-ast ); }, 'stream object rebuilt';
 stream_tests( $stream-obj );
 
 sub stream_tests( $stream-obj) {
-    isa_ok $stream-obj, PDF::Core::IndObj::Stream;
+    isa_ok $stream-obj, PDF::Tools::IndObj::Stream;
     is $stream-obj.obj-num, 123, '$.obj-num';
     is $stream-obj.gen-num, 1, '$.gen-num';
     is_deeply $stream-obj.dict, %dict, 'stream object dictionary';

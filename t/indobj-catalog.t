@@ -3,12 +3,12 @@ use Test;
 
 plan 6;
 
-use PDF::Core::IndObj;
+use PDF::Tools::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Core;
-use PDF::Core::Util :unbox;
+use PDF::Tools;
+use PDF::Tools::Util :unbox;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -27,8 +27,8 @@ endobj
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my $ind-obj = PDF::Core::IndObj.new-delegate( |%$ast);
-isa_ok $ind-obj, ::('PDF::Core::IndObj')::('Catalog');
+my $ind-obj = PDF::Tools::IndObj.new-delegate( |%$ast);
+isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Catalog');
 is $ind-obj.obj-num, 215, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 is_deeply $ind-obj.dict<PageLayout>, (:name<OneColumn>), '$.dict accessor';

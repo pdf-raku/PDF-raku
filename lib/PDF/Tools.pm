@@ -1,6 +1,6 @@
 use v6;
 
-class PDF::Core {
+class PDF::Tools {
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
     has Int $.xref-offset is rw;
@@ -17,9 +17,9 @@ class PDF::Core {
     multi method open( IO::Handle $ioh ) {
         use PDF::Grammar::PDF;
         use PDF::Grammar::PDF::Actions;
-        use PDF::Core::Input;
+        use PDF::Tools::Input;
 
-        $.input = PDF::Core::Input.new-delegate( :value($ioh) );
+        $.input = PDF::Tools::Input.new-delegate( :value($ioh) );
 
         my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -63,8 +63,8 @@ class PDF::Core {
     }
 
     method writer(:$offset) {
-        require PDF::Core::Writer;
-        ::('PDF::Core::Writer').new( :pdf(self), :$offset );
+        require PDF::Tools::Writer;
+        ::('PDF::Tools::Writer').new( :pdf(self), :$offset );
     }
 
     method write( :$offset = 0, *%opt ) {

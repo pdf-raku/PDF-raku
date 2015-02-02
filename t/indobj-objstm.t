@@ -3,11 +3,11 @@ use Test;
 
 plan 5;
 
-use PDF::Core::IndObj;
+use PDF::Tools::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Core;
+use PDF::Tools;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -15,8 +15,8 @@ my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my $ind-obj = PDF::Core::IndObj.new-delegate( |%$ast, :$input );
-isa_ok $ind-obj, ::('PDF::Core::IndObj')::('ObjStm');
+my $ind-obj = PDF::Tools::IndObj.new-delegate( |%$ast, :$input );
+isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('ObjStm');
 
 my $objstm;
 lives_ok { $objstm = $ind-obj.decode }, 'basic content decode - lives';
@@ -48,7 +48,7 @@ my $objstm-recompressed = $ind-obj.encode;
 my $ast2;
 lives_ok { $ast2 = $ind-obj.ast }, '$.ast - lives';
 
-my $ind-obj2 = PDF::Core::IndObj.new-delegate( |%$ast2 );
+my $ind-obj2 = PDF::Tools::IndObj.new-delegate( |%$ast2 );
 my $objstm-roundtrip = $ind-obj2.decode( $objstm-recompressed );
 
 is_deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';

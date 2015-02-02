@@ -1,15 +1,15 @@
 use v6;
 
-use PDF::Core::IndObj::Stream;
+use PDF::Tools::IndObj::Stream;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
-our class PDF::Core::IndObj::ObjStm
-    is PDF::Core::IndObj::Stream;
+our class PDF::Tools::IndObj::ObjStm
+    is PDF::Tools::IndObj::Stream;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Core::Writer;
+use PDF::Tools::Writer;
 
 method First is rw {
     %.dict<First>;
@@ -29,7 +29,7 @@ method encode($objstm = $.decoded --> Str) {
         my $object-str = 
         @idx.push: $obj-num;
         @idx.push: $objects-str.chars;
-        $objects-str ~= PDF::Core::Writer.write( $object );
+        $objects-str ~= PDF::Tools::Writer.write( $object );
     }
     my $idx-str = @idx.join: ' ';
     $.Type = :name<ObjStm>;
