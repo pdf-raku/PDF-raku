@@ -1,6 +1,6 @@
 use v6;
 
-class PDF::Tools {
+class PDF::Tools::Reader {
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
     has Int $.xref-offset is rw;
@@ -14,12 +14,14 @@ class PDF::Tools {
         $.open( $ioh );
     }
 
-    multi method open( IO::Handle $ioh ) {
+    multi method open( $input! is copy ) {
         use PDF::Grammar::PDF;
         use PDF::Grammar::PDF::Actions;
         use PDF::Tools::Input;
 
-        $.input = PDF::Tools::Input.new-delegate( :value($ioh) );
+        $input = PDF::Tools::Input.new-delegate( :value($input) )
+            unless $input.isa(PDF::Tools::Input);
+        $!input = $input;
 
         my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -54,22 +56,4 @@ class PDF::Tools {
         # stub
         self;
     }
-
-    #| retrieves raw stream data from the input object
-    multi method stream-data( Array :$ind-obj! ) {
-        return
-            unless $ind-obj[2].key eq 'stream';
-        $.stream-data( |%( $ind-obj[2] ) );
-    }
-
-    method writer(:$offset) {
-        require PDF::Tools::Writer;
-        ::('PDF::Tools::Writer').new( :pdf(self), :$offset );
-    }
-
-    method write( :$offset = 0, *%opt ) {
-        $.writer(:$offset).write( |%opt );
-    }
-
-
 }
