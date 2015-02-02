@@ -18,7 +18,8 @@ class PDF::Core::Input::IOH
     }
 
     multi method Str( ) {
-        $.value.slurp( :enc<latin1> );
+        $.value.seek( 0, SEEK-FROM-START );
+        $.value.slurp-rest;
     }
 
     multi method substr( WhateverCode $from-whatever!, $length? ) {

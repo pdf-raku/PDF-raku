@@ -7,7 +7,7 @@ use PDF::Core::Filter::LZW;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Core;
+use PDF::Core::Input;
 use PDF::Core::Util :unbox;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
@@ -17,10 +17,10 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 
-my $pdf = PDF::Core.new( :$input );
+my $pdf-input = PDF::Core::Input.new-delegate( :value($input) );
 
 my $dict = unbox( |%$ast )<dict>;
-my $raw-content = $pdf.stream-data( |%$ast )[0];
+my $raw-content = $pdf-input.stream-data( |%$ast )[0];
 my $content;
 
 lives_ok { $content = PDF::Core::Filter.decode( $raw-content, :$dict ) }, 'basic content decode - lives';

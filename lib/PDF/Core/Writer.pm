@@ -3,14 +3,13 @@ use v6;
 class PDF::Core::Writer {
 
     use PDF::Grammar;
-    use PDF::Core;
+    use PDF::Core::Input;
     use PDF::Core::IndObj;
 
-    has PDF::Core $.pdf;
+    has PDF::Core::Input $.input;
+    has $.root-object is rw;
     has $.offset is rw = 0;
     has $.prev-xref-offset is rw;
-
-    submethod BUILD( :$!pdf! ) {}
 
     multi method write( Array :$array! ) {
         ('[', $array.map({ $.write($_) }), ']').join: ' ';
@@ -49,7 +48,7 @@ class PDF::Core::Writer {
         }
 
         my $xref-offset = $.offset;
-        my $prev-xref-offset = $.prev-xref-offset;
+        my $prev = $.prev-xref-offset;
 
         @entries = @entries.sort: { $^a<obj> <=> $^b<obj> || $^a<gen> <=> $b<gen> };
 
@@ -58,7 +57,7 @@ class PDF::Core::Writer {
         $.offset += @out[*-1].chars + 1;
         my $trailer = $body<trailer>
             // die "body does not have a trailer";
-        @out.push: $.write( :$trailer, :$xref-offset, :$prev-xref-offset, :size(+@entries) );
+        @out.push: $.write( :$trailer, :$xref-offset, :$prev, :size(+@entries) );
         $.prev-xref-offset = $xref-offset;
         $.offset += @out[*-1].chars + 2;
 
@@ -176,7 +175,7 @@ class PDF::Core::Writer {
     multi method write( Hash :$stream! ) {
 
         my %dict = %( $stream<dict> );
-        my $data = $.pdf.stream-data( :$stream ),
+        my $data = $.input.stream-data( :$stream ),
         %dict<Length> //= :int($data.chars);
 
         ($.write( :%dict ),
@@ -186,20 +185,20 @@ class PDF::Core::Writer {
         ).join: "\n";
     }
 
-    multi method write( Hash :$trailer!, :$xref-offset is copy, :$prev-xref-offset, :$size ) {
+    multi method write( Hash :$trailer!, :$xref-offset is copy, :$prev, :$size ) {
 
         $xref-offset //= $trailer<offset> // 0;
 
         my %dict = %( $trailer<dict> // {} );
 
-        %dict<Prev> = :int($prev-xref-offset)
-            if $prev-xref-offset.defined;
+        %dict<Prev> = :int($prev)
+            if $prev.defined;
 
         %dict<Size> = :int($size)
             if $size.defined;
 
-        %dict<Root> //= $.pdf.root-obj
-            if $.pdf.root-obj.defined;
+        %dict<Root> //= $.root-object
+            if $.root-object.defined;
 
         die "unable to locate document root"
             unless %dict<Root>.defined;
