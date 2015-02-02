@@ -1,4 +1,4 @@
-perl6-PDF-Utils
+perl6-PDF-Tools
 ===============
 
 ** Under Construction **  This module provides tools for reading, manipulation and construction of PDF content. It performs a similar role to Perl 5's Text::PDF or PDF::API2::Basic::PDF (PDF::API2 distribution).
@@ -9,7 +9,7 @@ This module supports PDF 1.5+ object and content streams.
 
 This module is a proof of concept in the early stages of development.  It is also subject to change, refactoring or widthdrawal atany time.
 
-PDF::Util uses the existing PDF::Grammar as a toolkit to parse individual PDF components. Both for parsing the top level structure of a PDF and to interpret paticular stream data, such as Object Streams and Content Streams. It shares AST data structures with PDF::Grammar. E.g. bin/pdf-rewriter uses PDF::Grammar::PDF to read a PDF then rewrites it using PDF::Util::Writer.
+PDF::Tools uses the existing PDF::Grammar as a toolkit to parse individual PDF components. Both for parsing the top level structure of a PDF and to interpret paticular stream data, such as Object Streams and Content Streams. It shares AST data structures with PDF::Grammar. E.g. bin/pdf-rewriter uses PDF::Grammar::PDF to read a PDF then rewrites it using PDF::Tools::Writer.
 
 ## TODO
 
@@ -27,11 +27,11 @@ PDF is a pretty big standard to cover in it's entirity. The initial release will
 - Images - insertion of TIFF, PNG and JPEG images
 - Fonts - font metrics for core fonts. Basic encoding.
 
-## PDF::Util::Filter
+## PDF::Tools::Filter
 
-Utility filter methods, based on PDF::API2::Core::PDF::Filter / Text::PDF::Filter
+Toolsity filter methods, based on PDF::API2::Core::PDF::Filter / Text::PDF::Filter
 
-PDF::Util::Filter::RunLength, PDF::Util::Filter::ASCII85, PDF::Util::Filter::Flate, ...
+PDF::Tools::Filter::RunLength, PDF::Tools::Filter::ASCII85, PDF::Tools::Filter::Flate, ...
 
 Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding
 is recommended to enforce this.
@@ -39,17 +39,17 @@ is recommended to enforce this.
 `encode` and `decode` both return latin-1 encoded strings.
 
     ```
-    my $filter = PDF::Util::Filter.new-delegate( :dict{Filter<RunlengthEncode>} );
+    my $filter = PDF::Tools::Filter.new-delegate( :dict{Filter<RunlengthEncode>} );
     my $data = $filter.encode("This    is waaay toooooo loooong!", :eod);
     say $data.chars;
     ```
 
-## PDF::Util::IndObj
+## PDF::Tools::IndObj
 
-- PDF::Util::IndObj::Stream - abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
-- PDF::Util::IndObj::Dict - abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
+- PDF::Tools::IndObj::Stream - abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
+- PDF::Tools::IndObj::Dict - abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
 
-## PDF::Util::Writer
+## PDF::Tools::Writer
 
 Performs the inverse operation to PDF::Grammar::PDF.parse. It reserializes a PDF AST back to an image;
 with rebuilt cross reference tables.
@@ -59,7 +59,7 @@ with rebuilt cross reference tables.
 use v6;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Util::Reader;
+use PDF::Tools::Reader;
 
 my $input-file = "t/pdf/pdf.out";
 my $output-file = "examples/helloworld.pdf";
@@ -70,8 +70,8 @@ PDF::Grammar::PDF.parse($pdf-content, :$actions)
     or die "unable to load pdf: $input-file";
 
 my $pdf-ast = $/.ast;
-$pdf-ast<comment> = "This PDF was brought to you by CSS::Util!!";
+$pdf-ast<comment> = "This PDF was brought to you by CSS::Tools!!";
 
-my $pdf = PDF::Util::Reader.new( :input($pdf-content) );
+my $pdf = PDF::Tools::Reader.new( :input($pdf-content) );
 $output-file.IO.spurt( $pdf.write( :pdf($pdf-ast) ), :enc<latin1> );
 ```
