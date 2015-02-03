@@ -3,10 +3,8 @@
 use Test;
 use JSON::Tiny;
 
-use PDF::Tools;
+use PDF::Tools::Writer;
 use PDF::Tools::Util :unbox;
-
-my $pdf = PDF::Tools.new;
 
 for 't/write-ast.json'.IO.lines {
 
@@ -14,7 +12,7 @@ for 't/write-ast.json'.IO.lines {
 
     my $test = from-json($_);
     my $expected-pdf = $test<pdf>;
-    my %node = %( $test<ast> );
+    my %ast = %( $test<ast> );
     my $opt = $test<opt> // {};
 
     if my $skip = $opt<skip> {
@@ -22,16 +20,15 @@ for 't/write-ast.json'.IO.lines {
         next;
     }
 
-    my $pdf-data = $pdf.write( |%node );
-    is $pdf-data, $expected-pdf, "serialize {%node.keys}"
-        or diag {node => %node}.perl;
+    my $pdf-data = PDF::Tools::Writer.new( :%ast );
+    is $pdf-data, $expected-pdf, "serialize {%ast.keys.sort}"
+        or diag :%ast.perl;
 
     if my $unboxed = $test<unboxed> {
-        my $perl = unbox( |%node );
-        is_deeply $perl, $unboxed, "unboxed {%node.keys}"
-            or diag {node => %node}.perl;
+        my $perl = unbox( |%ast );
+        is_deeply $perl, $unboxed, "unboxed {%ast.keys.sort}"
+            or diag :%ast.perl;
     }
-
 }
 
 done;

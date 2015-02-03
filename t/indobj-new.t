@@ -4,10 +4,10 @@ use Test;
 plan 6;
 
 use PDF::Tools::IndObj;
+use PDF::Tools::Writer;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Tools;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -23,10 +23,10 @@ is $ind-obj.dict<Length>.value, 167, '$.dict<Length>';
 is $ind-obj.obj-num, 5, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 
-my $pdf = PDF::Tools.new( :$input );
+my $pdf-out = PDF::Tools::Writer.new( :$input );
 
 # round trip
-$input = $pdf.writer.write( $ind-obj );
+$input = $pdf-out.write( $ind-obj );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "reparse failed";
 $ast = $/.ast;

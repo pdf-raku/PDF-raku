@@ -7,9 +7,24 @@ class PDF::Tools::Writer {
     use PDF::Tools::IndObj;
 
     has PDF::Tools::Input $.input;
+    has $.ast is rw;
     has $.root-object is rw;
     has $.offset is rw = 0;
-    has $.prev-xref-offset is rw;
+    has $!prev-xref-offset;
+    has %!init;
+
+    submethod BUILD(:$input, :$!ast, :$!root-object, :$!offset ) {
+        $!input = $input.isa(PDF::Tools::Input)
+            ?? $input
+            !! PDF::Tools::Input.new-delegate( :value($input) )
+            if $input.defined;
+    }
+
+    method Str {
+        temp $!offset;
+        temp $!prev-xref-offset;
+        $.write( $.ast );
+    }
 
     multi method write( Array :$array! ) {
         ('[', $array.map({ $.write($_) }), ']').join: ' ';
@@ -48,7 +63,7 @@ class PDF::Tools::Writer {
         }
 
         my $xref-offset = $.offset;
-        my $prev = $.prev-xref-offset;
+        my $prev = $!prev-xref-offset;
 
         @entries = @entries.sort: { $^a<obj> <=> $^b<obj> || $^a<gen> <=> $b<gen> };
 
@@ -58,7 +73,7 @@ class PDF::Tools::Writer {
         my $trailer = $body<trailer>
             // die "body does not have a trailer";
         @out.push: $.write( :$trailer, :$xref-offset, :$prev, :size(+@entries) );
-        $.prev-xref-offset = $xref-offset;
+        $!prev-xref-offset = $xref-offset;
         $.offset += @out[*-1].chars + 2;
 
         return @out.join: "\n";

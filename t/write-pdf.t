@@ -15,22 +15,21 @@ for 't/pdf'.IO.dir.list {
 
     next unless / [\w|'-']*? '.json'$/;
     my $json-file = ~$_;
-    my %pdf-data = %( from-json( $json-file.IO.slurp ) );
+    my %ast = %( from-json( $json-file.IO.slurp ) );
 
     my $pdf-input-file = $json-file.subst( /'.json'$/, '.in' );
     my $pdf-output-file = $json-file.subst( /'.json'$/, '.out' );
     my $input = PDF::Tools::Input.new-delegate( :value($pdf-input-file.IO.open( :r, :enc<latin-1>) ) );
+    my $pdf-output = PDF::Tools::Writer.new( :$input, :offset(0), :%ast );
+    $pdf-output-file.IO.spurt: ~$pdf-output;
 
-    my $pdf-writer = PDF::Tools::Writer.new( :$input, :offset(0) );
-    my $pdf-output = $pdf-writer.write( |%pdf-data );
-    $pdf-output-file.IO.spurt: $pdf-output;
-
-    my ($rule) = %pdf-data.keys;
-    my %expected = ast => %pdf-data;
+    my ($rule) = %ast.keys;
+    my %expected = :%ast;
     my $class = PDF::Grammar::PDF;
 
+    $pdf-output.offset = 0;
     PDF::Grammar::Test::parse-tests($class, ~$input, :$rule, :$actions, :suite("[$pdf-input-file]"), :%expected );
-    PDF::Grammar::Test::parse-tests($class, $pdf-output, :$rule, :$actions, :suite("[$pdf-output-file]"), :%expected );
+    PDF::Grammar::Test::parse-tests($class, ~$pdf-output, :$rule, :$actions, :suite("[$pdf-output-file]"), :%expected );
 
 }
 

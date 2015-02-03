@@ -7,7 +7,6 @@ use PDF::Tools::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Tools;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
