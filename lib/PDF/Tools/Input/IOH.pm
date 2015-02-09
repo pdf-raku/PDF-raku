@@ -6,6 +6,7 @@ class PDF::Tools::Input::IOH
     is PDF::Tools::Input {
 
     has IO::Handle $.value is rw;
+    has Str $!str;
     has Int $.chars is rw;
 
     BEGIN constant SEEK-FROM-START = 0;
@@ -19,7 +20,7 @@ class PDF::Tools::Input::IOH
 
     multi method Str( ) {
         $.value.seek( 0, SEEK-FROM-START );
-        $.value.slurp-rest;
+        $!str //= $.value.slurp-rest;
     }
 
     multi method substr( WhateverCode $from-whatever!, $length? ) {
@@ -27,9 +28,11 @@ class PDF::Tools::Input::IOH
         $.substr( $from, $length );
     }
 
-    multi method substr( Int $from!, $length is copy ) {
-        $!value.seek( $from, SEEK-FROM-START );
+    multi method substr( Int $from!, $length is copy) {
         $length //= $.chars - $from + 1;
+        return $!str.substr( $from, $length )
+            if $!str.defined;
+        $!value.seek( $from, SEEK-FROM-START );
         my $buf = $.value.read( $length );
         $buf.decode('latin-1');
     }

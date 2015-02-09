@@ -7,12 +7,18 @@ has Int $.gen-num is rw;
 
 #| construct and object instancefrom a PDF::Grammar::PDF ast representation of
 #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
-multi method new-delegate( Array :$ind-obj!, :$input ) {
-     my $obj-num = $ind-obj[0];
+multi method new-delegate( Array :$ind-obj!, :$input, :$type ) {
+    my $obj-num = $ind-obj[0];
     my $gen-num = $ind-obj[1];
     my %params = $ind-obj[2].kv;
     %params<input> = $input
         if $input.defined;
+
+    if $type.defined {
+        my $actual-type = (%params<stream> //%params)<dict><Type>.value // '??';
+        die "expected object of Type $type, got $actual-type"
+            unless $actual-type eq $type
+    }
 
     $.new-delegate( :$obj-num, :$gen-num, |%params);
 }

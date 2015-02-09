@@ -7,15 +7,15 @@ use PDF::Grammar::PDF::Actions;
 use PDF::Tools::Reader;
 use PDF::Tools::Writer;
 
-sub MAIN (Str $input, Str $output) {
+sub MAIN (Str $input-path, Str $output-path) {
 
     my $reader = PDF::Tools::Reader.new;
  
-    note "parsing {$input} ...";
-    $reader.open( $input, :rebuild-index );
+    note "parsing {$input-path} ...";
+    $reader.open( $input-path );
 
-    note "writing {$output}...";
+    note "writing {$output-path}...";
     my $pdf-writer = PDF::Tools::Writer.new( );
-    $output.IO.spurt( $pdf-writer.write( :pdf($reader.ast), :root-obj( $reader.root-obj) ), :enc<latin1> );
+    $output-path.IO.spurt( $pdf-writer.write( :pdf($reader.ast), :root-obj( $reader.root-obj) ), :enc<latin1> );
 }
 
