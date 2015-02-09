@@ -21,7 +21,7 @@ for 't/write-ast.json'.IO.lines {
     }
 
     my $pdf-data = PDF::Tools::Writer.new( :%ast );
-    is $pdf-data, $expected-pdf, "serialize {%ast.keys.sort}"
+    is_deeply ~$pdf-data, $expected-pdf, "serialize {%ast.keys.sort}"
         or diag :%ast.perl;
 
     if my $unboxed = $test<unboxed> {

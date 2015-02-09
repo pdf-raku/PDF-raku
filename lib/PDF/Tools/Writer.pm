@@ -21,9 +21,14 @@ class PDF::Tools::Writer {
     }
 
     method Str {
+        nextsame unless $.ast.defined;
         temp $!offset;
         temp $!prev-xref-offset;
-        $.write( $.ast );
+        $.write();
+    }
+
+    multi method write() {
+        $.write( $.ast )
     }
 
     multi method write( Array :$array! ) {
@@ -62,7 +67,7 @@ class PDF::Tools::Writer {
             $.offset += @out[*-1].chars + 1;
         }
 
-        my $xref-offset = $.offset;
+        my $startxref = $.offset;
         my $prev = $!prev-xref-offset;
 
         @entries = @entries.sort: { $^a<obj> <=> $^b<obj> || $^a<gen> <=> $b<gen> };
@@ -72,8 +77,9 @@ class PDF::Tools::Writer {
         $.offset += @out[*-1].chars + 1;
         my $trailer = $body<trailer>
             // die "body does not have a trailer";
-        @out.push: $.write( :$trailer, :$xref-offset, :$prev, :size(+@entries) );
-        $!prev-xref-offset = $xref-offset;
+        @out.push: $.write( :$trailer, :$prev, :size(+@entries) );
+        @out.push: $.write( :$startxref );
+        $!prev-xref-offset = $startxref;
         $.offset += @out[*-1].chars + 2;
 
         return @out.join: "\n";
@@ -200,9 +206,7 @@ class PDF::Tools::Writer {
         ).join: "\n";
     }
 
-    multi method write( Hash :$trailer!, :$xref-offset is copy, :$prev, :$size ) {
-
-        $xref-offset //= $trailer<offset> // 0;
+    multi method write( Hash :$trailer!, :$prev, :$size ) {
 
         my %dict = %( $trailer<dict> // {} );
 
@@ -219,9 +223,12 @@ class PDF::Tools::Writer {
             unless %dict<Root>.defined;
 
         ( "trailer", $.write( :%dict ),
-          "startxref", $.write( :int( $xref-offset) ),
           ''
         ).join: "\n";
+    }
+
+    multi method write(Int :$startxref! ) {
+        "startxref\n" ~ $.write( :int( $startxref) ) ~ "\n"
     }
 
     multi method write(Array :$xref!) {

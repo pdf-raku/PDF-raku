@@ -27,7 +27,7 @@ for 't/pdf'.IO.dir.list {
     my %expected = :%ast;
     my $class = PDF::Grammar::PDF;
 
-    $pdf-output.offset = 0;
+##    $pdf-output.reset;
     PDF::Grammar::Test::parse-tests($class, ~$input, :$rule, :$actions, :suite("[$pdf-input-file]"), :%expected );
     PDF::Grammar::Test::parse-tests($class, ~$pdf-output, :$rule, :$actions, :suite("[$pdf-output-file]"), :%expected );
 

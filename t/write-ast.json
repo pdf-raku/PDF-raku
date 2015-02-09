@@ -4,3 +4,4 @@
 { "ast" : { "header" : { "version" : 1.5 } }, "pdf" : "%PDF-1.5" }
 { "ast" : { "name" : "Zsófia" }, "pdf" : "/Zs#c3#b3fia", "unboxed" : "Zsófia" }
 { "ast" : { "comment" : "I hope this works" }, "pdf" : "% I hope this works" }
+{ "ast" : { "startxref" : 42 }, "pdf" : "startxref\n42\n" }
