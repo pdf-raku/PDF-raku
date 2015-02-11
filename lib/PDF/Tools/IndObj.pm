@@ -7,15 +7,17 @@ has Int $.gen-num is rw;
 
 #| construct and object instancefrom a PDF::Grammar::PDF ast representation of
 #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
-multi method new-delegate( Array :$ind-obj!, :$input, :$type ) {
+multi method new-delegate( Array :$ind-obj!, :$input, :$type, *%p ) {
     my $obj-num = $ind-obj[0];
     my $gen-num = $ind-obj[1];
-    my %params = $ind-obj[2].kv;
+    my %params = $ind-obj[2].kv, %p;
     %params<input> = $input
         if $input.defined;
 
     if $type.defined {
         my $actual-type = (%params<stream> //%params)<dict><Type>.value // '??';
+        die "expected object of Type $type, but /Type is missing"
+            unless $actual-type.defined;
         die "expected object of Type $type, got $actual-type"
             unless $actual-type eq $type
     }
@@ -31,6 +33,16 @@ multi method new-delegate( Array :$array!, *%params) {
 multi method new-delegate( Bool :$bool!, *%params) {
     require ::("PDF::Tools::IndObj::Bool");
     return ::("PDF::Tools::IndObj::Bool").new( :$bool, |%params );
+}
+
+multi method new-delegate( Int :$int!, *%params) {
+    require ::("PDF::Tools::IndObj::Num");
+    return ::("PDF::Tools::IndObj::Num").new( :$int, |%params );
+}
+
+multi method new-delegate( Num :$real!, *%params) {
+    require ::("PDF::Tools::IndObj::Num");
+    return ::("PDF::Tools::IndObj::Num").new( :$real, |%params );
 }
 
 multi method new-delegate( Str :$hex-string!, *%params) {
