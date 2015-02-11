@@ -8,7 +8,7 @@ class PDF::Tools::Reader {
     use PDF::Tools::Util :unbox;
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
-    has Hash %.ind-obj-idx;
+    has Hash %!ind-obj-idx;
     has $.root-obj is rw;
     has $.ast is rw;
     has Rat $.version is rw;
@@ -32,10 +32,14 @@ class PDF::Tools::Reader {
 
     }
 
+    method obj( Int $obj-num, Int $gen-num = 0 ) {
+        return %!ind-obj-idx{ $obj-num }{ $gen-num }
+    }
+
     multi method deref(Pair $_! where .key eq 'ind-ref' ) {
         my $obj-num = .value[0].Int;
         my $gen-num = .value[1].Int;
-        return %.ind-obj-idx{ $obj-num }{ $gen-num }
+        return %!ind-obj-idx{ $obj-num }{ $gen-num }
         // die "unresolved object reference: $obj-num $gen-num R";
     }
 
@@ -59,11 +63,10 @@ class PDF::Tools::Reader {
 
         # just slurp the entire PDF into memory
         # to utilize Perl 6 cat strings, when available 
-        my $input = $.input.Str;
         # locate and read the file trailer
         # hmm, arbritary magic number
-        my $tail-bytes = min(1024, $input.chars);
-        my $tail = $input.substr(* - $tail-bytes);
+        my $tail-bytes = min(1024, $.input.chars);
+        my $tail = $.input.substr(* - $tail-bytes);
 
         my %offsets-seen;
 
@@ -77,13 +80,13 @@ class PDF::Tools::Reader {
             # see if our cross reference table is already contained in the current tail
             my $xref;
             my $dict;
-            my $tail-xref-pos = $xref-offset - $input.chars + $tail-bytes;
+            my $tail-xref-pos = $xref-offset - $.input.chars + $tail-bytes;
             if $tail-xref-pos >= 0 {
                 $xref = $tail.substr( $tail-xref-pos );
             }
             else {
-                my $xref-len = min(2048, $input.chars - $xref-offset);
-                $xref = $input.substr( $xref-offset, $xref-len );
+                my $xref-len = min(2048, $.input.chars - $xref-offset);
+                $xref = $.input.substr( $xref-offset, $xref-len );
             }
 
             if $xref ~~ /^'xref'/ {
@@ -111,15 +114,15 @@ class PDF::Tools::Reader {
 
                 for @ind-obj-idx.kv -> $k, $v {
                     my $offset = $v<offset>;
-                    my $next-offset = $k + 1 < +@ind-obj-idx ?? @ind-obj-idx[$k + 1]<offset> !! $input.chars;
+                    my $next-offset = $k + 1 < +@ind-obj-idx ?? @ind-obj-idx[$k + 1]<offset> !! $.input.chars;
                     my $length-pessimistic = $next-offset - $offset - 1;
                     my $length = min( $length-pessimistic, 1024 );
-                    my $chunk = $input.substr( $offset, $length );
+                    my $chunk = $.input.substr( $offset, $length );
 
                     PDF::Grammar::PDF.subparse( $chunk, :$actions, :rule<ind-obj-nibble> )
                         || do {
                             $length = $length-pessimistic;
-                            $chunk = $input.substr( $offset, $length );
+                            $chunk = $.input.substr( $offset, $length );
                             PDF::Grammar::PDF.subparse( $chunk, :$actions, :rule<ind-obj-nibble> ) };
 
                     die "unable to parse indirect object \@$offset +$length"
@@ -130,23 +133,25 @@ class PDF::Tools::Reader {
                     if $obj.key eq 'stream' {
                         # defer as stream length may be forward references, e.g.
                         # 218 0 obj << /Filter /FlateDecode /Length 219 0 R >> stream
-                        @stream-objs.push: [ $ind-obj, $offset, $<marker>.to +1 ];
+                        @stream-objs.push: [ $ind-obj, $offset ];
                     }
                     else {
-                        %.ind-obj-idx{ $obj-num }{ $gen-num } //= PDF::Tools::IndObj.new-delegate( :$ind-obj );
+                        %!ind-obj-idx{ $obj-num }{ $gen-num } //= PDF::Tools::IndObj.new-delegate( :$ind-obj );
                     }
                 }
 
                 for @stream-objs {
-                    my ($ind-obj, $offset, $start) = @$_;
+                    my ($ind-obj, $offset) = @$_;
                     my ($obj-num, $gen-num, $obj-raw) = @$ind-obj;
-                    %.ind-obj-idx{ $obj-num }{ $gen-num } //= do {
+                    %!ind-obj-idx{ $obj-num }{ $gen-num } //= do {
                         die "stream object without a length: obj $obj-num $gen-num ... \@$offset"
                             unless $obj-raw.value<dict><Length>.defined;
 
+                        my $start = $obj-raw.value<start>;
                         my $length = unbox( $.deref( $obj-raw.value<dict><Length> ) );
-                        my $encoded = $input.substr( $offset + $start, $length );
-                        %.ind-obj-idx{ $obj-num }{ $gen-num } //= PDF::Tools::IndObj.new-delegate( :$ind-obj, :$encoded );
+                        my $encoded = $.input.substr( $offset + $start, $length );
+
+                        %!ind-obj-idx{ $obj-num }{ $gen-num } //= PDF::Tools::IndObj.new-delegate( :$ind-obj, :$encoded );
                     };
                 }
 
