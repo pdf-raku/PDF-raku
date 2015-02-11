@@ -191,12 +191,22 @@
                 }
               }
             ]
+          },
+          {
+            "ind-obj" : [
+              8,
+              0,
+              {
+                "int" : 45
+              }
+            ]
           }
         ],
+        "startxref" : 578,
         "xref" : [
           {
             "object-first-num" : 0,
-            "object-count" : 8,
+            "object-count" : 9,
             "entries" : [
               {
                 "offset" : 0,
@@ -204,48 +214,52 @@
                 "status" : "f"
               },
               {
-                "offset" : 13,
+                "offset" : 14,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 78,
+                "offset" : 79,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 124,
+                "offset" : 125,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 183,
+                "offset" : 184,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 326,
+                "offset" : 327,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 421,
+                "offset" : 422,
                 "gen" : 0,
                 "status" : "n"
               },
               {
-                "offset" : 451,
+                "offset" : 452,
+                "gen" : 0,
+                "status" : "n"
+              },
+              {
+                "offset" : 560,
                 "gen" : 0,
                 "status" : "n"
               }
             ]
           }
         ],
-        "startxref" : 559,
         "trailer" : {
           "dict" : {
             "Size" : {
-              "int" : 8
+              "int" : 9
             },
             "Root" : {
               "ind-ref" : [

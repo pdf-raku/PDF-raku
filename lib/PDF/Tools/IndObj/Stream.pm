@@ -73,6 +73,10 @@ our class PDF::Tools::IndObj::Stream
         %.dict<Type>;
     }
 
+    method Length is rw {
+        %.dict<Length>;
+    }
+
     method decode( Str $encoded = $.encoded ) {
         my $dict = unbox( :$.dict, :keys<Filter DecodeParms> );
         PDF::Tools::Filter.decode( $encoded, :$dict );

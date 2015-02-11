@@ -77,8 +77,8 @@ class PDF::Tools::Writer {
         $.offset += @out[*-1].chars + 1;
         my $trailer = $body<trailer>
             // die "body does not have a trailer";
-        @out.push: $.write( :$trailer, :$prev, :size(+@entries) );
-        @out.push: $.write( :$startxref );
+        @out.push: [~] ($.write( :$trailer, :$prev, :size(+@entries) ),
+                        $.write( :$startxref ));
         $!prev-xref-offset = $startxref;
         $.offset += @out[*-1].chars + 2;
 
@@ -170,17 +170,12 @@ class PDF::Tools::Writer {
 
     multi method write( Any :$null! ) { 'null' }
 
-    multi method write( Numeric :$number! ) {
-        my $int = $number.Int;
-        return ~($int == $number ?? $int !! $number);
-    }
-
     multi method write( Hash :$pdf! ) {
         my $header = $.write( $pdf, :node<header> );
         my $comment = $pdf<comment>:exists
             ?? $.write( $pdf, :node<comment> )
             !! $.write( :comment<%¥±ë> );
-        $.offset = $header.chars + $comment.chars + 1;  # since format is byte orientated
+        $.offset = $header.chars + $comment.chars + 2;  # since format is byte orientated
         my $body = $.write( :body($pdf<body>) );
         [~] ($header, "\n", $comment, "\n", $body, '%%EOF', '');
     }
@@ -222,9 +217,7 @@ class PDF::Tools::Writer {
         die "unable to locate document root"
             unless %dict<Root>.defined;
 
-        ( "trailer", $.write( :%dict ),
-          ''
-        ).join: "\n";
+        ( "trailer", $.write( :%dict ), '' ).join: "\n";
     }
 
     multi method write(Int :$startxref! ) {
