@@ -13,9 +13,11 @@ sub MAIN (Str $input-path, Str $output-path) {
  
     note "parsing {$input-path} ...";
     $reader.open( $input-path );
+    my $ast = $reader.ast;
 
     note "writing {$output-path}...";
-    my $pdf-writer = PDF::Tools::Writer.new( );
-    $output-path.IO.spurt( $pdf-writer.write( :pdf($reader.ast), :root-obj( $reader.root-obj) ), :enc<latin1> );
+    my $root-object = :ind-ref[ $reader.root-obj.obj-num, $reader.root-obj.gen-num];
+    my $pdf-writer = PDF::Tools::Writer.new( :$root-object );
+    $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
 }
 

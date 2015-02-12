@@ -76,7 +76,7 @@ class PDF::Tools::Writer {
         @out.push: $.write( :%xref );
         $.offset += @out[*-1].chars + 1;
         my $trailer = $body<trailer>
-            // die "body does not have a trailer";
+            // {};
         @out.push: [~] ($.write( :$trailer, :$prev, :size(+@entries) ),
                         $.write( :$startxref ));
         $!prev-xref-offset = $startxref;
@@ -191,7 +191,7 @@ class PDF::Tools::Writer {
     multi method write( Hash :$stream! ) {
 
         my %dict = %( $stream<dict> );
-        my $data = $.input.stream-data( :$stream ),
+        my $data = $stream<encoded> // $.input.stream-data( :$stream ),
         %dict<Length> //= :int($data.chars);
 
         ($.write( :%dict ),

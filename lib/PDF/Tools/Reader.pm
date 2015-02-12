@@ -35,21 +35,52 @@ class PDF::Tools::Reader {
     method ind-obj( Int $obj-num!, Int $gen-num! ) {
 
         my $ind-obj := %!ind-obj-idx{ $obj-num }{ $gen-num }<ind-obj>
-        or die "unable to find object: $obj-num $gen-num R";
+            // die "unable to find object: $obj-num $gen-num R";
 
         unless $ind-obj.isa(PDF::Tools::IndObj) {
             # 'compile' the object
-            my $encoded = %!ind-obj-idx{ $obj-num }{ $gen-num }<encoded>:delete;
+            my $encoded := %!ind-obj-idx{ $obj-num }{ $gen-num }<encoded>:delete;
             $ind-obj = PDF::Tools::IndObj.new-delegate( :$ind-obj, :$encoded );
         }
 
         $ind-obj;
     }
 
+    #| construct an AST from a possibly raw (when :gentle) or stantiated object
+    method ind-obj-ast( Int $obj-num!, Int $gen-num!, :$gentle=True ) {
+        my $ind-obj := %!ind-obj-idx{ $obj-num }{ $gen-num }<ind-obj>
+            // die "unable to find object: $obj-num $gen-num R";
+
+        my $ast;
+
+        if $ind-obj.isa(PDF::Tools::IndObj) {
+            # already stantiated
+            $ast = $ind-obj.ast;
+        }
+        elsif $gentle {
+            # avoid object stantiation reconstruct from raw input data.
+            my $encoded := %!ind-obj-idx{ $obj-num }{ $gen-num }<encoded>;
+            if $encoded {
+                # merge encoded data into ast
+                my %value = :$encoded, %( $ind-obj[2].value );
+                %value<start>:delete;
+                $ast = :ind-obj[ $ind-obj[0], $ind-obj[1], $ind-obj[2].key => %value.item ];
+            }
+            else {
+                $ast = :$ind-obj;
+            }
+        }
+        else {
+            $ast = $.ind-obj( $obj-num, $gen-num ).ast;
+        }
+
+        return $ast;
+    }
+
     multi method deref(Pair $_! where .key eq 'ind-ref' ) {
         my $obj-num = .value[0].Int;
         my $gen-num = .value[1].Int;
-        return $.ind-obj( $obj-num, $gen-num );
+        return $.ind-obj( $obj-num, $gen-num ).ast;
     }
 
     multi method deref($other) is default {
@@ -70,8 +101,7 @@ class PDF::Tools::Reader {
 
     method load-xref(:$actions) {
 
-        # just slurp the entire PDF into memory
-        # to utilize Perl 6 cat strings, when available 
+        # todo: utilize Perl 6 cat strings, when available 
         # locate and read the file trailer
         # hmm, arbritary magic number
         my $tail-bytes = min(1024, $.input.chars);
@@ -219,7 +249,7 @@ class PDF::Tools::Reader {
                 my $ind-obj = $type2-objects[ $item ];
                 my $obj-num = $ind-obj[0];
                 my $gen-num = $ind-obj[1];
-                %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :$ind-obj, :type(2), :parent($type1-obj-num) };
+                %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :$ind-obj, :type(2), :parent($type1-obj-num), :$item };
             }
         }
 
@@ -227,4 +257,63 @@ class PDF::Tools::Reader {
             ?? $!root-obj = $.ind-obj( $root-obj-ref.value[0], $root-obj-ref.value[1] )
             !! die "unable to find root object";
     }
+
+    #| 1.5+ (/ObjStm aware) compatible asts:
+    #| - sift type 2 and /XRef objects
+    #| - delinearize
+    #| - preserve input order
+    multi method sift-objects( Rat :$compat! where $_ >= 1.5) {
+        die "tba: 1.5+ compatible ast";
+    }
+
+    #| 1.4- compatible asts:
+    #| - sift /ObjStm and /XRef objects, include all other type1 and type 2 objects
+    #| - delinearize
+    #| - preserve input order
+    multi method sift-objects(Rat :$compat! where $_ < 1.5) {
+        my @objects;
+        for %!ind-obj-idx.pairs {
+            my $obj-num = .key.Int;
+            for .value.pairs {
+                my $gen-num = .key.Int;
+                my $entry = .value;
+                my $ind-obj-ast = $.ind-obj-ast($obj-num, $gen-num, :gentle);
+                my $ind-obj = $ind-obj-ast.value[2];
+                my $seq = 0;
+                my $offset;
+
+                given $entry<type> {
+                    when 1 {
+                        # discard stream objects of type XRef & ObjStm
+                        if $ind-obj.key eq 'stream' {
+                            if my $obj-type = $ind-obj.value<dict><Type> {
+                                next if $obj-type.value eq 'XRef' | 'ObjStm';
+                            }
+                        }
+                        $offset = $entry<offset>
+                    } 
+                    when 2 {
+                        my $parent = $entry<parent>;
+                        $offset = %!ind-obj-idx{ $parent }{0}<offset>;
+                        $seq = $entry<item>;
+                    }
+                    default { die "bad ind-obj index <type> $obj-num $gen-num: {.perl}" }
+                }
+
+                @objects.push: [ $ind-obj-ast, $offset, $seq ];
+            }
+        }
+
+        @objects.sort({$^a[1] + $^a[2]}).map({.[0]}).item;
+    }
+
+    method ast( Rat :$compat=1.4 ) {
+        my $objects = $.sift-objects( :$compat );
+
+        :pdf{
+            :header{ :$.version },
+            :body{ :$objects },
+        };
+    }
+
 }
