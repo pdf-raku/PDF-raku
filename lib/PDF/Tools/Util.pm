@@ -76,7 +76,7 @@ multi sub resample( $num-sets, Array $W!, 8)  {
     }
 }
 
-proto sub unbox(*@,*%) is export(:unbox) {*};
+proto sub unbox(|) is export(:unbox) {*};
 
 multi sub unbox( Pair $p! ) {
     unbox( |%( $p.kv ) );

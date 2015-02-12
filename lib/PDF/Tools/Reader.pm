@@ -33,15 +33,23 @@ class PDF::Tools::Reader {
     }
 
     method ind-obj( Int $obj-num!, Int $gen-num! ) {
-        return %!ind-obj-idx{ $obj-num }{ $gen-num }
+
+        my $ind-obj := %!ind-obj-idx{ $obj-num }{ $gen-num }<ind-obj>
         or die "unable to find object: $obj-num $gen-num R";
+
+        unless $ind-obj.isa(PDF::Tools::IndObj) {
+            # 'compile' the object
+            my $encoded = %!ind-obj-idx{ $obj-num }{ $gen-num }<encoded>:delete;
+            $ind-obj = PDF::Tools::IndObj.new-delegate( :$ind-obj, :$encoded );
+        }
+
+        $ind-obj;
     }
 
     multi method deref(Pair $_! where .key eq 'ind-ref' ) {
         my $obj-num = .value[0].Int;
         my $gen-num = .value[1].Int;
-        return %!ind-obj-idx{ $obj-num }{ $gen-num }
-        // die "unresolved object reference: $obj-num $gen-num R";
+        return $.ind-obj( $obj-num, $gen-num );
     }
 
     multi method deref($other) is default {
@@ -183,7 +191,7 @@ class PDF::Tools::Reader {
                 @deferred-objs.push: [ $ind-obj, $offset ];
             }
             else {
-                %!ind-obj-idx{ $obj-num }{ $gen-num } //= PDF::Tools::IndObj.new-delegate( :$ind-obj );
+                %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :$ind-obj, :type(1), :$offset };
             }
         }
 
@@ -198,25 +206,25 @@ class PDF::Tools::Reader {
                 my $length = unbox( $.deref( $obj-raw.value<dict><Length> ) );
                 my $encoded = $.input.substr( $offset + $start, $length );
 
-                %!ind-obj-idx{ $obj-num }{ $gen-num } //= PDF::Tools::IndObj.new-delegate( :$ind-obj, :$encoded );
+                %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :$ind-obj, :$encoded, :type(1), :$offset };
             };
         }
 
-        for %type2-obj-refs.keys.sort -> $obj-num {
-            my $indices = %type2-obj-refs{$obj-num};
-            my $container-obj = $.ind-obj( $obj-num.Int, 0);
-            my $type2-objects = $container-obj.decoded;
+        for %type2-obj-refs.keys.sort -> $type1-obj-num {
+            my $indices = %type2-obj-refs{$type1-obj-num};
+            my $type1-obj = $.ind-obj( $type1-obj-num.Int, 0);
+            my $type2-objects = $type1-obj.decoded;
 
             for $indices.list -> $item {
                 my $ind-obj = $type2-objects[ $item ];
                 my $obj-num = $ind-obj[0];
                 my $gen-num = $ind-obj[1];
-                %!ind-obj-idx{ $obj-num }{ $gen-num } //= PDF::Tools::IndObj.new-delegate( :$ind-obj );
+                %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :$ind-obj, :type(2), :parent($type1-obj-num) };
             }
         }
 
         $root-obj-ref.defined
-            ?? $!root-obj = $.deref( $root-obj-ref )
+            ?? $!root-obj = $.ind-obj( $root-obj-ref.value[0], $root-obj-ref.value[1] )
             !! die "unable to find root object";
     }
 }
