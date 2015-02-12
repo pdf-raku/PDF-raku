@@ -24,9 +24,8 @@ method encode($objstm = $.decoded --> Str) {
     my $objects-str = '';
     my $offset = 0;
     for $objstm.list { 
-        my $obj-num = .<obj-num>;
-        my $object = .<object>;
-        my $object-str = 
+        my $obj-num = .[0];
+        my $object = .[2];
         @idx.push: $obj-num;
         @idx.push: $objects-str.chars;
         $objects-str ~= PDF::Tools::Writer.write( $object );
@@ -62,6 +61,6 @@ method decode($? --> Array) {
         PDF::Grammar::PDF.parse($object-str, :rule<object>, :$actions)
             // die "unable to parse object: $object-str";
         my $object = $/.ast;
-        { :$obj-num, :$object }
+        [ $obj-num, 0, $object ]
     } ]
 }

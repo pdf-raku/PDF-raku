@@ -13,9 +13,9 @@ $pdf-in.open( 't/pdf/pdf.in' );
 is $pdf-in.version, 1.2, 'loaded version';
 isa_ok $pdf-in.root-obj, PDF::Tools::IndObj::Catalog , 'root-obj';
 is $pdf-in.root-obj.obj-num, 1, 'root-obj.obj-num';
-isa_ok $pdf-in.obj(3, 0), PDF::Tools::IndObj::Dict, 'fetch via index';
-isa_ok $pdf-in.obj(5, 0), PDF::Tools::IndObj::Stream, 'fetch via index';
-is $pdf-in.obj(5, 0).encoded, "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET", 'stream content';
+isa_ok $pdf-in.ind-obj(3, 0), PDF::Tools::IndObj::Dict, 'fetch via index';
+isa_ok $pdf-in.ind-obj(5, 0), PDF::Tools::IndObj::Stream, 'fetch via index';
+is $pdf-in.ind-obj(5, 0).encoded, "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET", 'stream content';
 
 done;
 
