@@ -42,7 +42,7 @@ class PDF::Tools::Writer {
     multi method write( Hash :$body! ) {
         my $object-count = 1;
         my $object-first-num = 0;
-        my @entries = %( :offset(0), :gen(65535), :status<f>, :obj(0) ).item;
+        my @entries = %( :type(0), :offset(0), :gen(65535), :obj(0) ).item;
         my @out;
 
         for $body<objects>.list -> $obj {
@@ -53,7 +53,7 @@ class PDF::Tools::Writer {
 
                 $object-count++;
                 # hardcode status, for now
-                @entries.push: %( :$.offset, :$gen, :status<n>, :$obj, :$gen ).item;
+                @entries.push: %( :type(1), :$.offset, :$gen, :$obj ).item;
                 @out.push: $.write( :$ind-obj );
 
             }
@@ -228,12 +228,24 @@ class PDF::Tools::Writer {
         ( $xref.map({ $.write( :xref($_) ) }), '').join: "\n";
     }
 
+    #| write an index that contains type 2 objects. these need to be written as
+    #| PDF 1.5+ cross reference streams
+    multi method write(Hash :$xref! where .<entries>.first({ .<type> == 2}) ) {
+        die "tba PDF 1.5+ cross reference streams";
+    }
+
+    #| write a traditional (PDF 1.4-) cross reference table
     multi method write(Hash :$xref!) {
         (
          'xref',
          $xref<object-first-num> ~ ' ' ~ $xref<object-count>,
          $xref<entries>.map({
-             sprintf '%010d %05d %s ', .<offset>, .<gen>, .<status>
+             my $status = do given .<type> {
+                 when (0) {'f'} # free
+                 when (1) {'n'} # inuse
+                 default { die "unknown index type: $_" }
+             };
+             sprintf '%010d %05d %s ', .<offset>, .<gen>, $status
          }),
         ).join: "\n";
     }

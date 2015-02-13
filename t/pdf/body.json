@@ -84,27 +84,27 @@
           {
             "offset" : 0,
             "gen" : 65535,
-            "status" : "f"
+            "type": 0
           },
           {
             "offset" : 0,
             "gen" : 0,
-            "status" : "n"
+            "type" : 1
           },
           {
             "offset" : 183,
             "gen" : 0,
-            "status" : "n"
+            "type" : 1
           },
           {
             "offset" : 229,
             "gen" : 2,
-            "status" : "n"
+            "type" : 1
           },
           {
             "offset" : 65,
             "gen" : 0,
-            "status" : "n"
+            "type" : 1
           }
         ]
       }

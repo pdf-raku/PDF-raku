@@ -143,12 +143,15 @@ class PDF::Tools::Reader {
 
                 for $xref-ast<xref>.list {
                     for @( .<entries> ) {
-                        my $status = .<status>;
+                        my $type = .<type>;
                         my $gen = .<gen>;
                         my $offset = .<offset>;
-                        next if $status eq 'f'; # don't index free objects
 
-                        @type1-obj-refs.push: { :$gen, :$offset };
+                        given $type {
+                            when 0 {} # ignore free objects
+                            when 1 { @type1-obj-refs.push: { :$gen, :$offset } }
+                            default { die "unhandled type: $_" }
+                        }
                     }
                 }
             }
@@ -257,19 +260,15 @@ class PDF::Tools::Reader {
             !! die "unable to find root object";
     }
 
+    #| - sift /XRef objects
+    #| - delinearize
+    #| - preserve input order
     #| 1.5+ (/ObjStm aware) compatible asts:
-    #| - sift type 2 and /XRef objects
-    #| - delinearize
-    #| - preserve input order
-    multi method sift-objects( Rat :$compat! where $_ >= 1.5) {
-        die "tba: 1.5+ compatible ast";
-    }
-
+    #| -- sift type 2 objects
     #| 1.4- compatible asts:
-    #| - sift /ObjStm and /XRef objects, include all other type1 and type 2 objects
-    #| - delinearize
-    #| - preserve input order
-    multi method sift-objects(Rat :$compat! where $_ < 1.5) {
+    #| -- sift /ObjStm objects,
+    #| -- keep typ2 objects
+    method sift-objects(Rat :$compat!) {
         my @objects;
         for %!ind-obj-idx.pairs {
             my $obj-num = .key.Int;
@@ -283,15 +282,16 @@ class PDF::Tools::Reader {
 
                 given $entry<type> {
                     when 1 {
-                        # discard stream objects of type XRef & ObjStm
                         if $ind-obj.key eq 'stream' {
                             if my $obj-type = $ind-obj.value<dict><Type> {
-                                next if $obj-type.value eq 'XRef' | 'ObjStm';
+                                next if $obj-type.value eq 'XRef'
+                                    || ($compat < 1.5 && $obj-type.value eq 'ObjStm');
                             }
                         }
                         $offset = $entry<offset>
                     } 
                     when 2 {
+                        next if $compat >= 1.5;
                         my $parent = $entry<parent>;
                         $offset = %!ind-obj-idx{ $parent }{0}<offset>;
                         $seq = $entry<item>;

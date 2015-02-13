@@ -7,42 +7,42 @@
         {
           "offset" : 0,
           "gen" : 65535,
-          "status" : "f"
+          "type" : 0
         },
         {
           "offset" : 9,
           "gen" : 0,
-          "status" : "n"
+          "type" : 1
         },
         {
           "offset" : 74,
           "gen" : 0,
-          "status" : "n"
+          "type" : 1
         },
         {
           "offset" : 120,
           "gen" : 0,
-          "status" : "n"
+          "type" : 1
         },
         {
           "offset" : 179,
           "gen" : 0,
-          "status" : "n"
+          "type" : 1
         },
         {
           "offset" : 322,
           "gen" : 0,
-          "status" : "n"
+          "type" : 1
         },
         {
           "offset" : 415,
           "gen" : 0,
-          "status" : "n"
+          "type" : 1
         },
         {
           "offset" : 445,
           "gen" : 0,
-          "status" : "n"
+          "type" : 1
         }
       ]
     }

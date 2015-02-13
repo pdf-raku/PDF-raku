@@ -211,47 +211,47 @@
               {
                 "offset" : 0,
                 "gen" : 65535,
-                "status" : "f"
+                "type" : 0
               },
               {
                 "offset" : 14,
                 "gen" : 0,
-                "status" : "n"
+                "type" : 1
               },
               {
                 "offset" : 79,
                 "gen" : 0,
-                "status" : "n"
+                "type" : 1
               },
               {
                 "offset" : 125,
                 "gen" : 0,
-                "status" : "n"
+                "type" : 1
               },
               {
                 "offset" : 184,
                 "gen" : 0,
-                "status" : "n"
+                "type" : 1
               },
               {
                 "offset" : 327,
                 "gen" : 0,
-                "status" : "n"
+                "type" : 1
               },
               {
                 "offset" : 422,
                 "gen" : 0,
-                "status" : "n"
+                "type" : 1
               },
               {
                 "offset" : 452,
                 "gen" : 0,
-                "status" : "n"
+                "type" : 1
               },
               {
                 "offset" : 560,
                 "gen" : 0,
-                "status" : "n"
+                "type" : 1
               }
             ]
           }
