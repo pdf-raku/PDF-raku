@@ -19,7 +19,7 @@ my $reader = PDF::Tools::Reader.new;
 $reader.open( $input-path );
 my $ast = $reader.ast;
 note :$ast.perl;
-$ast<pdf><comment> = "This PDF was brought to you by PDF::Tools!!";
+$ast<pdf><comment>.push: "This PDF was brought to you by PDF::Tools!!";
 
 my $root-object = $reader.root-object;
 my $pdf-writer = PDF::Tools::Writer.new( :$root-object );
@@ -30,7 +30,7 @@ $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
 
 This module is a proof of concept in the early stages of development.  It is also subject to change, refactoring or widthdrawal at any time.
 
-PDF::Tools uses the existing PDF::Grammar as a toolkit to parse individual PDF components. Both for parsing the top level structure of a PDF and to interpret paticular stream data, such as Object Streams and Content Streams. It shares AST data structures with PDF::Grammar. E.g. bin/pdf-rewriter uses PDF::Grammar::PDF to read a PDF then rewrites it using PDF::Tools::Writer.
+PDF::Tools uses the existing PDF::Grammar as a toolkit to parse individual PDF components. Both for parsing the top level structure of a PDF and to interpret particular stream data, such as Object Streams and Content Streams. It shares AST data structures with PDF::Grammar. E.g. bin/pdf-rewriter uses PDF::Grammar::PDF to read a PDF then rewrites it using PDF::Tools::Writer.
 
 ## PDF::Tools::Filter
 
