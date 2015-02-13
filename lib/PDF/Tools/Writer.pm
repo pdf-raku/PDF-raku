@@ -8,12 +8,18 @@ class PDF::Tools::Writer {
 
     has PDF::Tools::Input $.input;
     has $.ast is rw;
-    has $.root-object is rw;
-    has $.offset is rw = 0;
+    has $.root-object;
+    has $.offset = 0;
     has $!prev-xref-offset;
     has %!init;
 
-    submethod BUILD(:$input, :$!ast, :$!root-object, :$!offset ) {
+    submethod BUILD(:$input, :$!ast, :$root-object, :$!offset ) {
+
+        $!root-object = $root-object.can('ind-ref')
+            ?? $root-object.ind-ref
+            !! $root-object
+            if $root-object.defined;
+
         $!input = $input.isa(PDF::Tools::Input)
             ?? $input
             !! PDF::Tools::Input.new-delegate( :value($input) )
@@ -64,7 +70,7 @@ class PDF::Tools::Writer {
                 die "don't know how to serialize body component: {$obj.perl}"
             }
 
-            $.offset += @out[*-1].chars + 1;
+            $!offset += @out[*-1].chars + 1;
         }
 
         my $startxref = $.offset;
@@ -74,19 +80,19 @@ class PDF::Tools::Writer {
 
         my %xref = :$object-first-num, :$object-count, :@entries;
         @out.push: $.write( :%xref );
-        $.offset += @out[*-1].chars + 1;
+        $!offset += @out[*-1].chars + 1;
         my $trailer = $body<trailer>
             // {};
         @out.push: [~] ($.write( :$trailer, :$prev, :size(+@entries) ),
                         $.write( :$startxref ));
         $!prev-xref-offset = $startxref;
-        $.offset += @out[*-1].chars + 2;
+        $!offset += @out[*-1].chars + 2;
 
         return @out.join: "\n";
     }
 
     multi method write( :$body! ) {
-        $.offset = 0;
+        $!offset = 0;
         $.write( :$body );
     }
 
@@ -175,7 +181,7 @@ class PDF::Tools::Writer {
         my $comment = $pdf<comment>:exists
             ?? $.write( $pdf, :node<comment> )
             !! $.write( :comment<%¥±ë> );
-        $.offset = $header.chars + $comment.chars + 2;  # since format is byte orientated
+        $!offset = $header.chars + $comment.chars + 2;  # since format is byte orientated
         my $body = $.write( :body($pdf<body>) );
         [~] ($header, "\n", $comment, "\n", $body, '%%EOF', '');
     }

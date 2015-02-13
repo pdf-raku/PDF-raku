@@ -9,7 +9,7 @@ class PDF::Tools::Reader {
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
     has Hash %!ind-obj-idx;
-    has $.root-obj is rw;
+    has $.root-object is rw;
     has $.ast is rw;
     has Rat $.version is rw;
     has Bool $.debug is rw;
@@ -113,7 +113,7 @@ class PDF::Tools::Reader {
             or die "expected file trailer 'startxref ... \%\%EOF', got: {$tail.perl}";
         my $xref-offset = $/.ast.value;
 
-        my $root-obj-ref;
+        my $root-object-ref;
         my @type1-obj-refs;
         my %type2-obj-refs;
 
@@ -187,7 +187,7 @@ class PDF::Tools::Reader {
                 }
             }
 
-            $root-obj-ref //= $dict<Root>
+            $root-object-ref //= $dict<Root>
                 if $dict<Root>:exists;
 
             $xref-offset = $dict<Prev>:exists
@@ -255,8 +255,8 @@ class PDF::Tools::Reader {
             }
         }
 
-        $root-obj-ref.defined
-            ?? $!root-obj = $.ind-obj( $root-obj-ref.value[0], $root-obj-ref.value[1] )
+        $root-object-ref.defined
+            ?? $!root-object = $.ind-obj( $root-object-ref.value[0], $root-object-ref.value[1] )
             !! die "unable to find root object";
     }
 

@@ -2,8 +2,6 @@ use v6;
 
 # Simple round trip read and rewrite a PDF
 use v6;
-use PDF::Grammar::PDF;
-use PDF::Grammar::PDF::Actions;
 use PDF::Tools::Reader;
 use PDF::Tools::Writer;
 
@@ -16,7 +14,7 @@ sub MAIN (Str $input-path, Str $output-path) {
     my $ast = $reader.ast;
 
     note "writing {$output-path}...";
-    my $root-object = $reader.root-obj.ind-ref;
+    my $root-object = $reader.root-object;
     my $pdf-writer = PDF::Tools::Writer.new( :$root-object );
     $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
 }
