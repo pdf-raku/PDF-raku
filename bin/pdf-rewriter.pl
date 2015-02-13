@@ -16,7 +16,7 @@ sub MAIN (Str $input-path, Str $output-path) {
     my $ast = $reader.ast;
 
     note "writing {$output-path}...";
-    my $root-object = :ind-ref[ $reader.root-obj.obj-num, $reader.root-obj.gen-num];
+    my $root-object = $reader.root-obj.ind-ref;
     my $pdf-writer = PDF::Tools::Writer.new( :$root-object );
     $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
 }

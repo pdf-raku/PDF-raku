@@ -78,3 +78,8 @@ multi method new-delegate( Hash :$stream!, *%params) {
 method ast {
     :ind-obj[ $.obj-num, $.gen-num, %$.content ]
 }
+
+method ind-ref {
+    :ind-ref[ $.obj-num, $.gen-num ]
+}
+
