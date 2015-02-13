@@ -235,7 +235,6 @@ class PDF::Tools::Reader {
                 my $start = $obj-raw.value<start>;
                 my $length = unbox( $.deref( $obj-raw.value<dict><Length> ) );
                 my $encoded = $.input.substr( $offset + $start, $length );
-
                 %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :$ind-obj, :$encoded, :type(1), :$offset };
             };
         }
@@ -304,7 +303,15 @@ class PDF::Tools::Reader {
             }
         }
 
-        @objects.sort({$^a[1] + $^a[2]}).map({.[0]}).item;
+        @objects := @objects.sort({$^a[1] + $^a[2]}).map({.[0]});
+
+        # Discard Linearization aka "Fast Web View"
+        my $first-ind-obj = @objects[0].value[2];
+        if $first-ind-obj.key eq 'dict' && $first-ind-obj.value<Linearized> {
+            @objects.shift;
+        }
+
+        return @objects.item;
     }
 
     method ast( Rat :$compat=1.4 ) {
