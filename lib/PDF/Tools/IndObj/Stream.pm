@@ -9,8 +9,8 @@ our class PDF::Tools::IndObj::Stream
     is PDF::Tools::IndObj {
 
     has Hash $.dict;
-    has $.encoded;
-    has $.decoded;
+    has $!encoded;
+    has $!decoded;
 
     method new-delegate( :$stream, *%params ) {
         for <start end encoded decoded> {
@@ -38,26 +38,31 @@ our class PDF::Tools::IndObj::Stream
         return ::("PDF::Tools::IndObj")::($type);
     }
 
-    multi submethod BUILD( :$!dict!, :$start!, :$end!, :$input!) {
+    multi submethod BUILD( :$!dict! is copy, :$start!, :$end!, :$input!) {
         my $length = $end - $start + 1;
-        $!encoded = $input.substr($start - 1, $length - 1 );
+        $!encoded = $input.substr($start, $length );
+        $!dict<Length> = :int($length);
     }
 
-    multi submethod BUILD( :$!dict!, :$!decoded!) {
+    multi submethod BUILD( :$!dict! is copy, :$!decoded!) {
     }
 
-    multi submethod BUILD( :$!dict!, :$!encoded!) {
+    multi submethod BUILD( :$!dict! is copy, :$!encoded!) {
+        $!dict<Length> = :int($!encoded.chars);
     }
 
     method encoded {
-        $!encoded //= $.encode( $!decoded )
-            if $!decoded.defined;
+        if $!decoded.defined && ! $!encoded.defined {
+            $!encoded = $.encode( $!decoded );
+            $!dict<Length> = :int($!encoded.chars);
+        }
         $!encoded;
     }
 
     method decoded {
         $!decoded //= $.decode( $!encoded )
             if $!encoded.defined;
+
         $!decoded;
     }
 

@@ -23,7 +23,7 @@ class PDF::Tools::Input {
         my $start = $stream<start>;
         my $end = $stream<end>;
         my $length = $end - $start + 1;
-        $.substr($start - 1, $length - 1 );
+        $.substr($start, $length );
     }
     multi method stream-data( *@args, *%opts ) is default {
 
