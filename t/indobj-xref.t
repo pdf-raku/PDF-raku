@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 5;
+plan 10;
 
 use PDF::Tools::IndObj;
 
@@ -32,4 +32,16 @@ my $ind-obj2 = PDF::Tools::IndObj.new-delegate( |%ast2);
 my $xref-roundtrip = $ind-obj2.decode( $xref-recompressed );
 
 is_deeply $xref, $xref-roundtrip, 'encode/decode round-trip';
+
+my $xref-from-scratch = ::('PDF::Tools::IndObj')::('XRef').new(:decoded($expected-xref));
+is_deeply $xref-from-scratch.W, (:array[ :int(1), :int(2), :int(1)]), '$xref.new .W';
+is_deeply $xref-from-scratch.Size, (:int(37)), '$xref.new .Size';
+my $xref-roundtrip2 = $xref-from-scratch.decode( );
+
+is_deeply $xref, $xref-roundtrip2, '$xref.new round-trip';
+warn $xref-from-scratch.dict;
+
+my $xref-with-large-values = ::('PDF::Tools::IndObj')::('XRef').new(:decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]] );
+is_deeply $xref-with-large-values.Size, (:int(2)), '$xref.new .Size';
+is_deeply $xref-with-large-values.W, (:array[ :int(1), :int(3), :int(2)]), '$xref.new .W auto-resized';
 

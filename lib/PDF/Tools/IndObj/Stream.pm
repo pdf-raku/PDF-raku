@@ -44,7 +44,7 @@ our class PDF::Tools::IndObj::Stream
         $!dict<Length> = :int($length);
     }
 
-    multi submethod BUILD( :$!dict! is copy, :$!decoded!) {
+    multi submethod BUILD( :$!dict is copy = {}, :$!decoded!) {
     }
 
     multi submethod BUILD( :$!dict! is copy, :$!encoded!) {
@@ -84,11 +84,13 @@ our class PDF::Tools::IndObj::Stream
 
     method decode( Str $encoded = $.encoded ) {
         my $dict = unbox( :$.dict, :keys<Filter DecodeParms> );
+        return $encoded unless $dict<Filter>:exists;
         PDF::Tools::Filter.decode( $encoded, :$dict );
     }
 
     method encode( Str $decoded = $.decoded) {
         my $dict = unbox( :$.dict, :keys<Filter DecodeParms> );
+        return $decoded unless $dict<Filter>:exists;
         PDF::Tools::Filter.encode( $decoded, :$dict );
     }
 
