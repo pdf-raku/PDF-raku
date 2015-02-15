@@ -16,14 +16,27 @@ our class PDF::Tools::IndObj::XRef
     method first-obj-num is rw { %.dict<Index>.value[0].value }
     method next-obj-num is rw { %.dict<Size>.value }
 
-    multi submethod BUILD( :$dict, :$decoded!) {
-        self!"setup-dict"($decoded);
+    multi submethod BUILD( :$dict is copy = {}, :$decoded!) {
+        self!"setup-dict"();
     }
 
-    method !setup-dict(Array $xref, $dict?) {
-        $.dict = $dict if $dict.defined;
+    method !setup-dict {
+        $.Type //= :name<XRef>;
         $.W //= :array[ :int(1), :int(2), :int(1) ];
-        # resize byte-widths, if needed
+        $.Size //= :int(0);
+        $.Index //= :array[ :int(0), :int(0) ];
+    }
+
+    method encode(Array $xref = $.decoded --> Str) {
+        self!"setup-dict"();
+
+        die 'mandatory /Index[0] entry is missing or zero'
+            unless $.first-obj-num;
+
+        die 'mandatory /Size entry is missing or zero'
+            unless $.next-obj-num;
+
+        # /W resize to widest byte-widths, if needed
         for 0..2 -> $i {
             my $val = $xref.map({ .[$i] }).max;
 
@@ -35,22 +48,10 @@ our class PDF::Tools::IndObj::XRef
             } until $val == 0;
 
             $.W.value[$i] = :int($max-bytes)
-                if ! $.W.value[$i].defined || $.W.value[$i].value < $max-bytes;
+                if $.W.value[$i].value < $max-bytes;
         }
 
-        $.Index //= :array[ :int(0) ];
         $.Index.value[1] = :int(+$xref);
-        $.Size //= :int(0);
-    }
-
-    method encode(Array $xref = $.decoded --> Str) {
-        self!"setup-dict"($xref);
-
-        die 'mandatory /Index[0] entry is missing or zero'
-            unless $.first-obj-num;
-
-        die 'mandatory /Size entry is missing or zero'
-            unless $.next-obj-num;
 
         my $str = resample( $xref, unbox($.W), 8 ).chrs;
         nextwith( $str );

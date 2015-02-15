@@ -47,10 +47,10 @@ is_deeply $xref-new.Index, (:array[ :int(42), :int(37)]), '$xref.new .Index';
 is_deeply $xref, $xref-roundtrip2, '$xref.new round-trip';
 
 my $xref-wide = ::('PDF::Tools::IndObj')::('XRef').new(:dict{Foo => :int(42)}, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]] );
-is_deeply $xref-wide.W, (:array[ :int(1), :int(3), :int(2)]), '$xref.new .W auto-resized';
-is_deeply $xref-wide.dict<Foo>, (:int(42)), ':dict consrtuctor option';
-
 dies_ok {$xref-wide.encode}, 'encode incomplete setup';
 $xref-wide.first-obj-num = 42;
 $xref-wide.next-obj-num = 214;
 lives_ok {$xref-wide.encode}, 'encode completed setup';
+is_deeply $xref-wide.W, (:array[ :int(1), :int(3), :int(2)]), '$xref.new .W auto-resized';
+is_deeply $xref-wide.dict<Foo>, (:int(42)), ':dict consrtuctor option';
+
