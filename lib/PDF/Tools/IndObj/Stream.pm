@@ -23,19 +23,25 @@ our class PDF::Tools::IndObj::Stream
 
     method delegate-class( Hash :$dict! ) {
 
-        BEGIN my $Types = set <Stream Catalog ObjStm XRef>;
+        BEGIN my $Types = set <ObjStm XRef>;
 
         my $type = $dict<Type> && $dict<Type>.value
             // 'Stream';
 
-        unless $type (elem) $Types {
-            warn "unimplemented Indirect Stream Object: /Type /$type";
-            $type = 'Stream';
+        my $subclass;
+
+        if $type (elem) $Types {
+            $subclass = 'Type::' ~ $type;
+        }
+        else {
+            warn "unimplemented Indirect Stream Object: /Type /$type"
+                unless $type eq 'Stream';
+            $subclass = 'Stream';
         }
 
         # autoload
-        require ::("PDF::Tools::IndObj")::($type);
-        return ::("PDF::Tools::IndObj")::($type);
+        require ::("PDF::Tools::IndObj")::($subclass);
+        return ::("PDF::Tools::IndObj")::($subclass);
     }
 
     multi submethod BUILD( :$!dict! is copy, :$start!, :$end!, :$input!) {

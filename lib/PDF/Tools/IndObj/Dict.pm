@@ -21,14 +21,20 @@ our class PDF::Tools::IndObj::Dict
         my $type = $dict<Type> && $dict<Type>.value
             // 'Dict';
 
-        unless $type (elem) $Types {
-            warn "unimplemented Indirect Dictionary Object: /Type /$type";
-            $type = 'Dict';
+        my $subclass;
+
+        if $type (elem) $Types {
+            $subclass = 'Type::' ~ $type;
+        }
+        else {
+            warn "unimplemented Indirect Dictionary Object: /Type /$type"
+                unless $type eq 'Dict';
+            $subclass = 'Dict';
         }
 
         # autoload
-        require ::("PDF::Tools::IndObj")::($type);
-        return ::("PDF::Tools::IndObj")::($type);
+        require ::("PDF::Tools::IndObj")::($subclass);
+        return ::("PDF::Tools::IndObj")::($subclass);
     }
 
     method content {

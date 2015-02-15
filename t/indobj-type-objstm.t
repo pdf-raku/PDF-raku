@@ -15,7 +15,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 my $ind-obj = PDF::Tools::IndObj.new-delegate( |%$ast, :$input );
-isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('ObjStm');
+isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Type::ObjStm');
 
 my $objstm;
 lives_ok { $objstm = $ind-obj.decode }, 'basic content decode - lives';

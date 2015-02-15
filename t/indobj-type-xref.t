@@ -15,7 +15,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = %( $/.ast );
 my $ind-obj = PDF::Tools::IndObj.new-delegate( |%ast, :$input );
-isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('XRef');
+isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Type::XRef');
 is_deeply $ind-obj.W, (:array[ :int(1), :int(2), :int(1)]), '$xref.new .W';
 is_deeply $ind-obj.Size, (:int(251)), '$xref.new .Size';
 is_deeply $ind-obj.Index, (:array[ :int(214), :int(37)]), '$xref.new .Index';
@@ -36,7 +36,7 @@ my $xref-roundtrip = $ind-obj2.decode( $xref-recompressed );
 
 is_deeply $xref, $xref-roundtrip, 'encode/decode round-trip';
 
-my $xref-new = ::('PDF::Tools::IndObj')::('XRef').new(:decoded($expected-xref));
+my $xref-new = ::('PDF::Tools::IndObj')::('Type::XRef').new(:decoded($expected-xref));
 $xref-new.first-obj-num = 42;
 $xref-new.next-obj-num = 214;
 my $xref-roundtrip2 = $xref-new.decode( $xref-new.encode );
@@ -46,7 +46,7 @@ is_deeply $xref-new.Index, (:array[ :int(42), :int(37)]), '$xref.new .Index';
 
 is_deeply $xref, $xref-roundtrip2, '$xref.new round-trip';
 
-my $xref-wide = ::('PDF::Tools::IndObj')::('XRef').new(:dict{Foo => :int(42)}, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]] );
+my $xref-wide = ::('PDF::Tools::IndObj')::('Type::XRef').new(:dict{Foo => :int(42)}, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]] );
 dies_ok {$xref-wide.encode}, 'encode incomplete setup';
 $xref-wide.first-obj-num = 42;
 $xref-wide.next-obj-num = 214;

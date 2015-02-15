@@ -27,7 +27,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 my $ind-obj = PDF::Tools::IndObj.new-delegate( |%$ast);
-isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Catalog');
+isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Type::Catalog');
 is $ind-obj.obj-num, 215, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 is_deeply $ind-obj.dict<PageLayout>, (:name<OneColumn>), '$.dict accessor';

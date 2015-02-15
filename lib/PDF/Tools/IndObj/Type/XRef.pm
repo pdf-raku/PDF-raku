@@ -4,7 +4,7 @@ use PDF::Tools::IndObj::Stream;
 
 # /Type /XRef - cross reference stream
 # introduced with PDF 1.5
-our class PDF::Tools::IndObj::XRef
+our class PDF::Tools::IndObj::Type::XRef
     is PDF::Tools::IndObj::Stream {
 
     use PDF::Tools::Util :resample, :unbox;
