@@ -1,0 +1,41 @@
+{
+  "xref" : [
+    {
+      "object-first-num" : 0,
+      "object-count" : 2,
+      "entries" : [
+        {
+          "offset" : 0,
+          "gen" : 65535,
+          "type" : 0
+        },
+        {
+          "offset" : 18,
+          "gen" : 0,
+          "type" : 1
+        }
+      ]
+    },
+    {
+      "object-first-num" : 2,
+      "object-count" : 3,
+      "entries" : [
+        {
+          "offset" : 77,
+          "gen" : 1,
+          "type" : 1
+        },
+        {
+          "offset" : 178,
+          "gen" : 0,
+          "type" : 0
+        },
+        {
+          "offset" : 457,
+          "gen" : 0,
+          "type" : 1
+        }
+      ]
+    }
+  ]
+}

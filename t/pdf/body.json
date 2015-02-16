@@ -79,7 +79,7 @@
     "xref" : [
       {
         "object-first-num" : 0,
-        "object-count" : 5,
+        "object-count" : 2,
         "entries" : [
           {
             "offset" : 0,
@@ -90,11 +90,17 @@
             "offset" : 0,
             "gen" : 0,
             "type" : 1
-          },
+          }
+        ]
+      },
+      {
+        "object-first-num" : 3,
+        "object-count" : 3,
+        "entries" : [
           {
             "offset" : 183,
             "gen" : 0,
-            "type" : 1
+            "type": 1
           },
           {
             "offset" : 229,

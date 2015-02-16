@@ -46,8 +46,6 @@ class PDF::Tools::Writer {
     }
 
     multi method write( Hash :$body! ) {
-        my $object-count = 1;
-        my $object-first-num = 0;
         my @entries = %( :type(0), :offset(0), :gen(65535), :obj(0) ).item;
         my @out;
 
@@ -57,8 +55,6 @@ class PDF::Tools::Writer {
                 my $obj = $ind-obj[0].Int;
                 my $gen = $ind-obj[1].Int;
 
-                $object-count++;
-                # hardcode status, for now
                 @entries.push: %( :type(1), :$.offset, :$gen, :$obj ).item;
                 @out.push: $.write( :$ind-obj );
 
@@ -76,14 +72,28 @@ class PDF::Tools::Writer {
         my $startxref = $.offset;
         my $prev = $!prev-xref-offset;
 
-        @entries = @entries.sort: { $^a<obj> <=> $^b<obj> || $^a<gen> <=> $b<gen> };
+        @entries = @entries.sort: { $^a<obj> <=> $^b<obj> || $^a<gen> <=> $^b<gen> };
 
-        my %xref = :$object-first-num, :$object-count, :@entries;
-        @out.push: $.write( :%xref );
-        $!offset += @out[*-1].chars + 1;
+        my @xref;
+        my $prev-obj-num = -99;
+
+        for @entries {
+            # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
+            # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
+            my $contigous = .<obj> == $prev-obj-num + 1;
+            @xref.push: %( object-first-num => .<obj>, entries => [] ).item
+                unless $contigous;
+            @xref[*-1]<entries>.push: $_;
+            @xref[*-1]<object-count>++;
+            $prev-obj-num = .<obj>;
+        }
+
+        my $xref-str = $.write( :@xref );
+        $!offset += $xref-str.chars;
         my $trailer = $body<trailer>
             // {};
-        @out.push: [~] ($.write( :$trailer, :$prev, :size(+@entries) ),
+        @out.push: [~] ($xref-str,
+                        $.write( :$trailer, :$prev, :size(+@entries) ),
                         $.write( :$startxref ));
         $!prev-xref-offset = $startxref;
         $!offset += @out[*-1].chars + 2;
@@ -231,25 +241,20 @@ class PDF::Tools::Writer {
     }
 
     multi method write(Array :$xref!) {
-        ( $xref.map({ $.write( :xref($_) ) }), '').join: "\n";
-    }
-
-    #| write an index that contains type 2 objects. these need to be written as
-    #| PDF 1.5+ cross reference streams
-    multi method write(Hash :$xref! where .<entries>.first({ .<type> == 2}) ) {
-        die "tba PDF 1.5+ cross reference streams";
+        ( 'xref',
+          $xref.map({ $.write( :xref($_) ) }),
+          '').join: "\n";
     }
 
     #| write a traditional (PDF 1.4-) cross reference table
     multi method write(Hash :$xref!) {
         (
-         'xref',
          $xref<object-first-num> ~ ' ' ~ $xref<object-count>,
          $xref<entries>.map({
              my $status = do given .<type> {
                  when (0) {'f'} # free
                  when (1) {'n'} # inuse
-                 default { die "unknown index type: $_" }
+                 default { die "unhandled index type: $_" }
              };
              sprintf '%010d %05d %s ', .<offset>, .<gen>, $status
          }),
