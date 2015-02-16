@@ -142,16 +142,18 @@ class PDF::Tools::Reader {
                 my $prev-offset;
 
                 for $xref-ast<xref>.list {
+                    my $obj-num = .<object-first-num>;
                     for @( .<entries> ) {
                         my $type = .<type>;
-                        my $gen = .<gen>;
+                        my $gen-num = .<gen>;
                         my $offset = .<offset>;
 
                         given $type {
                             when 0 {} # ignore free objects
-                            when 1 { @type1-obj-refs.push: { :$gen, :$offset } }
+                            when 1 { @type1-obj-refs.push: { :$obj-num, :$gen-num, :$offset } }
                             default { die "unhandled type: $_" }
                         }
+                        $obj-num++;
                     }
                 }
             }
@@ -165,24 +167,35 @@ class PDF::Tools::Reader {
                 my $ref = [ $xref-obj.obj-num, $xref-obj.gen-num ];
 
                 $dict = $xref-obj.dict;
+                my $size = unbox $xref-obj.Size;
+                my $index = $xref-obj.Index
+                    ?? unbox $xref-obj.Index
+                    !! [0, $size];
 
-                for $xref-obj.decoded.list -> $idx {
-                    my $type = $idx[0];
-                    given $type {
-                        when 0 {}; # free object
-                        when 1 {
-                            my $offset = $idx[1];
-                            my $gen = $idx[2];
-                            @type1-obj-refs.push: { :$gen, :$offset };
+                my $xref-array = $xref-obj.decoded;
+                my $i = 0;
+
+                for $index.list -> $obj-num is rw, $entries {
+                    for 1..$entries {
+                        my $idx = $xref-array[$i++];
+                        my $type = $idx[0];
+                        given $type {
+                            when 0 {}; # ignore free object
+                            when 1 {
+                                my $offset = $idx[1];
+                                my $gen-num = $idx[2];
+                                @type1-obj-refs.push: { :$obj-num, :$gen-num, :$offset };
+                            }
+                            when 2 {
+                                my $type1-obj-num = $idx[1];
+                                my $index = $idx[2];
+                                %type2-obj-refs{ $type1-obj-num }.push: $index;
+                            }
+                            default {
+                                die "XRef index object type outside range 0..2: $type \@$xref-offset"
+                            }
                         }
-                        when 2 {
-                            my $obj-num = $idx[1];
-                            my $index = $idx[2];
-                            %type2-obj-refs{ $obj-num }.push: $index;
-                        }
-                        default {
-                            die "XRef index object type outside range 0..2: $type \@$xref-offset"
-                          }
+                        $obj-num++;
                     }
                 }
             }
@@ -217,6 +230,9 @@ class PDF::Tools::Reader {
                 unless $p;
             my $ind-obj = $p.ast.value;
             my ($obj-num, $gen-num, $obj) = @$ind-obj;
+
+            warn "index entry was: $v<obj-num> $v<gen-num> R. actual object: $obj-num $gen-num R"
+                unless $obj-num == $v<obj-num> && $gen-num == $v<gen-num>;
 
             if $obj.key eq 'stream' {
                 # defer as stream length may be forward references, e.g.
@@ -267,7 +283,7 @@ class PDF::Tools::Reader {
     #| -- sift type 2 objects
     #| 1.4- compatible asts:
     #| -- sift /ObjStm objects,
-    #| -- keep typ2 objects
+    #| -- keep type 2 objects
     method sift-objects(Rat :$compat!) {
         my @objects;
         for %!ind-obj-idx.pairs {
@@ -296,7 +312,7 @@ class PDF::Tools::Reader {
                         $offset = %!ind-obj-idx{ $parent }{0}<offset>;
                         $seq = $entry<item>;
                     }
-                    default { die "bad ind-obj index <type> $obj-num $gen-num: {.perl}" }
+                    default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
                 }
 
                 @objects.push: [ $ind-obj-ast, $offset, $seq ];
