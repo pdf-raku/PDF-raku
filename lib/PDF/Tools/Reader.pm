@@ -23,17 +23,15 @@ class PDF::Tools::Reader {
         $.open( $input.IO.open( :enc<latin-1> ), |%opts );
     }
 
-    multi method open( $input!, Bool :$rebuild-index? ) {
+    multi method open( $input!) {
         use PDF::Tools::Input;
 
         $!input = $input.isa(PDF::Tools::Input)
                   ?? $input
                   !! PDF::Tools::Input.new-delegate( :value($input) );
 
-        warn "loading xref...";
         $.load-header( );
         $.load-xref( );
-        warn "...done";
     }
 
     method ind-obj( Int $obj-num!, Int $gen-num!, :$type ) {
@@ -163,7 +161,7 @@ class PDF::Tools::Reader {
                     my $obj-num = .<object-first-num>;
                     for @( .<entries> ) {
                         my $type = .<type>;
-                        my $gen-num = .<gen>;
+                        my $gen-num = .<gen-num>;
                         my $offset = .<offset>;
 
                         given $type {
@@ -207,7 +205,7 @@ class PDF::Tools::Reader {
                             when 2 {
                                 my $ref-obj-num = $idx[1];
                                 my $index = $idx[2];
-                                @type2-obj-refs.push: { :$obj-num, :gen-num(0), :$ref-obj-num, :$index };
+                                @type2-obj-refs.push: { :$obj-num, :$ref-obj-num, :$index };
                             }
                             default {
                                 die "XRef index object type outside range 0..2: $type \@$xref-offset"
@@ -238,11 +236,10 @@ class PDF::Tools::Reader {
 
         for @type2-obj-refs {
             my $obj-num = .<obj-num>;
-            my $gen-num = .<gen-num>;
             my $index = .<index>;
             my $ref-obj-num = .<ref-obj-num>;
 
-            %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(2), :$index, :$ref-obj-num };
+            %!ind-obj-idx{ $obj-num }{ 0 } = { :type(2), :$index, :$ref-obj-num };
         }
 
         $root-object-ref.defined

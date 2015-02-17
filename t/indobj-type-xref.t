@@ -52,5 +52,5 @@ $xref-wide.first-obj-num = 42;
 $xref-wide.next-obj-num = 214;
 lives_ok {$xref-wide.encode}, 'encode completed setup';
 is_deeply $xref-wide.W, (:array[ :int(1), :int(3), :int(2)]), '$xref.new .W auto-resized';
-is_deeply $xref-wide.dict<Foo>, (:int(42)), ':dict consrtuctor option';
+is_deeply $xref-wide.dict<Foo>, (:int(42)), ':dict constructor option';
 

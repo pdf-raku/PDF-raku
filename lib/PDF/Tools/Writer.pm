@@ -46,16 +46,16 @@ class PDF::Tools::Writer {
     }
 
     multi method write( Hash :$body! ) {
-        my @entries = %( :type(0), :offset(0), :gen(65535), :obj(0) ).item;
+        my @entries = %( :type(0), :offset(0), :gen-num(65535), :obj-num(0) ).item;
         my @out;
 
         for $body<objects>.list -> $obj {
 
             if my $ind-obj = $obj<ind-obj> {
-                my $obj = $ind-obj[0].Int;
-                my $gen = $ind-obj[1].Int;
+                my $obj-num = $ind-obj[0].Int;
+                my $gen-num = $ind-obj[1].Int;
 
-                @entries.push: %( :type(1), :$.offset, :$gen, :$obj ).item;
+                @entries.push: %( :type(1), :$.offset, :$gen-num, :$obj-num ).item;
                 @out.push: $.write( :$ind-obj );
 
             }
@@ -72,20 +72,20 @@ class PDF::Tools::Writer {
         my $startxref = $.offset;
         my $prev = $!prev-xref-offset;
 
-        @entries = @entries.sort: { $^a<obj> <=> $^b<obj> || $^a<gen> <=> $^b<gen> };
+        @entries = @entries.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
         my @xref;
-        my $prev-obj-num = -99;
+        my $size = 1;
 
         for @entries {
             # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
             # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
-            my $contigous = .<obj> == $prev-obj-num + 1;
-            @xref.push: %( object-first-num => .<obj>, entries => [] ).item
+            my $contigous = .<obj-num> && .<obj-num> == $size;
+            @xref.push: %( object-first-num => .<obj-num>, entries => [] ).item
                 unless $contigous;
             @xref[*-1]<entries>.push: $_;
             @xref[*-1]<object-count>++;
-            $prev-obj-num = .<obj>;
+            $size = .<obj-num> + 1;
         }
 
         my $xref-str = $.write( :@xref );
@@ -93,10 +93,11 @@ class PDF::Tools::Writer {
         my $trailer = $body<trailer>
             // {};
         @out.push: [~] ($xref-str,
-                        $.write( :$trailer, :$prev, :size(+@entries) ),
+                        $.write( :$trailer, :$prev, :$size ),
                         $.write( :$startxref ));
         $!prev-xref-offset = $startxref;
         $!offset += @out[*-1].chars + 2;
+        warn;
 
         return @out.join: "\n";
     }
@@ -256,7 +257,7 @@ class PDF::Tools::Writer {
                  when (1) {'n'} # inuse
                  default { die "unhandled index type: $_" }
              };
-             sprintf '%010d %05d %s ', .<offset>, .<gen>, $status
+             sprintf '%010d %05d %s ', .<offset>, .<gen-num>, $status
          }),
         ).join: "\n";
     }
