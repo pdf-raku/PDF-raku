@@ -30,11 +30,13 @@ class PDF::Tools::Reader {
                   ?? $input
                   !! PDF::Tools::Input.new-delegate( :value($input) );
 
+        warn "loading xref...";
         $.load-header( );
         $.load-xref( );
+        warn "...done";
     }
 
-    method ind-obj( Int $obj-num!, Int $gen-num! ) {
+    method ind-obj( Int $obj-num!, Int $gen-num!, :$type ) {
 
         my $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
             // die "unable to find object: $obj-num $gen-num R";
@@ -43,6 +45,8 @@ class PDF::Tools::Reader {
             # stantiate the object
             my $ind-obj;
             my $encoded;
+            my $actual-obj-num;
+            my $actual-gen-num;
  
             given $idx<type> {
                 when 1 {
@@ -55,9 +59,7 @@ class PDF::Tools::Reader {
                         // die "unable to parse indirect object: $obj-num $gen-num R \@$offset";
 
                     $ind-obj = $/.ast.value;
-                    my ($actual-obj-num, $actual-gen-num, $obj-raw) = @$ind-obj;
-                    die "index entry was: $obj-num $gen-num R. actual object: $actual-obj-num $actual-gen-num R"
-                        unless $obj-num == $actual-obj-num && $gen-num == $actual-gen-num;
+                    ($actual-obj-num, $actual-gen-num, my $obj-raw) = @$ind-obj;
 
                     if $obj-raw.key eq 'stream' {
                         my $length = unbox( $.deref( $obj-raw.value<dict><Length> ) );
@@ -68,15 +70,26 @@ class PDF::Tools::Reader {
                 }
                 when 2 {
                     # type 2 embedded object
-                    my $input = $idx<input>;
+                    my $container-obj = $.ind-obj( $idx<ref-obj-num>, 0, :type<ObjStm> );
+                    my $type2-objects = $container-obj.decoded;
+
+                    my $index = $idx<index>;
+                    my $ind-obj-ref = $type2-objects[ $index ];
+                    $actual-obj-num = $ind-obj-ref[0];
+                    $actual-gen-num = $ind-obj-ref[1];
+                    my $input = $ind-obj-ref[2];
+
                     PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<object> )
                         // die "unable to parse indirect object: $obj-num $gen-num R\n$input";
-                    $ind-obj = [ $obj-num, $gen-num, $/.ast ];
+                    $ind-obj = [ $actual-obj-num, $actual-gen-num, $/.ast ];
                 }
                 default {die "unhandle type in index: $_"};
             };
 
-            PDF::Tools::IndObj.new-delegate( :$ind-obj, :$encoded );
+            die "index entry was: $obj-num $gen-num R. actual object: $actual-obj-num $actual-gen-num R"
+                unless $obj-num == $actual-obj-num && $gen-num == $actual-gen-num;
+
+            PDF::Tools::IndObj.new-delegate( :$ind-obj, :$encoded, :$type );
         };
 
         $ind-obj;
@@ -120,7 +133,7 @@ class PDF::Tools::Reader {
 
         my $root-object-ref;
         my @type1-obj-refs;
-        my %type2-obj-refs;
+        my @type2-obj-refs;
 
         while $xref-offset.defined {
             die "xref '/Prev' cycle detected \@$xref-offset"
@@ -192,9 +205,9 @@ class PDF::Tools::Reader {
                                 @type1-obj-refs.push: { :$obj-num, :$gen-num, :$offset };
                             }
                             when 2 {
-                                my $type1-obj-num = $idx[1];
+                                my $ref-obj-num = $idx[1];
                                 my $index = $idx[2];
-                                %type2-obj-refs{ $type1-obj-num }.push: $index;
+                                @type2-obj-refs.push: { :$obj-num, :gen-num(0), :$ref-obj-num, :$index };
                             }
                             default {
                                 die "XRef index object type outside range 0..2: $type \@$xref-offset"
@@ -220,21 +233,16 @@ class PDF::Tools::Reader {
             my $gen-num = $v<gen-num>;
             my $offset = $v<offset>;
             my $end = $k + 1 < +@type1-obj-refs ?? @type1-obj-refs[$k + 1]<offset> !! $.input.chars;
-            %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :type(1), :$offset, :$end };
+            %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(1), :$offset, :$end };
         }
 
-        for %type2-obj-refs.keys.sort -> $type1-obj-num {
-            my $indices = %type2-obj-refs{$type1-obj-num};
-            my $type1-obj = $.ind-obj( $type1-obj-num.Int, 0);
-            my $type2-objects = $type1-obj.decoded;
+        for @type2-obj-refs {
+            my $obj-num = .<obj-num>;
+            my $gen-num = .<gen-num>;
+            my $index = .<index>;
+            my $ref-obj-num = .<ref-obj-num>;
 
-            for $indices.list -> $item {
-                my $ind-obj-ref = $type2-objects[ $item ];
-                my $obj-num = $ind-obj-ref[0];
-                my $gen-num = $ind-obj-ref[1];
-                my $input = $ind-obj-ref[2];
-                %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :$input, :type(2), :parent($type1-obj-num), :$item };
-            }
+            %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(2), :$index, :$ref-obj-num };
         }
 
         $root-object-ref.defined
@@ -274,9 +282,9 @@ class PDF::Tools::Reader {
                     } 
                     when 2 {
                         next if $compat >= 1.5;
-                        my $parent = $entry<parent>;
+                        my $parent = $entry<ref-obj-num>;
                         $offset = %!ind-obj-idx{ $parent }{0}<offset>;
-                        $seq = $entry<item>;
+                        $seq = $entry<index>;
                     }
                     default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
                 }
