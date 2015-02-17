@@ -13,6 +13,11 @@ class PDF::Tools::Reader {
     has $.ast is rw;
     has Rat $.version is rw;
     has Bool $.debug is rw;
+    has PDF::Grammar::PDF::Actions $!actions;
+
+    method actions {
+        $!actions //= PDF::Grammar::PDF::Actions.new
+    }
 
     multi method open( Str $input, *%opts) {
         $.open( $input.IO.open( :enc<latin-1> ), |%opts );
@@ -25,56 +30,56 @@ class PDF::Tools::Reader {
                   ?? $input
                   !! PDF::Tools::Input.new-delegate( :value($input) );
 
-        my $actions = PDF::Grammar::PDF::Actions.new;
-
-        $.load-header( :$actions );
-        $.load-xref( :$actions );
-
+        $.load-header( );
+        $.load-xref( );
     }
 
     method ind-obj( Int $obj-num!, Int $gen-num! ) {
 
-        my $ind-obj := %!ind-obj-idx{ $obj-num }{ $gen-num }<ind-obj>
+        my $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
             // die "unable to find object: $obj-num $gen-num R";
 
-        unless $ind-obj.isa(PDF::Tools::IndObj) {
-            # 'compile' the object
-            my $encoded := %!ind-obj-idx{ $obj-num }{ $gen-num }<encoded>:delete;
-            $ind-obj = PDF::Tools::IndObj.new-delegate( :$ind-obj, :$encoded );
-        }
+        my $ind-obj = $idx<ind-obj> //= do {
+            # stantiate the object
+            my $ind-obj;
+            my $encoded;
+ 
+            given $idx<type> {
+                when 1 {
+                    # type 1 reference to an external object
+                    my $offset = $idx<offset>;
+                    my $end = $idx<end>;
+                    my $length = $end - $offset - 1;
+                    my $input = $.input.substr( $offset, $length );
+                    PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
+                        // die "unable to parse indirect object: $obj-num $gen-num R \@$offset";
+
+                    $ind-obj = $/.ast.value;
+                    my ($actual-obj-num, $actual-gen-num, $obj-raw) = @$ind-obj;
+                    die "index entry was: $obj-num $gen-num R. actual object: $actual-obj-num $actual-gen-num R"
+                        unless $obj-num == $actual-obj-num && $gen-num == $actual-gen-num;
+
+                    if $obj-raw.key eq 'stream' {
+                        my $length = unbox( $.deref( $obj-raw.value<dict><Length> ) );
+                        my $start = $obj-raw.value<start>;
+                        $encoded = $.input.substr( $offset + $start, $length );
+                    }
+
+                }
+                when 2 {
+                    # type 2 embedded object
+                    my $input = $idx<input>;
+                    PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<object> )
+                        // die "unable to parse indirect object: $obj-num $gen-num R\n$input";
+                    $ind-obj = [ $obj-num, $gen-num, $/.ast ];
+                }
+                default {die "unhandle type in index: $_"};
+            };
+
+            PDF::Tools::IndObj.new-delegate( :$ind-obj, :$encoded );
+        };
 
         $ind-obj;
-    }
-
-    #| construct an AST from a possibly raw (when :gentle) or stantiated object
-    method ind-obj-ast( Int $obj-num!, Int $gen-num!, :$gentle=True ) {
-        my $ind-obj := %!ind-obj-idx{ $obj-num }{ $gen-num }<ind-obj>
-            // die "unable to find object: $obj-num $gen-num R";
-
-        my $ast;
-
-        if $ind-obj.isa(PDF::Tools::IndObj) {
-            # already stantiated
-            $ast = $ind-obj.ast;
-        }
-        elsif $gentle {
-            # avoid object stantiation reconstruct from raw input data.
-            my $encoded := %!ind-obj-idx{ $obj-num }{ $gen-num }<encoded>;
-            if $encoded {
-                # merge encoded data into ast
-                my %value = :$encoded, %( $ind-obj[2].value );
-                %value<start>:delete;
-                $ast = :ind-obj[ $ind-obj[0], $ind-obj[1], $ind-obj[2].key => %value.item ];
-            }
-            else {
-                $ast = :$ind-obj;
-            }
-        }
-        else {
-            $ast = $.ind-obj( $obj-num, $gen-num ).ast;
-        }
-
-        return $ast;
     }
 
     multi method deref(Pair $_! where .key eq 'ind-ref' ) {
@@ -87,19 +92,19 @@ class PDF::Tools::Reader {
         $other;
     }
 
-    method load-header(:$actions!) {
+    method load-header() {
         # file should start with: %PDF-n.m, (where n, m are single
         # digits giving the major and minor version numbers).
             
         my $preamble = $.input.substr(0, 8);
 
-        PDF::Grammar::PDF.parse($preamble, :$actions, :rule<header>)
+        PDF::Grammar::PDF.parse($preamble, :$.actions, :rule<header>)
             or die "expected file header '%PDF-n.m', got: {$preamble.perl}";
 
         $.version = $/.ast.value;
     }
 
-    method load-xref(:$actions) {
+    method load-xref() {
 
         # todo: utilize Perl 6 cat strings, when available 
         # locate and read the file trailer
@@ -109,7 +114,7 @@ class PDF::Tools::Reader {
 
         my %offsets-seen;
 
-        PDF::Grammar::PDF.parse($tail, :$actions, :rule<postamble>)
+        PDF::Grammar::PDF.parse($tail, :$.actions, :rule<postamble>)
             or die "expected file trailer 'startxref ... \%\%EOF', got: {$tail.perl}";
         my $xref-offset = $/.ast.value;
 
@@ -134,7 +139,7 @@ class PDF::Tools::Reader {
 
             if $xref ~~ /^'xref'/ {
                 # PDF 1.4- xref table followed by trailer
-                PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$actions )
+                PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
                     or die "unable to parse index: $xref";
                 my ($xref-ast, $trailer-ast) = @( $/.ast );
                 $dict = $trailer-ast<trailer>.value;
@@ -159,7 +164,7 @@ class PDF::Tools::Reader {
             }
             else {
                 # PDF 1.5+ XRef Stream
-                PDF::Grammar::PDF.subparse($xref, :$actions, :rule<ind-obj>)
+                PDF::Grammar::PDF.subparse($xref, :$.actions, :rule<ind-obj>)
                     // die "ind-obj parse failed \@$xref-offset + {$xref.chars}";
 
                 my %ast = %( $/.ast );
@@ -210,52 +215,12 @@ class PDF::Tools::Reader {
 
         @type1-obj-refs = @type1-obj-refs.sort: { $^a<offset> };
 
-        my @deferred-objs;
-
-        # 1. index top-level indirect objects, other than streams
         for @type1-obj-refs.kv -> $k, $v {
+            my $obj-num = $v<obj-num>;
+            my $gen-num = $v<gen-num>;
             my $offset = $v<offset>;
-            my $next-offset = $k + 1 < +@type1-obj-refs ?? @type1-obj-refs[$k + 1]<offset> !! $.input.chars;
-            my $length-pessimistic = $next-offset - $offset - 1;
-            my $length = min( $length-pessimistic, 1024 );
-            my $chunk = $.input.substr( $offset, $length );
-
-            my $p = PDF::Grammar::PDF.subparse( $chunk, :$actions, :rule<ind-obj-nibble> );
-            if ! $p && $length < $length-pessimistic {
-                $chunk ~= $.input.substr( $offset + $length, $length-pessimistic - $length );
-                $p = PDF::Grammar::PDF.subparse( $chunk, :$actions, :rule<ind-obj-nibble> );
-            }
-
-            die "unable to parse indirect object \@$offset +$length"
-                unless $p;
-            my $ind-obj = $p.ast.value;
-            my ($obj-num, $gen-num, $obj) = @$ind-obj;
-
-            warn "index entry was: $v<obj-num> $v<gen-num> R. actual object: $obj-num $gen-num R"
-                unless $obj-num == $v<obj-num> && $gen-num == $v<gen-num>;
-
-            if $obj.key eq 'stream' {
-                # defer as stream length may be forward references, e.g.
-                # 218 0 obj << /Filter /FlateDecode /Length 219 0 R >> stream
-                @deferred-objs.push: [ $ind-obj, $offset ];
-            }
-            else {
-                %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :$ind-obj, :type(1), :$offset };
-            }
-        }
-
-        for @deferred-objs {
-            my ($ind-obj, $offset) = @$_;
-            my ($obj-num, $gen-num, $obj-raw) = @$ind-obj;
-            %!ind-obj-idx{ $obj-num }{ $gen-num } //= do {
-                die "stream object without a length: obj $obj-num $gen-num ... \@$offset"
-                    unless $obj-raw.value<dict><Length>.defined;
-
-                my $start = $obj-raw.value<start>;
-                my $length = unbox( $.deref( $obj-raw.value<dict><Length> ) );
-                my $encoded = $.input.substr( $offset + $start, $length );
-                %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :$ind-obj, :$encoded, :type(1), :$offset };
-            };
+            my $end = $k + 1 < +@type1-obj-refs ?? @type1-obj-refs[$k + 1]<offset> !! $.input.chars;
+            %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :type(1), :$offset, :$end };
         }
 
         for %type2-obj-refs.keys.sort -> $type1-obj-num {
@@ -264,10 +229,11 @@ class PDF::Tools::Reader {
             my $type2-objects = $type1-obj.decoded;
 
             for $indices.list -> $item {
-                my $ind-obj = $type2-objects[ $item ];
-                my $obj-num = $ind-obj[0];
-                my $gen-num = $ind-obj[1];
-                %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :$ind-obj, :type(2), :parent($type1-obj-num), :$item };
+                my $ind-obj-ref = $type2-objects[ $item ];
+                my $obj-num = $ind-obj-ref[0];
+                my $gen-num = $ind-obj-ref[1];
+                my $input = $ind-obj-ref[2];
+                %!ind-obj-idx{ $obj-num }{ $gen-num } //= { :$input, :type(2), :parent($type1-obj-num), :$item };
             }
         }
 
@@ -291,7 +257,7 @@ class PDF::Tools::Reader {
             for .value.pairs {
                 my $gen-num = .key.Int;
                 my $entry = .value;
-                my $ind-obj-ast = $.ind-obj-ast($obj-num, $gen-num, :gentle);
+                my $ind-obj-ast = $.ind-obj($obj-num, $gen-num).ast;
                 my $ind-obj = $ind-obj-ast.value[2];
                 my $seq = 0;
                 my $offset;

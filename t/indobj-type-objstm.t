@@ -21,23 +21,11 @@ my $objstm;
 lives_ok { $objstm = $ind-obj.decode }, 'basic content decode - lives';
 
 my $expected-objstm = [
-    [16, 0, :dict{FirstChar => :int(111),
-                  FontDescriptor => :ind-ref[15, 0],
-                  Widths => :array[ :int(600)],
-                  Type => :name<Font>,
-                  Encoding => :name<WinAnsiEncoding>,
-                  LastChar => :int(111),
-                  Subtype => :name<TrueType>,
-                  BaseFont => :name<CourierNewPSMT>},
+    [16, 0,
+     "<</BaseFont/CourierNewPSMT/Encoding/WinAnsiEncoding/FirstChar 111/FontDescriptor 15 0 R/LastChar 111/Subtype/TrueType/Type/Font/Widths[600]>>",
     ],
-    [17, 0, :dict{LastChar => :int(32),
-                  Widths => :array[ :int(250) ],
-                  Encoding => :name<WinAnsiEncoding>,
-                  Subtype => :name<TrueType>,
-                  FirstChar => :int(32),
-                  BaseFont => :name<TimesNewRomanPSMT>,
-                  FontDescriptor => :ind-ref[14, 0],
-                  Type => :name<Font>},
+    [17, 0,
+     "<</BaseFont/TimesNewRomanPSMT/Encoding/WinAnsiEncoding/FirstChar 32/FontDescriptor 14 0 R/LastChar 32/Subtype/TrueType/Type/Font/Widths[250]>>",
     ],
     ];
 

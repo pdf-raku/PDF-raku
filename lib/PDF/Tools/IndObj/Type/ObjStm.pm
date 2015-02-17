@@ -9,7 +9,6 @@ our class PDF::Tools::IndObj::Type::ObjStm
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Tools::Writer;
 
 method First is rw {
     %.dict<First>;
@@ -25,10 +24,10 @@ method encode($objstm = $.decoded --> Str) {
     my $offset = 0;
     for $objstm.list { 
         my $obj-num = .[0];
-        my $object = .[2];
+        my $object-str = .[2];
         @idx.push: $obj-num;
         @idx.push: $objects-str.chars;
-        $objects-str ~= PDF::Tools::Writer.write( $object );
+        $objects-str ~= $object-str;
     }
     my $idx-str = @idx.join: ' ';
     $.Type = :name<ObjStm>;
@@ -58,9 +57,6 @@ method decode($? --> Array) {
             !! $objects-str.chars;
         my $length = $end - $start;
         my $object-str = $objects-str.substr( $start, $length );
-        PDF::Grammar::PDF.parse($object-str, :rule<object>, :$actions)
-            // die "unable to parse object: $object-str";
-        my $object = $/.ast;
-        [ $obj-num, 0, $object ]
+        [ $obj-num, 0, $object-str ]
     } ]
 }
