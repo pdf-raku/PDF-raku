@@ -15,6 +15,7 @@ multi method new-delegate( Array :$ind-obj!, :$input, :$type, *%p ) {
         if $input.defined;
 
     if $type.defined {
+        # cross check the actual vs expected type of the object
         my $actual-type = (%params<stream> //%params)<dict><Type>.value // '??';
         die "expected object of Type $type, but /Type is missing"
             unless $actual-type.defined;

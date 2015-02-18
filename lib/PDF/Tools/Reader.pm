@@ -255,13 +255,13 @@ class PDF::Tools::Reader {
     #| 1.4- compatible asts:
     #| -- sift /ObjStm objects,
     #| -- keep type 2 objects
-    method sift-objects(Rat :$compat!) {
+    method get-objects(Bool :$uncompress) {
         my @objects;
 
         my %container-object;
-        for %!ind-obj-idx.values.map({ .<0> }) {
+        for %!ind-obj-idx.values {
             %container-object{ .<ref-obj-num> }++
-                if .<type> && .<type> == 2;
+                if <0> && .<0><type> == 2;
         }
 
         for %!ind-obj-idx.pairs {
@@ -269,7 +269,7 @@ class PDF::Tools::Reader {
 
             # early discard of container objects (/Type /ObjStm)
             next
-                if $compat < 1.5 && %container-object{$obj-num};
+                if $uncompress && %container-object{$obj-num};
 
             for .value.pairs {
                 my $gen-num = .key.Int;
@@ -282,7 +282,7 @@ class PDF::Tools::Reader {
                         $offset = $entry<offset>
                     } 
                     when 2 {
-                        next if $compat >= 1.5; # keeping container objects. discard individual entries
+                        next unless $uncompress; # keeping container objects. discard individual entries
                         my $parent = $entry<ref-obj-num>;
                         $offset = %!ind-obj-idx{ $parent }{0}<offset>;
                         $seq = $entry<index>;
@@ -313,8 +313,8 @@ class PDF::Tools::Reader {
         return @objects.item;
     }
 
-    method ast( Rat :$compat=1.4 ) {
-        my $objects = $.sift-objects( :$compat );
+    method ast( ) {
+        my $objects = $.get-objects( );
 
         :pdf{
             :header{ :$.version },

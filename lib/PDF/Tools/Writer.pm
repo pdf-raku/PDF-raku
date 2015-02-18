@@ -97,7 +97,6 @@ class PDF::Tools::Writer {
                         $.write( :$startxref ));
         $!prev-xref-offset = $startxref;
         $!offset += @out[*-1].chars + 2;
-        warn;
 
         return @out.join: "\n";
     }
