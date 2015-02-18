@@ -5,12 +5,12 @@ class PDF::Tools::IndObj;
 has Int $.obj-num is rw;
 has Int $.gen-num is rw;
 
-#| construct and object instancefrom a PDF::Grammar::PDF ast representation of
+#| construct an object instance from a PDF::Grammar::PDF ast representation of
 #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
-multi method new-delegate( Array :$ind-obj!, :$input, :$type, *%p ) {
+multi method new-delegate( Array :$ind-obj!, :$input, :$type, *%etc ) {
     my $obj-num = $ind-obj[0];
     my $gen-num = $ind-obj[1];
-    my %params = $ind-obj[2].kv, %p;
+    my %params = $ind-obj[2].kv, %etc;
     %params<input> = $input
         if $input.defined;
 
@@ -76,10 +76,12 @@ multi method new-delegate( Hash :$stream!, *%params) {
     return ::("PDF::Tools::IndObj::Stream").new-delegate( :$stream, |%params );
 }
 
+#| recreate a PDF::Grammar::PDF / PDF::Writer compatibile ast from the object
 method ast {
     :ind-obj[ $.obj-num, $.gen-num, %$.content ]
 }
 
+#| create ast for an indirect reference to this object
 method ind-ref {
     :ind-ref[ $.obj-num, $.gen-num ]
 }
