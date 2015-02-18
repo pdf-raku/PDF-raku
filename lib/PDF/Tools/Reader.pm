@@ -51,8 +51,8 @@ class PDF::Tools::Reader {
                     # type 1 reference to an external object
                     my $offset = $idx<offset>;
                     my $end = $idx<end>;
-                    my $length = $end - $offset - 1;
-                    my $input = $.input.substr( $offset, $length );
+                    my $max-length = $end - $offset - 1;
+                    my $input = $.input.substr( $offset, $max-length );
                     PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
                         // die "unable to parse indirect object: $obj-num $gen-num R \@$offset";
 
@@ -62,7 +62,9 @@ class PDF::Tools::Reader {
                     if $obj-raw.key eq 'stream' {
                         my $length = unbox( $.deref( $obj-raw.value<dict><Length> ) );
                         my $start = $obj-raw.value<start>;
-                        $encoded = $.input.substr( $offset + $start, $length );
+                        die "stream Length $length appears too large (> $max-length): $obj-num $gen-num R \@$offset"
+                            if $start + $length > $max-length;
+                        $encoded = $input.substr( $start, $length );
                     }
 
                 }
@@ -250,26 +252,27 @@ class PDF::Tools::Reader {
     #| - sift /XRef objects
     #| - delinearize
     #| - preserve input order
-    #| 1.5+ (/ObjStm aware) compatible asts:
-    #| -- sift type 2 objects
-    #| 1.4- compatible asts:
+    #| :unpack 1.4- compatible asts:
     #| -- sift /ObjStm objects,
     #| -- keep type 2 objects
-    method get-objects(Bool :$uncompress) {
+    #| :!unpack 1.5+ (/ObjStm aware) compatible asts:
+    #| -- sift type 2 objects
+    method get-objects(Bool :$unpack!) {
         my @objects;
 
-        my %container-object;
-        for %!ind-obj-idx.values {
-            %container-object{ .<ref-obj-num> }++
-                if <0> && .<0><type> == 2;
+        my %objstm-objects;
+        for %!ind-obj-idx.values>>.values {
+            # implicitly an objstm object, if it contains type2 (compressed) objects
+            %objstm-objects{ .<ref-obj-num> }++
+                if .<type> == 2;
         }
 
         for %!ind-obj-idx.pairs {
             my $obj-num = .key.Int;
 
-            # early discard of container objects (/Type /ObjStm)
+            # discard objstm objects (/Type /ObjStm)
             next
-                if $uncompress && %container-object{$obj-num};
+                if $unpack && %objstm-objects{$obj-num};
 
             for .value.pairs {
                 my $gen-num = .key.Int;
@@ -278,11 +281,18 @@ class PDF::Tools::Reader {
                 my $offset;
 
                 given $entry<type> {
+                    when 0 {
+                        # type 0 freed object
+                        next;
+                    }
                     when 1 {
+                        # type 1 regular top-level/inuse object
                         $offset = $entry<offset>
                     } 
                     when 2 {
-                        next unless $uncompress; # keeping container objects. discard individual entries
+                        # type 2 packed object
+                        next unless $unpack;
+
                         my $parent = $entry<ref-obj-num>;
                         $offset = %!ind-obj-idx{ $parent }{0}<offset>;
                         $seq = $entry<index>;
@@ -313,8 +323,8 @@ class PDF::Tools::Reader {
         return @objects.item;
     }
 
-    method ast( ) {
-        my $objects = $.get-objects( );
+    method ast( Bool :$unpack = True ) {
+        my $objects = $.get-objects( :$unpack );
 
         :pdf{
             :header{ :$.version },

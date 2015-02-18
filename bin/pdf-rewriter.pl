@@ -9,13 +9,15 @@ sub MAIN (Str $input-path, Str $output-path) {
 
     my $reader = PDF::Tools::Reader.new;
  
-    note "parsing {$input-path} ...";
+    note "opening {$input-path} ...";
     $reader.open( $input-path );
-    my $ast = $reader.ast;
+    note "unpacking ...";
+    my $ast = $reader.ast( :unpack );
 
     note "writing {$output-path}...";
     my $root-object = $reader.root-object;
     my $pdf-writer = PDF::Tools::Writer.new( :$root-object );
     $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
+    note "done";
 }
 
