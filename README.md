@@ -43,11 +43,11 @@ is recommended to enforce this.
 
 `encode` and `decode` both return latin-1 encoded strings.
 
-    ```
-    my $filter = PDF::Tools::Filter.new-delegate( :dict{Filter<RunlengthEncode>} );
-    my $encoded = $filter.encode("This    is waaay toooooo loooong!", :eod);
-    say $encoded.chars;
-    ```
+ ```
+ my $filter = PDF::Tools::Filter.new-delegate( :dict{Filter<RunlengthEncode>} );
+ my $encoded = $filter.encode("This    is waaay toooooo loooong!", :eod);
+ say $encoded.chars;
+ ```
 
 ## PDF::Tools::IndObj
 
@@ -68,10 +68,10 @@ say $stream.obj.encoded;
 - PDF::Tools::IndObj::Array - array indirect objects (not subclassed)
 - PDF::Tools::IndObj::Bool, PDF::Tools::IndObj::Name, PDF::Tools::IndObj::Null, PDF::Tools::IndObj::Num, PDF::Tools::IndObj::String - simple indirect objects
 - PDF::Tools::IndObj::Type::* - this namespace represents specific indirect object types as distinguished by the `/Type` dictionary entry. These may subclass either PDF::Tools::IndObj::Stream or PDF::Tools::IndObj::Dict.
--- PDF::Tools::IndObj::Type::Catalog - PDF Catalog dictionary
--- PDF::Tools::IndObj::Type::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
--- PDF::Tools::IndObj::Type::XRef - PDF 1.5+ Cross Reference stream
--- ... many more to come
+  - PDF::Tools::IndObj::Type::Catalog - PDF Catalog dictionary
+  - PDF::Tools::IndObj::Type::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
+  - PDF::Tools::IndObj::Type::XRef - PDF 1.5+ Cross Reference stream
+  - ... many more to come
 
 ## PDF::Tools::Reader
 
