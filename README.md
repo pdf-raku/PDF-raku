@@ -28,7 +28,7 @@ $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
 
 ## Status / Development Notes
 
-This module is a proof of concept in the early stages of development.  It is also subject to change, refactoring or widthdrawal at any time.
+This module is a proof of concept in the early stages of development.  It is subject to change, refactoring or reorganization  at any time.
 
 # Classes
 
