@@ -254,8 +254,13 @@ class PDF::Tools::Writer {
              my $status = do given .<type> {
                  when (0) {'f'} # free
                  when (1) {'n'} # inuse
+                 when (2) { die "unable to write type-2 (embedded) objects in a PDF 1.4 cross reference table"}
                  default { die "unhandled index type: $_" }
              };
+             die "generation number {.<gen_num>} exceeds 5 digits in PDF 1.4 cross reference table"
+                 if .<gen-num> > 99_999;
+             die "offset {.<offset>} exceeds 10 digits in PDF 1.4 cross reference table"
+                 if .<offset> > 9_999_999_999;
              sprintf '%010d %05d %s ', .<offset>, .<gen-num>, $status
          }),
         ).join: "\n";
