@@ -1,7 +1,7 @@
 perl6-PDF-Tools
 ===============
 
-** Under Construction **  This module provides tools for reading, manipulation and construction of PDF content. It performs a similar role to Perl 5's Text::PDF or PDF::API2::Basic::PDF (PDF::API2 distribution). It supports PDF 1.5+ object and content streams. 
+** Under Construction **  This module provides tools and resources for reading, manipulation and writing of PDF content. It performs a similar role to Perl 5's Text::PDF or PDF::API2::Basic::PDF (PDF::API2 distribution). It supports reading of PDF 1.5+ object and content streams. 
 
 ```
 use v6;
@@ -30,7 +30,7 @@ $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
 
 This module is a proof of concept in the early stages of development.  It is also subject to change, refactoring or widthdrawal at any time.
 
-PDF::Tools uses the existing PDF::Grammar as a toolkit to parse individual PDF components. Both for parsing the top level structure of a PDF and to interpret particular stream data, such as Object Streams and Content Streams. It shares AST data structures with PDF::Grammar. E.g. bin/pdf-rewriter uses PDF::Grammar::PDF to read a PDF then rewrites it using PDF::Tools::Writer.
+# Classes
 
 ## PDF::Tools::Filter
 
@@ -45,20 +45,40 @@ is recommended to enforce this.
 
     ```
     my $filter = PDF::Tools::Filter.new-delegate( :dict{Filter<RunlengthEncode>} );
-    my $data = $filter.encode("This    is waaay toooooo loooong!", :eod);
-    say $data.chars;
+    my $encoded = $filter.encode("This    is waaay toooooo loooong!", :eod);
+    say $encoded.chars;
     ```
 
 ## PDF::Tools::IndObj
 
+Classes for the representation and manipulation of PDF Indirect Objects.
+
+```
+use PDF::Tools::IndObj::Stream;
+my %dict = :Filter( :name<ASCIIHexDecode> );
+my $obj-num = 123;
+my $gen-num = 4;
+my $decoded = "100 100 Td (Hello, world!) Tj";
+my $stream-obj = PDF::Tools::IndObj::Stream.new( :$obj-num, :$gen-num, :$dict, :$decoded );
+say $stream.obj.encoded;
+```
+
 - PDF::Tools::IndObj::Stream - abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
 - PDF::Tools::IndObj::Dict - abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
+- PDF::Tools::IndObj::Array - array indirect objects (not subclassed)
+- PDF::Tools::IndObj::Bool, PDF::Tools::IndObj::Name, PDF::Tools::IndObj::Null, PDF::Tools::IndObj::Num, PDF::Tools::IndObj::String - simple indirect objects
+- PDF::Tools::IndObj::Type::* - this namespace represents specific indirect object types as distinguished by the `/Type` dictionary entry. These may subclass either PDF::Tools::IndObj::Stream or PDF::Tools::IndObj::Dict.
+-- PDF::Tools::IndObj::Type::Catalog - PDF Catalog dictionary
+-- PDF::Tools::IndObj::Type::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
+-- PDF::Tools::IndObj::Type::XRef - PDF 1.5+ Cross Reference stream
+-- ... many more to come
 
 ## PDF::Tools::Reader
 
-Reads a PDF file from the cross reference tables and/or streams.
+Loads a PDF index (cross reference table and/or stream), then allows random access via the `$.ind.obj(...)` method. The `$.ast()`
+method can be used to load the entire PDF into memory for reserialization, etc.
 
 ## PDF::Tools::Writer
 
-Reserializes an AST back to a PDF image with rebuilt cross reference streams (PDF 1.5+) or tables.
+Reserializes an AST back to a PDF image with a rebuilt cross reference table.
 
