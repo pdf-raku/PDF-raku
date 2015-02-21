@@ -2,7 +2,7 @@ use Test;
 
 plan 12;
 
-use PDF::Tools::Role::Predictors;
+use PDF::Tools::Filter::Role::Predictors;
 use PDF::Tools::Filter;
 
 my $prediction-in = buf8.new: [
@@ -30,21 +30,21 @@ my $png-post-prediction = buf8.new: [
     1,   2,   3,    4,
     ];
 
-is_deeply PDF::Tools::Role::Predictors.post-prediction( $prediction-in,
+is_deeply PDF::Tools::Filter::Role::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(1), ),
     $prediction-in,
     "NOOP predictive filter sanity";
 
-is_deeply PDF::Tools::Role::Predictors.post-prediction( $prediction-in,
+is_deeply PDF::Tools::Filter::Role::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(2), ),
     $tiff-post-prediction,
     "TIFF predictive filter sanity";
 
-is_deeply PDF::Tools::Role::Predictors.post-prediction( $prediction-in,
+is_deeply PDF::Tools::Filter::Role::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Predictor(12), ),
     $png-post-prediction,
@@ -60,11 +60,11 @@ my $rand-data = buf8.new: [
 for None => 1, TIFF => 2, PNG => 10 {
     my ($desc, $Predictor) = .kv;
 
-    my $prediction = PDF::Tools::Role::Predictors.prediction( $rand-data,
+    my $prediction = PDF::Tools::Filter::Role::Predictors.prediction( $rand-data,
                                                            :Columns(4),
                                                            :$Predictor, );
 
-    my $post-prediction = PDF::Tools::Role::Predictors.post-prediction( $prediction,
+    my $post-prediction = PDF::Tools::Filter::Role::Predictors.post-prediction( $prediction,
                                                                      :Columns(4),
                                                                      :$Predictor, );
 

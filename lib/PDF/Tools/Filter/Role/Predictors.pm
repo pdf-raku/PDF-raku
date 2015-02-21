@@ -1,6 +1,6 @@
 use v6;
 
-role PDF::Tools::Role::Predictors;
+role PDF::Tools::Filter::Role::Predictors;
 
 use PDF::Tools::Util :resample;
 # post prediction functions as described in the PDF 1.7 spec, table 3.8
