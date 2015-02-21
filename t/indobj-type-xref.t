@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 16;
+plan 21;
 
 use PDF::Tools::IndObj;
 
@@ -36,21 +36,36 @@ my $xref-roundtrip = $ind-obj2.decode( $xref-recompressed );
 
 is_deeply $xref, $xref-roundtrip, 'encode/decode round-trip';
 
+my $xref-stage2;
+lives_ok { $xref-stage2 = $ind-obj.decode-to-stage2 }, 'decode to stage 2 - lives';
+
+my $expected-stage2-sample = [
+    {:obj-num(248), :ref-obj-num(217), :index(16), :type(2)},
+    {:obj-num(249), :type(2), :ref-obj-num(217), :index(17)},
+    {:obj-num(250), :offset(495), :gen-num(0), :type(1)},
+    ];
+
+is_deeply [ $xref-stage2[*-3..*] ], $expected-stage2-sample, 'decoded stage 2 (sample)';
+
+my $xref-recompressed-from-stage2 = $ind-obj.encode-from-stage2($xref-stage2);
+$xref-roundtrip = $ind-obj2.decode-to-stage2( $xref-recompressed-from-stage2 );
+is_deeply $xref-stage2, $xref-roundtrip, 'encode-from-stage2/decode-from-stage1 round-trip';
+
 my $xref-new = ::('PDF::Tools::IndObj')::('Type::XRef').new(:decoded($expected-xref));
 $xref-new.first-obj-num = 42;
-$xref-new.next-obj-num = 214;
+$xref-new.next-obj-num = 37;
 my $xref-roundtrip2 = $xref-new.decode( $xref-new.encode );
 is_deeply $xref-new.W, (:array[ :int(1), :int(2), :int(1)]), '$xref.new .W';
-is_deeply $xref-new.Size, (:int(214)), '$xref.new .Size';
+is_deeply $xref-new.Size, (:int(37)), '$xref.new .Size';
 is_deeply $xref-new.Index, (:array[ :int(42), :int(37)]), '$xref.new .Index';
 
 is_deeply $xref, $xref-roundtrip2, '$xref.new round-trip';
-
-my $xref-wide = ::('PDF::Tools::IndObj')::('Type::XRef').new(:dict{Foo => :int(42)}, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]] );
+my $xref-wide = ::('PDF::Tools::IndObj')::('Type::XRef').new(:dict{Foo => :name<bar>}, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]] );
 dies_ok {$xref-wide.encode}, 'encode incomplete setup';
 $xref-wide.first-obj-num = 42;
 $xref-wide.next-obj-num = 214;
 lives_ok {$xref-wide.encode}, 'encode completed setup';
-is_deeply $xref-wide.W, (:array[ :int(1), :int(3), :int(2)]), '$xref.new .W auto-resized';
-is_deeply $xref-wide.dict<Foo>, (:int(42)), ':dict constructor option';
-
+is_deeply $xref-wide.Type, (:name<XRef>), '$xref.new .Name auto-setup';
+is_deeply $xref-wide.W, (:array[ :int(1), :int(3), :int(2)]), '$xref.new .W auto-setup';
+is_deeply $xref-wide.Index, (:array[ :int(42), :int(214)]), '$xref.new .Index auto-setup';
+is_deeply $xref-wide.dict<Foo>, (:name<bar>), ':dict constructor option';

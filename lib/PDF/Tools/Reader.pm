@@ -76,8 +76,8 @@ class PDF::Tools::Reader {
                     my $index = $idx<index>;
                     my $ind-obj-ref = $type2-objects[ $index ];
                     $actual-obj-num = $ind-obj-ref[0];
-                    $actual-gen-num = $ind-obj-ref[1];
-                    my $input = $ind-obj-ref[2];
+                    $actual-gen-num = 0;
+                    my $input = $ind-obj-ref[1];
 
                     PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<object> )
                         // die "unable to parse indirect object: $obj-num $gen-num R\n$input";
@@ -132,8 +132,7 @@ class PDF::Tools::Reader {
         my $xref-offset = $/.ast.value;
 
         my $root-object-ref;
-        my @type1-obj-refs;
-        my @type2-obj-refs;
+        my @obj-idx;
 
         while $xref-offset.defined {
             die "xref '/Prev' cycle detected \@$xref-offset"
@@ -167,8 +166,8 @@ class PDF::Tools::Reader {
                         my $offset = .<offset>;
 
                         given $type {
-                            when 0 {} # ignore free objects
-                            when 1 { @type1-obj-refs.push: { :$obj-num, :$gen-num, :$offset } }
+                            when 0  {} # ignore free objects
+                            when 1  { @obj-idx.push: { :$type, :$obj-num, :$gen-num, :$offset } }
                             default { die "unhandled type: $_" }
                         }
                         $obj-num++;
@@ -182,39 +181,8 @@ class PDF::Tools::Reader {
 
                 my %ast = %( $/.ast );
                 my $xref-obj = PDF::Tools::IndObj.new-delegate( |%ast, :input($xref), :type<XRef> );
-
                 $dict = $xref-obj.dict;
-                my $size = unbox $xref-obj.Size;
-                my $index = $xref-obj.Index
-                    ?? unbox $xref-obj.Index
-                    !! [0, $size];
-
-                my $xref-array = $xref-obj.decoded;
-                my $i = 0;
-
-                for $index.list -> $obj-num is rw, $entries {
-                    for 1..$entries {
-                        my $idx = $xref-array[$i++];
-                        my $type = $idx[0];
-                        given $type {
-                            when 0 {}; # ignore free object
-                            when 1 {
-                                my $offset = $idx[1];
-                                my $gen-num = $idx[2];
-                                @type1-obj-refs.push: { :$obj-num, :$gen-num, :$offset };
-                            }
-                            when 2 {
-                                my $ref-obj-num = $idx[1];
-                                my $index = $idx[2];
-                                @type2-obj-refs.push: { :$obj-num, :$ref-obj-num, :$index };
-                            }
-                            default {
-                                die "XRef index object type outside range 0..2: $type \@$xref-offset"
-                            }
-                        }
-                        $obj-num++;
-                    }
-                }
+                @obj-idx.push: $xref-obj.decode-to-stage2.list;
             }
 
             $root-object-ref //= $dict<Root>
@@ -225,17 +193,23 @@ class PDF::Tools::Reader {
                 !! Mu;
         }
 
-        @type1-obj-refs = @type1-obj-refs.sort: { $^a<offset> };
+        my %obj-entries-of-type = @obj-idx.classify({.<type>});
 
-        for @type1-obj-refs.kv -> $k, $v {
+        my @type1-obj-entries = %obj-entries-of-type<1>.list.sort({ $^a<offset> })
+            if %obj-entries-of-type<1>:exists;
+
+        for @type1-obj-entries.kv -> $k, $v {
             my $obj-num = $v<obj-num>;
             my $gen-num = $v<gen-num>;
             my $offset = $v<offset>;
-            my $end = $k + 1 < +@type1-obj-refs ?? @type1-obj-refs[$k + 1]<offset> !! $.input.chars;
+            my $end = $k + 1 < +@type1-obj-entries ?? @type1-obj-entries[$k + 1]<offset> !! $.input.chars;
             %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(1), :$offset, :$end };
         }
 
-        for @type2-obj-refs {
+        my @type2-obj-entries = %obj-entries-of-type<2>.list
+        if %obj-entries-of-type<2>:exists;
+
+        for @type2-obj-entries {
             my $obj-num = .<obj-num>;
             my $index = .<index>;
             my $ref-obj-num = .<ref-obj-num>;

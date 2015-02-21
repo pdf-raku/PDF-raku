@@ -24,14 +24,14 @@ our class PDF::Tools::IndObj::Type::XRef
         $.Type //= :name<XRef>;
         $.W //= :array[ :int(1), :int(2), :int(1) ];
         $.Size //= :int(0);
-        $.Index //= :array[ :int(0), :int(0) ];
+        $.Index //= :array[ :int(0), $.Size ];
     }
 
     method encode(Array $xref = $.decoded --> Str) {
         self!"setup-dict"();
 
-        die 'mandatory /Index[0] entry is missing or zero'
-            unless $.first-obj-num;
+        die 'mandatory /Index[0] entry is missing'
+            unless $.first-obj-num.defined;
 
         die 'mandatory /Size entry is missing or zero'
             unless $.next-obj-num;
@@ -51,17 +51,94 @@ our class PDF::Tools::IndObj::Type::XRef
                 if $.W.value[$i].value < $max-bytes;
         }
 
-        $.Index.value[1] = :int(+$xref);
-
         my $str = resample( $xref, unbox($.W), 8 ).chrs;
         nextwith( $str );
+    }
+
+    #= inverse of $.decode-to-stage2 . handily calculates and sets $.Size and $.Index
+    method encode-from-stage2(Array $xref-index) {
+        my @entries = $xref-index.list.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
+
+        my @xref;
+        my $size = 0;
+        my @index;
+        my $encoded = [];
+
+        for @entries -> $entry {
+            my $contigous = $entry<obj-num> && $entry<obj-num> == $size;
+            @index.push( $entry<obj-num>,  0 )
+                unless $contigous;
+            @index[*-1]++;
+            my $item = do given $entry<type> {
+                when 0|1 { [ $entry<type>, $entry<offset>, $entry<gen-num> ] }
+                when 2   { [ $entry<type>, $entry<ref-obj-num>, $entry<index> ] }
+                default  { die "unknown object type in XRef index: $_"}
+            };
+            $encoded.push( $item );
+            $size = $entry<obj-num> + 1;
+        }
+
+        $.Size = :int($size);
+        $.Index = :array[ @index.map: { :int($_) } ];
+
+        $.encode($encoded);
     }
 
     method decode($? --> Array) {
         my $chars = callsame;
         my $W = $.W
             // die "missing mandatory /XRef param: /W";
-        resample( $chars.encode('latin-1'), 8, unbox ( $W ) );
+
+        my $xref-array = resample( $chars.encode('latin-1'), 8, unbox ( $W ) );
+        my $Size = $.Size
+            // die "missing mandatory /XRef param: /Size";
+
+        $.Index //= :array[ :int(0), $Size ];
+        my $index = unbox $.Index;
+        my $n = [+] $index[1, 3 ... *];
+        die "problem decoding /Type /XRef object. /Index specified $n objects, got {+$xref-array}"
+            unless +$xref-array == $n;
+
+        $xref-array;
     }
+
+    #= an extra decoding stage - build index entries from raw decoded data
+    multi method decode-to-stage2($encoded = $.encoded) {
+
+        my $i = 0;
+        my $index = unbox $.Index;
+        my $decoded-stage2 = [];
+
+        my $decoded = $.decode( $encoded );
+
+        for $index.list -> $obj-num is rw, $num-entries {
+
+            for 1 .. $num-entries {
+                my $idx = $decoded[$i++];
+                my $type = $idx[0];
+                given $type {
+                    when 0|1 {
+                        # free or inuse objects
+                        my $offset = $idx[1];
+                        my $gen-num = $idx[2];
+                        $decoded-stage2.push: { :$type, :$obj-num, :$gen-num, :$offset };
+                    }
+                    when 2 {
+                        # embedded objects
+                        my $ref-obj-num = $idx[1];
+                        my $index = $idx[2];
+                        $decoded-stage2.push: { :$type, :$obj-num, :$ref-obj-num, :$index };
+                    }
+                    default {
+                        die "XRef index object type outside range 0..2: $type"
+                    }
+                }
+                $obj-num++;
+            }
+        }
+
+        $decoded-stage2;
+    }
+
 }
 
