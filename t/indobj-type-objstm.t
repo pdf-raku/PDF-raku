@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 5;
+plan 11;
 
 use PDF::Tools::IndObj;
 
@@ -21,11 +21,9 @@ my $objstm;
 lives_ok { $objstm = $ind-obj.decode }, 'basic content decode - lives';
 
 my $expected-objstm = [
-    [16, 0,
-     "<</BaseFont/CourierNewPSMT/Encoding/WinAnsiEncoding/FirstChar 111/FontDescriptor 15 0 R/LastChar 111/Subtype/TrueType/Type/Font/Widths[600]>>",
+    [16, "<</BaseFont/CourierNewPSMT/Encoding/WinAnsiEncoding/FirstChar 111/FontDescriptor 15 0 R/LastChar 111/Subtype/TrueType/Type/Font/Widths[600]>>",
     ],
-    [17, 0,
-     "<</BaseFont/TimesNewRomanPSMT/Encoding/WinAnsiEncoding/FirstChar 32/FontDescriptor 14 0 R/LastChar 32/Subtype/TrueType/Type/Font/Widths[250]>>",
+    [17, "<</BaseFont/TimesNewRomanPSMT/Encoding/WinAnsiEncoding/FirstChar 32/FontDescriptor 14 0 R/LastChar 32/Subtype/TrueType/Type/Font/Widths[250]>>",
     ],
     ];
 
@@ -39,4 +37,14 @@ my $ind-obj2 = PDF::Tools::IndObj.new-delegate( |%$ast2 );
 my $objstm-roundtrip = $ind-obj2.decode( $objstm-recompressed );
 
 is_deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';
+
+my $objstm-new = ::('PDF::Tools::IndObj')::('Type::ObjStm').new(:dict{}, :decoded[[10, '<< /Foo (bar) >>'], [11, '[ 42 true ]']] );
+lives_ok {$objstm-new.encode( :check )}, '$.encode( :check ) - with valid data lives';
+is_deeply $objstm-new.Type, (:name<ObjStm>), '$xref.new .Name auto-setup';
+is_deeply $objstm-new.N, (:int(2)), '$xref.new .N auto-setup';
+is_deeply $objstm-new.First, (:int(11)), '$xref.new .First auto-setup';
+
+my $invalid-decoding =  [[10, '<< /Foo wtf!! (bar) >>'], [11, '[ 42 true ]']];
+lives_ok {$objstm-new.encode( $invalid-decoding) }, 'encoding invlaid data without :check (lives)';
+dies_ok {$objstm-new.encode( $invalid-decoding, :check) }, 'encoding invlaid data without :check (dies)';
 

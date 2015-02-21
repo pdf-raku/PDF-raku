@@ -18,13 +18,17 @@ method N is rw {
     %.dict<N>;
 }
 
-method encode($objstm = $.decoded --> Str) {
+method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {
     my @idx;
     my $objects-str = '';
     my $offset = 0;
     for $objstm.list { 
         my $obj-num = .[0];
-        my $object-str = .[2];
+        my $object-str = .[1];
+        if $check {
+            PDF::Grammar::PDF.parse( $object-str, :rule<object> )
+                // die "unable to parse type 2 object: $obj-num 0 R [from type 1 object {$.obj-num // '?'} {$.gen-num // '?'} R]\n$object-str";
+        }
         @idx.push: $obj-num;
         @idx.push: $objects-str.chars;
         $objects-str ~= $object-str;
@@ -48,7 +52,12 @@ method decode($? --> Array) {
     my $actions = PDF::Grammar::PDF::Actions.new;
     PDF::Grammar::PDF.parse($object-index-str, :rule<object-stream-index>, :$actions)
         // die "unable to parse object stream index: $object-index-str";
+
     my $object-index = $/.ast;
+    # these should possibly be structured exceptions
+    die "problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\nexpected /N = $n index entries, got {+$object-index}"
+        unless +$object-index >= $n;
+
     [ (0 ..^ $n).map: -> $i {
         my $obj-num = $object-index[$i][0].Int;
         my $start = $object-index[$i][1];
@@ -56,7 +65,9 @@ method decode($? --> Array) {
             ?? $object-index[$i + 1][1]
             !! $objects-str.chars;
         my $length = $end - $start;
+        die "problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\nindex offset $start exceeds decoded data length {$objects-str.chars}"
+            if $start > $objects-str.chars;
         my $object-str = $objects-str.substr( $start, $length );
-        [ $obj-num, 0, $object-str ]
+        [ $obj-num, $object-str ]
     } ]
 }
