@@ -1,15 +1,15 @@
 perl6-PDF-Tools
 ===============
 
-** Under Construction **  This module provides tools and resources for reading, manipulation and writing of PDF content. It performs a similar role to Perl 5's Text::PDF or PDF::API2::Basic::PDF (PDF::API2 distribution). It supports reading of PDF 1.5+ object and content streams. 
+** Under Construction **  This module provides tools and resources for manipulation of PDF content.
 
 ```
 use v6;
 
 # Simple round trip read and rewrite a PDF
 use v6;
-use PDF::Tools::Reader;
-use PDF::Tools::Writer;
+use PDF::Reader;
+use PDF::Writer;
 
 my $input-path = "t/pdf/pdf.in";
 my $output-path = "examples/helloworld.pdf";
@@ -73,12 +73,8 @@ say $stream.obj.encoded;
   - PDF::Tools::IndObj::Type::XRef - PDF 1.5+ Cross Reference stream
   - ... many more to come
 
-## PDF::Tools::Reader
+## See also
 
-Loads a PDF index (cross reference table and/or stream), then allows random access via the `$.ind.obj(...)` method. The `$.ast()`
-method can be used to load the entire PDF into memory for reserialization, etc.
-
-## PDF::Tools::Writer
-
-Reserializes an AST back to a PDF image with a rebuilt cross reference table.
+- [PDF::Reader](https://github.com/p6-css/perl6-PDF-Reader) (under construction)
+- [PDF::Writer](https://github.com/p6-css/perl6-PDF-Writer) (under construction)
 

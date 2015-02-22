@@ -101,7 +101,6 @@ our class PDF::Tools::IndObj::Stream
     }
 
     method content {
-        my $s = :stream{ :$.dict, :$.encoded };
-        return $s;
+        :stream{ :$.dict, :$.encoded };
     }
 }

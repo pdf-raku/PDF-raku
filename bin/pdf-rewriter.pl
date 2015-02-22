@@ -11,7 +11,7 @@ sub MAIN (Str $input-path, Str $output-path) {
  
     note "opening {$input-path} ...";
     $reader.open( $input-path );
-    note "unpacking ...";
+    note "building ast ...";
     my $ast = $reader.ast( :unpack );
 
     note "writing {$output-path}...";
