@@ -1,6 +1,5 @@
 use v6;
 
-use PDF::Tools::Writer;
 use PDF::Tools::IndObj ;
 
 our class PDF::Tools::IndObj::Array
