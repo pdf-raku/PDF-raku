@@ -1,11 +1,13 @@
 use v6;
 
 use PDF::Tools::IndObj::Stream;
+use PDF::Tools::IndObj::Type;
 
 # /Type /XRef - cross reference stream
 # introduced with PDF 1.5
 our class PDF::Tools::IndObj::Type::XRef
-    is PDF::Tools::IndObj::Stream {
+    is PDF::Tools::IndObj::Stream
+    does PDF::Tools::IndObj::Type {
 
     use PDF::Tools::Util :resample, :unbox;
 
@@ -93,11 +95,12 @@ our class PDF::Tools::IndObj::Type::XRef
         my $Size = $.Size
             // die "missing mandatory /XRef param: /Size";
 
-        $.Index //= :array[ :int(0), $Size ];
-        my $index = unbox $.Index;
-        my $n = [+] $index[1, 3 ... *];
-        die "problem decoding /Type /XRef object. /Index specified $n objects, got {+$xref-array}"
-            unless +$xref-array == $n;
+        if $.Index {
+            my $index = unbox $.Index;
+            my $n = [+] $index[1, 3 ... *];
+            die "problem decoding /Type /XRef object. /Index specified $n objects, got {+$xref-array}"
+                unless +$xref-array == $n;
+        }
 
         $xref-array;
     }
@@ -106,7 +109,7 @@ our class PDF::Tools::IndObj::Type::XRef
     multi method decode-to-stage2($encoded = $.encoded) {
 
         my $i = 0;
-        my $index = unbox $.Index;
+        my $index = unbox( $.Index // :array[ :int(0), $.Size ] );
         my $decoded-stage2 = [];
 
         my $decoded = $.decode( $encoded );

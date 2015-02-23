@@ -4,13 +4,30 @@ use PDF::Tools::Filter;
 use PDF::Tools::IndObj ;
 use PDF::Tools::Util :unbox;
 
-#| Stream - base class for specific stream objects, e.g. ObjStm, XRef, ...
+#| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 our class PDF::Tools::IndObj::Stream
     is PDF::Tools::IndObj {
 
     has Hash $.dict;
     has $!encoded;
     has $!decoded;
+
+    method Filter is rw { %.dict<Filter> }
+    method DecodeParms is rw { %.dict<DecodeParms> }
+    method Length is rw { %.dict<Length> }
+
+    multi submethod BUILD( :$!dict! is copy, :$start!, :$end!, :$input!) {
+        my $length = $end - $start + 1;
+        $!encoded = $input.substr($start, $length );
+        $!dict<Length> = :int($length);
+    }
+
+    multi submethod BUILD( :$!dict is copy = {}, :$!decoded!) {
+    }
+
+    multi submethod BUILD( :$!dict! is copy, :$!encoded!) {
+        $!dict<Length> = :int($!encoded.chars);
+    }
 
     method new-delegate( :$stream, *%params ) {
         for <start end encoded decoded> {
@@ -44,19 +61,6 @@ our class PDF::Tools::IndObj::Stream
         return ::("PDF::Tools::IndObj")::($subclass);
     }
 
-    multi submethod BUILD( :$!dict! is copy, :$start!, :$end!, :$input!) {
-        my $length = $end - $start + 1;
-        $!encoded = $input.substr($start, $length );
-        $!dict<Length> = :int($length);
-    }
-
-    multi submethod BUILD( :$!dict is copy = {}, :$!decoded!) {
-    }
-
-    multi submethod BUILD( :$!dict! is copy, :$!encoded!) {
-        $!dict<Length> = :int($!encoded.chars);
-    }
-
     method encoded {
         if $!decoded.defined && ! $!encoded.defined {
             $!encoded = $.encode( $!decoded );
@@ -70,22 +74,6 @@ our class PDF::Tools::IndObj::Stream
             if $!encoded.defined;
 
         $!decoded;
-    }
-
-    method Filter is rw {
-        %.dict<Filter>;
-    }
-
-    method DecodeParms is rw {
-        %.dict<DecodeParms>;
-    }
-
-    method Type is rw {
-        %.dict<Type>;
-    }
-
-    method Length is rw {
-        %.dict<Length>;
     }
 
     method decode( Str $encoded = $.encoded ) {

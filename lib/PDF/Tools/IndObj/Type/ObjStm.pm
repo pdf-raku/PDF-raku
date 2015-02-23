@@ -1,22 +1,19 @@
 use v6;
 
 use PDF::Tools::IndObj::Stream;
+use PDF::Tools::IndObj::Type;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
 our class PDF::Tools::IndObj::Type::ObjStm
-    is PDF::Tools::IndObj::Stream;
+    is PDF::Tools::IndObj::Stream
+    does PDF::Tools::IndObj::Type;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 
-method First is rw {
-    %.dict<First>;
-}
-
-method N is rw {
-    %.dict<N>;
-}
+method First is rw { %.dict<First> }
+method N is rw { %.dict<N> }
 
 method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {
     my @idx;
