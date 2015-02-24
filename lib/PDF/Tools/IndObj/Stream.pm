@@ -2,11 +2,13 @@ use v6;
 
 use PDF::Tools::Filter;
 use PDF::Tools::IndObj ;
+use PDF::Tools::IndObj::Type;
 use PDF::Tools::Util :unbox;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 our class PDF::Tools::IndObj::Stream
-    is PDF::Tools::IndObj {
+    is PDF::Tools::IndObj
+    does PDF::Tools::IndObj::Type {
 
     has Hash $.dict;
     has $!encoded;
@@ -36,29 +38,6 @@ our class PDF::Tools::IndObj::Stream
         }
         my $dict = $stream<dict>;
         $.delegate-class( :$dict ).new( :$dict, |%params );
-    }
-
-    method delegate-class( Hash :$dict! ) {
-
-        BEGIN my $Types = set <ObjStm XRef>;
-
-        my $type = $dict<Type> && $dict<Type>.value
-            // 'Stream';
-
-        my $subclass;
-
-        if $type (elem) $Types {
-            $subclass = 'Type::' ~ $type;
-        }
-        else {
-            warn "unimplemented Indirect Stream Object: /Type /$type"
-                unless $type eq 'Stream';
-            $subclass = 'Stream';
-        }
-
-        # autoload
-        require ::("PDF::Tools::IndObj")::($subclass);
-        return ::("PDF::Tools::IndObj")::($subclass);
     }
 
     method encoded {
