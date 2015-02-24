@@ -75,6 +75,6 @@ say $stream.obj.encoded;
 
 ## See also
 
-- [PDF::Reader](https://github.com/p6-css/perl6-PDF-Reader) (under construction)
-- [PDF::Writer](https://github.com/p6-css/perl6-PDF-Writer) (under construction)
+- [PDF::Reader](https://github.com/p6-pdf/perl6-PDF-Reader) (under construction)
+- [PDF::Writer](https://github.com/p6-pdf/perl6-PDF-Writer) (under construction)
 
