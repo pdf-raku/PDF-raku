@@ -10,9 +10,9 @@ our class PDF::Tools::IndObj::Dict
     is PDF::Tools::IndObj
     does PDF::Tools::IndObj::Type {
 
-    has Hash $.dict;
+    has Hash $.dict = {};
 
-    method new-delegate( :$dict, *%etc ) {
+    method new-delegate( :$dict is copy, *%etc ) {
         $.delegate-class( :$dict ).new( :$dict, |%etc );
     }
 

@@ -10,7 +10,7 @@ our class PDF::Tools::IndObj::Stream
     is PDF::Tools::IndObj
     does PDF::Tools::IndObj::Type {
 
-    has Hash $.dict;
+    has Hash $.dict = {};
     has $!encoded;
     has $!decoded;
 

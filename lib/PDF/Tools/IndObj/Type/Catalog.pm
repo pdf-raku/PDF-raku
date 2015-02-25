@@ -10,5 +10,6 @@ class PDF::Tools::IndObj::Type::Catalog
     does PDF::Tools::IndObj::Type {
 
     method Pages is rw { self.dict<Pages> }
+    method Outlines is rw { self.dict<Outlines> }
 
 }

@@ -3,7 +3,7 @@ use v6;
 use PDF::Tools::IndObj::Dict;
 use PDF::Tools::IndObj::Type;
 
-# /Type /Catalog - usually the root object in a PDF
+# /Type /Pages - a node in the page tree
 
 class PDF::Tools::IndObj::Type::Pages
     is PDF::Tools::IndObj::Dict

@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 6;
+plan 7;
 
 use PDF::Tools::IndObj;
 
@@ -32,4 +32,5 @@ is $ind-obj.obj-num, 215, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 is_deeply $ind-obj.dict<PageLayout>, (:name<OneColumn>), '$.dict accessor';
 is_deeply $ind-obj.Pages, (:ind-ref[212, 0]), '$.Pages accessor';
+is_deeply $ind-obj.Outlines, (:ind-ref[18, 0]), '$.Outlines accessor';
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';
