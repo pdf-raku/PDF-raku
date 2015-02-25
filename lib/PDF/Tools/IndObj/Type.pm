@@ -3,7 +3,7 @@ role PDF::Tools::IndObj::Type {
     method Type is rw { %.dict<Type> }
 
     method find-subclass( Str $type-name ) {
-        BEGIN constant KnownTypes = set <Catalog ObjStm XRef>;
+        BEGIN constant KnownTypes = set <Catalog Font ObjStm Outlines Page Pages XRef>;
 
         if $type-name && (KnownTypes{ $type-name }:exists) {
             # autoload
