@@ -2,12 +2,9 @@ use v6;
 use Test;
 
 # hypothetical - todo of 25-Feb-15:
-# (a) a number of new Type classess: Outlines, Pages, Page, Font::Type1
-# (b) better handling of references: $page.Contents = $contents
-# (c) make PDF::Writer smarter, should:
-#     i.    only need the root object to fully serialize,
-#     ii.   be able to automatically generate object numbers, and
-#     iii.  accept :output file handle option
+# (a) **DONE** a number of new Type classess: Outlines, Pages, Page, Font
+# (b) create serialize method; convert perl refs to indirect refs. re-number objects, etc.
+# (c) PDF::Writer should  accept :output file handle option
 
 use PDF::Tools::IndObj::Stream;
 use PDF::Tools::IndObj::Dict;
@@ -44,7 +41,10 @@ $page.Resources<Font> = :dict{ :Font{ :F1($font) }, :$Procset };
 my $contents = PDF::Tools::IndObj::Stream.new( :decoded("100 250 Td (Hello, world!) Tj" ) );
 $page.Contents = $contents;
 
+my $body = $root-object.serialize;
+my $ast = :pdf{ :version(1.2), :$body };
+
 my $writer = PDF::Writer.new( :$root-object );
 my $helloworld-ioh = '/tmp/helloworld.pdf'.IO.open( :w, :enc<latin-1> );
-ok $writer.write( :output($helloworld-ioh)), 'hello world';
+ok $writer.write( :$root-object, :$ast, :output($helloworld-ioh)), 'hello world';
 done;
