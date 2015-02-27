@@ -12,7 +12,7 @@ use PDF::Tools::IndObj::Type::Catalog;
 use PDF::Tools::IndObj::Type::Outlines;
 use PDF::Tools::IndObj::Type::Pages;
 use PDF::Tools::IndObj::Type::Page;
-use PDF::Tools::IndObj::Type::Font;
+use PDF::Tools::IndObj::Type::Font::Type1;
 use PDF::Writer;
 
 sub prefix:</>($n){:name($n)};
@@ -28,9 +28,8 @@ my $Procset = PDF::Tools::IndObj::Dict.new( :dict{ :array[ /'PDF', /'Text' ] } )
 my $page = PDF::Tools::IndObj::Type::Page.new;
 $pages.Kids.push: $page;
 
-my $font = PDF::Tools::IndObj::Type::Font.new(
+my $font = PDF::Tools::IndObj::Type::Font::Type1.new(
     :dict{
-        :SubType(/'Type1'),
         :Name(/'F1'),
         :BaseFont(/'Helvetica'),
         :Encoding(/'MacRomanEncoding'),

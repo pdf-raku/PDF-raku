@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 11;
+plan 18;
 
 use PDF::Tools::IndObj;
 use PDF::Grammar::PDF;
@@ -35,3 +35,32 @@ is_deeply $catalog-obj.Type, (:name<Catalog>), 'catalog $.Type (tied)';
 
 $dict<Type> = :name<Wtf>;
 dies_ok {::('PDF::Tools::IndObj::Type::Catalog').new( :$dict )}, 'catalog .new with invalid /Type - dies';
+
+$input = q:to"--END--";
+16 0 obj
+<< /Type /Font /Subtype /TrueType
+   /BaseFont /CourierNewPSMT
+   /Encoding /WinAnsiEncoding
+   /FirstChar 111
+    /FontDescriptor 15 0 R
+   /LastChar 111
+   /Widths [ 600 ] >>
+endobj
+--END--
+
+PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
+    // die "parse failed";
+$ast = $/.ast;
+
+my $tt-font-obj = PDF::Tools::IndObj.new-delegate( :$input, |%( $ast.kv ) );
+isa_ok $tt-font-obj, ::('PDF::Tools::IndObj::Type::Font::TrueType');
+is_deeply $tt-font-obj.Type, (:name<Font>), 'tt font $.Type';
+is_deeply $tt-font-obj.Subtype, (:name<TrueType>), 'tt font $.Subype';
+is_deeply $tt-font-obj.Encoding, (:name<WinAnsiEncoding>), 'tt font $.Encoding';
+
+require ::('PDF::Tools::IndObj::Type::Font::Type0');
+$dict = { :BasedFont(:name<Wingdings-Regular>), :Encoding(:name<Identity-H>) };
+my $t0-font-obj = ::('PDF::Tools::IndObj::Type::Font::Type0').new( :$dict );
+is_deeply $t0-font-obj.Type, (:name<Font>), 't0 font $.Type';
+is_deeply $t0-font-obj.Subtype, (:name<Type0>), 't0 font $.Subype';
+is_deeply $t0-font-obj.Encoding, (:name<Identity-H>), 't0 font $.Encoding';

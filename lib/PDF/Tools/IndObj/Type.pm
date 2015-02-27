@@ -2,36 +2,50 @@ role PDF::Tools::IndObj::Type {
 
     method Type is rw { %.dict<Type> }
 
-    method find-subclass( Str $type-name ) {
+    method find-subclass( Str $type-name is copy, $subtype-name ) {
         BEGIN constant KnownTypes = set <Catalog Font ObjStm Outlines Page Pages XRef>;
+        BEGIN constant SubTypes = %( Font => set <Type0 Type1 MMType1 Type3 TrueType CIDFontType0 CIDFontType2> );
+                                      
+        if $type-name {
+            if (KnownTypes{ $type-name }:exists) {
+                $type-name ~= '::' ~ $subtype-name
+                    if $subtype-name && (SubTypes{$type-name}{$subtype-name}:exists);
+                # autoload
+                require ::("PDF::Tools::IndObj::Type")::($type-name);
+                return ::("PDF::Tools::IndObj::Type")::($type-name);
+            }
+            else {
+                # it has a /Type that we don't known about
+                warn "unimplemented Indirect Stream Object: /Type /$type-name"
+            }
+        }
 
-        if $type-name && (KnownTypes{ $type-name }:exists) {
-            # autoload
-            require ::("PDF::Tools::IndObj::Type")::($type-name);
-            return ::("PDF::Tools::IndObj::Type")::($type-name);
-        }
-        else {
-            # it has a /Type that we don't known about
-            warn "unimplemented Indirect Stream Object: /Type /$type-name"
-        }
+        self.WHAT;
     }
 
     method delegate-class( Hash :$dict! ) {
 
-        my $type = $.find-subclass( $dict<Type>.value )
-            if $dict<Type>:exists;
+        my $type;
+        if $dict<Type>:exists {
+            my $type-name = $dict<Type>.value;
+            my $subtype-name = ($dict<Subtype>:exists && $dict<Subtype>.value)
+                || ($dict<S>:exists && $dict<S>.value);
 
-        $type.isa( self.WHAT )
-            ?? $type
-            !! self.WHAT;
+            $type = $.find-subclass( $type-name, $subtype-name );
+        }
+        else {
+            $type = self.WHAT;
+        }
+
+        return $type;
     }
 
     #| enforce tie-ins between /Type, /Subtype & the class name. e.g.
     #| PDF::Tools::IndObj::Type::Catalog should have /Type = /Catalog
     method setup-type( Hash $dict is rw ) {
-        for self.WHAT {
+        for self.^mro {
             my $class-name = .^name;
-            warn $class-name;
+
             if $class-name ~~ /^ 'PDF::Tools::IndObj::Type::' (\w+) ['::' (\w+)]? $/ {
                 my $type-name = ~$0;
 
