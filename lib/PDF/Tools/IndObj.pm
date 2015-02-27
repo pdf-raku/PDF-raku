@@ -26,54 +26,54 @@ multi method new-delegate( Array :$ind-obj!, :$input, :$type, *%etc ) {
     $.new-delegate( :$obj-num, :$gen-num, |%params);
 }
 
-multi method new-delegate( Array :$array!, *%params) {
+multi method new-delegate( Array :$array!, *%etc) {
     require ::("PDF::Tools::IndObj::Array");
-    return ::("PDF::Tools::IndObj::Array").new( :$array, |%params );
+    return ::("PDF::Tools::IndObj::Array").new( :$array, |%etc );
 }
 
-multi method new-delegate( Bool :$bool!, *%params) {
+multi method new-delegate( Bool :$bool!, *%etc) {
     require ::("PDF::Tools::IndObj::Bool");
-    return ::("PDF::Tools::IndObj::Bool").new( :$bool, |%params );
+    return ::("PDF::Tools::IndObj::Bool").new( :$bool, |%etc );
 }
 
-multi method new-delegate( Int :$int!, *%params) {
+multi method new-delegate( Int :$int!, *%etc) {
     require ::("PDF::Tools::IndObj::Num");
-    return ::("PDF::Tools::IndObj::Num").new( :$int, |%params );
+    return ::("PDF::Tools::IndObj::Num").new( :$int, |%etc );
 }
 
-multi method new-delegate( Num :$real!, *%params) {
+multi method new-delegate( Num :$real!, *%etc) {
     require ::("PDF::Tools::IndObj::Num");
-    return ::("PDF::Tools::IndObj::Num").new( :$real, |%params );
+    return ::("PDF::Tools::IndObj::Num").new( :$real, |%etc );
 }
 
-multi method new-delegate( Str :$hex-string!, *%params) {
+multi method new-delegate( Str :$hex-string!, *%etc) {
     require ::("PDF::Tools::IndObj::String");
-    return ::("PDF::Tools::IndObj::String").new( :$hex-string, |%params );
+    return ::("PDF::Tools::IndObj::String").new( :$hex-string, |%etc );
 }
 
-multi method new-delegate( Str :$literal!, *%params) {
+multi method new-delegate( Str :$literal!, *%etc) {
     require ::("PDF::Tools::IndObj::String");
-    return ::("PDF::Tools::IndObj::String").new( :$literal, |%params );
+    return ::("PDF::Tools::IndObj::String").new( :$literal, |%etc );
 }
 
-multi method new-delegate( Str :$name!, *%params) {
+multi method new-delegate( Str :$name!, *%etc) {
     require ::("PDF::Tools::IndObj::Name");
-    return ::("PDF::Tools::IndObj::Name").new( :$name, |%params );
+    return ::("PDF::Tools::IndObj::Name").new( :$name, |%etc );
 }
 
-multi method new-delegate( Any :$null!, *%params) {
+multi method new-delegate( Any :$null!, *%etc) {
     require ::("PDF::Tools::IndObj::Null");
-    return ::("PDF::Tools::IndObj::Null").new( :$null, |%params );
+    return ::("PDF::Tools::IndObj::Null").new( :$null, |%etc );
 }
 
-multi method new-delegate( Hash :$dict!, *%params) {
+multi method new-delegate( Hash :$dict!, *%etc) {
     require ::("PDF::Tools::IndObj::Dict");
-    return ::("PDF::Tools::IndObj::Dict").new-delegate( :$dict, |%params );
+    return ::("PDF::Tools::IndObj::Dict").new-delegate( :$dict, |%etc );
 }
 
-multi method new-delegate( Hash :$stream!, *%params) {
+multi method new-delegate( Hash :$stream!, *%etc) {
     require ::("PDF::Tools::IndObj::Stream");
-    return ::("PDF::Tools::IndObj::Stream").new-delegate( :$stream, |%params );
+    return ::("PDF::Tools::IndObj::Stream").new-delegate( :$stream, |%etc );
 }
 
 #| recreate a PDF::Grammar::PDF / PDF::Writer compatibile ast from the object

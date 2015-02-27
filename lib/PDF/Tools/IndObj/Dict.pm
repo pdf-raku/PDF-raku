@@ -12,6 +12,10 @@ our class PDF::Tools::IndObj::Dict
 
     has Hash $.dict = {};
 
+    submethod BUILD( :$!dict is copy = {}) {
+        self.setup-type( $!dict ); 
+    }
+
     method new-delegate( :$dict is copy, *%etc ) {
         $.delegate-class( :$dict ).new( :$dict, |%etc );
     }

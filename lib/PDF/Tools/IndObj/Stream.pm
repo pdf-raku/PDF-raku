@@ -18,17 +18,20 @@ our class PDF::Tools::IndObj::Stream
     method DecodeParms is rw { %.dict<DecodeParms> }
     method Length is rw { %.dict<Length> }
 
-    multi submethod BUILD( :$!dict! is copy, :$start!, :$end!, :$input!) {
+    multi submethod BUILD( :$!dict is copy = {}, :$start!, :$end!, :$input!) {
         my $length = $end - $start + 1;
         $!encoded = $input.substr($start, $length );
         $!dict<Length> = :int($length);
+        self.setup-type( $!dict ); 
     }
 
     multi submethod BUILD( :$!dict is copy = {}, :$!decoded!) {
+        self.setup-type( $!dict ); 
     }
 
     multi submethod BUILD( :$!dict! is copy, :$!encoded!) {
         $!dict<Length> = :int($!encoded.chars);
+        self.setup-type( $!dict ); 
     }
 
     method new-delegate( :$stream, *%params ) {
