@@ -1,13 +1,13 @@
 use v6;
 
-use PDF::Tools::IndObj::Stream;
-use PDF::Tools::IndObj::Type;
+use PDF::Object::Stream;
+use PDF::Object::Type;
 
 # /Type /XRef - cross reference stream
 # introduced with PDF 1.5
-our class PDF::Tools::IndObj::Type::XRef
-    is PDF::Tools::IndObj::Stream
-    does PDF::Tools::IndObj::Type {
+our class PDF::Object::Type::XRef
+    is PDF::Object::Stream
+    does PDF::Object::Type {
 
     use PDF::Tools::Util :resample, :unbox;
 

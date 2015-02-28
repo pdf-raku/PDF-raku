@@ -1,13 +1,13 @@
 use v6;
 
-use PDF::Tools::IndObj::Stream;
-use PDF::Tools::IndObj::Type;
+use PDF::Object::Stream;
+use PDF::Object::Type;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
-our class PDF::Tools::IndObj::Type::ObjStm
-    is PDF::Tools::IndObj::Stream
-    does PDF::Tools::IndObj::Type;
+our class PDF::Object::Type::ObjStm
+    is PDF::Object::Stream
+    does PDF::Object::Type;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;

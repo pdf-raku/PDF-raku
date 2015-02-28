@@ -1,8 +1,8 @@
 use v6;
-use PDF::Tools::IndObj;
+use PDF::Object;
 
-class PDF::Tools::IndObj::Num
-    is PDF::Tools::IndObj {
+class PDF::Object::Num
+    is PDF::Object {
     has Str $!pdf-type;
     has Numeric $.num;
 

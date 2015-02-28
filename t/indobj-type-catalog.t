@@ -26,11 +26,12 @@ endobj
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my $ind-obj = PDF::Tools::IndObj.new-delegate( |%$ast);
-isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Type::Catalog');
+my $ind-obj = PDF::Tools::IndObj.new( |%$ast);
 is $ind-obj.obj-num, 215, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
-is_deeply $ind-obj.dict<PageLayout>, (:name<OneColumn>), '$.dict accessor';
-is_deeply $ind-obj.Pages, (:ind-ref[212, 0]), '$.Pages accessor';
-is_deeply $ind-obj.Outlines, (:ind-ref[18, 0]), '$.Outlines accessor';
+my $object = $ind-obj.object;
+isa_ok $object, ::('PDF::Object')::('Type::Catalog');
+is_deeply $object.dict<PageLayout>, (:name<OneColumn>), '$.dict accessor';
+is_deeply $object.Pages, (:ind-ref[212, 0]), '$.Pages accessor';
+is_deeply $object.Outlines, (:ind-ref[18, 0]), '$.Outlines accessor';
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';

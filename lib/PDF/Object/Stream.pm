@@ -1,14 +1,14 @@
 use v6;
 
 use PDF::Tools::Filter;
-use PDF::Tools::IndObj ;
-use PDF::Tools::IndObj::Type;
+use PDF::Object ;
+use PDF::Object::Type;
 use PDF::Tools::Util :unbox;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
-our class PDF::Tools::IndObj::Stream
-    is PDF::Tools::IndObj
-    does PDF::Tools::IndObj::Type {
+our class PDF::Object::Stream
+    is PDF::Object
+    does PDF::Object::Type {
 
     has Hash $.dict = {};
     has $!encoded;
@@ -32,15 +32,6 @@ our class PDF::Tools::IndObj::Stream
     multi submethod BUILD( :$!dict! is copy, :$!encoded!) {
         $!dict<Length> = :int($!encoded.chars);
         self.setup-type( $!dict ); 
-    }
-
-    method new-delegate( :$stream, *%params ) {
-        for <start end encoded decoded> {
-            %params{$_} = $stream{$_}
-            if $stream{$_}:exists;
-        }
-        my $dict = $stream<dict>;
-        $.delegate-class( :$dict ).new( :$dict, |%params );
     }
 
     method encoded {

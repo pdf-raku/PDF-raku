@@ -14,7 +14,7 @@ use PDF::Writer;
 my $input-path = "t/pdf/pdf.in";
 my $output-path = "examples/helloworld.pdf";
 
-my $reader = PDF::Tools::Reader.new;
+my $reader = PDF::Reader.new;
  
 $reader.open( $input-path );
 my $ast = $reader.ast;
@@ -22,7 +22,7 @@ note :$ast.perl;
 $ast<pdf><comment>.push: "This PDF was brought to you by PDF::Tools!!";
 
 my $root-object = $reader.root-object;
-my $pdf-writer = PDF::Tools::Writer.new( :$root-object );
+my $pdf-writer = PDF::Writer.new( :$root-object );
 $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
 ```
 
@@ -49,28 +49,28 @@ is recommended to enforce this.
  say $encoded.chars;
  ```
 
-## PDF::Tools::IndObj
+## PDF::Object
 
-Classes for the representation and manipulation of PDF Indirect Objects.
+Classes for the representation and manipulation of PDF Objects.
 
 ```
-use PDF::Tools::IndObj::Stream;
+use PDF::Object::Stream;
 my %dict = :Filter( :name<ASCIIHexDecode> );
 my $obj-num = 123;
 my $gen-num = 4;
 my $decoded = "100 100 Td (Hello, world!) Tj";
-my $stream-obj = PDF::Tools::IndObj::Stream.new( :$obj-num, :$gen-num, :$dict, :$decoded );
+my $stream-obj = PDF::Object::Stream.new( :$obj-num, :$gen-num, :$dict, :$decoded );
 say $stream.obj.encoded;
 ```
 
-- PDF::Tools::IndObj::Stream - abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
-- PDF::Tools::IndObj::Dict - abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
-- PDF::Tools::IndObj::Array - array indirect objects (not subclassed)
-- PDF::Tools::IndObj::Bool, PDF::Tools::IndObj::Name, PDF::Tools::IndObj::Null, PDF::Tools::IndObj::Num, PDF::Tools::IndObj::String - simple indirect objects
-- PDF::Tools::IndObj::Type::* - this namespace represents specific indirect object types as distinguished by the `/Type` dictionary entry. These may subclass either PDF::Tools::IndObj::Stream or PDF::Tools::IndObj::Dict.
-  - PDF::Tools::IndObj::Type::Catalog - PDF Catalog dictionary
-  - PDF::Tools::IndObj::Type::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
-  - PDF::Tools::IndObj::Type::XRef - PDF 1.5+ Cross Reference stream
+- PDF::Object::Stream - abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
+- PDF::Object::Dict - abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
+- PDF::Object::Array - array indirect objects (not subclassed)
+- PDF::Object::Bool, PDF::Object::Name, PDF::Object::Null, PDF::Object::Num, PDF::Object::String - simple indirect objects
+- PDF::Object::Type::* - this namespace represents specific indirect object types as distinguished by the `/Type` dictionary entry. These may subclass either PDF::Object::Stream or PDF::Object::Dict.
+  - PDF::Object::Type::Catalog - PDF Catalog dictionary
+  - PDF::Object::Type::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
+  - PDF::Object::Type::XRef - PDF 1.5+ Cross Reference stream
   - ... many more to come
 
 ## See also

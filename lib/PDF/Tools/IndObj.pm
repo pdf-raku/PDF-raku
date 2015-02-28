@@ -2,14 +2,17 @@ use v6;
 
 class PDF::Tools::IndObj;
 
-has Int $.obj-num is rw;
-has Int $.gen-num is rw;
+use PDF::Object;
+
+has Int $.obj-num;
+has Int $.gen-num;
+has PDF::Object $.object handles <content>;
 
 #| construct an object instance from a PDF::Grammar::PDF ast representation of
 #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
-multi method new-delegate( Array :$ind-obj!, :$input, :$type, *%etc ) {
-    my $obj-num = $ind-obj[0];
-    my $gen-num = $ind-obj[1];
+multi submethod BUILD( Array :$ind-obj!, :$input, :$type, *%etc ) {
+    $!obj-num = $ind-obj[0];
+    $!gen-num = $ind-obj[1];
     my %params = $ind-obj[2].kv, %etc;
     %params<input> = $input
         if $input.defined;
@@ -23,57 +26,63 @@ multi method new-delegate( Array :$ind-obj!, :$input, :$type, *%etc ) {
             unless $actual-type eq $type
     }
 
-    $.new-delegate( :$obj-num, :$gen-num, |%params);
+    $!object = self.new-object( |%params);
 }
 
-multi method new-delegate( Array :$array!, *%etc) {
-    require ::("PDF::Tools::IndObj::Array");
-    return ::("PDF::Tools::IndObj::Array").new( :$array, |%etc );
+multi method new-object( Array :$array!, *%etc) {
+    require ::("PDF::Object::Array");
+    return ::("PDF::Object::Array").new( :$array, |%etc );
 }
 
-multi method new-delegate( Bool :$bool!, *%etc) {
-    require ::("PDF::Tools::IndObj::Bool");
-    return ::("PDF::Tools::IndObj::Bool").new( :$bool, |%etc );
+multi method new-object( Bool :$bool!, *%etc) {
+    require ::("PDF::Object::Bool");
+    return ::("PDF::Object::Bool").new( :$bool, |%etc );
 }
 
-multi method new-delegate( Int :$int!, *%etc) {
-    require ::("PDF::Tools::IndObj::Num");
-    return ::("PDF::Tools::IndObj::Num").new( :$int, |%etc );
+multi method new-object( Int :$int!, *%etc) {
+    require ::("PDF::Object::Num");
+    return ::("PDF::Object::Num").new( :$int, |%etc );
 }
 
-multi method new-delegate( Num :$real!, *%etc) {
-    require ::("PDF::Tools::IndObj::Num");
-    return ::("PDF::Tools::IndObj::Num").new( :$real, |%etc );
+multi method new-object( Num :$real!, *%etc) {
+    require ::("PDF::Object::Num");
+    return ::("PDF::Object::Num").new( :$real, |%etc );
 }
 
-multi method new-delegate( Str :$hex-string!, *%etc) {
-    require ::("PDF::Tools::IndObj::String");
-    return ::("PDF::Tools::IndObj::String").new( :$hex-string, |%etc );
+multi method new-object( Str :$hex-string!, *%etc) {
+    require ::("PDF::Object::String");
+    return ::("PDF::Object::String").new( :$hex-string, |%etc );
 }
 
-multi method new-delegate( Str :$literal!, *%etc) {
-    require ::("PDF::Tools::IndObj::String");
-    return ::("PDF::Tools::IndObj::String").new( :$literal, |%etc );
+multi method new-object( Str :$literal!, *%etc) {
+    require ::("PDF::Object::String");
+    return ::("PDF::Object::String").new( :$literal, |%etc );
 }
 
-multi method new-delegate( Str :$name!, *%etc) {
-    require ::("PDF::Tools::IndObj::Name");
-    return ::("PDF::Tools::IndObj::Name").new( :$name, |%etc );
+multi method new-object( Str :$name!, *%etc) {
+    require ::("PDF::Object::Name");
+    return ::("PDF::Object::Name").new( :$name, |%etc );
 }
 
-multi method new-delegate( Any :$null!, *%etc) {
-    require ::("PDF::Tools::IndObj::Null");
-    return ::("PDF::Tools::IndObj::Null").new( :$null, |%etc );
+multi method new-object( Any :$null!, *%etc) {
+    require ::("PDF::Object::Null");
+    return ::("PDF::Object::Null").new( :$null, |%etc );
 }
 
-multi method new-delegate( Hash :$dict!, *%etc) {
-    require ::("PDF::Tools::IndObj::Dict");
-    return ::("PDF::Tools::IndObj::Dict").new-delegate( :$dict, |%etc );
+multi method new-object( Hash :$dict!, *%etc) {
+    require ::("PDF::Object::Dict");
+    return ::("PDF::Object::Dict").delegate-class( :$dict ).new( :$dict, |%etc );
 }
 
-multi method new-delegate( Hash :$stream!, *%etc) {
-    require ::("PDF::Tools::IndObj::Stream");
-    return ::("PDF::Tools::IndObj::Stream").new-delegate( :$stream, |%etc );
+multi method new-object( Hash :$stream!, *%etc) {
+    my %params = %etc;
+    for <start end encoded decoded> {
+        %params{$_} = $stream{$_}
+        if $stream{$_}:exists;
+    }
+    my $dict = $stream<dict>;
+    require ::("PDF::Object::Stream");
+    return ::("PDF::Object::Stream").delegate-class( :$dict ).new( :$dict, |%params );
 }
 
 #| recreate a PDF::Grammar::PDF / PDF::Writer compatibile ast from the object

@@ -1,4 +1,4 @@
-role PDF::Tools::IndObj::Type {
+role PDF::Object::Type {
 
     method Type is rw { %.dict<Type> }
 
@@ -11,8 +11,8 @@ role PDF::Tools::IndObj::Type {
                 $type-name ~= '::' ~ $subtype-name
                     if $subtype-name && (SubTypes{$type-name}{$subtype-name}:exists);
                 # autoload
-                require ::("PDF::Tools::IndObj::Type")::($type-name);
-                return ::("PDF::Tools::IndObj::Type")::($type-name);
+                require ::("PDF::Object::Type")::($type-name);
+                return ::("PDF::Object::Type")::($type-name);
             }
             else {
                 # it has a /Type that we don't known about
@@ -41,12 +41,12 @@ role PDF::Tools::IndObj::Type {
     }
 
     #| enforce tie-ins between /Type, /Subtype & the class name. e.g.
-    #| PDF::Tools::IndObj::Type::Catalog should have /Type = /Catalog
+    #| PDF::Object::Type::Catalog should have /Type = /Catalog
     method setup-type( Hash $dict is rw ) {
         for self.^mro {
             my $class-name = .^name;
 
-            if $class-name ~~ /^ 'PDF::Tools::IndObj::Type::' (\w+) ['::' (\w+)]? $/ {
+            if $class-name ~~ /^ 'PDF::Object::Type::' (\w+) ['::' (\w+)]? $/ {
                 my $type-name = ~$0;
 
                 if $dict<Type>:!exists {

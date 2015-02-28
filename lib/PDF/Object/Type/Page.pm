@@ -1,13 +1,13 @@
 use v6;
 
-use PDF::Tools::IndObj::Dict;
-use PDF::Tools::IndObj::Type;
+use PDF::Object::Dict;
+use PDF::Object::Type;
 
 # /Type /Page - describes a single PDF page
 
-class PDF::Tools::IndObj::Type::Page
-    is PDF::Tools::IndObj::Dict
-    does PDF::Tools::IndObj::Type {
+class PDF::Object::Type::Page
+    is PDF::Object::Dict
+    does PDF::Object::Type {
 
     method Parent is rw { self.dict<Parent> }
     method Resources is rw { self.dict<Resources> }

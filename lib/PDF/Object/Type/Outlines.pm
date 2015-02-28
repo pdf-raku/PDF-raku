@@ -1,13 +1,13 @@
 use v6;
 
-use PDF::Tools::IndObj::Dict;
-use PDF::Tools::IndObj::Type;
+use PDF::Object::Dict;
+use PDF::Object::Type;
 
 # /Type /Outlines - the Outlines dictionary
 
-class PDF::Tools::IndObj::Type::Outlines
-    is PDF::Tools::IndObj::Dict
-    does PDF::Tools::IndObj::Type {
+class PDF::Object::Type::Outlines
+    is PDF::Object::Dict
+    does PDF::Object::Type {
 
     method Count is rw { self.dict<Count> }
     method First is rw { self.dict<First> }

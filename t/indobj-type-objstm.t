@@ -14,11 +14,11 @@ my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my $ind-obj = PDF::Tools::IndObj.new-delegate( |%$ast, :$input );
-isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Type::ObjStm');
+my $ind-obj = PDF::Tools::IndObj.new( |%$ast, :$input );
+isa_ok $ind-obj.object, ::('PDF::Object')::('Type::ObjStm');
 
 my $objstm;
-lives_ok { $objstm = $ind-obj.decode }, 'basic content decode - lives';
+lives_ok { $objstm = $ind-obj.object.decode }, 'basic content decode - lives';
 
 my $expected-objstm = [
     [16, "<</BaseFont/CourierNewPSMT/Encoding/WinAnsiEncoding/FirstChar 111/FontDescriptor 15 0 R/LastChar 111/Subtype/TrueType/Type/Font/Widths[600]>>",
@@ -28,17 +28,17 @@ my $expected-objstm = [
     ];
 
 is_deeply $objstm, $expected-objstm, 'decoded index as expected';
-my $objstm-recompressed = $ind-obj.encode;
+my $objstm-recompressed = $ind-obj.object.encode;
 
 my $ast2;
 lives_ok { $ast2 = $ind-obj.ast }, '$.ast - lives';
 
-my $ind-obj2 = PDF::Tools::IndObj.new-delegate( |%$ast2 );
-my $objstm-roundtrip = $ind-obj2.decode( $objstm-recompressed );
+my $ind-obj2 = PDF::Tools::IndObj.new( |%$ast2 );
+my $objstm-roundtrip = $ind-obj2.object.decode( $objstm-recompressed );
 
 is_deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';
 
-my $objstm-new = ::('PDF::Tools::IndObj')::('Type::ObjStm').new(:dict{}, :decoded[[10, '<< /Foo (bar) >>'], [11, '[ 42 true ]']] );
+my $objstm-new = ::('PDF::Object')::('Type::ObjStm').new(:dict{}, :decoded[[10, '<< /Foo (bar) >>'], [11, '[ 42 true ]']] );
 lives_ok {$objstm-new.encode( :check )}, '$.encode( :check ) - with valid data lives';
 is_deeply $objstm-new.Type, (:name<ObjStm>), '$xref.new .Name auto-setup';
 is_deeply $objstm-new.N, (:int(2)), '$xref.new .N auto-setup';

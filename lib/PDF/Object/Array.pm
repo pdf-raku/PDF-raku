@@ -1,9 +1,9 @@
 use v6;
 
-use PDF::Tools::IndObj ;
+use PDF::Object ;
 
-our class PDF::Tools::IndObj::Array
-    is PDF::Tools::IndObj {
+our class PDF::Object::Array
+    is PDF::Object {
 
     has Array $.array;
 

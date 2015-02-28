@@ -26,13 +26,14 @@ endobj
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my $ind-obj = PDF::Tools::IndObj.new-delegate( |%$ast);
-isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Type::Page');
+my $ind-obj = PDF::Tools::IndObj.new( |%$ast);
 is $ind-obj.obj-num, 4, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
-is_deeply $ind-obj.Type, (:name<Page>), '$.Type accessor';
-is_deeply $ind-obj.Parent, (:ind-ref[3, 0]), '$.Parent accessor';
-is_deeply $ind-obj.Resources, (:dict{ :Font( :dict{:F1( :ind-ref[7, 0] )} ), :ProcSet( :ind-ref[6, 0]) } ), '$.Resources accessor';
-is_deeply $ind-obj.MediaBox, (:array[:int(0), :int(0), :int(612), :int(792)]), '$.MediaBox accessor';
-is_deeply $ind-obj.Contents, (:ind-ref[5, 0]), '$.Contents accessor';
+my $page-obj = $ind-obj.object;
+isa_ok $page-obj, ::('PDF::Object')::('Type::Page');
+is_deeply $page-obj.Type, (:name<Page>), '$.Type accessor';
+is_deeply $page-obj.Parent, (:ind-ref[3, 0]), '$.Parent accessor';
+is_deeply $page-obj.Resources, (:dict{ :Font( :dict{:F1( :ind-ref[7, 0] )} ), :ProcSet( :ind-ref[6, 0]) } ), '$.Resources accessor';
+is_deeply $page-obj.MediaBox, (:array[:int(0), :int(0), :int(612), :int(792)]), '$.MediaBox accessor';
+is_deeply $page-obj.Contents, (:ind-ref[5, 0]), '$.Contents accessor';
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';

@@ -15,8 +15,8 @@ my $input = '42 5 obj true endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my $ind-obj = PDF::Tools::IndObj.new-delegate( |%$ast, :$input );
-isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Bool');
+my $ind-obj = PDF::Tools::IndObj.new( |%$ast, :$input );
+isa_ok $ind-obj.object, ::('PDF::Object')::('Bool');
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 my $content = $ind-obj.content;

@@ -1,23 +1,19 @@
 use v6;
 
 use PDF::Tools::Filter;
-use PDF::Tools::IndObj ;
-use PDF::Tools::IndObj::Type;
+use PDF::Object ;
+use PDF::Object::Type;
 use PDF::Tools::Util :unbox;
 
 #| Dict - base class for dictionary objects, e.g. Catalog Page ...
-our class PDF::Tools::IndObj::Dict
-    is PDF::Tools::IndObj
-    does PDF::Tools::IndObj::Type {
+our class PDF::Object::Dict
+    is PDF::Object
+    does PDF::Object::Type {
 
     has Hash $.dict = {};
 
     submethod BUILD( :$!dict is copy = {}) {
         self.setup-type( $!dict ); 
-    }
-
-    method new-delegate( :$dict is copy, *%etc ) {
-        $.delegate-class( :$dict ).new( :$dict, |%etc );
     }
 
     method content {

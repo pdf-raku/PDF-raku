@@ -26,13 +26,14 @@ endobj
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my $ind-obj = PDF::Tools::IndObj.new-delegate( |%$ast);
-isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Type::Font::Type1');
+my $ind-obj = PDF::Tools::IndObj.new( |%$ast);
+my $object = $ind-obj.object;
 is $ind-obj.obj-num, 7, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
-is_deeply $ind-obj.Type, (:name<Font>), '$.Type accessor';
-is_deeply $ind-obj.Subtype, (:name<Type1>), '$.Subype accessor';
-is_deeply $ind-obj.Name, (:name<F1>), '$.Name accessor';
-is_deeply $ind-obj.BaseFont, (:name<Helvetica>), '$.BaseFont accessor';
-is_deeply $ind-obj.Encoding, (:name<MacRomanEncoding>), '$.Encoding accessor';
+isa_ok $object, ::('PDF::Object')::('Type::Font::Type1');
+is_deeply $object.Type, (:name<Font>), '$.Type accessor';
+is_deeply $object.Subtype, (:name<Type1>), '$.Subype accessor';
+is_deeply $object.Name, (:name<F1>), '$.Name accessor';
+is_deeply $object.BaseFont, (:name<Helvetica>), '$.BaseFont accessor';
+is_deeply $object.Encoding, (:name<MacRomanEncoding>), '$.Encoding accessor';
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';
