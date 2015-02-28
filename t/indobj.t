@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 18;
+plan 20;
 
 use PDF::Tools::IndObj;
 use PDF::Grammar::PDF;
@@ -64,3 +64,10 @@ my $t0-font-obj = ::('PDF::Tools::IndObj::Type::Font::Type0').new( :$dict );
 is_deeply $t0-font-obj.Type, (:name<Font>), 't0 font $.Type';
 is_deeply $t0-font-obj.Subtype, (:name<Type0>), 't0 font $.Subype';
 is_deeply $t0-font-obj.Encoding, (:name<Identity-H>), 't0 font $.Encoding';
+
+use PDF::Tools::IndObj::Type::Font::Type1;
+class SubclassedType1Font is PDF::Tools::IndObj::Type::Font::Type1 {};
+my $sc-font-obj = SubclassedType1Font.new;
+is_deeply $sc-font-obj.Type, (:name<Font>), 'sc font $.Type';
+is_deeply $sc-font-obj.Subtype, (:name<Type1>), 'sc font $.Subype';
+

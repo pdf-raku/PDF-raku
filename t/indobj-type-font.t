@@ -27,7 +27,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 my $ind-obj = PDF::Tools::IndObj.new-delegate( |%$ast);
-isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Type::Font');
+isa_ok $ind-obj, ::('PDF::Tools::IndObj')::('Type::Font::Type1');
 is $ind-obj.obj-num, 7, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 is_deeply $ind-obj.Type, (:name<Font>), '$.Type accessor';
