@@ -8,6 +8,7 @@ class PDF::Object::Num
 
     multi submethod BUILD( Int :$int!,  :$!pdf-type='int'  ) { $!num = $int  }
     multi submethod BUILD( Num :$real!, :$!pdf-type='real' ) { $!num = $real }
+    multi submethod BUILD( Rat :$real!, :$!pdf-type='real' ) { $!num = $real }
 
     method content { $!pdf-type => $.num };
 }

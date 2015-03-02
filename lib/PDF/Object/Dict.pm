@@ -10,7 +10,7 @@ our class PDF::Object::Dict
     is PDF::Object
     does PDF::Object::Type {
 
-    has Hash $.dict = {};
+    has Hash $.dict;
 
     submethod BUILD( :$!dict is copy = {}) {
         self.setup-type( $!dict ); 

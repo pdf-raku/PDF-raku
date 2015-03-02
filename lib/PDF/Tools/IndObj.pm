@@ -8,6 +8,10 @@ has Int $.obj-num;
 has Int $.gen-num;
 has PDF::Object $.object handles <content>;
 
+#| construct by wrapping a pre-existing PDF::Object
+multi submethod BUILD( PDF::Object :$!object!, :$!obj-num, :$!gen-num ) {
+}
+
 #| construct an object instance from a PDF::Grammar::PDF ast representation of
 #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
 multi submethod BUILD( Array :$ind-obj!, :$input, :$type, *%etc ) {

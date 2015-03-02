@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 20;
+plan 27;
 
 use PDF::Tools::IndObj;
 use PDF::Grammar::PDF;
@@ -73,3 +73,14 @@ my $sc-font-obj = SubclassedType1Font.new;
 is_deeply $sc-font-obj.Type, (:name<Font>), 'sc font $.Type';
 is_deeply $sc-font-obj.Subtype, (:name<Type1>), 'sc font $.Subype';
 
+use PDF::Object::Num;
+my $num-obj = PDF::Object::Num.new( :real(4.2) );
+is_deeply $num-obj.content, (:real(4.2)), 'simple object $.content';
+is_deeply +$num-obj, 4.2, 'simple object Num coercement';
+is_deeply ~$num-obj, '4.2', 'simple object Str coercement';
+is_deeply ?$num-obj, True, 'simple object Bool coercement';
+
+my $ind-obj2 = PDF::Tools::IndObj.new( :object($num-obj), :obj-num(4), :gen-num(2) );
+is_deeply $ind-obj2.object, $num-obj, ':object constructor';
+is_deeply $ind-obj2.obj-num, 4, ':object constructor';
+is_deeply $ind-obj2.gen-num, 2, ':object constructor';
