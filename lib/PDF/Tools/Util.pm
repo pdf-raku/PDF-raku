@@ -2,6 +2,8 @@ use v6;
 
 module PDF::Tools::Util;
 
+use PDF::Object;
+
 #= resample a buffer as n-bit to m-bit unsigned integers
 proto sub resample($,$,$) is export(:resample) {*};
 multi sub resample( $nums!, 8, 4)  { $nums.list.map: { ($_ +> 4, $_ +& 15).flat } }
@@ -130,10 +132,8 @@ multi sub unbox( Numeric :$real! ) { $real }
 
 multi sub unbox( Hash :$stream! ) {
     my $dict = $stream<dict>;
-    my %stream = (dict => unbox( :$dict ),
-                  start => $stream<start>,
-                  end => $stream<end>,
-        );
+    my %stream = %$stream, dict => unbox( :$dict );
+    %stream;
 }
 
 multi sub unbox( *@args, *%opts ) is default {
@@ -143,3 +143,24 @@ multi sub unbox( *@args, *%opts ) is default {
         
     die "unable to unbox {%opts.keys} struct: {%opts.perl}"
 }
+
+proto sub box(|) is export(:box) {*};
+multi sub box(Pair $p!) {$p}
+multi sub box(PDF::Object $object!) {$object.content}
+multi sub box(Int $int!) {:$int}
+multi sub box(Numeric $real!) {:$real}
+multi sub box(Hash $_dict!) {
+    my %dict = %( $_dict.pairs.map( -> $kv { $kv.key => box($kv.value) } ) );
+    :%dict;
+}
+multi sub box(Array $_array!) {
+    my @array = $_array.map({ box( $_ ) });
+    :@array;
+}
+multi sub box(Str $literal!) {:$literal}
+multi sub box(Bool $bool!) {:$bool}
+multi sub box(Mu $null!) {:$null}
+multi sub box($other) is default {
+    die "don't know how to box: {$other.perl}";
+}
+

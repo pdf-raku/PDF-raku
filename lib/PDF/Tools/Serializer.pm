@@ -1,36 +1,48 @@
 use v6;
 
 use PDF::Object;
+use PDF::Tools::IndObj;
 
 class PDF::Tools::Serializer {
 
-    has Int $.next-obj-num is rw = 0;
-    has Hash %.serialized-obj-idx;
+    use PDF::Tools::Util :box;
+
+    has Int $.cur-obj-num is rw = 0;
     has @.ind-objs;
 
-    #= freeze a PDF::Object nested structure to an array of type PDF::Tools::IndObj
-    multi method freeze(PDF::Object $object) {
-        my $content = $.freeze( $object.content );
-        @.ind-objs.push: (:ind-obj[ ++ $.next-obj-num, 0, $content] );
-        return (:ind-ref[ $.next-obj-num, 0]);
+    multi method freeze(PDF::Object $object!) {
+        @.ind-objs.push: (:ind-obj[ ++ $.cur-obj-num, 0, $.freeze( $object.content )] );
+        return (:ind-ref[ $.cur-obj-num, 0]);
     }
 
-    multi method freeze(Hash $dict! ) {
-        %(
-             $dict.pairs.sort.map( -> $kv { $kv.key => $.freeze( $kv.value ) }),
-        ).item;
+    multi method freeze(Pair $boxed!) {
+        $.freeze( |%($boxed.kv) )
     }
 
-    multi method freeze(Array $array! ) {
-        [ $array.map({ $.freeze( $_ ) }) ]
+    multi method freeze(Hash :$dict!) {
+        my %dict = %( $dict.pairs.map( -> $kv { $kv.key => $.freeze($kv.value) } ) );
+        if $dict<Type> {
+            # any dictionary with a /Type field is implicitly an indirect object
+            @.ind-objs.push: (:ind-obj[ ++ $.cur-obj-num, 0, :%dict ]);
+            return (:ind-ref[ $.cur-obj-num, 0]);
+        }
+        :%dict
     }
 
-    multi method freeze(Pair $pair) {
-        $pair.key =>  $.freeze( $pair.value );
+    multi method freeze(Hash :$stream! ) {
+        # streams are always indirect objects
+        my $dict = $stream<dict>;
+        my %stream = %$stream, $.freeze( :$dict ).kv;
+        @.ind-objs.push: (:ind-obj[ ++ $.cur-obj-num, 0, :%stream ]);
+        :ind-ref[ $.cur-obj-num, 0];
     }
 
-    multi method freeze($value) is default {
-        $value;
+    multi method freeze(Array :$array! ) {
+        # hmm, arrays are always inlined.
+        :array[ $array.map({ $.freeze($_) }) ]
     }
 
+    multi method freeze(*%other ) {
+        %other;
+    }
 }

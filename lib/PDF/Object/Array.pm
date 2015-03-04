@@ -8,6 +8,7 @@ our class PDF::Object::Array
     has Array $.array;
 
     method content {
-        return { :$.array };
+        use PDF::Tools::Util :box;
+        :array[ $.array.map({ box($_)}) ];
     }
 }

@@ -20,10 +20,10 @@ isa_ok $ind-obj.object, ::('PDF::Object')::('Array');
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 my $content = $ind-obj.content;
-isa_ok $content, Hash;
+isa_ok $content, Pair;
 is_deeply unbox( $content ), [0.9505e0, 1e0, 1.089e0, [1, 2, "abc"]], '$.content unboxed';
-is_deeply $content, { :array[:real(0.9505e0), :real(1e0), :real(1.089e0),
+is_deeply $content, ( :array[:real(0.9505e0), :real(1e0), :real(1.089e0),
                              :array[:int(1), :int(2), :literal<abc>],
-                     ]}, '$.content';
+                     ]), '$.content';
 
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';

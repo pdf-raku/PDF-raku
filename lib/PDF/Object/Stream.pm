@@ -29,7 +29,7 @@ our class PDF::Object::Stream
         self.setup-type( $!dict ); 
     }
 
-    multi submethod BUILD( :$!dict! is copy, :$!encoded!) {
+    multi submethod BUILD( :$!dict is copy = {}, :$!encoded!) {
         $!dict<Length> = :int($!encoded.chars);
         self.setup-type( $!dict ); 
     }
@@ -62,6 +62,9 @@ our class PDF::Object::Stream
     }
 
     method content {
-        :stream{ :$.dict, :$.encoded };
+        use PDF::Tools::Util :box;
+        my $encoded = $.encoded; # may update $.dict<Length>
+        my $dict = box $.dict;
+        :stream( %( $dict, :$encoded ));
     }
 }
