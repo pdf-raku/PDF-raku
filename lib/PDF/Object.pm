@@ -57,7 +57,7 @@ class PDF::Object {
     }
 
     multi method compose( Hash :$dict!, *%etc) {
-        my %dict = unbox :$dict;
+        my %dict = %( unbox :$dict );
         require ::("PDF::Object::Dict");
         return ::("PDF::Object::Dict").delegate-class( :%dict ).new( :%dict, |%etc );
     }
@@ -92,8 +92,9 @@ class PDF::Object {
     }
     multi sub box-native(Str $literal!) {:$literal}
     multi sub box-native(Bool $bool!) {:$bool}
-    multi sub box-native(Mu $null!) {:$null}
     multi sub box-native($other) is default {
+        return :null(Any)
+            unless $other.defined;
         die "don't know how to box: {$other.perl}";
     }
 
@@ -120,7 +121,7 @@ class PDF::Object {
             ?? $keys.grep: {$dict{$_}:exists}
         !! $dict.keys;
         my %hash = @keys.map: { $_ => unbox( $dict{$_} ) };
-        %hash;
+        %hash.item;
     }
 
     multi sub unbox( Str :$hex-string! ) { $hex-string }
@@ -149,8 +150,6 @@ class PDF::Object {
         PDF::Object.compose :$name;
     }
 
-    multi sub unbox( Any :$null! ) { $null }
-
     multi sub unbox( Numeric :$real! ) {
         require PDF::Object;
         PDF::Object.compose :$real;
@@ -162,12 +161,13 @@ class PDF::Object {
         %stream;
     }
 
-    multi sub unbox( *@args, *%opts ) is default {
+    multi sub unbox( *@args, *%opt ) is default {
+        return Any if %opt<null>:exists;
 
         die "unexpected unbox arguments: {[@args].perl}"
             if @args;
         
-        die "unable to unbox {%opts.keys} struct: {%opts.perl}"
+        die "unable to unbox {%opt.keys} struct: {%opt.perl}"
     }
 
 }
