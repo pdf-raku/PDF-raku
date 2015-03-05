@@ -40,9 +40,9 @@ is_deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';
 
 my $objstm-new = ::('PDF::Object')::('Type::ObjStm').new(:dict{}, :decoded[[10, '<< /Foo (bar) >>'], [11, '[ 42 true ]']] );
 lives_ok {$objstm-new.encode( :check )}, '$.encode( :check ) - with valid data lives';
-is_deeply $objstm-new.Type, (:name<ObjStm>), '$xref.new .Name auto-setup';
-is_deeply $objstm-new.N, (:int(2)), '$xref.new .N auto-setup';
-is_deeply $objstm-new.First, (:int(11)), '$xref.new .First auto-setup';
+is $objstm-new.Type, 'ObjStm', '$xref.new .Name auto-setup';
+is $objstm-new.N, 2, '$xref.new .N auto-setup';
+is $objstm-new.First, 11, '$xref.new .First auto-setup';
 
 my $invalid-decoding =  [[10, '<< /Foo wtf!! (bar) >>'], [11, '[ 42 true ]']];
 lives_ok {$objstm-new.encode( $invalid-decoding) }, 'encoding invlaid data without :check (lives)';

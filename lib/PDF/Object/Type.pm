@@ -1,15 +1,19 @@
 role PDF::Object::Type {
 
+    use PDF::Object::Name;
+
     method Type is rw { %.dict<Type> }
 
     method find-subclass( Str $type-name is copy, $subtype-name ) {
         BEGIN constant KnownTypes = set <Catalog Font ObjStm Outlines Page Pages XRef>;
         BEGIN constant SubTypes = %( Font => set <Type0 Type1 MMType1 Type3 TrueType CIDFontType0 CIDFontType2> );
-                                      
+
         if $type-name {
-            if (KnownTypes{ $type-name }:exists) {
+            if ($type-name~'' ∈ KnownTypes) {
                 $type-name ~= '::' ~ $subtype-name
-                    if $subtype-name && (SubTypes{$type-name}{$subtype-name}:exists);
+                    if $subtype-name
+                    && (SubTypes{$type-name}:exists)
+                    && $subtype-name~'' ∈ SubTypes{$type-name};
                 # autoload
                 require ::("PDF::Object::Type")::($type-name);
                 return ::("PDF::Object::Type")::($type-name);
@@ -27,9 +31,8 @@ role PDF::Object::Type {
 
         my $type;
         if $dict<Type>:exists {
-            my $type-name = $dict<Type>.value;
-            my $subtype-name = ($dict<Subtype>:exists && $dict<Subtype>.value)
-                || ($dict<S>:exists && $dict<S>.value);
+            my $type-name = $dict<Type>;
+            my $subtype-name = $dict<Subtype> // $dict<S>;
 
             $type = $.find-subclass( $type-name, $subtype-name );
         }
@@ -50,24 +53,24 @@ role PDF::Object::Type {
                 my $type-name = ~$0;
 
                 if $dict<Type>:!exists {
-                    $dict<Type> = :name($type-name);
+                    $dict<Type> = $type-name but PDF::Object::Name;
                 }
                 else {
                     # /Type already set. check it agrees with the class name
-                    die "conflict between class-name $class-name ($type-name) and dictionary /Type /{$dict<Type>.value}"
-                        unless $dict<Type>.value eq $type-name;
+                    die "conflict between class-name $class-name ($type-name) and dictionary /Type /{$dict<Type>}"
+                        unless $dict<Type> eq $type-name;
                 }
 
                 if $1 {
                     my $subtype-name = ~$1;
 
                     if $dict<Subtype>:!exists {
-                        $dict<Subtype> = :name($subtype-name);
+                        $dict<Subtype> = $subtype-name but PDF::Object::Name;
                     }
                     else {
                         # /Subtype already set. check it agrees with the class name
                         die "conflict between class-name $class-name ($subtype-name) and dictionary /Subtype /{$dict<Subtype>.value}"
-                            unless $dict<Subtype>.value eq $subtype-name;
+                            unless $dict<Subtype> eq $subtype-name;
                     }
                 }
 

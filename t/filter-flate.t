@@ -5,7 +5,7 @@ plan 5;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Tools::Input;
-use PDF::Tools::Util :unbox;
+use PDF::Object :unbox;
 use PDF::Tools::Filter;
 
 my $actions = PDF::Grammar::PDF::Actions.new;

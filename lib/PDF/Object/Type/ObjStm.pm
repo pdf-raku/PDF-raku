@@ -1,6 +1,8 @@
 use v6;
 
 use PDF::Object::Stream;
+use PDF::Object::Name;
+use PDF::Object::Int;
 use PDF::Object::Type;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
@@ -31,17 +33,17 @@ method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {
         $objects-str ~= $object-str;
     }
     my $idx-str = @idx.join: ' ';
-    $.Type = :name<ObjStm>;
-    $.First = :int( $idx-str.chars + 1 );
-    $.N = :int( +$objstm );
+    $.Type = 'ObjStm' but PDF::Object::Name;
+    $.First = $idx-str.chars + 1;
+    $.N = +$objstm;
     
     nextwith( [~] $idx-str, ' ', $objects-str );
 }
 
 method decode($? --> Array) {
     my $chars = callsame;
-    my $first = ( $.First // die "missing mandatory /ObjStm param: /First" ).value;
-    my $n = ( $.N // die "missing mandatory /ObjStm param: /N" ).value;
+    my $first = ( $.First // die "missing mandatory /ObjStm param: /First" );
+    my $n = ( $.N // die "missing mandatory /ObjStm param: /N" );
 
     my $object-index-str = substr($chars, 0, $first - 1);
     my $objects-str = substr($chars, $first);

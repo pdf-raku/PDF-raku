@@ -8,7 +8,7 @@ use PDF::Tools::Filter::LZW;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Tools::Input;
-use PDF::Tools::Util :unbox;
+use PDF::Object :unbox;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 

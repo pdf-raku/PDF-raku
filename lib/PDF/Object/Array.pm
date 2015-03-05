@@ -1,6 +1,6 @@
 use v6;
 
-use PDF::Object ;
+use PDF::Object :box;
 
 our class PDF::Object::Array
     is PDF::Object {
@@ -8,7 +8,6 @@ our class PDF::Object::Array
     has Array $.array;
 
     method content {
-        use PDF::Tools::Util :box;
         :array[ $.array.map({ box($_)}) ];
     }
 }

@@ -7,7 +7,7 @@ use PDF::Tools::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Tools::Util :unbox;
+use PDF::Object :unbox;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -31,7 +31,7 @@ is $ind-obj.obj-num, 215, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $object = $ind-obj.object;
 isa_ok $object, ::('PDF::Object')::('Type::Catalog');
-is_deeply $object.dict<PageLayout>, (:name<OneColumn>), '$.dict accessor';
+is $object.dict<PageLayout>, 'OneColumn', '$.dict accessor';
 is_deeply $object.Pages, (:ind-ref[212, 0]), '$.Pages accessor';
 is_deeply $object.Outlines, (:ind-ref[18, 0]), '$.Outlines accessor';
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';

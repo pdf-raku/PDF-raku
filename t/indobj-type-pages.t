@@ -7,7 +7,7 @@ use PDF::Tools::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Tools::Util :unbox;
+use PDF::Object :unbox;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -29,7 +29,7 @@ is $ind-obj.obj-num, 3, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $pages-obj = $ind-obj.object;
 isa_ok $pages-obj, ::('PDF::Object')::('Type::Pages');
-is_deeply $pages-obj.Type, (:name<Pages>), '$.Type accessor';
-is_deeply $pages-obj.Count, (:int(1)), '$.Count accessor';
-is_deeply $pages-obj.Kids, (:array[ :ind-ref[4, 0] ]), '$.Kids accessor';
+is $pages-obj.Type, 'Pages', '$.Type accessor';
+is $pages-obj.Count, 1, '$.Count accessor';
+is_deeply $pages-obj.Kids, [ :ind-ref[4, 0] ], '$.Kids accessor';
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';

@@ -2,12 +2,11 @@ use v6;
 use Test;
 
 use PDF::Tools::Serializer;
-use PDF::Tools::Util :box;
-use PDF::Object::Stream;
+use PDF::Object :box;
 
 sub prefix:</>($name){
-    use PDF::Object::Name;
-    PDF::Object::Name.new(:$name)
+    use PDF::Object;
+    PDF::Object.compose(:$name)
 };
 
 my %body = (
@@ -23,7 +22,7 @@ my %body = (
                                  },
                                  :Procset[<PDF Text>],
                      },
-                     :Contents( PDF::Object::Stream.new( :encoded("/F1 24 Tf  100 250 Td (Hello, world!) Tj") ) ),
+                     :Contents( PDF::Object.compose( :stream{ :encoded("/F1 24 Tf  100 250 Td (Hello, world!) Tj") } ) ),
                    }
                 ],
             :Count(1),

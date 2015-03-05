@@ -5,8 +5,6 @@ use PDF::Tools::IndObj;
 
 class PDF::Tools::Serializer {
 
-    use PDF::Tools::Util :box;
-
     has Int $.cur-obj-num is rw = 0;
     has @.ind-objs;
 

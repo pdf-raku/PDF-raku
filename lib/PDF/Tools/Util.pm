@@ -2,8 +2,6 @@ use v6;
 
 module PDF::Tools::Util;
 
-use PDF::Object;
-
 #= resample a buffer as n-bit to m-bit unsigned integers
 proto sub resample($,$,$) is export(:resample) {*};
 multi sub resample( $nums!, 8, 4)  { $nums.list.map: { ($_ +> 4, $_ +& 15).flat } }
@@ -78,89 +76,5 @@ multi sub resample( $num-sets, Array $W!, 8)  {
     }
 }
 
-proto sub unbox(|) is export(:unbox) {*};
 
-multi sub unbox( Pair $p! ) {
-    unbox( |%( $p.kv ) );
-}
-
-multi sub unbox( Hash $h! ) {
-    unbox( |%( $h ) );
-}
-
-multi sub unbox( Array :$array! ) {
-    [ $array.map: { unbox( $_ ) } ];
-}
-
-multi sub unbox( Bool :$bool! ) {
-    $bool;
-}
-
-multi sub unbox( Hash :$dict!, :$keys ) {
-    my @keys = $keys.defined
-        ?? $keys.grep: {$dict{$_}:exists}
-        !! $dict.keys;
-    my %hash = @keys.map: { $_ => unbox( $dict{$_} ) };
-    %hash;
-}
-
-multi sub unbox( Str :$hex-string! ) { $hex-string }
-
-multi sub unbox( Array :$ind-ref! ) {
-
-    my $obj-num = $ind-ref[0].Int;
-    my $gen-num = $ind-ref[1].Int;
-    die "unresolved object reference: $obj-num $gen-num R";
-
-}
-
-multi sub unbox( Array :$ind-obj! ) {
-    # hmm, throw array trailing objects?
-    my %content = $ind-obj[2].kv;
-    unbox( |%content )
-}
-
-multi sub unbox( Numeric :$int! ) { $int.Int }
-
-multi sub unbox( Str :$literal! ) { $literal }
-
-multi sub unbox( Str :$name! ) { $name }
-
-multi sub unbox( Any :$null! ) { $null }
-
-multi sub unbox( Numeric :$real! ) { $real }
-
-multi sub unbox( Hash :$stream! ) {
-    my $dict = $stream<dict>;
-    my %stream = %$stream, dict => unbox( :$dict );
-    %stream;
-}
-
-multi sub unbox( *@args, *%opts ) is default {
-
-    die "unexpected unbox arguments: {[@args].perl}"
-        if @args;
-        
-    die "unable to unbox {%opts.keys} struct: {%opts.perl}"
-}
-
-proto sub box(|) is export(:box) {*};
-multi sub box(Pair $p!) {$p}
-multi sub box(PDF::Object $object!) {$object.content}
-multi sub box(Int $int!) {:$int}
-multi sub box(Numeric $real!) {:$real}
-multi sub box(Hash $_dict!) {
-    my %dict = %( $_dict.pairs.map( -> $kv { $kv.key => box($kv.value) } ) );
-    :%dict;
-}
-multi sub box(Array $_array!) {
-    my @array = $_array.map({ box( $_ ) });
-    :@array;
-}
-multi sub box(Str $literal!) {:$literal}
-multi sub box(Bool $bool!) {:$bool}
-multi sub box(Mu $null!) {:$null}
-multi sub box($other) is default {
-    die "don't know how to box: {$other.perl}";
-}
 

@@ -9,28 +9,16 @@ our class PDF::Object::Type::XRef
     is PDF::Object::Stream
     does PDF::Object::Type {
 
-    use PDF::Tools::Util :resample, :unbox;
+    use PDF::Tools::Util :resample;
 
     # See [PDF 1.7 Table 3.15]
     method W is rw { %.dict<W>; }
     method Size is rw { %.dict<Size>; }
     method Index is rw { %.dict<Index> }
-    method first-obj-num is rw { %.dict<Index>.value[0].value }
-    method next-obj-num is rw { %.dict<Size>.value }
-
-    multi submethod BUILD( :$dict is copy = {}, :$decoded!) {
-        self!"setup-dict"();
-    }
-
-    method !setup-dict {
-        $.Type //= :name<XRef>;
-        $.W //= :array[ :int(1), :int(2), :int(1) ];
-        $.Size //= :int(0);
-        $.Index //= :array[ :int(0), $.Size ];
-    }
+    method first-obj-num is rw { %.dict<Index>[0] }
+    method next-obj-num is rw { %.dict<Size> }
 
     method encode(Array $xref = $.decoded --> Str) {
-        self!"setup-dict"();
 
         die 'mandatory /Index[0] entry is missing'
             unless $.first-obj-num.defined;
@@ -38,10 +26,14 @@ our class PDF::Object::Type::XRef
         die 'mandatory /Size entry is missing or zero'
             unless $.next-obj-num;
 
+        $.W //= [ 1, 2, 1 ];
+        $.Size //= 0;
+        $.Index[0] //= 0;
+        $.Index[1] //= $.Size;
+
         # /W resize to widest byte-widths, if needed
         for 0..2 -> $i {
             my $val = $xref.map({ .[$i] }).max;
-
             my $max-bytes;
 
             repeat {
@@ -49,11 +41,11 @@ our class PDF::Object::Type::XRef
                 $val div= 256;
             } until $val == 0;
 
-            $.W.value[$i] = :int($max-bytes)
-                if $.W.value[$i].value < $max-bytes;
+            $.W[$i] = $max-bytes
+                if $.W[$i] < $max-bytes;
         }
 
-        my $str = resample( $xref, unbox($.W), 8 ).chrs;
+        my $str = resample( $xref, $.W, 8 ).chrs;
         nextwith( $str );
     }
 
@@ -80,8 +72,8 @@ our class PDF::Object::Type::XRef
             $size = $entry<obj-num> + 1;
         }
 
-        $.Size = :int($size);
-        $.Index = :array[ @index.map: { :int($_) } ];
+        $.Size = $size;
+        $.dict<Index> = @index;
 
         $.encode($encoded);
     }
@@ -91,12 +83,12 @@ our class PDF::Object::Type::XRef
         my $W = $.W
             // die "missing mandatory /XRef param: /W";
 
-        my $xref-array = resample( $chars.encode('latin-1'), 8, unbox ( $W ) );
+        my $xref-array = resample( $chars.encode('latin-1'), 8, $W );
         my $Size = $.Size
             // die "missing mandatory /XRef param: /Size";
 
         if $.Index {
-            my $index = unbox $.Index;
+            my $index = $.Index;
             my $n = [+] $index[1, 3 ... *];
             die "problem decoding /Type /XRef object. /Index specified $n objects, got {+$xref-array}"
                 unless +$xref-array == $n;
@@ -109,7 +101,7 @@ our class PDF::Object::Type::XRef
     multi method decode-to-stage2($encoded = $.encoded) {
 
         my $i = 0;
-        my $index = unbox( $.Index // :array[ :int(0), $.Size ] );
+        my $index = $.Index // [ 0, $.Size ];
         my $decoded-stage2 = [];
 
         my $decoded = $.decode( $encoded );

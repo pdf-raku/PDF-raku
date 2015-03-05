@@ -1,10 +1,10 @@
 use v6;
 use Test;
 
-plan 21;
+plan 20;
 
 use PDF::Tools::IndObj;
-
+use PDF::Grammar::Test :is-json-equiv;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 
@@ -17,9 +17,9 @@ my %ast = %( $/.ast );
 my $ind-obj = PDF::Tools::IndObj.new( |%ast, :$input );
 my $xref-obj = $ind-obj.object;
 isa_ok $xref-obj, ::('PDF::Object')::('Type::XRef');
-is_deeply $xref-obj.W, (:array[ :int(1), :int(2), :int(1)]), '$xref.new .W';
-is_deeply $xref-obj.Size, (:int(251)), '$xref.new .Size';
-is_deeply $xref-obj.Index, (:array[ :int(214), :int(37)]), '$xref.new .Index';
+is-json-equiv $xref-obj.W, [ 1, 2, 1], '$xref.new .W';
+is $xref-obj.Size, 251, '$xref.new .Size';
+is-json-equiv $xref-obj.Index, [ 214, 37], '$xref.new .Index';
 
 my $xref;
 lives_ok { $xref = $xref-obj.decode }, 'basic content decode - lives';
@@ -30,7 +30,8 @@ is_deeply $xref, $expected-xref, 'decoded index as expected';
 my $xref-recompressed = $xref-obj.encode;
 
 my %ast2;
-lives_ok { %ast2 = %( $ind-obj.ast ) }, '$.ast - lives';
+#lives_ok {
+ %ast2 = %( $ind-obj.ast ) ;#}, '$.ast - lives';
 
 my $ind-obj2 = PDF::Tools::IndObj.new( |%ast2);
 my $xref-roundtrip = $ind-obj2.object.decode( $xref-recompressed );
@@ -50,23 +51,21 @@ is_deeply [ $xref-stage2[*-3..*] ], $expected-stage2-sample, 'decoded stage 2 (s
 
 my $xref-recompressed-from-stage2 = $ind-obj.object.encode-from-stage2($xref-stage2);
 $xref-roundtrip = $ind-obj2.object.decode-to-stage2( $xref-recompressed-from-stage2 );
-is_deeply $xref-stage2, $xref-roundtrip, 'encode-from-stage2/decode-from-stage1 round-trip';
+is-json-equiv $xref-stage2, $xref-roundtrip, 'encode-from-stage2/decode-from-stage1 round-trip';
 
-my $xref-new = ::('PDF::Object')::('Type::XRef').new(:decoded($expected-xref));
-$xref-new.first-obj-num = 42;
-$xref-new.next-obj-num = 37;
+my $xref-new = ::('PDF::Object')::('Type::XRef').new(:decoded($expected-xref), :dict{ :Index[42, 37], :Size(37) } );
 my $xref-roundtrip2 = $xref-new.decode( $xref-new.encode );
-is_deeply $xref-new.W, (:array[ :int(1), :int(2), :int(1)]), '$xref.new .W';
-is_deeply $xref-new.Size, (:int(37)), '$xref.new .Size';
-is_deeply $xref-new.Index, (:array[ :int(42), :int(37)]), '$xref.new .Index';
-
+is_deeply $xref-new.W, [ 1, 2, 1], '$xref.new .W';
+is $xref-new.Size, 37, '$xref.new .Size';
+is_deeply $xref-new.Index, [ 42, 37], '$xref.new .Index';
 is_deeply $xref, $xref-roundtrip2, '$xref.new round-trip';
-my $xref-wide = ::('PDF::Object')::('Type::XRef').new(:dict{Foo => :name<bar>}, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]] );
+
+my $xref-wide = PDF::Object.compose( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>) }, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]]} );
 dies_ok {$xref-wide.encode}, 'encode incomplete setup';
 $xref-wide.first-obj-num = 42;
-$xref-wide.next-obj-num = 214;
+$xref-wide.Size = 2;
 lives_ok {$xref-wide.encode}, 'encode completed setup';
-is_deeply $xref-wide.Type, (:name<XRef>), '$xref.new .Name auto-setup';
-is_deeply $xref-wide.W, (:array[ :int(1), :int(3), :int(2)]), '$xref.new .W auto-setup';
-is_deeply $xref-wide.Index, (:array[ :int(42), :int(214)]), '$xref.new .Index auto-setup';
-is_deeply $xref-wide.dict<Foo>, (:name<bar>), ':dict constructor option';
+is $xref-wide.Type, 'XRef', '$xref.new .Name auto-setup';
+is_deeply $xref-wide.W, [ 1, 3, 2], '$xref.new .W auto-setup';
+is-json-equiv $xref-wide.Index, [ 42, 2 ], '$xref.new .Index auto-setup';
+is $xref-wide.dict<Foo>, 'bar', ':dict constructor option';

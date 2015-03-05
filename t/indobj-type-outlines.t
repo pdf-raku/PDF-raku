@@ -7,7 +7,7 @@ use PDF::Tools::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Tools::Util :unbox;
+use PDF::Object :unbox;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -25,8 +25,8 @@ is $ind-obj.obj-num, 18, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $outlines-obj = $ind-obj.object;
 isa_ok $outlines-obj, ::('PDF::Object')::('Type::Outlines');
-is_deeply $outlines-obj.Type, (:name<Outlines>), '$.Type accessor';
-is_deeply $outlines-obj.Count, (:int(3)), '$.Count accessor';
+is $outlines-obj.Type, 'Outlines', '$.Type accessor';
+is $outlines-obj.Count, 3, '$.Count accessor';
 is_deeply $outlines-obj.First, (:ind-ref[19, 0]), '$.First accessor';
 is_deeply $outlines-obj.Last, (:ind-ref[20, 0]), '$.Last accessor';
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';

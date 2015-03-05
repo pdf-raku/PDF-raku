@@ -1,7 +1,7 @@
 use v6;
 
 use PDF::Tools::Filter;
-use PDF::Object ;
+use PDF::Object :box;
 use PDF::Object::Type;
 
 #| Dict - base class for dictionary objects, e.g. Catalog Page ...
@@ -16,7 +16,6 @@ our class PDF::Object::Dict
     }
 
     method content {
-        use PDF::Tools::Util :box;
         box $!dict;
     }
 }

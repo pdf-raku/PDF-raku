@@ -4,10 +4,10 @@ use Test;
 plan 9;
 
 use PDF::Tools::IndObj;
-
+use PDF::Grammar::Test :is-json-equiv;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Tools::Util :unbox;
+use PDF::Object :unbox;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -31,9 +31,9 @@ is $ind-obj.obj-num, 4, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $page-obj = $ind-obj.object;
 isa_ok $page-obj, ::('PDF::Object')::('Type::Page');
-is_deeply $page-obj.Type, (:name<Page>), '$.Type accessor';
-is_deeply $page-obj.Parent, (:ind-ref[3, 0]), '$.Parent accessor';
-is_deeply $page-obj.Resources, (:dict{ :Font( :dict{:F1( :ind-ref[7, 0] )} ), :ProcSet( :ind-ref[6, 0]) } ), '$.Resources accessor';
-is_deeply $page-obj.MediaBox, (:array[:int(0), :int(0), :int(612), :int(792)]), '$.MediaBox accessor';
+is $page-obj.Type, 'Page', '$.Type accessor';
+is $page-obj.Parent, (:ind-ref[3, 0]), '$.Parent accessor';
+is $page-obj.Resources, { :Font{ :F1( :ind-ref[7, 0] )}, :ProcSet( :ind-ref[6, 0]) }, '$.Resources accessor';
+is-json-equiv $page-obj.MediaBox, [0, 0, 612, 792], '$.MediaBox accessor';
 is_deeply $page-obj.Contents, (:ind-ref[5, 0]), '$.Contents accessor';
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';

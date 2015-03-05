@@ -4,10 +4,10 @@ use Test;
 plan 9;
 
 use PDF::Tools::IndObj;
-
+use PDF::Grammar::Test :is-json-equiv;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Tools::Util :unbox;
+use PDF::Object :unbox;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -31,9 +31,9 @@ my $object = $ind-obj.object;
 is $ind-obj.obj-num, 7, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 isa_ok $object, ::('PDF::Object')::('Type::Font::Type1');
-is_deeply $object.Type, (:name<Font>), '$.Type accessor';
-is_deeply $object.Subtype, (:name<Type1>), '$.Subype accessor';
-is_deeply $object.Name, (:name<F1>), '$.Name accessor';
-is_deeply $object.BaseFont, (:name<Helvetica>), '$.BaseFont accessor';
-is_deeply $object.Encoding, (:name<MacRomanEncoding>), '$.Encoding accessor';
-is_deeply $ind-obj.ast, $ast, 'ast regeneration';
+is $object.Type, 'Font', '$.Type accessor';
+is $object.Subtype, 'Type1', '$.Subype accessor';
+is $object.Name, 'F1', '$.Name accessor';
+is $object.BaseFont, 'Helvetica', '$.BaseFont accessor';
+is $object.Encoding, 'MacRomanEncoding', '$.Encoding accessor';
+is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';
