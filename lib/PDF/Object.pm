@@ -12,7 +12,7 @@ class PDF::Object {
 
     multi method compose( Array :$array!) {
         require ::("PDF::Object::Array");
-        return ::("PDF::Object::Array").new( :$array );
+        return $array but ::("PDF::Object::Array");
     }
 
     multi method compose( Bool :$bool!) {
@@ -158,6 +158,8 @@ class PDF::Object {
 
     multi sub unbox( *@args, *%opt ) is default {
         return Any if %opt<null>:exists;
+        # already unboxed
+        return @args[0] if +@args == 1 && ! @args[0].isa(Pair);
 
         die "unexpected unbox arguments: {[@args].perl}"
             if @args;
