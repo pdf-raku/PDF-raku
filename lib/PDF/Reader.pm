@@ -25,9 +25,7 @@ class PDF::Reader {
     multi method open( $input!) {
         use PDF::Tools::Input;
 
-        $!input = $input.isa(PDF::Tools::Input)
-                  ?? $input
-                  !! PDF::Tools::Input.new-delegate( :value($input) );
+        $!input = PDF::Tools::Input.compose( :value($input) );
 
         $.load-header( );
         $.load-xref( );

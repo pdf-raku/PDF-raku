@@ -19,9 +19,7 @@ class PDF::Writer {
             !! $root
             if $root.defined;
 
-        $!input = $input.isa(PDF::Tools::Input)
-            ?? $input
-            !! PDF::Tools::Input.new-delegate( :value($input) )
+        $!input = PDF::Tools::Input.compose( :value($input) )
             if $input.defined;
     }
 
@@ -124,7 +122,10 @@ class PDF::Writer {
     }
 
     multi method write( Str :$hex-char! ) {
-        sprintf '#%02X', $hex-char.ord
+        my $ord = $hex-char.ord;
+        die "illegal hex character: {$hex-char.perl}"
+            unless $hex-char.chars == 1 && $ord >= 0 && $ord <= 255;
+        sprintf '#%02X', $ord
     }
 
     multi method write( Str :$hex-string! ) {

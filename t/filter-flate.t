@@ -15,7 +15,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 
-my $pdf-input = PDF::Tools::Input.new-delegate( :value($input) );
+my $pdf-input = PDF::Tools::Input.compose( :value($input) );
 
 my $dict = unbox( |%$ast )<dict>;
 my $raw-content = $pdf-input.stream-data( |%$ast )[0];

@@ -10,9 +10,9 @@ class PDF::Object {
         return %( :$root, :$objects );
     }
 
-    multi method compose( Array :$array!, *%etc) {
+    multi method compose( Array :$array!) {
         require ::("PDF::Object::Array");
-        return ::("PDF::Object::Array").new( :$array, |%etc );
+        return ::("PDF::Object::Array").new( :$array );
     }
 
     multi method compose( Bool :$bool!) {
