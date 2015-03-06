@@ -18,7 +18,7 @@ method encode(Str $input, Bool :$eod, *%params --> Str) {
         if %params<Predictor>:exists;
 
     my $w = "";
-    my $str = join '', gather {
+    my $str = join( '', gather {
         for $buf.list {
             my $c = .chr;
             my $wc = $w ~ $c;
@@ -31,7 +31,7 @@ method encode(Str $input, Bool :$eod, *%params --> Str) {
         }
  
         take %dictionary{$w} if $w.chars;
-    }
+    });
 
     $str;
 }

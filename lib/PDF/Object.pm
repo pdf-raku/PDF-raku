@@ -127,9 +127,7 @@ class PDF::Object {
     multi sub unbox( Str :$hex-string! ) { $hex-string }
 
     multi sub unbox( Array :$ind-ref! ) {
-        my $obj-num = $ind-ref[0].Int;
-        my $gen-num = $ind-ref[1].Int;
-        warn "unresolved object reference: $obj-num $gen-num R";
+
         :$ind-ref;
     }
 
@@ -139,19 +137,16 @@ class PDF::Object {
     }
 
     multi sub unbox( Numeric :$int! ) {
-        require PDF::Object;
         PDF::Object.compose :$int;
     }
 
     multi sub unbox( Str :$literal! ) { $literal }
 
     multi sub unbox( Str :$name! ) {
-        require PDF::Object;
         PDF::Object.compose :$name;
     }
 
     multi sub unbox( Numeric :$real! ) {
-        require PDF::Object;
         PDF::Object.compose :$real;
     }
 

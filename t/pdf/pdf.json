@@ -1,0 +1,275 @@
+{
+  "pdf" : {
+    "header" : {
+      "version" : 1.2
+    },
+    "body" : [
+      {
+        "objects" : [
+          {
+            "ind-obj" : [
+              1,
+              0,
+              {
+                "dict" : {
+                  "Type" : {
+                    "name" : "Catalog"
+                  },
+                  "Pages" : {
+                    "ind-ref" : [
+                      3,
+                      0
+                    ]
+                  },
+                  "Outlines" : {
+                    "ind-ref" : [
+                      2,
+                      0
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              2,
+              0,
+              {
+                "dict" : {
+                  "Type" : {
+                    "name" : "Outlines"
+                  },
+                  "Count" : {
+                    "int" : 0
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              3,
+              0,
+              {
+                "dict" : {
+                  "Type" : {
+                    "name" : "Pages"
+                  },
+                  "Count" : {
+                    "int" : 1
+                  },
+                  "Kids" : {
+                    "array" : [
+                      {
+                        "ind-ref" : [
+                          4,
+                          0
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              4,
+              0,
+              {
+                "dict" : {
+                  "Type" : {
+                    "name" : "Page"
+                  },
+                  "Parent" : {
+                    "ind-ref" : [
+                      3,
+                      0
+                    ]
+                  },
+                  "Resources" : {
+                    "dict" : {
+                      "Font" : {
+                        "dict" : {
+                          "F1" : {
+                            "ind-ref" : [
+                              7,
+                              0
+                            ]
+                          }
+                        }
+                      },
+                      "ProcSet" : {
+                        "ind-ref" : [
+                          6,
+                          0
+                        ]
+                      }
+                    }
+                  },
+                  "MediaBox" : {
+                    "array" : [
+                      {
+                        "int" : 0
+                      },
+                      {
+                        "int" : 0
+                      },
+                      {
+                        "int" : 612
+                      },
+                      {
+                        "int" : 792
+                      }
+                    ]
+                  },
+                  "Contents" : {
+                    "ind-ref" : [
+                      5,
+                      0
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              5,
+              0,
+              {
+                "stream" : {
+                  "dict" : {
+                    "Length" : {
+                      "int" : 45
+                    }
+                  },
+                  "start" : 359,
+                  "end" : 403
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              6,
+              0,
+              {
+                "array" : [
+                  {
+                    "name" : "PDF"
+                  },
+                  {
+                    "name" : "Text"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              7,
+              0,
+              {
+                "dict" : {
+                  "Type" : {
+                    "name" : "Font"
+                  },
+                  "Subtype" : {
+                    "name" : "Type1"
+                  },
+                  "Name" : {
+                    "name" : "F1"
+                  },
+                  "BaseFont" : {
+                    "name" : "Helvetica"
+                  },
+                  "Encoding" : {
+                    "name" : "MacRomanEncoding"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              8,
+              0,
+              {
+                "int" : 45
+              }
+            ]
+          }
+        ],
+        "startxref" : 578,
+        "xref" : [
+          {
+            "object-first-num" : 0,
+            "object-count" : 9,
+            "entries" : [
+              {
+                "offset" : 0,
+                "gen-num" : 65535,
+                "type" : 0
+              },
+              {
+                "offset" : 14,
+                "gen-num" : 0,
+                "type" : 1
+              },
+              {
+                "offset" : 79,
+                "gen-num" : 0,
+                "type" : 1
+              },
+              {
+                "offset" : 125,
+                "gen-num" : 0,
+                "type" : 1
+              },
+              {
+                "offset" : 184,
+                "gen-num" : 0,
+                "type" : 1
+              },
+              {
+                "offset" : 327,
+                "gen-num" : 0,
+                "type" : 1
+              },
+              {
+                "offset" : 422,
+                "gen-num" : 0,
+                "type" : 1
+              },
+              {
+                "offset" : 452,
+                "gen-num" : 0,
+                "type" : 1
+              },
+              {
+                "offset" : 560,
+                "gen-num" : 0,
+                "type" : 1
+              }
+            ]
+          }
+        ],
+        "trailer" : {
+          "dict" : {
+            "Size" : {
+              "int" : 9
+            },
+            "Root" : {
+              "ind-ref" : [
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}

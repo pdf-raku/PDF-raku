@@ -1,0 +1,15 @@
+{
+  "trailer" : {
+    "dict" : {
+      "Size" : {
+        "int" : 8
+      },
+      "Root" : {
+        "ind-ref" : [
+          1,
+          0
+        ]
+      }
+    }
+  }
+}

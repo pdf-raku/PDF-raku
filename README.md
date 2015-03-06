@@ -1,5 +1,5 @@
-perl6-PDF-Tools
-===============
+perl6-PDF
+=========
 
 ** Under Construction **  This module provides tools and resources for manipulation of PDF content.
 
@@ -72,6 +72,15 @@ say $stream.obj.encoded;
   - PDF::Object::Type::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
   - PDF::Object::Type::XRef - PDF 1.5+ Cross Reference stream
   - ... many more to come
+
+## PDF::Reader
+
+Loads a PDF index (cross reference table and/or stream), then allows random access via the `$.ind.obj(...)` method. The `$.ast()`
+method can be used to load the entire PDF into memory for reserialization, etc.
+
+## PDF::Writer
+
+Reserializes an AST back to a PDF image with a rebuilt cross reference table.
 
 ## See also
 
