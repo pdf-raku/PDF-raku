@@ -82,8 +82,3 @@ method can be used to load the entire PDF into memory for reserialization, etc.
 
 Reserializes an AST back to a PDF image with a rebuilt cross reference table.
 
-## See also
-
-- [PDF::Reader](https://github.com/p6-pdf/perl6-PDF-Reader) (under construction)
-- [PDF::Writer](https://github.com/p6-pdf/perl6-PDF-Writer) (under construction)
-
