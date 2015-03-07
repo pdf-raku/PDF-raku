@@ -59,7 +59,7 @@ class PDF::Object {
     multi method compose( Hash :$dict!, *%etc) {
         my %dict = %( unbox :$dict );
         require ::("PDF::Object::Dict");
-        return ::("PDF::Object::Dict").delegate-class( :%dict ).new( :%dict, |%etc );
+        return ::("PDF::Object::Dict").delegate( :%dict ).new( :%dict, |%etc );
     }
 
     multi method compose( Hash :$stream!, *%etc) {
@@ -70,7 +70,7 @@ class PDF::Object {
         }
         my $dict = unbox :dict($stream<dict> // {});
         require ::("PDF::Object::Stream");
-        return ::("PDF::Object::Stream").delegate-class( :$dict ).new( :$dict, |%params );
+        return ::("PDF::Object::Stream").delegate( :$dict ).new( :$dict, |%params );
     }
 
     proto sub box(|) is export(:box) {*};

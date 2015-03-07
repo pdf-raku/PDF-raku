@@ -4,7 +4,7 @@ role PDF::Object::Type {
 
     method Type is rw { %.dict<Type> }
 
-    method find-subclass( Str $type-name is copy, $subtype-name ) {
+    method find-delegate( Str $type-name is copy, $subtype-name ) {
         BEGIN constant KnownTypes = set <Catalog Font ObjStm Outlines Page Pages XRef>;
         BEGIN constant SubTypes = %( Font => set <Type0 Type1 MMType1 Type3 TrueType CIDFontType0 CIDFontType2> );
 
@@ -27,20 +27,14 @@ role PDF::Object::Type {
         self.WHAT;
     }
 
-    method delegate-class( Hash :$dict! ) {
+    method delegate( Hash :$dict! ) {
 
-        my $type;
         if $dict<Type>:exists {
-            my $type-name = $dict<Type>;
-            my $subtype-name = $dict<Subtype> // $dict<S>;
-
-            $type = $.find-subclass( $type-name, $subtype-name );
+            $.find-delegate( $dict<Type>, $dict<Subtype> // $dict<S> );
         }
         else {
-            $type = self.WHAT;
+            self.WHAT;
         }
-
-        return $type;
     }
 
     #| enforce tie-ins between /Type, /Subtype & the class name. e.g.
