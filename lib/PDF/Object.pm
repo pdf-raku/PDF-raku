@@ -156,10 +156,12 @@ class PDF::Object {
         %stream;
     }
 
+    multi sub unbox( $other! where !.isa(Pair) ) {
+        return $other
+    }
+
     multi sub unbox( *@args, *%opt ) is default {
         return Any if %opt<null>:exists;
-        # already unboxed
-        return @args[0] if +@args == 1 && ! @args[0].isa(Pair);
 
         die "unexpected unbox arguments: {[@args].perl}"
             if @args;
