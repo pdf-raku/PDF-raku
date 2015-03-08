@@ -15,10 +15,9 @@ $root-object.Outlines = $outlines;
 my $pages = PDF::Object.compose( :dict{ :Type(/'Pages') } );
 $root-object.Pages = $pages;
 
-my $Procset = PDF::Object.compose( :array[ /'PDF', /'Text' ] );
-my $page = PDF::Object.compose( :dict{ :Type(/'Page') } );
+my $page = PDF::Object.compose( :dict{ :Type(/'Page'), :MediaBox[0, 0, 420, 595] } );
 $pages.Kids = [ $page ];
-$pages.Count = 1;
+$pages.Count = + $pages.Kids;
 
 my $font = PDF::Object.compose(
     :dict{
@@ -29,9 +28,9 @@ my $font = PDF::Object.compose(
         :Encoding(/'MacRomanEncoding'),
     });
 
-$page.Resources = { :Font{ :F1($font) }, :$Procset };
+$page.Resources = { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
 
-my $contents = PDF::Object.compose( :stream{ :decoded("/F1 24 Tf  100 250 Td (Hello, world!) Tj" ) } );
+my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 $page.Contents = $contents;
 
 my $result = $root-object.serialize;
