@@ -9,10 +9,10 @@ class PDF::Object::Type::Font
     is PDF::Object::Dict
     does PDF::Object::Type {
 
-    method Subtype is rw { self.dict<Subtype> }
-    method Name is rw { self.dict<Name> }
-    method BaseFont is rw { self.dict<BaseFont> }
-    method Encoding is rw { self.dict<Encoding> }
+    method Subtype is rw { self<Subtype> }
+    method Name is rw { self<Name> }
+    method BaseFont is rw { self<BaseFont> }
+    method Encoding is rw { self<Encoding> }
 
 }
 

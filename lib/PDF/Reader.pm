@@ -206,7 +206,7 @@ class PDF::Reader {
                 my %ast = %( $/.ast );
                 my $ind-obj = PDF::Tools::IndObj.new( |%ast, :input($xref), :type<XRef> );
                 my $xref-obj = $ind-obj.object;
-                $dict = $xref-obj.dict;
+                $dict = $xref-obj;
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;
             }
 

@@ -12,11 +12,11 @@ our class PDF::Object::Type::XRef
     use PDF::Tools::Util :resample;
 
     # See [PDF 1.7 Table 3.15]
-    method W is rw { %.dict<W>; }
-    method Size is rw { %.dict<Size>; }
-    method Index is rw { %.dict<Index> }
-    method first-obj-num is rw { %.dict<Index>[0] }
-    method next-obj-num is rw { %.dict<Size> }
+    method W is rw { self<W>; }
+    method Size is rw { self<Size>; }
+    method Index is rw { self<Index> }
+    method first-obj-num is rw { self<Index>[0] }
+    method next-obj-num is rw { self<Size> }
 
     method encode(Array $xref = $.decoded --> Str) {
 
@@ -73,7 +73,7 @@ our class PDF::Object::Type::XRef
         }
 
         $.Size = $size;
-        $.dict<Index> = @index;
+        self<Index> = @index;
 
         $.encode($encoded);
     }

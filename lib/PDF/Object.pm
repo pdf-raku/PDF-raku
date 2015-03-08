@@ -79,7 +79,7 @@ class PDF::Object {
     multi sub box($other!) is default {
         box-native $other
     }
-    proto sub box-native(|) {*};
+    proto sub box-native(|) is export(:box-native) {*};
     multi sub box-native(Int $int!) {:$int}
     multi sub box-native(Numeric $real!) {:$real}
     multi sub box-native(Hash $_dict!) {

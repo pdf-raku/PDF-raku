@@ -14,8 +14,8 @@ our class PDF::Object::Type::ObjStm
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 
-method First is rw { %.dict<First> }
-method N is rw { %.dict<N> }
+method First is rw { self<First> }
+method N is rw { self<N> }
 
 method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {
     my @idx;

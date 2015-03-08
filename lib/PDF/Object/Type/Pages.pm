@@ -9,7 +9,7 @@ class PDF::Object::Type::Pages
     is PDF::Object::Dict
     does PDF::Object::Type {
 
-    method Count is rw { self.dict<Count> }
-    method Kids is rw { self.dict<Kids> }
+    method Count is rw { self<Count> }
+    method Kids is rw { self<Kids> }
 
 }

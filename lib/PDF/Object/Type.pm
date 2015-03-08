@@ -2,7 +2,7 @@ role PDF::Object::Type {
 
     use PDF::Object::Name;
 
-    method Type is rw { %.dict<Type> }
+    method Type is rw { self<Type> }
 
     method find-delegate( Str $type-name is copy, $subtype-name ) {
         BEGIN constant KnownTypes = set <Catalog Font ObjStm Outlines Page Pages XRef>;
@@ -24,7 +24,7 @@ role PDF::Object::Type {
             }
         }
 
-        self.WHAT;
+        self;
     }
 
     method delegate( Hash :$dict! ) {
@@ -33,7 +33,7 @@ role PDF::Object::Type {
             $.find-delegate( $dict<Type>, $dict<Subtype> // $dict<S> );
         }
         else {
-            self.WHAT;
+            self;
         }
     }
 

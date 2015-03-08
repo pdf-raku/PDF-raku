@@ -1,21 +1,23 @@
 use v6;
 
 use PDF::Tools::Filter;
-use PDF::Object :box;
+use PDF::Object :box-native;
 use PDF::Object::Type;
 
 #| Dict - base class for dictionary objects, e.g. Catalog Page ...
-our class PDF::Object::Dict
+class PDF::Object::Dict
     is PDF::Object
+    is Hash
     does PDF::Object::Type {
 
-    has Hash $.dict;
-
-    submethod BUILD( :$!dict is copy = {}) {
-        self.setup-type( $!dict ); 
+    method new(Hash :$dict = {}, *%etc) {
+        my $obj = self.bless(|%etc);
+        $obj{ .key } = .value for $dict.pairs;
+        $obj.setup-type($obj);
+        $obj;
     }
 
     method content {
-        box $!dict;
+        box-native self;
     }
 }

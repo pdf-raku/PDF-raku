@@ -9,7 +9,7 @@ class PDF::Object::Type::Catalog
     is PDF::Object::Dict
     does PDF::Object::Type {
 
-    method Pages is rw { self.dict<Pages> }
-    method Outlines is rw { self.dict<Outlines> }
+    method Pages is rw { self<Pages> }
+    method Outlines is rw { self<Outlines> }
 
 }

@@ -20,7 +20,7 @@ is $ind-obj.obj-num, 5, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $object = $ind-obj.object;
 isa_ok $object, ::('PDF::Object::Stream');
-isa_ok $object.dict, Hash, '$.dict';
+isa_ok $object, Hash;
 isa_ok $object.Length, Int, '$.Length';
 is $object.Length, 167, '$.Length';
 is $object.Type, 'ObjStm', '$.Type';

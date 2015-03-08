@@ -68,4 +68,4 @@ lives_ok {$xref-wide.encode}, 'encode completed setup';
 is $xref-wide.Type, 'XRef', '$xref.new .Name auto-setup';
 is_deeply $xref-wide.W, [ 1, 3, 2], '$xref.new .W auto-setup';
 is-json-equiv $xref-wide.Index, [ 42, 2 ], '$xref.new .Index auto-setup';
-is $xref-wide.dict<Foo>, 'bar', ':dict constructor option';
+is $xref-wide<Foo>, 'bar', ':dict constructor option';
