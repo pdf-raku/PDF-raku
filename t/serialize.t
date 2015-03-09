@@ -10,6 +10,15 @@ sub prefix:</>($name){
     PDF::Object.compose(:$name)
 };
 
+my $dict1 = PDF::Object.compose( :dict{ :ID(1) } );
+my $dict2 = PDF::Object.compose( :dict{ :ID(2) } );
+my $array = PDF::Object.compose( :array[ $dict1, $dict2, $dict1 ]);
+
+my $result = $array.serialize;
+my $object = $result<objects>;
+todo "issue#1 this should serialize to 3 objects (1 array and 2 dicts)";
+is +$object, 3, 'expected number of objects';
+
 my %body = (
     :Type(/'Catalog'),
     :Pages{
@@ -54,9 +63,9 @@ is-json-equiv $objects[5], (:ind-obj[6, 0, :dict{
                                                Outlines => :ind-ref[5, 0],
                                              },
                                    ]), 'root object';
-todo "generate Parent indirect references";
+todo "issue#2 generate Parent indirect references";
 is-json-equiv $objects[2], (:ind-obj[3, 0, :dict{
-                                              Resources => :dict{"Procset" => :array[ :name<PDF>, :name<Text>],
+                                              Resources => :dict{Procset => :array[ :name<PDF>, :name<Text>],
                                               Font => :dict{F1 => :ind-ref[1, 0]}},
                                               Type => :name<Page>,
                                               Contents => :ind-ref[2, 0],
