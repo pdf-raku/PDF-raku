@@ -5,8 +5,9 @@ class PDF::Object {
     method serialize {
         require ::('PDF::Tools::Serializer');
         my $serializer = ::('PDF::Tools::Serializer').new;
-        my $root = $serializer.freeze( self );
-        my $objects =  $serializer.ind-objs;
+        warn self.perl;
+        my $root = $serializer.freeze-doc( self );
+        my $objects = $serializer.ind-objs;
         return %( :$root, :$objects );
     }
 
