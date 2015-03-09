@@ -10,14 +10,16 @@ sub prefix:</>($name){
     PDF::Object.compose(:$name)
 };
 
-my $dict1 = PDF::Object.compose( :dict{ :ID(1) } );
-my $dict2 = PDF::Object.compose( :dict{ :ID(2) } );
-my $array = PDF::Object.compose( :array[ $dict1, $dict2, $dict1 ]);
+my $Dict1 = PDF::Object.compose( :dict{ :Type(/'X'), :ID(1) } );
+my $Dict2 = PDF::Object.compose( :dict{ :Type(/'X'), :ID(2) } );
+# $Dict1 should only appear once. both references to $Dict should have a common ind-ref key
+my $root-obj = PDF::Object.compose( :dict{ :Type(/'WeirdRoot'), :Content[$Dict1, $Dict2, $Dict1] });
 
-my $result = $array.serialize;
-my $object = $result<objects>;
-todo "issue#1 this should serialize to 3 objects (1 array and 2 dicts)";
-is +$object, 3, 'expected number of objects';
+my $result = $root-obj.serialize;
+my $s-objects = $result<objects>;
+warn :$s-objects.perl;
+todo "issue#1 this should serialize to 3 objects (root + 1 array and 2 unique dicts)";
+is +$s-objects, 3, 'expected number of objects';
 
 my %body = (
     :Type(/'Catalog'),
