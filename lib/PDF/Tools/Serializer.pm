@@ -14,6 +14,10 @@ class PDF::Tools::Serializer {
         :ind-ref[ $.cur-obj-num, 0];
     }
 
+    method !freeze-dict(Hash $dict) {
+        %( $dict.pairs.map( -> $kv { $kv.key => $.freeze( |%( $kv.value) ) } ) );
+    }
+
     method freeze-doc( PDF::Object::Dict $object ) {
         die "root dictionary lacks a /Type entry"
             unless $object<Type>;
@@ -21,33 +25,32 @@ class PDF::Tools::Serializer {
     }
 
     multi method freeze(PDF::Object $object!) {
-        $.freeze( $object.content );
-    }
-
-    multi method freeze(Pair $boxed!) {
-        $.freeze( |%($boxed.kv) )
+        $.freeze( |%($object.content) );
     }
 
     multi method freeze(Hash :$dict!) {
-        my %dict = %( $dict.pairs.map( -> $kv { $kv.key => $.freeze($kv.value) } ) );
+        my %dict = self!"freeze-dict"($dict);
         # any dictionary with a /Type field is implicitly an indirect object
         $dict<Type>
             ?? self!"make-ind-ref"((:%dict))
             !! :%dict;
     }
 
-    multi method freeze(Hash :$stream! ) {
+    multi method freeze(Hash :$stream!) {
         # streams are always indirect objects
         my %stream = %( $stream );
-        %stream<dict> = %( $stream<dict>.pairs.map( -> $kv { $kv.key => $.freeze($kv.value) } ) );
+        %stream<dict> = self!"freeze-dict"( $stream<dict> );
         self!"make-ind-ref"((:%stream))
     }
 
     multi method freeze(Array :$array! ) {
-        :array[ $array.map({ $.freeze($_) }) ]
+        :array[ $array.map({ $.freeze( |%$_ ) }) ]
     }
 
-    multi method freeze(*%other ) {
-        %other;
+    #| Simple type. :name, :num, ...
+    multi method freeze(*%misc ) {
+        die "unhandled struct: {%misc.perl}"
+            if +%misc != 1;
+        %misc[0];
     }
 }
