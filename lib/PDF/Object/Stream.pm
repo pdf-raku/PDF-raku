@@ -53,7 +53,7 @@ class PDF::Object::Stream
 
     method content {
         my $encoded = $.encoded; # may update $.dict<Length>
-        my $dict = box-native self;
+        my $dict = callsame;
         :stream( %( $dict, :$encoded ));
     }
 }

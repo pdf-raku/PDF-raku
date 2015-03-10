@@ -1,7 +1,8 @@
 use v6;
 
-use PDF::Object;
+use PDF::Object :box;
 use PDF::Object::Dict;
+use PDF::Object::Stream;
 use PDF::Tools::IndObj;
 
 class PDF::Tools::Serializer {
@@ -15,42 +16,30 @@ class PDF::Tools::Serializer {
     }
 
     method !freeze-dict(Hash $dict) {
-        %( $dict.pairs.map( -> $kv { $kv.key => $.freeze( |%( $kv.value) ) } ) );
+        %( $dict.pairs.map( -> $kv { $kv.key => $.freeze( $kv.value ) } ) );
     }
 
-    method freeze-doc( PDF::Object::Dict $object ) {
-        die "root dictionary lacks a /Type entry"
-            unless $object<Type>;
-        $.freeze($object);
+    #| handles PDF::Object::Dict, PDF::Object::Stream, (plain) Hash
+    multi method freeze( Hash $object! ) {
+        my $has-type = $object<Type>:exists;
+        my $frozen = :dict( self!"freeze-dict"($object) );
+        my $is-stream = $object.isa(PDF::Object::Stream);
+        $frozen = :stream( %( $frozen.kv, :encoded($object.encoded) ) )
+            if $is-stream;
+
+        $is-stream || $has-type
+            ?? self!"make-ind-ref"($frozen)
+            !! $frozen;
     }
 
-    multi method freeze(PDF::Object $object!) {
-        $.freeze( |%($object.content) );
+    #| handles PDF::Object::Array, (plain( Array
+    multi method freeze(Array $array! ) {
+        :array[ $array.map({ $.freeze( $_ ) }) ]
     }
 
-    multi method freeze(Hash :$dict!) {
-        my %dict = self!"freeze-dict"($dict);
-        # any dictionary with a /Type field is implicitly an indirect object
-        $dict<Type>
-            ?? self!"make-ind-ref"((:%dict))
-            !! :%dict;
+    #| fallback for basic types
+    multi method freeze($other) {
+        box $other;
     }
 
-    multi method freeze(Hash :$stream!) {
-        # streams are always indirect objects
-        my %stream = %( $stream );
-        %stream<dict> = self!"freeze-dict"( $stream<dict> );
-        self!"make-ind-ref"((:%stream))
-    }
-
-    multi method freeze(Array :$array! ) {
-        :array[ $array.map({ $.freeze( |%$_ ) }) ]
-    }
-
-    #| Simple type. :name, :num, ...
-    multi method freeze(*%misc ) {
-        die "unhandled struct: {%misc.perl}"
-            if +%misc != 1;
-        %misc[0];
-    }
 }

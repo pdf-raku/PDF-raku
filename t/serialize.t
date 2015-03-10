@@ -17,7 +17,6 @@ my $root-obj = PDF::Object.compose( :dict{ :Type(/'WeirdRoot'), :Content[$Dict1,
 
 my $result = $root-obj.serialize;
 my $s-objects = $result<objects>;
-warn :$s-objects.perl;
 todo "issue#1 this should serialize to 3 objects (root + 1 array and 2 unique dicts)";
 is +$s-objects, 3, 'expected number of objects';
 
@@ -42,9 +41,8 @@ my %body = (
     :Outlines{ :Type(/'Outlines'), :Count(0) },
     );
 
-my $dict = (box %body).value;
 my $serializer = PDF::Tools::Serializer.new;
-my $root = $serializer.freeze( :$dict );
+my $root = $serializer.freeze( %body );
 my $objects = $serializer.ind-objs;
 
 sub infix:<object-order-ok>($obj-a, $obj-b) {

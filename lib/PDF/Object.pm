@@ -3,10 +3,11 @@ use v6;
 class PDF::Object {
 
     method serialize {
+        die "root object must be a dictionary object with a /Type entry"
+            unless self.isa(Hash) && (self<Type>:exists);
         require ::('PDF::Tools::Serializer');
         my $serializer = ::('PDF::Tools::Serializer').new;
-        warn self.perl;
-        my $root = $serializer.freeze-doc( self );
+        my $root = $serializer.freeze( self );
         my $objects = $serializer.ind-objs;
         return %( :$root, :$objects );
     }
