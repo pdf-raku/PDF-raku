@@ -1,7 +1,7 @@
 use v6;
 
 use PDF::Tools::Filter;
-use PDF::Object :box-native;
+use PDF::Object :to-ast-native;
 use PDF::Object::Type;
 
 #| Dict - base class for dictionary objects, e.g. Catalog Page ...
@@ -18,6 +18,6 @@ class PDF::Object::Dict
     }
 
     method content {
-        box-native self;
+        to-ast-native self;
     }
 }

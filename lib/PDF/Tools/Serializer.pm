@@ -1,6 +1,6 @@
 use v6;
 
-use PDF::Object :box;
+use PDF::Object :to-ast;
 use PDF::Object::Dict;
 use PDF::Object::Stream;
 use PDF::Tools::IndObj;
@@ -47,7 +47,7 @@ class PDF::Tools::Serializer {
 
     #| handles other basic types
     multi method freeze($other) {
-        box $other;
+        to-ast $other;
     }
 
 }

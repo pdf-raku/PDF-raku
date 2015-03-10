@@ -7,7 +7,7 @@ use PDF::Tools::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Object :unbox;
+use PDF::Object :to-obj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -21,7 +21,7 @@ is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 my $content = $ind-obj.content;
 isa_ok $content, Pair;
-is_deeply unbox( $content ), 'a literal string', '$.content unboxed';
+is_deeply to-obj( $content ), 'a literal string', '$.content to-obj';
 is_deeply $content, (:literal("a literal string")), '$.content';
 
 $input = '123 4 obj <736E6F6f7079> endobj';
@@ -34,7 +34,7 @@ is $ind-obj.obj-num, 123, '$.obj-num';
 is $ind-obj.gen-num, 4, '$.gen-num';
 $content = $ind-obj.content;
 isa_ok $content, Pair;
-is_deeply unbox( $content ), 'snoopy', '$.content unboxed';
+is_deeply to-obj( $content ), 'snoopy', '$.content to-obj';
 is_deeply $content, (:hex-string<snoopy>), '$.content';
 
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';

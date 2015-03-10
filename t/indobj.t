@@ -6,7 +6,7 @@ plan 30;
 use PDF::Tools::IndObj;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Object :unbox;
+use PDF::Object :to-obj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -65,7 +65,7 @@ is $tt-font-obj.Subtype, 'TrueType', 'tt font $.Subype';
 is $tt-font-obj.Encoding, 'WinAnsiEncoding', 'tt font $.Encoding';
 
 require ::('PDF::Object::Type::Font::Type0');
-$dict = unbox :dict{ :BasedFont(:name<Wingdings-Regular>), :Encoding(:name<Identity-H>) };
+$dict = to-obj :dict{ :BasedFont(:name<Wingdings-Regular>), :Encoding(:name<Identity-H>) };
 my $t0-font-obj = ::('PDF::Object::Type::Font::Type0').new( :$dict );
 is $t0-font-obj.Type, 'Font', 't0 font $.Type';
 is $t0-font-obj.Subtype, 'Type0', 't0 font $.Subype';

@@ -59,7 +59,7 @@ class PDF::Object {
     }
 
     multi method compose( Hash :$dict!, *%etc) {
-        my %dict = %( unbox :$dict );
+        my %dict = %( to-obj :$dict );
         require ::("PDF::Object::Dict");
         return ::("PDF::Object::Dict").delegate( :%dict ).new( :%dict, |%etc );
     }
@@ -70,105 +70,105 @@ class PDF::Object {
             %params{$_} = $stream{$_}
             if $stream{$_}:exists;
         }
-        my $dict = unbox :dict($stream<dict> // {});
+        my $dict = to-obj :dict($stream<dict> // {});
         require ::("PDF::Object::Stream");
         return ::("PDF::Object::Stream").delegate( :$dict ).new( :$dict, |%params );
     }
 
-    proto sub box(|) is export(:box) {*};
-    multi sub box(Pair $p!) {$p}
-    multi sub box(PDF::Object $object!) {$object.content}
-    multi sub box($other!) is default {
-        box-native $other
+    proto sub to-ast(|) is export(:to-ast) {*};
+    multi sub to-ast(Pair $p!) {$p}
+    multi sub to-ast(PDF::Object $object!) {$object.content}
+    multi sub to-ast($other!) is default {
+        to-ast-native $other
     }
-    proto sub box-native(|) is export(:box-native) {*};
-    multi sub box-native(Int $int!) {:$int}
-    multi sub box-native(Numeric $real!) {:$real}
-    multi sub box-native(Hash $_dict!) {
-        my %dict = %( $_dict.pairs.map( -> $kv { $kv.key => box($kv.value) } ) );
+    proto sub to-ast-native(|) is export(:to-ast-native) {*};
+    multi sub to-ast-native(Int $int!) {:$int}
+    multi sub to-ast-native(Numeric $real!) {:$real}
+    multi sub to-ast-native(Hash $_dict!) {
+        my %dict = %( $_dict.pairs.map( -> $kv { $kv.key => to-ast($kv.value) } ) );
         :%dict;
     }
-    multi sub box-native(Array $_array!) {
-        my @array = $_array.map({ box( $_ ) });
+    multi sub to-ast-native(Array $_array!) {
+        my @array = $_array.map({ to-ast( $_ ) });
         :@array;
     }
-    multi sub box-native(Str $literal!) {:$literal}
-    multi sub box-native(Bool $bool!) {:$bool}
-    multi sub box-native($other) is default {
+    multi sub to-ast-native(Str $literal!) {:$literal}
+    multi sub to-ast-native(Bool $bool!) {:$bool}
+    multi sub to-ast-native($other) is default {
         return :null(Any)
             unless $other.defined;
-        die "don't know how to box: {$other.perl}";
+        die "don't know how to to-ast: {$other.perl}";
     }
 
-    proto sub unbox(|) is export(:unbox) {*};
+    proto sub to-obj(|) is export(:to-obj) {*};
 
-    multi sub unbox( Pair $p! ) {
-        unbox( |%( $p.kv ) );
+    multi sub to-obj( Pair $p! ) {
+        to-obj( |%( $p.kv ) );
     }
 
-    multi sub unbox( Hash $h! ) {
-        unbox( |%( $h ) );
+    multi sub to-obj( Hash $h! ) {
+        to-obj( |%( $h ) );
     }
 
-    multi sub unbox( Array :$array! ) {
-        [ $array.map: { unbox( $_ ) } ];
+    multi sub to-obj( Array :$array! ) {
+        [ $array.map: { to-obj( $_ ) } ];
     }
 
-    multi sub unbox( Bool :$bool! ) {
+    multi sub to-obj( Bool :$bool! ) {
         $bool;
     }
 
-    multi sub unbox( Hash :$dict!, :$keys ) {
+    multi sub to-obj( Hash :$dict!, :$keys ) {
         my @keys = $keys.defined
             ?? $keys.grep: {$dict{$_}:exists}
         !! $dict.keys;
-        my %hash = @keys.map: { $_ => unbox( $dict{$_} ) };
+        my %hash = @keys.map: { $_ => to-obj( $dict{$_} ) };
         %hash.item;
     }
 
-    multi sub unbox( Str :$hex-string! ) { $hex-string }
+    multi sub to-obj( Str :$hex-string! ) { $hex-string }
 
-    multi sub unbox( Array :$ind-ref! ) {
+    multi sub to-obj( Array :$ind-ref! ) {
 
         :$ind-ref;
     }
 
-    multi sub unbox( Array :$ind-obj! ) {
+    multi sub to-obj( Array :$ind-obj! ) {
         my %content = $ind-obj[2].kv;
-        unbox( |%content )
+        to-obj( |%content )
     }
 
-    multi sub unbox( Numeric :$int! ) {
+    multi sub to-obj( Numeric :$int! ) {
         PDF::Object.compose :$int;
     }
 
-    multi sub unbox( Str :$literal! ) { $literal }
+    multi sub to-obj( Str :$literal! ) { $literal }
 
-    multi sub unbox( Str :$name! ) {
+    multi sub to-obj( Str :$name! ) {
         PDF::Object.compose :$name;
     }
 
-    multi sub unbox( Numeric :$real! ) {
+    multi sub to-obj( Numeric :$real! ) {
         PDF::Object.compose :$real;
     }
 
-    multi sub unbox( Hash :$stream! ) {
+    multi sub to-obj( Hash :$stream! ) {
         my $dict = $stream<dict>;
-        my %stream = %$stream, dict => unbox( :$dict );
+        my %stream = %$stream, dict => to-obj( :$dict );
         %stream;
     }
 
-    multi sub unbox( $other! where !.isa(Pair) ) {
+    multi sub to-obj( $other! where !.isa(Pair) ) {
         return $other
     }
 
-    multi sub unbox( *@args, *%opt ) is default {
+    multi sub to-obj( *@args, *%opt ) is default {
         return Any if %opt<null>:exists;
 
-        die "unexpected unbox arguments: {[@args].perl}"
+        die "unexpected to-obj arguments: {[@args].perl}"
             if @args;
         
-        die "unable to unbox {%opt.keys} struct: {%opt.perl}"
+        die "unable to to-obj {%opt.keys} struct: {%opt.perl}"
     }
 
 }

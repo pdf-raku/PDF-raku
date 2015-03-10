@@ -8,7 +8,7 @@ use PDF::Tools::IndObj;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
-use PDF::Object :unbox;
+use PDF::Object :to-obj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -26,6 +26,6 @@ isa_ok $content, Pair;
 is-json-equiv $content, ( :array[:real(0.9505e0), :real(1e0), :real(1.089e0),
                              :array[:int(1), :int(2), :literal<abc>],
                      ]), '$.content';
-is-json-equiv unbox( $content ), [0.9505e0, 1e0, 1.089e0, [1, 2, "abc"]], '$.content unboxed';
+is-json-equiv to-obj( $content ), [0.9505e0, 1e0, 1.089e0, [1, 2, "abc"]], '$.content to-obj';
 
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';

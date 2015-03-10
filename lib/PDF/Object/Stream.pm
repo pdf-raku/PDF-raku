@@ -1,7 +1,7 @@
 use v6;
 
 use PDF::Tools::Filter;
-use PDF::Object :box-native;
+use PDF::Object :to-ast-native;
 use PDF::Object::Dict;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...

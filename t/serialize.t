@@ -2,7 +2,7 @@ use v6;
 use Test;
 
 use PDF::Tools::Serializer;
-use PDF::Object :box;
+use PDF::Object :to-ast;
 use PDF::Grammar::Test :is-json-equiv;
 
 sub prefix:</>($name){

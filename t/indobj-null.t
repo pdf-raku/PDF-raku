@@ -7,7 +7,7 @@ use PDF::Tools::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Object :unbox;
+use PDF::Object :to-obj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -21,7 +21,7 @@ is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 my $content = $ind-obj.content;
 isa_ok $content, Pair;
-is_deeply unbox( $content ), Any, '$.content unboxed';
+is_deeply to-obj( $content ), Any, '$.content to-obj';
 is_deeply $content, (:null(Any)), '$.content';
 
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';

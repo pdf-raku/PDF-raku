@@ -4,7 +4,7 @@ use Test;
 use JSON::Tiny;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Writer;
-use PDF::Object :unbox;
+use PDF::Object :to-obj;
 
 for 't/write-ast.json'.IO.lines {
 
@@ -24,9 +24,9 @@ for 't/write-ast.json'.IO.lines {
     is-json-equiv ~$pdf-data, $expected-pdf, "serialize {%ast.keys.sort}"
         or diag :%ast.perl;
 
-    if my $unboxed = $test<unboxed> {
-        my $perl = unbox( |%ast );
-        is-json-equiv $perl, $unboxed, "unboxed {%ast.keys.sort}"
+    if my $to-obj = $test<to-obj> {
+        my $perl = to-obj( |%ast );
+        is-json-equiv $perl, $to-obj, "to-obj {%ast.keys.sort}"
             or diag :%ast.perl;
     }
 }
