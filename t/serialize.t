@@ -17,7 +17,6 @@ my $root-obj = PDF::Object.compose( :dict{ :Type(/'WeirdRoot'), :Content[$Dict1,
 
 my $result = $root-obj.serialize;
 my $s-objects = $result<objects>;
-todo "issue#1 this should serialize to 3 objects (root + 1 array and 2 unique dicts)";
 is +$s-objects, 3, 'expected number of objects';
 
 my %body = (

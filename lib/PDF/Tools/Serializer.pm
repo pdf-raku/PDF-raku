@@ -7,15 +7,23 @@ use PDF::Tools::IndObj;
 
 class PDF::Tools::Serializer {
 
-    has Int $.cur-obj-num is rw = 0;
+    has Int $!cur-obj-num = 0;
     has @.ind-objs;
+    has %!obj-num;
 
-    method !make-ind-ref($ind-obj) {
-        @.ind-objs.push: (:ind-obj[ ++ $.cur-obj-num, 0, $ind-obj]);
-        :ind-ref[ $.cur-obj-num, 0];
+    method !make-ind-ref( Pair $ind-obj, Int :$id!) {
+        if %!obj-num{$id}:exists {
+            :ind-ref[ %!obj-num{$id}, 0 ]
+        }
+        else {
+            my $obj-num = ++ $!cur-obj-num;
+            @.ind-objs.push: (:ind-obj[ $obj-num, 0, $ind-obj]);
+            %!obj-num{$id} = $obj-num;
+            :ind-ref[ $obj-num, 0];
+        }
     }
 
-    method !freeze-dict(Hash $dict) {
+    method !freeze-dict( Hash $dict) {
         %( $dict.pairs.map( -> $kv { $kv.key => $.freeze( $kv.value ) } ) );
     }
 
@@ -28,16 +36,16 @@ class PDF::Tools::Serializer {
             if $is-stream;
 
         $is-stream || $has-type
-            ?? self!"make-ind-ref"($frozen)
+            ?? self!"make-ind-ref"($frozen, :id($object.WHERE) )
             !! $frozen;
     }
 
     #| handles PDF::Object::Array, (plain( Array
-    multi method freeze(Array $array! ) {
+    multi method freeze( Array $array! ) {
         :array[ $array.map({ $.freeze( $_ ) }) ]
     }
 
-    #| fallback for basic types
+    #| handles other basic types
     multi method freeze($other) {
         box $other;
     }
