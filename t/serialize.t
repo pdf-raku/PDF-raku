@@ -42,6 +42,7 @@ my %body = (
 
 my $serializer = PDF::Tools::Serializer.new;
 my $root = $serializer.freeze( %body );
+$serializer.finish;
 my $objects = $serializer.ind-objs;
 
 sub infix:<object-order-ok>($obj-a, $obj-b) {
@@ -62,7 +63,7 @@ is-json-equiv $objects[5], (:ind-obj[6, 0, :dict{
                                                Outlines => :ind-ref[5, 0],
                                              },
                                    ]), 'root object';
-todo "issue#2 generate Parent indirect references";
+
 is-json-equiv $objects[2], (:ind-obj[3, 0, :dict{
                                               Resources => :dict{Procset => :array[ :name<PDF>, :name<Text>],
                                               Font => :dict{F1 => :ind-ref[1, 0]}},
