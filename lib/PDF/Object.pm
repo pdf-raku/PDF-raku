@@ -132,7 +132,10 @@ class PDF::Object {
     }
 
     multi sub to-obj( Hash $h! ) {
-        to-obj( |%( $h ) );
+        my %hash;
+        %hash{.key} = to-obj( .value )
+            for $h.pairs;
+        %hash.item;
     }
 
     multi sub to-obj( Array :$array! ) {
