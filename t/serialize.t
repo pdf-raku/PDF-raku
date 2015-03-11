@@ -10,16 +10,23 @@ sub prefix:</>($name){
     PDF::Object.compose(:$name)
 };
 
-my $Dict1 = PDF::Object.compose( :dict{ :Type(/'X'), :ID(1) } );
-my $Dict2 = PDF::Object.compose( :dict{ :Type(/'X'), :ID(2) } );
-# $Dict1 should only appear once. both references to $Dict should have a common ind-ref key
-my $root-obj = PDF::Object.compose( :dict{ :Type(/'WeirdRoot'), :Content[$Dict1, $Dict2, $Dict1] });
+# construct a nasty cyclic structure
+my $dict1 = { :ID(1) };
+my $dict2 = { :ID(2) };
+# create circular hash ref
+$dict2<SelfRef> := $dict2;
 
+my $array = [ $dict1, $dict2 ];
+my $root-obj = PDF::Object.compose( :$array );
+# create circular array reference
+$root-obj[2] := $root-obj;
+
+# our serializer should create indirect refs to resolove the above
 my $result = $root-obj.serialize;
 my $s-objects = $result<objects>;
-is +$s-objects, 3, 'expected number of objects';
+is +$s-objects, 2, 'expected number of objects';
 
-my %body = (
+my $body = {
     :Type(/'Catalog'),
     :Pages{
             :Type(/'Pages'),
@@ -38,12 +45,13 @@ my %body = (
             :Count(1),
     },
     :Outlines{ :Type(/'Outlines'), :Count(0) },
-    );
+    };
 
 my $serializer = PDF::Tools::Serializer.new;
-my $root = $serializer.freeze( %body );
-$serializer.finish;
+$serializer.analyse( $body );
+my $root = $serializer.freeze( $body );
 my $objects = $serializer.ind-objs;
+PDF::Object.post-process( $objects );
 
 sub infix:<object-order-ok>($obj-a, $obj-b) {
     my ($obj-num-a, $gen-num-a) = @( $obj-a.value );
@@ -57,19 +65,19 @@ sub infix:<object-order-ok>($obj-a, $obj-b) {
 
 ok ([object-order-ok] @$objects), 'objects are in order';
 is +$objects, 6, 'number of objects';
-is-json-equiv $objects[5], (:ind-obj[6, 0, :dict{
+is-json-equiv $objects[0], (:ind-obj[1, 0, :dict{
                                                Type => { :name<Catalog> },
-                                               Pages => :ind-ref[4, 0],
-                                               Outlines => :ind-ref[5, 0],
+                                               Pages => :ind-ref[2, 0],
+                                               Outlines => :ind-ref[6, 0],
                                              },
                                    ]), 'root object';
 
 is-json-equiv $objects[2], (:ind-obj[3, 0, :dict{
                                               Resources => :dict{Procset => :array[ :name<PDF>, :name<Text>],
-                                              Font => :dict{F1 => :ind-ref[1, 0]}},
+                                              Font => :dict{F1 => :ind-ref[4, 0]}},
                                               Type => :name<Page>,
-                                              Contents => :ind-ref[2, 0],
-                                              Parent => :ind-ref[4, 0],
+                                              Contents => :ind-ref[5, 0],
+                                              Parent => :ind-ref[2, 0],
                                                },
                                    ]), 'page object';
 

@@ -1,37 +1,37 @@
 %PDF-1.2
 %¥±ë
 1 0 obj
-<< /Count 0 /Type /Outlines >>
+<< /Outlines 2 0 R /Pages 3 0 R /Type /Catalog >>
 endobj
 2 0 obj
-<< /BaseFont /Helvetica /Encoding /MacRomanEncoding /Name /F1 /Subtype /Type1 /Type /Font >>
+<< /Count 0 /Type /Outlines >>
 endobj
 3 0 obj
+<< /Count 1 /Kids [ 4 0 R ] /Type /Pages >>
+endobj
+4 0 obj
+<< /Contents 6 0 R /MediaBox [ 0 0 420 595 ] /Parent 3 0 R /Resources << /Font << /F1 5 0 R >> /Procset [ /PDF /Text ] >> /Type /Page >>
+endobj
+5 0 obj
+<< /BaseFont /Helvetica /Encoding /MacRomanEncoding /Name /F1 /Subtype /Type1 /Type /Font >>
+endobj
+6 0 obj
 << /Length 46 >>
 stream
 BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
 endstream
 endobj
-4 0 obj
-<< /Contents 3 0 R /MediaBox [ 0 0 420 595 ] /Parent 5 0 R /Resources << /Font << /F1 2 0 R >> /Procset [ /PDF /Text ] >> /Type /Page >>
-endobj
-5 0 obj
-<< /Count 1 /Kids [ 4 0 R ] /Type /Pages >>
-endobj
-6 0 obj
-<< /Outlines 1 0 R /Pages 5 0 R /Type /Catalog >>
-endobj
 xref
 0 7
 0000000000 65535 f 
 0000000014 00000 n 
-0000000060 00000 n 
-0000000168 00000 n 
-0000000264 00000 n 
-0000000416 00000 n 
-0000000475 00000 n 
+0000000079 00000 n 
+0000000125 00000 n 
+0000000184 00000 n 
+0000000336 00000 n 
+0000000444 00000 n 
 trailer
-<< /Root 6 0 R /Size 7 >>
+<< /Root 1 0 R /Size 7 >>
 startxref
 540
 %%EOF
