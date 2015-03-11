@@ -45,6 +45,6 @@ is $objstm-new.N, 2, '$xref.new .N auto-setup';
 is $objstm-new.First, 11, '$xref.new .First auto-setup';
 
 my $invalid-decoding =  [[10, '<< /Foo wtf!! (bar) >>'], [11, '[ 42 true ]']];
-lives_ok {$objstm-new.encode( $invalid-decoding) }, 'encoding invlaid data without :check (lives)';
-dies_ok {$objstm-new.encode( $invalid-decoding, :check) }, 'encoding invlaid data without :check (dies)';
+lives_ok {$objstm-new.encode( $invalid-decoding) }, 'encoding invalid data without :check (lives)';
+dies_ok {$objstm-new.encode( $invalid-decoding, :check) }, 'encoding invalid data without :check (dies)';
 
