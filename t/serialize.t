@@ -16,17 +16,24 @@ my $dict2 = { :ID(2) };
 # create circular hash ref
 $dict2<SelfRef> := $dict2;
 
-my $array = [ $dict1, $dict2 ];
-my $root-obj = PDF::Object.compose( :$array );
+my $root-obj = PDF::Object.compose( :array[ $dict1, $dict2 ] );
 # create circular array reference
 $root-obj[2] := $root-obj;
 
-# our serializer should create indirect refs to resolove the above
+# cycle back from hash to array
+$dict1<Parent> := $root-obj;
+
+# our serializer should create indirect refs to resolve the above
 my $result = $root-obj.serialize;
 my $s-objects = $result<objects>;
 is +$s-objects, 2, 'expected number of objects';
+is_deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => :ind-ref[1, 0]},
+                                                 :ind-ref[2, 0],
+                                                 :ind-ref[1, 0]]]), "circular array reference resolution";
 
-my $body = {
+is_deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], ID => :int(2)}]), "circular hash ref resolution";
+
+my $body = PDF::Object.compose( :dict{
     :Type(/'Catalog'),
     :Pages{
             :Type(/'Pages'),
@@ -45,13 +52,10 @@ my $body = {
             :Count(1),
     },
     :Outlines{ :Type(/'Outlines'), :Count(0) },
-    };
+    });
 
-my $serializer = PDF::Tools::Serializer.new;
-$serializer.analyse( $body );
-my $root = $serializer.freeze( $body );
-my $objects = $serializer.ind-objs;
-PDF::Object.post-process( $objects );
+my $results = $body.serialize;
+my $objects = $results<objects>;
 
 sub infix:<object-order-ok>($obj-a, $obj-b) {
     my ($obj-num-a, $gen-num-a) = @( $obj-a.value );
