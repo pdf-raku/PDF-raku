@@ -21,7 +21,7 @@ for 't/write-ast.json'.IO.lines {
     }
 
     my $pdf-data = PDF::Writer.new( :%ast );
-    is-json-equiv ~$pdf-data, $expected-pdf, "serialize {%ast.keys.sort}"
+    is-json-equiv ~$pdf-data, $expected-pdf, "write {%ast.keys.sort}"
         or diag :%ast.perl;
 
     if my $to-obj = $test<to-obj> {
