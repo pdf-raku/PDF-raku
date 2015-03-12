@@ -331,4 +331,46 @@ class PDF::Reader {
         };
     }
 
+    method tie(Int $obj-num is copy = 0, Int $gen-num is copy = 0 ) {
+        my $ind-obj;
+
+        if $obj-num {
+            $ind-obj = $.ind-obj( $obj-num, $gen-num);
+        }
+        else {
+            die "no root object to tie to"
+                unless $ind-obj = $.root;
+            $obj-num = $ind-obj.obj-num;
+            $gen-num = $ind-obj.gen-num;
+        }
+
+        my $object = $ind-obj.object;
+
+        my $tied-role = do {
+            given $object {
+                use PDF::Object::Dict;
+                use PDF::Object::Array;
+
+                when PDF::Object::Dict {
+                    require ::('PDF::Reader::Tied::Hash');
+                    ::('PDF::Reader::Tied::Hash');
+                }
+                when PDF::Object::Array {
+                    require ::('PDF::Reader::Tied::Array');
+                    ::('PDF::Reader::Tied::Array');
+                }
+                default {
+                    die "trival/unknown tie object: {$object.perl}";
+                }
+            }
+        };
+        warn { :$object, :$obj-num, :$gen-num, }.perl;
+        my $tied-object := $object but $tied-role;
+        $tied-object.obj-num = $obj-num;
+        $tied-object.gen-num = $gen-num;
+        $tied-object.reader = self;
+
+        $tied-object;
+    }
+
 }
