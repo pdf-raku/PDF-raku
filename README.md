@@ -66,7 +66,7 @@ say $stream.obj.encoded;
 - PDF::Object::Stream - abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
 - PDF::Object::Dict - abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
 - PDF::Object::Array - array indirect objects (not subclassed)
-- PDF::Object::Bool, PDF::Object::Name, PDF::Object::Null, PDF::Object::Num, PDF::Object::String - simple indirect objects
+- PDF::Object::Bool, PDF::Object::Name, PDF::Object::Null, PDF::Object::Num, PDF::Object::ByteString - simple indirect objects
 - PDF::Object::Type::* - this namespace represents specific indirect object types as distinguished by the `/Type` dictionary entry. These may subclass either PDF::Object::Stream or PDF::Object::Dict.
   - PDF::Object::Type::Catalog - PDF Catalog dictionary
   - PDF::Object::Type::ObjStm - PDF 1.5+ Object stream (holds compressed objects)

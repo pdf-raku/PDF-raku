@@ -4,6 +4,7 @@ use Test;
 use PDF::Tools::Serializer;
 use PDF::Object :to-ast;
 use PDF::Grammar::Test :is-json-equiv;
+use PDF::Writer;
 
 sub prefix:</>($name){
     use PDF::Object;
@@ -84,5 +85,18 @@ is-json-equiv $objects[2], (:ind-obj[3, 0, :dict{
                                               Parent => :ind-ref[2, 0],
                                                },
                                    ]), 'page object';
+
+my $obj-with-utf8 = PDF::Object.compose :dict{ :Name(/"Heydər Əliyev") };
+
+my $writer = PDF::Writer.new;
+
+$objects = $obj-with-utf8.serialize<objects>;
+is_deeply $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
+is $writer.write( :ind-obj($objects[0].value)), "1 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj", 'name write';
+
+# just to define current behaviour. blows up during final write.
+my $obj-with-bad-byte-string = PDF::Object.compose :dict{ :Name("Heydər Əliyev") };
+$objects = $obj-with-bad-byte-string.serialize<objects>;
+dies_ok {$writer.write( :ind-obj($objects[0].value) )}, 'out-of-range byte-string dies during write';
 
 done;

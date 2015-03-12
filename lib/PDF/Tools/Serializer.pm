@@ -74,6 +74,7 @@ class PDF::Tools::Serializer {
             }
         }
 
+        # register prior to traversing the object. in case there are cyclical references
         my $ret = $is-stream || $is-root || $has-type || %!ref-count{$id} > 1
             ?? self!"make-ind-ref"($ind-obj, :$id )
             !! $ind-obj;
@@ -83,7 +84,7 @@ class PDF::Tools::Serializer {
         $ret;
     }
 
-    #| handles PDF::Object::Array, (plain( Array
+    #| handles PDF::Object::Array, (plain) Array
     multi method freeze( Array $array! is rw, Bool :$is-root ) {
         my $id = $array.WHERE;
 
@@ -94,6 +95,7 @@ class PDF::Tools::Serializer {
         my $ind-obj = array => Mu;
         my $slot := $ind-obj.value;
 
+        # register prior to traversing the object. in case there are cyclical references
         my $ret = $is-root || %!ref-count{$id} > 1
             ?? self!"make-ind-ref"($ind-obj, :$id )
             !! $ind-obj;

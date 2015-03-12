@@ -58,17 +58,17 @@ class PDF::Object {
     }
 
     multi method compose( Str :$hex-string!) {
-        require ::("PDF::Object::String");
+        require ::("PDF::Object::ByteString");
 
-        my $str = $hex-string but ::("PDF::Object::String");
+        my $str = $hex-string but ::("PDF::Object::ByteString");
         $str.type = 'hex-string';
         $str;
     }
 
     multi method compose( Str :$literal!) {
-        require ::("PDF::Object::String");
+        require ::("PDF::Object::ByteString");
 
-        my $str = $literal but ::("PDF::Object::String");
+        my $str = $literal but ::("PDF::Object::ByteString");
         $str.type = 'literal';
         $str;
     }
