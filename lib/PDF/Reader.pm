@@ -62,7 +62,7 @@ class PDF::Reader {
                                 unless $obj-raw.value<dict><Length>;
 
                             my $length = $.deref( $obj-raw.value<dict><Length> ).value;
-                            my $start = $obj-raw.value<start>;
+                            my $start = $obj-raw.value<start>:delete;
                             die "stream Length $length appears too large (> $max-length): $obj-num $gen-num R \@$offset"
                                 if $start + $length > $max-length;
 
