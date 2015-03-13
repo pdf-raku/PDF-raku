@@ -2,11 +2,21 @@ use v6;
 
 use PDF::Tools::Filter;
 use PDF::Object :to-ast-native;
-use PDF::Object::Dict;
+use PDF::Object;
+use PDF::Object::Type;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 class PDF::Object::Stream
-    is PDF::Object::Dict {
+    is PDF::Object
+    is Hash
+    does PDF::Object::Type {
+
+    method new(Hash :$dict = {}, *%etc) {
+        my $obj = self.bless(|%etc);
+        $obj{ .key } = .value for $dict.pairs;
+        $obj.setup-type($obj);
+        $obj;
+    }
 
     has $!encoded;
     has $!decoded;
@@ -24,6 +34,9 @@ class PDF::Object::Stream
     }
 
     multi submethod BUILD( :$!encoded!) {
+    }
+
+    multi submethod BUILD() {
     }
 
     method encoded {
@@ -53,7 +66,7 @@ class PDF::Object::Stream
 
     method content {
         my $encoded = $.encoded; # may update $.dict<Length>
-        my $dict = callsame;
+        my $dict = to-ast-native self;
         :stream( %( $dict, :$encoded ));
     }
 }

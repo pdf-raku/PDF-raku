@@ -6,6 +6,8 @@ use PDF::Object;
 role PDF::Reader::Tied {
 
     has PDF::Reader $.reader is rw;
+    has Int $.obj-num is rw;
+    has Int $.gen-num is rw;
 
     multi method tied(Pair $ind-ref! where .key eq 'ind-ref') {
 
@@ -37,7 +39,6 @@ role PDF::Reader::Tied {
             }
         }
 
-        warn { :$value, :$result}.perl;
         $result;
     }
 

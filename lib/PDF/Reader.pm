@@ -350,14 +350,11 @@ class PDF::Reader {
                 my $object = $ind-obj.object;
 
                 given $object {
-                    use PDF::Object::Dict;
-                    use PDF::Object::Array;
-
-                    when PDF::Object::Dict {
+                    when Hash {
                         require ::('PDF::Reader::Tied::Hash');
                         $object but ::('PDF::Reader::Tied::Hash');
                     }
-                    when PDF::Object::Array {
+                    when Array {
                         require ::('PDF::Reader::Tied::Array');
                         $object but ::('PDF::Reader::Tied::Array');
                     }
@@ -367,7 +364,10 @@ class PDF::Reader {
                 }
             };
 
+            $tied-object.obj-num = $obj-num;
+            $tied-object.gen-num = $gen-num;
             $tied-object.reader = self;
+
             $tied-object;
         };
     }

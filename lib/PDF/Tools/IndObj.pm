@@ -6,7 +6,7 @@ use PDF::Object;
 
 has Int $.obj-num;
 has Int $.gen-num;
-has PDF::Object $.object handles <content>;
+has $.object handles <content>;
 
 #| construct by wrapping a pre-existing PDF::Object
 multi submethod BUILD( PDF::Object :$!object!, :$!obj-num, :$!gen-num ) {
