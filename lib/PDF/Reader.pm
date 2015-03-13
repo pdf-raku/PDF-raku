@@ -341,22 +341,12 @@ class PDF::Reader {
     }
 
     multi method tie(Int $obj-num!, Int $gen-num = 0 ) {
-        my $ind-obj;
-
-        if $obj-num {
-        }
-        else {
-            die "no root object to tie to"
-                unless $ind-obj = $.root;
-            $obj-num = $ind-obj.obj-num;
-            $gen-num = $ind-obj.gen-num;
-        }
 
         %!ties{$obj-num}{$gen-num} //= do {
 
-            $ind-obj = $.ind-obj( $obj-num, $gen-num);
             my $tied-object = do {
 
+                my $ind-obj = $.ind-obj( $obj-num, $gen-num);
                 my $object = $ind-obj.object;
 
                 given $object {
