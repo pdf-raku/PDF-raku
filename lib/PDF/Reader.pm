@@ -332,15 +332,15 @@ class PDF::Reader {
         };
     }
 
-    multi method tie() {
-        $.tie( $.root );
+    multi method tied() {
+        $.tied( $.root );
     }
 
-    multi method tie( PDF::Tools::IndObj $ind-obj) {
-        $.tie( $ind-obj.obj-num, $ind-obj.gen-num );
+    multi method tied( PDF::Tools::IndObj $ind-obj) {
+        $.tied( $ind-obj.obj-num, $ind-obj.gen-num );
     }
 
-    multi method tie(Int $obj-num!, Int $gen-num = 0 ) {
+    multi method tied(Int $obj-num!, Int $gen-num = 0 ) {
 
         %!ties{$obj-num}{$gen-num} //= do {
 
@@ -367,10 +367,7 @@ class PDF::Reader {
                 }
             };
 
-            $tied-object.obj-num = $obj-num;
-            $tied-object.gen-num = $gen-num;
             $tied-object.reader = self;
-
             $tied-object;
         };
     }
