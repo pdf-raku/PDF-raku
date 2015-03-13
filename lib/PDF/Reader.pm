@@ -13,6 +13,7 @@ class PDF::Reader {
     has Rat $.version is rw;
     has Bool $.debug is rw;
     has PDF::Grammar::PDF::Actions $!actions;
+    has %!ties;
 
     method actions {
         $!actions //= PDF::Grammar::PDF::Actions.new
@@ -331,11 +332,18 @@ class PDF::Reader {
         };
     }
 
-    method tie(Int $obj-num is copy = 0, Int $gen-num is copy = 0 ) {
+    multi method tie() {
+        $.tie( $.root );
+    }
+
+    multi method tie( PDF::Tools::IndObj $ind-obj) {
+        $.tie( $ind-obj.obj-num, $ind-obj.gen-num );
+    }
+
+    multi method tie(Int $obj-num!, Int $gen-num = 0 ) {
         my $ind-obj;
 
         if $obj-num {
-            $ind-obj = $.ind-obj( $obj-num, $gen-num);
         }
         else {
             die "no root object to tie to"
@@ -344,33 +352,37 @@ class PDF::Reader {
             $gen-num = $ind-obj.gen-num;
         }
 
-        my $object = $ind-obj.object;
+        %!ties{$obj-num}{$gen-num} //= do {
 
-        my $tied-role = do {
-            given $object {
-                use PDF::Object::Dict;
-                use PDF::Object::Array;
+            $ind-obj = $.ind-obj( $obj-num, $gen-num);
+            my $tied-object = do {
 
-                when PDF::Object::Dict {
-                    require ::('PDF::Reader::Tied::Hash');
-                    ::('PDF::Reader::Tied::Hash');
+                my $object = $ind-obj.object;
+
+                given $object {
+                    use PDF::Object::Dict;
+                    use PDF::Object::Array;
+
+                    when PDF::Object::Dict {
+                        require ::('PDF::Reader::Tied::Hash');
+                        $object but ::('PDF::Reader::Tied::Hash');
+                    }
+                    when PDF::Object::Array {
+                        require ::('PDF::Reader::Tied::Array');
+                        $object but ::('PDF::Reader::Tied::Array');
+                    }
+                    default {
+                        $object;
+                    }
                 }
-                when PDF::Object::Array {
-                    require ::('PDF::Reader::Tied::Array');
-                    ::('PDF::Reader::Tied::Array');
-                }
-                default {
-                    die "trival/unknown tie object: {$object.perl}";
-                }
-            }
+            };
+
+            $tied-object.obj-num = $obj-num;
+            $tied-object.gen-num = $gen-num;
+            $tied-object.reader = self;
+
+            $tied-object;
         };
-        warn { :$object, :$obj-num, :$gen-num, }.perl;
-        my $tied-object := $object but $tied-role;
-        $tied-object.obj-num = $obj-num;
-        $tied-object.gen-num = $gen-num;
-        $tied-object.reader = self;
-
-        $tied-object;
     }
 
 }
