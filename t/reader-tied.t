@@ -19,7 +19,9 @@ is $root-obj.gen-num, 0, 'root object .gen-num';
 
 ok $root-obj<Type>:exists, 'root object existance';
 ok $root-obj<Wtf>:!exists, 'root object non-existance';
+nok $root-obj.changed, 'root object not changed';
 lives_ok {$root-obj<Wtf> = 'Yup' }, 'key stantiation - lives';
+ok $root-obj.changed, 'root object now changed';
 ok $root-obj<Wtf>:exists, 'key stantiation';
 is $root-obj<Wtf>, 'Yup', 'key stantiation';
 lives_ok {$root-obj<Wtf>:delete}, 'key deletion - lives';
@@ -49,5 +51,15 @@ BT
 ET
 --END--
 
-done;
+nok $Pages.changed, 'Pages not changed';
+lives_ok {
+    my $new-page = PDF::Object.compose( :dict{ :Type(PDF::Object.compose(:name<Page>)), :MediaBox[0, 0, 420, 595] } );
+my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );
+    $new-page<Contents> = $contents;
+    $Pages<Kids>.push: $new-page;
+    $Pages<Count> = $Pages<Count> + 1;
+    }, 'page addition';
 
+ok $Pages.changed, 'pages now changed';
+
+done;
