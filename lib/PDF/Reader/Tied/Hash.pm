@@ -8,21 +8,21 @@ role PDF::Reader::Tied::Hash
     method AT-KEY(|c) {
         $.reader
             ?? $.tied( callsame )
-            !! callsame
+            !! nextsame
     }
 
-    method ASSIGN-KEY($key, $val) {
+    method ASSIGN-KEY(|c) {
         $.changed = True;
-        nextwith($key, $.tied($val) );
+        nextsame;
     }
 
-    method BIND-KEY($key, $val is rw) {
+    method BIND-KEY(|c) {
         $.changed = True;
-        nextwith($key, $.tied($val) )
+        nextsame;
     }
     method DELETE-KEY(|c) {
         $.changed = True;
-        callsame;
+        nextsame;
     }
 
 }

@@ -8,22 +8,22 @@ role PDF::Reader::Tied::Array
     method AT-POS(|c) {
         $.reader
             ?? $.tied( callsame )
-            !! callsame;
+            !! nextsame;
     }
 
-    method ASSIGN-POS($key, $val) {
+    method ASSIGN-POS(|c) {
         $.changed = True;
-        nextwith($key, $.tied($val) );
+        nextsame;
     }
 
-    method BIND-POS($key, $val is rw) {
+    method BIND-POS(|c) {
         $.changed = True;
-        nextwith($key, $.tied($val) );
+        nextsame;
     }
 
     method DELETE-POS(|c) {
         $.changed = True;
-        callsame;
+        nextsame;
     }
 
  }
