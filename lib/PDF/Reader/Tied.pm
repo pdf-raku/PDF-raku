@@ -5,7 +5,7 @@ use PDF::Object;
 
 role PDF::Reader::Tied {
 
-    has PDF::Reader $.reader is rw;
+    has $.reader is rw;
     has Int $.obj-num is rw;
     has Int $.gen-num is rw;
     has %!anon-ties;
@@ -21,28 +21,28 @@ role PDF::Reader::Tied {
     multi method deref($value where Hash | Array ) {
 
         my $id = $value.WHERE;
-        return %!anon-ties{$id}
-            if %!anon-ties{$id}:exists;
 
-        %!anon-ties{$id} := do given $value {
-            when Array {
-                # direct array object
-                require ::('PDF::Reader::Tied::Array');
-                my $tied-array = $value but ::('PDF::Reader::Tied::Array'); 
-                $tied-array.reader = $.reader;
-                $tied-array;
-            }
-            when Hash {
-                # direct dict object
-                require ::('PDF::Reader::Tied::Hash');
-                my $tied-hash = $value but ::('PDF::Reader::Tied::Hash'); 
-                $tied-hash.reader = $.reader;
-                $tied-hash;
-            }
-            default {
-                die "unhandled: {.perl}";
-            }
-        }
+        %!anon-ties{$id} //= do {
+            my $tied := do given $value {
+                when Array {
+                    # direct array object
+                    require ::('PDF::Reader::Tied::Array');
+                    $value but ::('PDF::Reader::Tied::Array'); 
+                }
+                when Hash {
+                    # direct dict object
+                    require ::('PDF::Reader::Tied::Hash');
+                    $value but ::('PDF::Reader::Tied::Hash'); 
+                }
+                default {
+                    die "unhandled: {.perl}";
+                }
+            };
+
+            $tied.reader = $.reader;
+            $tied;
+
+        };
     }
 
 }
