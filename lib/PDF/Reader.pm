@@ -366,7 +366,6 @@ class PDF::Reader {
 
             $tied-object.obj-num = $obj-num;
             $tied-object.gen-num = $gen-num;
-            $tied-object.changed = False;
             $tied-object.reader = self;
 
             $tied-object;

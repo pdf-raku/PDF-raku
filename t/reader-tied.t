@@ -9,7 +9,6 @@ my $reader = PDF::Reader.new(:debug);
 $reader.open( 't/pdf/pdf.in' );
 
 my $root-obj = $reader.tied;
-
 isa_ok $root-obj, ::('PDF::Object::Type::Catalog');
 is_deeply $root-obj.reader, $reader, 'root object .reader';
 is $root-obj.obj-num, 1, 'root object .obj-num';
@@ -19,9 +18,7 @@ is $root-obj.gen-num, 0, 'root object .gen-num';
 
 ok $root-obj<Type>:exists, 'root object existance';
 ok $root-obj<Wtf>:!exists, 'root object non-existance';
-nok $root-obj.changed, 'root object not changed';
 lives_ok {$root-obj<Wtf> = 'Yup' }, 'key stantiation - lives';
-ok $root-obj.changed, 'root object now changed';
 ok $root-obj<Wtf>:exists, 'key stantiation';
 is $root-obj<Wtf>, 'Yup', 'key stantiation';
 lives_ok {$root-obj<Wtf>:delete}, 'key deletion - lives';
@@ -40,7 +37,7 @@ my $Kids = $Pages<Kids>;
 my $kid := $Kids[0];
 is $kid<Type>, 'Page', 'Kids[0]<Type>';
 
-is $Pages<Kids>[0]<Parent>.WHERE, $Pages.WHERE, '$Pages<Kids>[0]<Parent> :== $Pages';
+is $Pages<Kids>[0]<Parent>.WHERE, $Pages.WHERE, '$Pages<Kids>[0]<Parent>.WHERE == $Pages.WHERE';
 
 my $contents = $kid<Contents>;
 is $contents.Length, 45, 'contents.Length';
@@ -51,7 +48,6 @@ BT
 ET
 --END--
 
-nok $Pages.changed, 'Pages not changed';
 lives_ok {
     my $new-page = PDF::Object.compose( :dict{ :Type(PDF::Object.compose(:name<Page>)), :MediaBox[0, 0, 420, 595] } );
 my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );
@@ -59,7 +55,5 @@ my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td 
     $Pages<Kids>.push: $new-page;
     $Pages<Count> = $Pages<Count> + 1;
     }, 'page addition';
-
-ok $Pages.changed, 'pages now changed';
 
 done;
