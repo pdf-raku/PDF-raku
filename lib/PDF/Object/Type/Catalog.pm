@@ -11,5 +11,6 @@ class PDF::Object::Type::Catalog
 
     method Pages is rw { self<Pages> }
     method Outlines is rw { self<Outlines> }
+    method Resources is rw { self<Resources> }
 
 }

@@ -4,9 +4,7 @@ use Test;
 use PDF::Object;
 use PDF::Writer;
 
-sub prefix:</>($name){
-    PDF::Object.compose(:$name)
-};
+sub prefix:</>($name){ PDF::Object.compose(:$name) };
 
 my $root-object = PDF::Object.compose( :dict{ :Type(/'Catalog') });
 my $outlines = PDF::Object.compose( :dict{ :Type(/'Outlines'), :Count(0) } );
@@ -40,6 +38,5 @@ my $objects = $result<objects>;
 my $ast = :pdf{ :version(1.2), :body{ :$objects } };
 
 my $writer = PDF::Writer.new( :$root );
-my $helloworld-iop = 't/helloworld.pdf'.IO;
-ok $helloworld-iop.spurt( $writer.write( $ast ), :enc<latin-1> ), 'hello world';
+ok 't/helloworld.pdf'.IO.spurt( $writer.write( $ast ), :enc<latin-1> ), 'hello world';
 done;

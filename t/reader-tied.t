@@ -2,7 +2,10 @@ use v6;
 use Test;
 
 use PDF::Reader;
+use PDF::Writer;
 use PDF::Object;
+
+sub prefix:</>($name){ PDF::Object.compose(:$name) };
 
 my $reader = PDF::Reader.new(:debug);
 
@@ -48,12 +51,29 @@ BT
 ET
 --END--
 
+# demonstrate low level construction of a PDF. First page is copied from an
+# input PDF. Second page is constructed from scratch.
+
 lives_ok {
-    my $new-page = PDF::Object.compose( :dict{ :Type(PDF::Object.compose(:name<Page>)), :MediaBox[0, 0, 420, 595] } );
-my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );
+    my $Resources = $Pages<Kids>[0]<Resources>;
+    my $new-page = PDF::Object.compose( :dict{ :Type(/'Page'), :MediaBox[0, 0, 420, 595], :$Resources } );
+    my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );
     $new-page<Contents> = $contents;
     $Pages<Kids>.push: $new-page;
     $Pages<Count> = $Pages<Count> + 1;
     }, 'page addition';
+
+my $new-root = PDF::Object.compose( :dict{ :Type(/'Catalog') });
+$new-root.Outlines = $root-obj<Outlines>;
+$new-root.Pages = $root-obj<Pages>;
+
+my $result = $new-root.serialize;
+my $root = $result<root>;
+my $objects = $result<objects>;
+
+# write the two page pdf
+my $ast = :pdf{ :version(1.2), :body{ :$objects } };
+my $writer = PDF::Writer.new( :$root );
+ok 't/hello-and-bye.pdf'.IO.spurt( $writer.write($ast), :enc<latin-1> ), 'output 2 page pdf';
 
 done;

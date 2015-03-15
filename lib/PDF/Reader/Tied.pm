@@ -10,7 +10,8 @@ role PDF::Reader::Tied {
     has Int $.gen-num is rw;
     has %!anon-ties;
 
-    multi method deref(Pair $ind-ref! is rw where .key eq 'ind-ref') {
+    multi method deref(Pair $ind-ref! is rw) {
+        return $ind-ref unless $ind-ref.key eq 'ind-ref';
 
         my $obj-num = $ind-ref.value[0];
         my $gen-num = $ind-ref.value[1];
@@ -24,6 +25,7 @@ role PDF::Reader::Tied {
 
         %!anon-ties{$id} //= do {
             my $tied := do given $value {
+                when .can('deref') { $value }
                 when Array {
                     # direct array object
                     require ::('PDF::Reader::Tied::Array');

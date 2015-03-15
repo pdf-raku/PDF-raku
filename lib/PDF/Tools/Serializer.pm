@@ -12,18 +12,8 @@ class PDF::Tools::Serializer {
     has %!obj-num;
     has %.ref-count;
 
-    method !get-ind-ref( Int :$id!) {
-        :ind-ref[ %!obj-num{$id}, 0 ]
-            if %!obj-num{$id}:exists;
-    }
-
-    method !make-ind-ref( Pair $ind-obj! is rw, Int :$id!) {
-        my $obj-num = ++ $!cur-obj-num;
-        @.ind-objs.push: (:ind-obj[ $obj-num, 0, $ind-obj]);
-        %!obj-num{$id} = $obj-num;
-        :ind-ref[ $obj-num, 0];
-    }
-
+    #| analyse stage simply reference counts arrays and hashes. Any that occurs
+    #| multiple times is automatically promoted to an indirect object.
     multi method analyse( Hash $dict! is rw) {
         return if %!ref-count{$dict.WHERE}++; # already encountered
         $.analyse($_) for $dict.values;
@@ -39,17 +29,29 @@ class PDF::Tools::Serializer {
     multi method analyse( $other! is rw ) is default {
     }
 
+    method !get-ind-ref( Int :$id!) {
+        :ind-ref[ %!obj-num{$id}, 0 ]
+            if %!obj-num{$id}:exists;
+    }
+
+    method !make-ind-ref( Pair $ind-obj! is rw, Int :$id!) {
+        my $obj-num = ++ $!cur-obj-num;
+        @.ind-objs.push: (:ind-obj[ $obj-num, 0, $ind-obj]);
+        %!obj-num{$id} = $obj-num;
+        :ind-ref[ $obj-num, 0];
+    }
+
     method !freeze-dict( Hash $dict is rw) {
         my %frozen;
-        %frozen{.key} = $.freeze( .value )
-            for $dict.pairs;
+        %frozen{$_} = $.freeze( $dict{$_} )
+            for $dict.keys;
         %frozen;
     }
 
     method !freeze-array( Array $array is rw) {
         my @frozen;
-        @frozen.push( $.freeze( $_ ) )
-            for $array.list;
+        @frozen.push( $.freeze( $array[$_] ) )
+            for $array.keys;
         @frozen;
     }
 
