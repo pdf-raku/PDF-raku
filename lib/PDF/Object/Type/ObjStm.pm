@@ -7,7 +7,7 @@ use PDF::Object::Type;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
-our class PDF::Object::Type::ObjStm
+class PDF::Object::Type::ObjStm
     is PDF::Object::Stream
     does PDF::Object::Type;
 
