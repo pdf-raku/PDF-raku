@@ -1,5 +1,5 @@
 use v6;
-use PDF::Reader::Tied::Hash;
+use PDF::Reader::Tied;
 use Test;
 
 our %ties;
@@ -11,7 +11,7 @@ class t::DummyReader {
             my %a = :Type<Test>,
             :Desc("tie to: $obj-num $gen-num R");
 
-            my $t = %a but PDF::Reader::Tied::Hash;
+            my $t = %a but PDF::Reader::Tied;
             $t.reader = $dummy-reader;
             $t;
         }
@@ -28,7 +28,7 @@ my $h = {
          { :X(99) },
          :ind-ref[99,0],
         ],
-} but PDF::Reader::Tied::Hash;
+} but PDF::Reader::Tied;
 
 $h.reader = $dummy-reader;
 

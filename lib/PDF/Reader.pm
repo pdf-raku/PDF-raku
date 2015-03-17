@@ -5,6 +5,7 @@ class PDF::Reader {
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
     use PDF::Tools::IndObj;
+    use PDF::Reader::Tied;
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
     has Hash %!ind-obj-idx;
@@ -352,13 +353,8 @@ class PDF::Reader {
                 my $object = $ind-obj.object;
 
                 given $object {
-                    when Hash {
-                        require ::('PDF::Reader::Tied::Hash');
-                        $object but ::('PDF::Reader::Tied::Hash');
-                    }
-                    when Array {
-                        require ::('PDF::Reader::Tied::Array');
-                        $object but ::('PDF::Reader::Tied::Array');
+                    when Hash | Array {
+                        $object but PDF::Reader::Tied;
                     }
                     default {
                         $object;

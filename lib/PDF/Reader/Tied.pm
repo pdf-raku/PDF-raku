@@ -1,14 +1,27 @@
 use v6;
 
-use PDF::Reader;
-use PDF::Object;
-
 role PDF::Reader::Tied {
 
     has $.reader is rw;
     has Int $.obj-num is rw;
     has Int $.gen-num is rw;
     has %!anon-ties;
+
+    #| for array lookups, typically $foo[42]
+    method AT-POS(|c) is rw {
+        my $result := callsame;
+        $result ~~ Pair | Array | Hash
+            ?? $.deref($result )
+            !! $result;
+    }
+
+    #| for hash lookups, typically $foo<bar>
+    method AT-KEY(|c) is rw {
+        my $result := callsame;
+        $result ~~ Pair | Array | Hash
+            ?? $.deref($result )
+            !! $result;
+    }
 
     multi method deref(Pair $ind-ref! is rw) {
         return $ind-ref unless $ind-ref.key eq 'ind-ref';
@@ -26,15 +39,9 @@ role PDF::Reader::Tied {
         %!anon-ties{$id} //= do {
             my $tied := do given $value {
                 when .can('deref') { $value }
-                when Array {
+                when Array | Hash {
                     # direct array object
-                    require ::('PDF::Reader::Tied::Array');
-                    $value but ::('PDF::Reader::Tied::Array'); 
-                }
-                when Hash {
-                    # direct dict object
-                    require ::('PDF::Reader::Tied::Hash');
-                    $value but ::('PDF::Reader::Tied::Hash'); 
+                    $value but PDF::Reader::Tied; 
                 }
                 default {
                     die "unhandled: {.perl}";
