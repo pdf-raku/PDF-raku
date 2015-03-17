@@ -12,7 +12,7 @@ sub MAIN (Str $input-path, Str $output-path) {
     note "opening {$input-path} ...";
     $reader.open( $input-path );
     note "building ast ...";
-    my $ast = $reader.ast( :unpack );
+    my $ast = $reader.ast( );
 
     note "writing {$output-path}...";
     my $root = $reader.root;

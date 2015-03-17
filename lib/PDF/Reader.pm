@@ -32,12 +32,13 @@ class PDF::Reader {
         $.load-xref( );
     }
 
-    method ind-obj( Int $obj-num!, Int $gen-num!, :$type, :$get-ast=False ) {
+    method ind-obj( Int $obj-num!, Int $gen-num!, :$type, :$get-ast=False, :$fetch=True ) {
 
         my $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
             // die "unable to find object: $obj-num $gen-num R";
 
         my $ind-obj = $idx<ind-obj> //= do {
+            return unless $fetch;
             # stantiate the object
             my $ind-obj;
             my $actual-obj-num;
@@ -256,7 +257,7 @@ class PDF::Reader {
     #| -- keep type 2 objects
     #| :!unpack 1.5+ (/ObjStm aware) compatible asts:
     #| -- sift type 2 objects
-    method !get-objects(Bool :$unpack!) {
+    method !get-objects(Bool :$unpack=True, Bool :$fetch=True) {
         my @object-refs;
 
         my %objstm-objects;
@@ -299,7 +300,8 @@ class PDF::Reader {
                     default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
                 }
 
-                my $ind-obj-ast = $.ind-obj($obj-num, $gen-num, :get-ast);
+                my $ind-obj-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :$fetch)
+                    or next;
                 my $ind-obj = $ind-obj-ast.value[2];
 
                 if my $obj-type = $ind-obj.value<dict><Type> {
@@ -323,8 +325,8 @@ class PDF::Reader {
         return @objects.item;
     }
 
-    method ast( Bool :$unpack = True ) {
-        my $objects = self!"get-objects"( :$unpack );
+    method ast( :$fetch=True ) {
+        my $objects = self!"get-objects"( :$fetch );
 
         :pdf{
             :header{ :$.version },
