@@ -16,12 +16,12 @@ class PDF::Tools::Serializer {
     #| multiple times is automatically promoted to an indirect object.
     multi method analyse( Hash $dict! is rw) {
         return if %!ref-count{$dict.WHERE}++; # already encountered
-        $.analyse($_) for $dict.values;
+        $.analyse($dict{$_}) for $dict.keys;
     }
 
     multi method analyse( Array $array! is rw ) {
         return if %!ref-count{$array.WHERE}++; # already encountered
-        $.analyse($_) for $array.list;
+        $.analyse($array[$_]) for $array.keys;
     }
 
     #| we don't reference count anything else at the moment. Might consider
