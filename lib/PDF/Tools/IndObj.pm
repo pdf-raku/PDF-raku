@@ -14,7 +14,7 @@ multi submethod BUILD( PDF::Object :$!object!, :$!obj-num, :$!gen-num ) {
 
 #| construct an object instance from a PDF::Grammar::PDF ast representation of
 #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
-multi submethod BUILD( Array :$ind-obj!, :$input, :$type, *%etc ) {
+multi submethod BUILD( Array :$ind-obj!, :$input, :$type, :$reader, *%etc ) {
     $!obj-num = $ind-obj[0];
     $!gen-num = $ind-obj[1];
     my %params = $ind-obj[2].kv, %etc;
@@ -32,6 +32,11 @@ multi submethod BUILD( Array :$ind-obj!, :$input, :$type, *%etc ) {
 
     %params.perl;
     $!object = PDF::Object.compose( |%params);
+    if $!object ~~ Array | Hash {
+        $!object.obj-num = $!obj-num;
+        $!object.gen-num = $!gen-num;
+        $!object.reader = $reader;
+    }
 }
 
 #| recreate a PDF::Grammar::PDF / PDF::Writer compatibile ast from the object

@@ -105,7 +105,7 @@ class PDF::Reader {
                 unless $obj-num == $actual-obj-num && $gen-num == $actual-gen-num;
 
             # only full stantiate object when needed
-            $get-ast ?? $ind-obj !! PDF::Tools::IndObj.new( :$ind-obj :$type );
+            $get-ast ?? $ind-obj !! PDF::Tools::IndObj.new( :$ind-obj, :$type, :reader(self) );
         };
 
         if $ind-obj.isa(PDF::Tools::IndObj) {
@@ -118,7 +118,7 @@ class PDF::Reader {
         }
         else {
             # need to create an object from the ast. save the object in the index
-            return $idx<ind-obj> = PDF::Tools::IndObj.new( :$ind-obj :$type );
+            return $idx<ind-obj> = PDF::Tools::IndObj.new( :$ind-obj, :$type, :reader(self) );
         }
     }
 
@@ -129,8 +129,8 @@ class PDF::Reader {
                 if $val.isa(Pair);
             $val = do given $op {
                 when Array { $val[ $op[0] ] }
-                when Str { $val{ $op } }
-                default {die "bad $.deref arg: {.perl}"}
+                when Str   { $val{ $op } }
+                default    {die "bad $.deref arg: {.perl}"}
             };
         }
         $val = self.ind-deref($val, :$get-ast)
@@ -224,7 +224,7 @@ class PDF::Reader {
                     // die "ind-obj parse failed \@$xref-offset + {$xref.chars}";
 
                 my %ast = %( $/.ast );
-                my $ind-obj = PDF::Tools::IndObj.new( |%ast, :input($xref), :type<XRef> );
+                my $ind-obj = PDF::Tools::IndObj.new( |%ast, :input($xref), :type<XRef>, :reader(self) );
                 my $xref-obj = $ind-obj.object;
                 $dict = $xref-obj;
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;
@@ -356,35 +356,15 @@ class PDF::Reader {
         $.tied( $.root );
     }
 
+    #|obselete
     multi method tied( PDF::Tools::IndObj $ind-obj) {
         $.tied( $ind-obj.obj-num, $ind-obj.gen-num );
     }
 
     multi method tied(Int $obj-num!, Int $gen-num = 0 ) {
 
-        %!ties{$obj-num}{$gen-num} //= do {
+        $.ind-obj( $obj-num, $gen-num);
 
-            my $tied-object = do {
-
-                my $ind-obj = $.ind-obj( $obj-num, $gen-num);
-                my $object = $ind-obj.object;
-
-                given $object {
-                    when Hash | Array {
-                        $object but PDF::Reader::Tied;
-                    }
-                    default {
-                        $object;
-                    }
-                }
-            };
-
-            $tied-object.obj-num = $obj-num;
-            $tied-object.gen-num = $gen-num;
-            $tied-object.reader = self;
-
-            $tied-object;
-        };
     }
 
 }

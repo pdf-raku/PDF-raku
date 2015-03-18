@@ -4,12 +4,14 @@ use PDF::Tools::Filter;
 use PDF::Object :to-ast-native;
 use PDF::Object;
 use PDF::Object::Type;
+use PDF::Reader::Tied;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 class PDF::Object::Stream
     is PDF::Object
     is Hash
-    does PDF::Object::Type {
+    does PDF::Object::Type 
+    does PDF::Reader::Tied {
 
     method new(Hash :$dict = {}, *%etc) {
         my $obj = self.bless(|%etc);
