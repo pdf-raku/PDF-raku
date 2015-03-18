@@ -37,14 +37,14 @@ class PDF::Object {
         }
     }
 
-    multi method compose( Array :$array!) {
+    multi method compose( Array :$array!, *%etc) {
         require ::("PDF::Object::Array");
-        return $array but ::("PDF::Object::Array");
+        ::("PDF::Object::Array").new( :$array, %etc);
     }
 
     multi method compose( Bool :$bool!) {
         require ::("PDF::Object::Bool");
-        return $bool but ::("PDF::Object::Bool");
+        $bool but ::("PDF::Object::Bool");
     }
 
     multi method compose( Int :$int!) {

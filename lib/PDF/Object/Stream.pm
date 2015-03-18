@@ -15,7 +15,7 @@ class PDF::Object::Stream
 
     method new(Hash :$dict = {}, *%etc) {
         my $obj = self.bless(|%etc);
-        $obj{ .key } = .value for $dict.pairs;
+        $obj{ .key } := .value for $dict.pairs;
         $obj.setup-type($obj);
         $obj;
     }

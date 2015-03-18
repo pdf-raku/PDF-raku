@@ -14,7 +14,9 @@ class PDF::Object::Dict
 
     method new(Hash :$dict = {}, *%etc) {
         my $obj = self.bless(|%etc);
-        $obj{ .key } = .value for $dict.pairs;
+        # this may trigger PDF::Object::Tree type coercians
+        # e.g. native Array to PDF::Object::Array
+        $obj{ .key } := .value for $dict.pairs;
         $obj.setup-type($obj);
         $obj;
     }

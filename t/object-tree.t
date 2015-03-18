@@ -34,10 +34,12 @@ is $type, 'Catalog', '$root-obj<Type>';
 
 my $Pages := $root-obj<Pages>;
 is $Pages<Type>, 'Pages', 'Pages<Type>';
+is_deeply $Pages.reader, $reader, 'root has deref - stickyness';
 
 my $Kids = $Pages<Kids>;
-
+is_deeply $Kids.reader, $reader, 'hash -> array deref - reader stickyness';
 my $kid := $Kids[0];
+is_deeply $kid.reader, $reader, 'array -> hash deref - reader stickyness';
 is $kid<Type>, 'Page', 'Kids[0]<Type>';
 
 is $Pages<Kids>[0]<Parent>.WHERE, $Pages.WHERE, '$Pages<Kids>[0]<Parent>.WHERE == $Pages.WHERE';

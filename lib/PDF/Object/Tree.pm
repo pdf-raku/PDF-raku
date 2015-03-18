@@ -1,5 +1,7 @@
 use v6;
 
+use PDF::Object;
+
 role PDF::Object::Tree {
 
     has $.reader is rw;
@@ -7,24 +9,60 @@ role PDF::Object::Tree {
     has Int $.gen-num is rw;
 
     #| for array lookups, typically $foo[42]
-    method AT-POS(|c) is rw {
+    method AT-POS($pos) is rw {
         my $result := callsame;
         $result ~~ Pair | Array | Hash
-            ?? $.deref(:pos(c[0]),$result )
+            ?? $.deref(:$pos,$result )
             !! $result;
     }
 
     #| for hash lookups, typically $foo<bar>
-    method AT-KEY(|c) is rw {
+    method AT-KEY($key) is rw {
         my $result := callsame;
         $result ~~ Pair | Array | Hash
-            ?? $.deref(:key(c[0]),$result)
+            ?? $.deref(:$key,$result)
             !! $result;
     }
 
+    # coerce Hash & Array assignments to objects
+
+    method ASSIGN-KEY($key, $val) {
+        given $val {
+            when PDF::Object { nextsame }
+            when Hash {
+                self.ASSIGN-KEY($key, PDF::Object.compose( :stream($val), :$.reader ) )
+                    if $val<stream>:exists;
+                self.ASSIGN-KEY($key, PDF::Object.compose( :dict($val), :$.reader ) );
+            }
+            when Array {
+                self.ASSIGN-KEY($key, PDF::Object.compose( :array($val), :$.reader ) );
+            }
+            default {
+                callsame
+            }
+        }
+    }
+
+    method ASSIGN-POS($key, $val) {
+        given $val {
+            when PDF::Object { nextsame }
+            when Hash {
+                self.ASSIGN-POS($key, PDF::Object.compose( :stream($val), :$.reader ) )
+                    if $val<stream>:exists;
+                self.ASSIGN-POS($key, PDF::Object.compose( :dict($val), :$.reader ) );
+            }
+            when Array {
+                self.ASSIGN-POS($key, PDF::Object.compose( :array($val), :$.reader ) );
+            }
+            default {
+                callsame
+            }
+        }
+    }
+
     multi method deref(Pair $ind-ref! is rw) {
-        return $ind-ref unless $ind-ref.key eq 'ind-ref'
-            && $.reader;
+        return $ind-ref
+            unless $ind-ref.key eq 'ind-ref' && $.reader;
 
         my $obj-num = $ind-ref.value[0];
         my $gen-num = $ind-ref.value[1];
@@ -32,14 +70,17 @@ role PDF::Object::Tree {
         $.reader.ind-obj( $obj-num, $gen-num ).object;
     }
 
-    multi method deref($value,:$key!) {
-        return $value if $value.can('deref');        
-        self.ASSIGN-KEY($key, $value but PDF::Object::Tree);
+    multi method deref(PDF::Object $value) { $value }
+    multi method deref($value where Hash | Array , :$key!) {
+        # coerce
+        self.ASSIGN-KEY($key, $value);
     }
-
-    multi method deref($value,:$pos!) {
-        return $value if $value.can('deref');        
-        self.ASSIGN-POS($pos, $value but PDF::Object::Tree);
+    multi method deref($value where Hash | Array , :$pos!) {
+        # coerce
+        self.ASSIGN-POS($pos, $value);
+    }
+    multi method deref($value) is default {
+        $value
     }
 
 }

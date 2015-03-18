@@ -31,12 +31,7 @@ multi submethod BUILD( Array :$ind-obj!, :$input, :$type, :$reader, *%etc ) {
     }
 
     %params.perl;
-    $!object = PDF::Object.compose( |%params);
-    if $!object ~~ Array | Hash {
-        $!object.obj-num = $!obj-num;
-        $!object.gen-num = $!gen-num;
-        $!object.reader = $reader;
-    }
+    $!object = PDF::Object.compose( :$reader, :$!obj-num, :$!gen-num, |%params);
 }
 
 #| recreate a PDF::Grammar::PDF / PDF::Writer compatibile ast from the object
