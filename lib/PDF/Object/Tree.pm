@@ -1,6 +1,6 @@
 use v6;
 
-role PDF::Reader::Tied {
+role PDF::Object::Tree {
 
     has $.reader is rw;
     has Int $.obj-num is rw;
@@ -34,12 +34,12 @@ role PDF::Reader::Tied {
 
     multi method deref($value,:$key!) {
         return $value if $value.can('deref');        
-        self.ASSIGN-KEY($key, $value but PDF::Reader::Tied);
+        self.ASSIGN-KEY($key, $value but PDF::Object::Tree);
     }
 
     multi method deref($value,:$pos!) {
         return $value if $value.can('deref');        
-        self.ASSIGN-POS($pos, $value but PDF::Reader::Tied);
+        self.ASSIGN-POS($pos, $value but PDF::Object::Tree);
     }
 
 }
