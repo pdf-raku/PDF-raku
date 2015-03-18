@@ -64,7 +64,7 @@ class PDF::Reader {
                             die "stream mandatory /Length field is missing: $obj-num $gen-num R \@$offset"
                                 unless $obj-raw.value<dict><Length>;
 
-                            my $length = $.deref( $obj-raw.value<dict><Length> ).value;
+                            my $length = $.deref( $obj-raw.value<dict><Length>, :get-ast ).value;
                             my $start = $obj-raw.value<start>:delete;
                             die "stream Length $length appears too large (> $max-length): $obj-num $gen-num R \@$offset"
                                 if $start + $length > $max-length;
@@ -122,13 +122,30 @@ class PDF::Reader {
         }
     }
 
-    multi method deref(Pair $_! where .key eq 'ind-ref' ) {
-        my $obj-num = .value[0].Int;
-        my $gen-num = .value[1].Int;
-        return $.ind-obj( $obj-num, $gen-num, :get-ast );
+
+    method deref($val is copy, *@ops, :$get-ast) is rw {
+        for @ops -> $op {
+            $val = self.ind-deref($val, :$get-ast)
+                if $val.isa(Pair);
+            $val = do given $op {
+                when Array { $val[ $op[0] ] }
+                when Str { $val{ $op } }
+                default {die "bad $.deref arg: {.perl}"}
+            };
+        }
+        $val = self.ind-deref($val, :$get-ast)
+            if $val.isa(Pair);
+        $val;
     }
 
-    multi method deref($other) is default {
+    multi method ind-deref(Pair $_! where .key eq 'ind-ref', :$get-ast ) {
+        my $obj-num = .value[0].Int;
+        my $gen-num = .value[1].Int;
+        my $val = $.ind-obj( $obj-num, $gen-num, :$get-ast );
+        $get-ast ?? $val !! $val.object;
+    }
+
+    multi method ind-deref($other is rw) is default {
         $other;
     }
 
