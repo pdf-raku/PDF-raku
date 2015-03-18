@@ -11,7 +11,7 @@ my $reader = PDF::Reader.new(:debug);
 
 $reader.open( 't/pdf/pdf.in' );
 
-my $root-obj = $reader.tied;
+my $root-obj = $reader.root.object;
 isa_ok $root-obj, ::('PDF::Object::Type::Catalog');
 is_deeply $root-obj.reader, $reader, 'root object .reader';
 is $root-obj.obj-num, 1, 'root object .obj-num';

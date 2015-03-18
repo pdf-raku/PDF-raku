@@ -4,9 +4,9 @@ use Test;
 plan 7;
 
 use PDF::Tools::IndObj;
-
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
+use PDF::Grammar::Test :is-json-equiv;
 use PDF::Object :to-obj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
@@ -31,5 +31,5 @@ my $pages-obj = $ind-obj.object;
 isa_ok $pages-obj, ::('PDF::Object')::('Type::Pages');
 is $pages-obj.Type, 'Pages', '$.Type accessor';
 is $pages-obj.Count, 1, '$.Count accessor';
-is_deeply $pages-obj.Kids, [ :ind-ref[4, 0] ], '$.Kids accessor';
+is-json-equiv $pages-obj.Kids, [ :ind-ref[4, 0] ], '$.Kids accessor';
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';

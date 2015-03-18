@@ -24,12 +24,13 @@ role PDF::Reader::Tied {
     }
 
     multi method deref(Pair $ind-ref! is rw) {
-        return $ind-ref unless $ind-ref.key eq 'ind-ref';
+        return $ind-ref unless $ind-ref.key eq 'ind-ref'
+            && $.reader;
 
         my $obj-num = $ind-ref.value[0];
         my $gen-num = $ind-ref.value[1];
 
-        my $result = $.reader.tied( $obj-num, $gen-num );
+        my $result = $.reader.ind-obj( $obj-num, $gen-num ).object;
     }
 
     multi method deref($value where Hash | Array ) {

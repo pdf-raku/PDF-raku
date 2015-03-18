@@ -5,7 +5,6 @@ class PDF::Reader {
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
     use PDF::Tools::IndObj;
-    use PDF::Reader::Tied;
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
     has Hash %!ind-obj-idx;
@@ -14,7 +13,6 @@ class PDF::Reader {
     has Rat $.version is rw;
     has Bool $.debug is rw;
     has PDF::Grammar::PDF::Actions $!actions;
-    has %!ties;
 
     method actions {
         $!actions //= PDF::Grammar::PDF::Actions.new
@@ -350,21 +348,6 @@ class PDF::Reader {
             :header{ :$.version },
             :body{ :$objects },
         };
-    }
-
-    multi method tied() {
-        $.tied( $.root );
-    }
-
-    #|obselete
-    multi method tied( PDF::Tools::IndObj $ind-obj) {
-        $.tied( $ind-obj.obj-num, $ind-obj.gen-num );
-    }
-
-    multi method tied(Int $obj-num!, Int $gen-num = 0 ) {
-
-        $.ind-obj( $obj-num, $gen-num);
-
     }
 
 }

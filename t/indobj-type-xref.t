@@ -55,9 +55,9 @@ is-json-equiv $xref-stage2, $xref-roundtrip, 'encode-from-stage2/decode-from-sta
 
 my $xref-new = ::('PDF::Object')::('Type::XRef').new(:decoded($expected-xref), :dict{ :Index[42, 37], :Size(37) } );
 my $xref-roundtrip2 = $xref-new.decode( $xref-new.encode );
-is_deeply $xref-new.W, [ 1, 2, 1], '$xref.new .W';
+is-json-equiv $xref-new.W, [ 1, 2, 1], '$xref.new .W';
 is $xref-new.Size, 37, '$xref.new .Size';
-is_deeply $xref-new.Index, [ 42, 37], '$xref.new .Index';
+is-json-equiv $xref-new.Index, [ 42, 37], '$xref.new .Index';
 is_deeply $xref, $xref-roundtrip2, '$xref.new round-trip';
 
 my $xref-wide = PDF::Object.compose( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>) }, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]]} );
@@ -66,6 +66,6 @@ $xref-wide.first-obj-num = 42;
 $xref-wide.Size = 2;
 lives_ok {$xref-wide.encode}, 'encode completed setup';
 is $xref-wide.Type, 'XRef', '$xref.new .Name auto-setup';
-is_deeply $xref-wide.W, [ 1, 3, 2], '$xref.new .W auto-setup';
+is-json-equiv $xref-wide.W, [ 1, 3, 2], '$xref.new .W auto-setup';
 is-json-equiv $xref-wide.Index, [ 42, 2 ], '$xref.new .Index auto-setup';
 is $xref-wide<Foo>, 'bar', ':dict constructor option';
