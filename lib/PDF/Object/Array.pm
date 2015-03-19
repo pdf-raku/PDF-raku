@@ -12,11 +12,11 @@ class PDF::Object::Array
     our %obj-cache = (); #= to catch circular references
 
     method new(Array :$array = [], *%etc) {
-        my $id = $array.WHICH;
+        my $id = ~$array.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj {
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
-            # this may trigger PDF::Object::Tree coercians
+            # this may trigger cascading PDF::Object::Tree coercians
             # e.g. native Array to PDF::Object::Array
             $obj[ .key ] = from-ast(.value) for $array.pairs;
         }
