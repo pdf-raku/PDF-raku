@@ -39,7 +39,7 @@ class PDF::Object {
 
     multi method compose( Array :$array!, *%etc) {
         require ::("PDF::Object::Array");
-        ::("PDF::Object::Array").new( :$array, %etc);
+        ::("PDF::Object::Array").new( :$array, |%etc);
     }
 
     multi method compose( Bool :$bool!) {
