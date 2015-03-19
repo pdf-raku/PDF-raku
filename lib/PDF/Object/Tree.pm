@@ -37,9 +37,7 @@ role PDF::Object::Tree {
             when Array {
                 self.ASSIGN-KEY($key, PDF::Object.compose( :array($val), :$.reader ) );
             }
-            default {
-                callsame
-            }
+            default { nextsame }
         }
     }
 
@@ -54,9 +52,7 @@ role PDF::Object::Tree {
             when Array {
                 self.ASSIGN-POS($key, PDF::Object.compose( :array($val), :$.reader ) );
             }
-            default {
-                callsame
-            }
+            default { nextsame }
         }
     }
 
@@ -70,15 +66,17 @@ role PDF::Object::Tree {
         $.reader.ind-obj( $obj-num, $gen-num ).object;
     }
 
+    #| already an object
     multi method deref(PDF::Object $value) { $value }
+    #| coerce and save hash entry
     multi method deref($value where Hash | Array , :$key!) {
-        # coerce
         self.ASSIGN-KEY($key, $value);
     }
+    #| coerce and save array entry
     multi method deref($value where Hash | Array , :$pos!) {
-        # coerce
         self.ASSIGN-POS($pos, $value);
     }
+    #| simple native type. no need to coerce
     multi method deref($value) is default {
         $value
     }
