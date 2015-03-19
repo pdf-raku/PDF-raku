@@ -4,9 +4,11 @@ use Test;
 plan 14;
 
 use PDF::Tools::IndObj;
-use PDF::Object :to-obj, :to-ast;
+use PDF::Object :to-ast;
 use PDF::Object::Dict;
 use PDF::Grammar::Test :is-json-equiv;
+use lib '.';
+use t::Object :to-obj;
 
 sub ind-obj-tests( :$ind-obj!, :$class!, :$to-obj!) {
     my $dict-obj = PDF::Tools::IndObj.new( :$ind-obj );

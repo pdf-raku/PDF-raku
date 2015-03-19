@@ -2,6 +2,7 @@ use v6;
 
 use PDF::Object :to-ast;
 use PDF::Object::Tree;
+use PDF::Object :from-ast;
 
 class PDF::Object::Array
     is PDF::Object
@@ -10,9 +11,9 @@ class PDF::Object::Array
 
     method new(Array :$array = [], *%etc) {
         my $obj = self.bless(|%etc);
-        # this may trigger PDF::Object::Tree type coercians
+        # this may trigger PDF::Object::Tree coercians
         # e.g. native Array to PDF::Object::Array
-        $obj[ .key ] := .value for $array.pairs;
+        $obj[ .key ] = from-ast(.value) for $array.pairs;
         $obj;
     }
 

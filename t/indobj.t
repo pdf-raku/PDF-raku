@@ -6,7 +6,8 @@ plan 30;
 use PDF::Tools::IndObj;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Object :to-obj;
+use lib '.';
+use t::Object :to-obj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 

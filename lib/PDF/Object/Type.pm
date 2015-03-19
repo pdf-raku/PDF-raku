@@ -1,6 +1,7 @@
 role PDF::Object::Type {
 
     use PDF::Object::Name;
+    use PDF::Object :from-ast;
 
     method Type is rw { self<Type> }
 
@@ -33,7 +34,7 @@ role PDF::Object::Type {
     method delegate( Hash :$dict! ) {
 
         if $dict<Type>:exists {
-            $.find-delegate( $dict<Type>, $dict<Subtype> // $dict<S> );
+            $.find-delegate( from-ast($dict<Type>), from-ast($dict<Subtype> // $dict<S>) );
         }
         else {
             self;

@@ -4,7 +4,8 @@ use Test;
 use JSON::Tiny;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Writer;
-use PDF::Object :to-obj;
+use lib '.';
+use t::Object :to-obj;
 
 for 't/write-ast.json'.IO.lines {
 

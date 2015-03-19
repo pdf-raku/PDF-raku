@@ -4,6 +4,7 @@ use PDF::Tools::Filter;
 use PDF::Object :to-ast-native;
 use PDF::Object::Type;
 use PDF::Object::Tree;
+use PDF::Object :from-ast;
 
 #| Dict - base class for dictionary objects, e.g. Catalog Page ...
 class PDF::Object::Dict
@@ -14,9 +15,9 @@ class PDF::Object::Dict
 
     method new(Hash :$dict = {}, *%etc) {
         my $obj = self.bless(|%etc);
-        # this may trigger PDF::Object::Tree type coercians
+        # this may trigger PDF::Object::Tree coercians
         # e.g. native Array to PDF::Object::Array
-        $obj{ .key } := .value for $dict.pairs;
+        $obj{ .key } = from-ast(.value) for $dict.pairs;
         $obj.setup-type($obj);
         $obj;
     }

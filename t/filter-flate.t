@@ -5,8 +5,9 @@ plan 5;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Tools::Input;
-use PDF::Object :to-obj;
 use PDF::Tools::Filter;
+use lib '.';
+use t::Object :to-obj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 

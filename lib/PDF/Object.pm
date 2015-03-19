@@ -84,9 +84,8 @@ class PDF::Object {
     }
 
     multi method compose( Hash :$dict!, *%etc) {
-        my %dict = %( to-obj :$dict );
         require ::("PDF::Object::Dict");
-        return ::("PDF::Object::Dict").delegate( :%dict ).new( :%dict, |%etc );
+        return ::("PDF::Object::Dict").delegate( :$dict ).new( :$dict, |%etc );
     }
 
     multi method compose( Hash :$stream!, *%etc) {
@@ -95,7 +94,7 @@ class PDF::Object {
             %params{$_} = $stream{$_}
             if $stream{$_}:exists;
         }
-        my $dict = to-obj :dict($stream<dict> // {});
+        my $dict = $stream<dict> // {};
         require ::("PDF::Object::Stream");
         return ::("PDF::Object::Stream").delegate( :$dict ).new( :$dict, |%params );
     }
@@ -125,78 +124,64 @@ class PDF::Object {
         die "don't know how to to-ast: {$other.perl}";
     }
 
-    proto sub to-obj(|) is export(:to-obj) {*};
+    proto sub from-ast(|) is export(:from-ast) {*};
 
-    multi sub to-obj( Pair $p! ) {
-        to-obj( |%( $p.kv ) );
+    multi sub from-ast( Pair $p! ) {
+        from-ast( |%( $p.kv ) );
     }
 
-    multi sub to-obj( Hash $h! ) {
-        my %hash;
-        %hash{.key} = to-obj( .value )
-            for $h.pairs;
-        %hash.item;
+    multi sub from-ast( Array :$array! ) {
+        $array
     }
 
-    multi sub to-obj( Array :$array! ) {
-        [ $array.map: { to-obj( $_ ) } ];
-    }
-
-    multi sub to-obj( Bool :$bool! ) {
+    multi sub from-ast( Bool :$bool! ) {
         $bool;
     }
 
-    multi sub to-obj( Hash :$dict!, :$keys ) {
-        my @keys = $keys.defined
-            ?? $keys.grep: {$dict{$_}:exists}
-        !! $dict.keys;
-        my %hash = @keys.map: { $_ => to-obj( $dict{$_} ) };
-        %hash.item;
+    multi sub from-ast( Hash :$dict!, :$keys ) {
+        $dict;
     }
 
-    multi sub to-obj( Str :$hex-string! ) { $hex-string }
+    multi sub from-ast( Str :$hex-string! ) { $hex-string }
 
-    multi sub to-obj( Array :$ind-ref! ) {
-
+    multi sub from-ast( Array :$ind-ref! ) {
         :$ind-ref;
     }
 
-    multi sub to-obj( Array :$ind-obj! ) {
+    multi sub from-ast( Array :$ind-obj! ) {
         my %content = $ind-obj[2].kv;
-        to-obj( |%content )
+        from-ast( |%content )
     }
 
-    multi sub to-obj( Numeric :$int! ) {
+    multi sub from-ast( Numeric :$int! ) {
         PDF::Object.compose :$int;
     }
 
-    multi sub to-obj( Str :$literal! ) { $literal }
+    multi sub from-ast( Str :$literal! ) { $literal }
 
-    multi sub to-obj( Str :$name! ) {
+    multi sub from-ast( Str :$name! ) {
         PDF::Object.compose :$name;
     }
 
-    multi sub to-obj( Numeric :$real! ) {
+    multi sub from-ast( Numeric :$real! ) {
         PDF::Object.compose :$real;
     }
 
-    multi sub to-obj( Hash :$stream! ) {
-        my $dict = $stream<dict>;
-        my %stream = %$stream, dict => to-obj( :$dict );
-        %stream;
+    multi sub from-ast( Hash :$stream! ) {
+        $stream;
     }
 
-    multi sub to-obj( $other! where !.isa(Pair) ) {
+    multi sub from-ast( $other! where !.isa(Pair) ) {
         return $other
     }
 
-    multi sub to-obj( *@args, *%opt ) is default {
+    multi sub from-ast( *@args, *%opt ) is default {
         return Any if %opt<null>:exists;
 
-        die "unexpected to-obj arguments: {[@args].perl}"
+        die "unexpected from-ast arguments: {[@args].perl}"
             if @args;
         
-        die "unable to to-obj {%opt.keys} struct: {%opt.perl}"
+        die "unable to from-ast {%opt.keys} struct: {%opt.perl}"
     }
 
 }

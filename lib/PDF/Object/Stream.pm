@@ -2,7 +2,7 @@ use v6;
 
 use PDF::Tools::Filter;
 use PDF::Object :to-ast-native;
-use PDF::Object;
+use PDF::Object :from-ast;
 use PDF::Object::Type;
 use PDF::Object::Tree;
 
@@ -15,7 +15,9 @@ class PDF::Object::Stream
 
     method new(Hash :$dict = {}, *%etc) {
         my $obj = self.bless(|%etc);
-        $obj{ .key } := .value for $dict.pairs;
+        # this may trigger PDF::Object::Tree coercians
+        # e.g. native Array to PDF::Object::Array
+        $obj{ .key } = from-ast(.value) for $dict.pairs;
         $obj.setup-type($obj);
         $obj;
     }
