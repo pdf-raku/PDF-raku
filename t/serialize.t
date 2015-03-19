@@ -22,7 +22,7 @@ my $root-obj = PDF::Object.compose( :array[ $dict1, $dict2 ] );
 $root-obj[2] := $root-obj;
 
 # cycle back from hash to array
-$dict1<Parent> := $root-obj;
+$root-obj[0]<Parent> := $root-obj;
 
 # our serializer should create indirect refs to resolve the above
 my $result = $root-obj.serialize;

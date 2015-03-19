@@ -9,11 +9,17 @@ class PDF::Object::Array
     is Array
     does PDF::Object::Tree {
 
+    our %obj-cache = (); #= to catch circular references
+
     method new(Array :$array = [], *%etc) {
-        my $obj = self.bless(|%etc);
-        # this may trigger PDF::Object::Tree coercians
-        # e.g. native Array to PDF::Object::Array
-        $obj[ .key ] = from-ast(.value) for $array.pairs;
+        my $id = $array.WHICH;
+        my $obj = %obj-cache{$id};
+        unless $obj {
+            temp %obj-cache{$id} = $obj = self.bless(|%etc);
+            # this may trigger PDF::Object::Tree coercians
+            # e.g. native Array to PDF::Object::Array
+            $obj[ .key ] = from-ast(.value) for $array.pairs;
+        }
         $obj;
     }
 
