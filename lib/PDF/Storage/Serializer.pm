@@ -1,4 +1,4 @@
-use v6;
+yuse v6;
 
 use PDF::Object :to-ast;
 use PDF::Object::Dict;
@@ -14,12 +14,12 @@ class PDF::Storage::Serializer {
     #| analyse stage simply reference counts arrays and hashes. Any that occurs
     #| multiple times is automatically promoted to an indirect object.
     multi method analyse( Hash $dict! is rw) {
-        return if %!ref-count{$dict.WHERE}++; # already encountered
+        return if %!ref-count{$dict.WHICH}++; # already encountered
         $.analyse($dict{$_}) for $dict.keys;
     }
 
     multi method analyse( Array $array! is rw ) {
-        return if %!ref-count{$array.WHERE}++; # already encountered
+        return if %!ref-count{$array.WHICH}++; # already encountered
         $.analyse($array[$_]) for $array.keys;
     }
 
@@ -28,12 +28,12 @@ class PDF::Storage::Serializer {
     multi method analyse( $other! is rw ) is default {
     }
 
-    method !get-ind-ref( Int :$id!) {
+    method !get-ind-ref( Str :$id!) {
         :ind-ref[ %!obj-num{$id}, 0 ]
             if %!obj-num{$id}:exists;
     }
 
-    method !make-ind-ref( Pair $ind-obj! is rw, Int :$id!) {
+    method !make-ind-ref( Pair $ind-obj! is rw, Str :$id!) {
         my $obj-num = ++ $!cur-obj-num;
         @.ind-objs.push: (:ind-obj[ $obj-num, 0, $ind-obj]);
         %!obj-num{$id} = $obj-num;
@@ -56,7 +56,7 @@ class PDF::Storage::Serializer {
 
     #| handles PDF::Object::Dict, PDF::Object::Stream, (plain) Hash
     multi method freeze( Hash $object! is rw, Bool :$is-root ) {
-        my $id = $object.WHERE;
+        my $id = ~$object.WHICH;
 
         # already an indirect object
         return self!"get-ind-ref"(:$id )
@@ -87,7 +87,7 @@ class PDF::Storage::Serializer {
 
     #| handles PDF::Object::Array, (plain) Array
     multi method freeze( Array $array! is rw, Bool :$is-root ) {
-        my $id = $array.WHERE;
+        my $id = ~$array.WHICH;
 
         # already an indirect object
         return self!"get-ind-ref"( :$id )
