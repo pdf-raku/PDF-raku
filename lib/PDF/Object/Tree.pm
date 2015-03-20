@@ -24,11 +24,26 @@ role PDF::Object::Tree {
             !! $result;
     }
 
+    #| try to keep indirect references as such. avoids circular references.
+    method !is-ind-ref($obj) {
+        if self.reader
+            && $obj ~~ Hash | Array && $obj.obj-num
+            && self.reader === $obj.reader {
+                my $ind-obj = self.reader.ind-obj($obj.obj-num, $obj.gen-num);
+                return $ind-obj && $ind-obj.object === $obj;
+        }
+        False;
+    }
+
     # coerce Hash & Array assignments to objects
 
     method ASSIGN-KEY($key, $val) {
         given $val {
-            when PDF::Object { nextsame }
+            when PDF::Object {
+                self!"is-ind-ref"($val)
+                    ?? self.ASSIGN-KEY($key, (:ind-ref[ $val.obj-num, $val.gen-num]) )
+                    !! nextsame
+            }
             when Hash {
                 self.ASSIGN-KEY($key, PDF::Object.compose( :stream($val), :$.reader ) )
                     if $val<stream>:exists;
@@ -41,16 +56,20 @@ role PDF::Object::Tree {
         }
     }
 
-    method ASSIGN-POS($key, $val) {
+    method ASSIGN-POS($pos, $val) {
         given $val {
-            when PDF::Object { nextsame }
+            when PDF::Object {
+                self!"is-ind-ref"($val)
+                    ?? self.ASSIGN-POS($pos, (:ind-ref[ $val.obj-num, $val.gen-num]) )
+                    !! nextsame
+            }
             when Hash {
-                self.ASSIGN-POS($key, PDF::Object.compose( :stream($val), :$.reader ) )
+                self.ASSIGN-POS($pos, PDF::Object.compose( :stream($val), :$.reader ) )
                     if $val<stream>:exists;
-                self.ASSIGN-POS($key, PDF::Object.compose( :dict($val), :$.reader ) );
+                self.ASSIGN-POS($pos, PDF::Object.compose( :dict($val), :$.reader ) );
             }
             when Array {
-                self.ASSIGN-POS($key, PDF::Object.compose( :array($val), :$.reader ) );
+                self.ASSIGN-POS($pos, PDF::Object.compose( :array($val), :$.reader ) );
             }
             default { nextsame }
         }

@@ -3,7 +3,6 @@ use v6;
 use PDF::Object :to-ast;
 use PDF::Object::Dict;
 use PDF::Object::Stream;
-use PDF::Storage::IndObj;
 
 class PDF::Storage::Serializer {
 
