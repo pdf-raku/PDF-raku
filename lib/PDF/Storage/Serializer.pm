@@ -1,4 +1,4 @@
-yuse v6;
+use v6;
 
 use PDF::Object :to-ast;
 use PDF::Object::Dict;
