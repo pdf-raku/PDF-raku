@@ -97,4 +97,38 @@ role PDF::Object::Tree {
         $value
     }
 
+    our %raw-ref;
+
+    method raw() {
+        die "illegal circular hash reference"
+            if %raw-ref{self.WHICH};
+        temp %raw-ref{self.WHICH} = True;
+
+        given self {
+            when Hash {
+                my %raw;
+                for self.pairs {
+                    %raw{.key} = do given .value {
+                        when PDF::Object && Array | Hash { .raw }
+                        default { $_ }
+                    }
+                }
+                %raw.item;
+            }
+            when Array {
+                my @raw;
+                for self.pairs {
+                    @raw[.key] = do given .value {
+                        when PDF::Object && Array | Hash { .raw }
+                        default { $_ }
+                    }
+                }
+                @raw.item;
+            }
+            default {
+                self
+            }
+        }
+    }
+
 }

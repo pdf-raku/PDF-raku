@@ -52,17 +52,18 @@ is $obj<Kids>[1]<X>, 99, 'deep reference';
 lives_ok {$obj<Kids>[1]<X>++;}, 'deep post increment';
 is $obj<Kids>[1]<X>, 100, 'incremented';
 $obj<Kids>.push( (:ind-ref[123,0]) );
-is_deeply $obj<Kids>[3], {Desc => "indirect object: 123 0 R", :Type("Test")}, 'new array entry';
+is_deeply $obj<Kids>[3], {Desc => "indirect object: 123 0 R", :Type("Test")}, 'new array entry - deref';
+is_deeply $obj<Kids>.raw[3], (:ind-ref[123, 0]), 'new array entry - raw';
 lives_ok {$obj<Y><Z> = 'foo'}, 'vivification - lives';
 is $obj<Y><Z>, 'foo', 'vivification - value';
 isa_ok $obj<Y>, PDF::Object::Dict, 'vivification - type';
 is_deeply $obj<Y>.reader, $reader, 'vivification - reader stickyness';
 # potential circular reference
 $obj<Kids>[4] = $obj<B><SubRef>;
-is_deeply $obj<Kids>.values[*-1], (:ind-ref[77, 0]), 'indirect reference assigment';
+is_deeply $obj<Kids>.raw[*-1], (:ind-ref[77, 0]), 'indirect reference assigment';
 $obj<Kids>.push: [1,2,3];
 todo ".push coercement etc";
-isa_ok $obj<Kids>.values[*-1], PDF::Object::Array, 'push coercian';
+isa_ok $obj<Kids>.raw[*-1], PDF::Object::Array, 'push coercian';
 
 done;
 
