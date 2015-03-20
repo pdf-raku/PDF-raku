@@ -32,23 +32,6 @@ This module is a proof of concept in the early stages of development.  It is sub
 
 # Classes
 
-## PDF::Storage::Filter
-
-Filter methods, based on PDF::API2::Core::PDF::Filter / Text::PDF::Filter
-
-PDF::Storage::Filter::RunLength, PDF::Storage::Filter::ASCII85, PDF::Storage::Filter::Flate, ...
-
-Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding
-is recommended to enforce this.
-
-`encode` and `decode` both return latin-1 encoded strings.
-
- ```
- my $filter = PDF::Storage::Filter.new-delegate( :dict{Filter<RunlengthEncode>} );
- my $encoded = $filter.encode("This    is waaay toooooo loooong!", :eod);
- say $encoded.chars;
- ```
-
 ## PDF::Object
 
 Classes for the representation and manipulation of PDF Objects.
@@ -77,6 +60,23 @@ say $stream.obj.encoded;
 
 Loads a PDF index (cross reference table and/or stream), then allows random access via the `$.ind.obj(...)` method. The `$.ast()`
 method can be used to load the entire PDF into memory for reserialization, etc.
+
+## PDF::Storage::Filter
+
+Filter methods, based on PDF::API2::Core::PDF::Filter / Text::PDF::Filter
+
+PDF::Storage::Filter::RunLength, PDF::Storage::Filter::ASCII85, PDF::Storage::Filter::Flate, ...
+
+Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding
+is recommended to enforce this.
+
+`encode` and `decode` both return latin-1 encoded strings.
+
+ ```
+ my $filter = PDF::Storage::Filter.new-delegate( :dict{Filter<RunlengthEncode>} );
+ my $encoded = $filter.encode("This    is waaay toooooo loooong!", :eod);
+ say $encoded.chars;
+ ```
 
 ## PDF::Storage::Serializer
 
