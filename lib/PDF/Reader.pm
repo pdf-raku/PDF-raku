@@ -102,7 +102,7 @@ class PDF::Reader {
             die "index entry was: $obj-num $gen-num R. actual object: $actual-obj-num $actual-gen-num R"
                 unless $obj-num == $actual-obj-num && $gen-num == $actual-gen-num;
 
-            # only full stantiate object when needed
+            # only fully stantiate object when needed
             $get-ast ?? $ind-obj !! PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) );
         };
 
@@ -111,19 +111,20 @@ class PDF::Reader {
             return $get-ast ?? $ind-obj.ast !! $ind-obj;
         }
         elsif $get-ast {
-            # user wants a raw object, that's what we've got
+            # caller wants a raw object, that's what we've got
             return (:$ind-obj);
         }
         else {
             # need to create an object from the ast. save the object in the index
-            return $idx<ind-obj> = PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) );
+            return $idx<ind-obj> //= PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) );
         }
     }
 
-
+    #| utility method for basic deferencing, e.g.
+    #| $reader.deref($root,<Pages>,<Kids>,[0],<Contents>)
     method deref($val is copy, *@ops, :$get-ast) is rw {
         for @ops -> $op {
-            $val = self.ind-deref($val, :$get-ast)
+            $val = self!"ind-deref"($val, :$get-ast)
                 if $val.isa(Pair);
             $val = do given $op {
                 when Array { $val[ $op[0] ] }
@@ -131,20 +132,17 @@ class PDF::Reader {
                 default    {die "bad $.deref arg: {.perl}"}
             };
         }
-        $val = self.ind-deref($val, :$get-ast)
+        $val = self!"ind-deref"($val, :$get-ast)
             if $val.isa(Pair);
         $val;
     }
 
-    multi method ind-deref(Pair $_! where .key eq 'ind-ref', :$get-ast ) {
+    method !ind-deref(Pair $_!, :$get-ast ) {
+        return $_ unless .key eq 'ind-ref';
         my $obj-num = .value[0].Int;
         my $gen-num = .value[1].Int;
         my $val = $.ind-obj( $obj-num, $gen-num, :$get-ast );
         $get-ast ?? $val !! $val.object;
-    }
-
-    multi method ind-deref($other is rw) is default {
-        $other;
     }
 
     method load-header() {
