@@ -24,33 +24,38 @@ role PDF::Object::Tree {
             !! $result;
     }
 
+    # coerce Hash & Array assignments to objects
+    multi method coerce(PDF::Object $val!) { $val }
+    multi method coerce(Hash $val!) {
+        $val<stream>:exists
+            ?? PDF::Object.compose( :stream($val), :$.reader )
+            !! PDF::Object.compose( :dict($val), :$.reader )
+    }
+    multi method coerce(Array $val!) {
+        PDF::Object.compose( :array($val), :$.reader )
+    }
+    multi method coerce($val) is default { $val }
+
     #| try to keep indirect references as such. avoids circular references.
     method !is-ind-ref($obj) {
-        if self.reader
-            && $obj ~~ Hash | Array && $obj.obj-num
-            && self.reader === $obj.reader {
-                my $ind-obj = self.reader.ind-obj($obj.obj-num, $obj.gen-num);
-                return $ind-obj && $ind-obj.object === $obj;
-        }
-        False;
+        !! ( $.reader
+             && $obj ~~ Hash | Array
+             && $obj.obj-num
+             && $.reader === $obj.reader );
     }
-
-    # coerce Hash & Array assignments to objects
 
     method ASSIGN-KEY($key, $val) {
         given $val {
             when PDF::Object {
-                self!"is-ind-ref"($val)
-                    ?? self.ASSIGN-KEY($key, (:ind-ref[ $val.obj-num, $val.gen-num]) )
-                    !! nextsame
+                if self!"is-ind-ref"($val) {
+                    nextwith($key, (:ind-ref[ $val.obj-num, $val.gen-num]) )
+                }
+                else {
+                    nextsame
+                }
             }
-            when Hash {
-                self.ASSIGN-KEY($key, PDF::Object.compose( :stream($val), :$.reader ) )
-                    if $val<stream>:exists;
-                self.ASSIGN-KEY($key, PDF::Object.compose( :dict($val), :$.reader ) );
-            }
-            when Array {
-                self.ASSIGN-KEY($key, PDF::Object.compose( :array($val), :$.reader ) );
+            when Hash | Array  {
+                self.ASSIGN-KEY($key, $.coerce($val) );
             }
             default { nextsame }
         }
@@ -59,17 +64,15 @@ role PDF::Object::Tree {
     method ASSIGN-POS($pos, $val) {
         given $val {
             when PDF::Object {
-                self!"is-ind-ref"($val)
-                    ?? self.ASSIGN-POS($pos, (:ind-ref[ $val.obj-num, $val.gen-num]) )
-                    !! nextsame
+                if self!"is-ind-ref"($val) {
+                    nextwith($pos, (:ind-ref[ $val.obj-num, $val.gen-num]) )
+                }
+                else {
+                    nextsame
+                }
             }
-            when Hash {
-                self.ASSIGN-POS($pos, PDF::Object.compose( :stream($val), :$.reader ) )
-                    if $val<stream>:exists;
-                self.ASSIGN-POS($pos, PDF::Object.compose( :dict($val), :$.reader ) );
-            }
-            when Array {
-                self.ASSIGN-POS($pos, PDF::Object.compose( :array($val), :$.reader ) );
+            when Hash | Array {
+                self.ASSIGN-POS($pos, $.coerce($val) );
             }
             default { nextsame }
         }
