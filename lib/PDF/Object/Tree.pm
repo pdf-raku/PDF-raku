@@ -47,15 +47,12 @@ role PDF::Object::Tree {
     method ASSIGN-KEY($key, $val) {
         given $val {
             when PDF::Object {
-                if self!"is-ind-ref"($val) {
-                    nextwith($key, (:ind-ref[ $val.obj-num, $val.gen-num]) )
-                }
-                else {
-                    nextsame
-                }
+                self!"is-ind-ref"($val)
+                    ?? nextwith($key, (:ind-ref[ $val.obj-num, $val.gen-num]) )
+                    !! nextsame
             }
             when Hash | Array  {
-                self.ASSIGN-KEY($key, $.coerce($val) );
+                nextwith($key, $.coerce($val) );
             }
             default { nextsame }
         }
@@ -64,15 +61,12 @@ role PDF::Object::Tree {
     method ASSIGN-POS($pos, $val) {
         given $val {
             when PDF::Object {
-                if self!"is-ind-ref"($val) {
-                    nextwith($pos, (:ind-ref[ $val.obj-num, $val.gen-num]) )
-                }
-                else {
-                    nextsame
-                }
+                self!"is-ind-ref"($val)
+                    ?? nextwith($pos, (:ind-ref[ $val.obj-num, $val.gen-num]) )
+                    !! nextsame
             }
             when Hash | Array {
-                self.ASSIGN-POS($pos, $.coerce($val) );
+                nextwith($pos, $.coerce($val) );
             }
             default { nextsame }
         }
