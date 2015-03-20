@@ -3,7 +3,7 @@ use Test;
 
 plan 16;
 
-use PDF::Tools::IndObj;
+use PDF::Storage::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
@@ -33,7 +33,7 @@ endobj
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my $ind-obj = PDF::Tools::IndObj.new( |%$ast, :$input);
+my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input);
 is $ind-obj.obj-num, 6, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $xform-obj = $ind-obj.object;
@@ -67,7 +67,7 @@ endobj
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 $ast = $/.ast;
-$ind-obj = PDF::Tools::IndObj.new( |%$ast, :$input);
+$ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input);
 is $ind-obj.obj-num, 14, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $ximage-obj = $ind-obj.object;

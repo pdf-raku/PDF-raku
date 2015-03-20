@@ -3,9 +3,9 @@ use v6;
 class PDF::Writer {
 
     use PDF::Grammar;
-    use PDF::Tools::Input;
+    use PDF::Storage::Input;
 
-    has PDF::Tools::Input $.input;
+    has PDF::Storage::Input $.input;
     has $.ast is rw;
     has $.root;
     has $.offset = 0;
@@ -19,7 +19,7 @@ class PDF::Writer {
             !! $root
             if $root.defined;
 
-        $!input = PDF::Tools::Input.compose( :value($input) )
+        $!input = PDF::Storage::Input.compose( :value($input) )
             if $input.defined;
     }
 

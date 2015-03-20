@@ -3,7 +3,7 @@ use Test;
 
 plan 9;
 
-use PDF::Tools::IndObj;
+use PDF::Storage::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
@@ -16,7 +16,7 @@ my $input = '42 5 obj /HiThere endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my $ind-obj = PDF::Tools::IndObj.new( |%$ast, :$input );
+my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
 isa_ok $ind-obj.object, Str;
 is $ind-obj.object, 'HiThere';
 is $ind-obj.obj-num, 42, '$.obj-num';

@@ -1,7 +1,7 @@
 use Test;
-use PDF::Tools::Filter::ASCIIHex;
-use PDF::Tools::Filter::Flate;
-use PDF::Tools::Filter::RunLength;
+use PDF::Storage::Filter::ASCIIHex;
+use PDF::Storage::Filter::Flate;
+use PDF::Storage::Filter::RunLength;
 
 pass('compiles');
 

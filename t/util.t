@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 11;
 
-use PDF::Tools::Util :resample;
+use PDF::Storage::Util :resample;
 
 my $result;
 

@@ -3,9 +3,9 @@ use v6;
 use PDF::Object :to-ast;
 use PDF::Object::Dict;
 use PDF::Object::Stream;
-use PDF::Tools::IndObj;
+use PDF::Storage::IndObj;
 
-class PDF::Tools::Serializer {
+class PDF::Storage::Serializer {
 
     has Int $!cur-obj-num = 0;
     has @.ind-objs;

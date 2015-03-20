@@ -3,8 +3,8 @@ use v6;
 class PDF::Object {
 
     method serialize {
-        require ::('PDF::Tools::Serializer');
-        my $serializer = ::('PDF::Tools::Serializer').new;
+        require ::('PDF::Storage::Serializer');
+        my $serializer = ::('PDF::Storage::Serializer').new;
         $serializer.analyse( self );
         my $root = $serializer.freeze( self, :is-root );
         my $objects = $serializer.ind-objs;

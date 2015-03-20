@@ -3,7 +3,7 @@ use Test;
 
 plan 11;
 
-use PDF::Tools::IndObj;
+use PDF::Storage::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
@@ -14,7 +14,7 @@ my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
-my $ind-obj = PDF::Tools::IndObj.new( |%$ast, :$input );
+my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
 isa_ok $ind-obj.object, ::('PDF::Object')::('Type::ObjStm');
 
 my $objstm;
@@ -33,7 +33,7 @@ my $objstm-recompressed = $ind-obj.object.encode;
 my $ast2;
 lives_ok { $ast2 = $ind-obj.ast }, '$.ast - lives';
 
-my $ind-obj2 = PDF::Tools::IndObj.new( |%$ast2 );
+my $ind-obj2 = PDF::Storage::IndObj.new( |%$ast2 );
 my $objstm-roundtrip = $ind-obj2.object.decode( $objstm-recompressed );
 
 is_deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';

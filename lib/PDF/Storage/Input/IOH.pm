@@ -1,9 +1,9 @@
 use v6;
 
-use PDF::Tools::Input;
+use PDF::Storage::Input;
 
-class PDF::Tools::Input::IOH
-    is PDF::Tools::Input {
+class PDF::Storage::Input::IOH
+    is PDF::Storage::Input {
 
     has IO::Handle $.value is rw;
     has Str $!str;

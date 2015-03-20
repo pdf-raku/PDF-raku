@@ -1,6 +1,6 @@
 use v6;
 
-use PDF::Tools::Filter;
+use PDF::Storage::Filter;
 use PDF::Object :to-ast-native;
 use PDF::Object::Type;
 use PDF::Object::Tree;

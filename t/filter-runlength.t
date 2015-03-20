@@ -2,12 +2,12 @@ use Test;
 # this test based on PDF-API2/t/filter-runlengthdecode.t
 plan 7;
 
-use PDF::Tools::Filter::RunLength;
-use PDF::Tools::Filter;
+use PDF::Storage::Filter::RunLength;
+use PDF::Storage::Filter;
 
 my $in = '--- Look at this test string. ---';
 my $out = "\x[fe]-\x01 L\xffo\x16k at this test string. \xfe-";
-my $filter = PDF::Tools::Filter::RunLength.new;
+my $filter = PDF::Storage::Filter::RunLength.new;
 
 is_deeply $filter.encode($in),
    $out,
@@ -22,11 +22,11 @@ dies_ok { $filter.decode($out, :eod) },
 
 my %dict = :Filter<RunLengthDecode>;
 
-is(PDF::Tools::Filter.decode($out, :%dict),
+is(PDF::Storage::Filter.decode($out, :%dict),
    $in,
    q{ASCIIHex test string is decoded correctly});
 
-is(PDF::Tools::Filter.encode($in, :%dict),
+is(PDF::Storage::Filter.encode($in, :%dict),
    $out,
    q{ASCIIHex test string is encoded correctly});
 

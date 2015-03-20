@@ -3,7 +3,7 @@ use Test;
 
 plan 1;
 
-use PDF::Tools::IndObj;
+use PDF::Storage::IndObj;
 use PDF::Writer;
 
 use PDF::Grammar::PDF;
@@ -16,7 +16,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 
-my $ind-obj = PDF::Tools::IndObj.new( :$input, |%( $ast.kv ) );
+my $ind-obj = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
 
 my $pdf-out = PDF::Writer.new( :$input );
 
@@ -26,6 +26,6 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "reparse failed";
 $ast = $/.ast;
 
-my $ind-obj2 = PDF::Tools::IndObj.new( :$input, |%( $ast.kv ) );
+my $ind-obj2 = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
 
 is_deeply $ind-obj.object.decoded, $ind-obj2.object.decoded, 'writer round trip';

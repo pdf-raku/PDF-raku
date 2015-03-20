@@ -9,7 +9,7 @@ our class PDF::Object::Type::XRef
     is PDF::Object::Stream
     does PDF::Object::Type {
 
-    use PDF::Tools::Util :resample;
+    use PDF::Storage::Util :resample;
 
     # See [PDF 1.7 Table 3.15]
     method W is rw { self<W>; }

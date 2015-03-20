@@ -1,8 +1,8 @@
 use v6;
 
-role PDF::Tools::Filter::Role::Predictors;
+role PDF::Storage::Filter::Role::Predictors;
 
-use PDF::Tools::Util :resample;
+use PDF::Storage::Util :resample;
 # post prediction functions as described in the PDF 1.7 spec, table 3.8
 multi method post-prediction($decoded, 
                              Int :$Predictor! where { $_ <= 1}, #| predictor function

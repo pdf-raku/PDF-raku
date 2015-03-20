@@ -4,8 +4,8 @@ plan 5;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Tools::Input;
-use PDF::Tools::Filter;
+use PDF::Storage::Input;
+use PDF::Storage::Filter;
 use lib '.';
 use t::Object :to-obj;
 
@@ -16,13 +16,13 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 
-my $pdf-input = PDF::Tools::Input.compose( :value($input) );
+my $pdf-input = PDF::Storage::Input.compose( :value($input) );
 
 my $dict = to-obj( |%$ast )<dict>;
 my $raw-content = $pdf-input.stream-data( |%$ast )[0];
 my $content;
 
-lives_ok { $content = PDF::Tools::Filter.decode( $raw-content, :$dict ) }, 'basic content decode - lives';
+lives_ok { $content = PDF::Storage::Filter.decode( $raw-content, :$dict ) }, 'basic content decode - lives';
 
 my $content-expected = "16 0 17 141 <</BaseFont/CourierNewPSMT/Encoding/WinAnsiEncoding/FirstChar 111/FontDescriptor 15 0 R/LastChar 111/Subtype/TrueType/Type/Font/Widths[600]>><</BaseFont/TimesNewRomanPSMT/Encoding/WinAnsiEncoding/FirstChar 32/FontDescriptor 14 0 R/LastChar 32/Subtype/TrueType/Type/Font/Widths[250]>>";
 
@@ -47,13 +47,13 @@ my $flate-dec = [1, 0, 16, 0, 1, 2, 229, 0, 1, 4, 6, 0, 1, 5, 166, 0,
 
 my %dict = :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) };
 
-is_deeply my $result=PDF::Tools::Filter.decode($flate-enc, :%dict),
+is_deeply my $result=PDF::Storage::Filter.decode($flate-enc, :%dict),
     $flate-dec, "Flate with PNG predictors - decode";
 
-my $re-encoded = PDF::Tools::Filter.encode($result, :%dict);
+my $re-encoded = PDF::Storage::Filter.encode($result, :%dict);
 
-is_deeply PDF::Tools::Filter.decode($re-encoded, :%dict),
+is_deeply PDF::Storage::Filter.decode($re-encoded, :%dict),
     $flate-dec, "Flate with PNG predictors - encode/decode round-trip";
 
-dies_ok { PDF::Tools::Filter.decode('This is not valid input', :%dict) },
+dies_ok { PDF::Storage::Filter.decode('This is not valid input', :%dict) },
     q{Flate dies if invalid characters are passed to decode};

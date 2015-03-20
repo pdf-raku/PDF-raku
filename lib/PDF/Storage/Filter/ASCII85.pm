@@ -1,8 +1,8 @@
 use v6;
 
-class PDF::Tools::Filter::ASCII85;
+class PDF::Storage::Filter::ASCII85;
 
-use PDF::Tools::Util :resample;
+use PDF::Storage::Util :resample;
 
 # Maintainer's Note: ASCIIH85Decode is described in the PDF 1.7 spec
 # in section 3.2.2.

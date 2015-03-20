@@ -4,7 +4,7 @@ class PDF::Reader {
 
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
-    use PDF::Tools::IndObj;
+    use PDF::Storage::IndObj;
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
     has Hash %!ind-obj-idx;
@@ -23,9 +23,9 @@ class PDF::Reader {
     }
 
     multi method open( $input!) {
-        use PDF::Tools::Input;
+        use PDF::Storage::Input;
 
-        $!input = PDF::Tools::Input.compose( :value($input) );
+        $!input = PDF::Storage::Input.compose( :value($input) );
 
         $.load-header( );
         $.load-xref( );
@@ -103,10 +103,10 @@ class PDF::Reader {
                 unless $obj-num == $actual-obj-num && $gen-num == $actual-gen-num;
 
             # only full stantiate object when needed
-            $get-ast ?? $ind-obj !! PDF::Tools::IndObj.new( :$ind-obj, :$type, :reader(self) );
+            $get-ast ?? $ind-obj !! PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) );
         };
 
-        if $ind-obj.isa(PDF::Tools::IndObj) {
+        if $ind-obj.isa(PDF::Storage::IndObj) {
             # regenerate ast from object, which may be updated between fetches
             return $get-ast ?? $ind-obj.ast !! $ind-obj;
         }
@@ -116,7 +116,7 @@ class PDF::Reader {
         }
         else {
             # need to create an object from the ast. save the object in the index
-            return $idx<ind-obj> = PDF::Tools::IndObj.new( :$ind-obj, :$type, :reader(self) );
+            return $idx<ind-obj> = PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) );
         }
     }
 
@@ -222,7 +222,7 @@ class PDF::Reader {
                     // die "ind-obj parse failed \@$xref-offset + {$xref.chars}";
 
                 my %ast = %( $/.ast );
-                my $ind-obj = PDF::Tools::IndObj.new( |%ast, :input($xref), :type<XRef>, :reader(self) );
+                my $ind-obj = PDF::Storage::IndObj.new( |%ast, :input($xref), :type<XRef>, :reader(self) );
                 my $xref-obj = $ind-obj.object;
                 $dict = $xref-obj;
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;

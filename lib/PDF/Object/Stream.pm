@@ -1,6 +1,6 @@
 use v6;
 
-use PDF::Tools::Filter;
+use PDF::Storage::Filter;
 use PDF::Object :to-ast-native;
 use PDF::Object :from-ast;
 use PDF::Object::Type;
@@ -66,12 +66,12 @@ class PDF::Object::Stream
 
     method decode( Str $encoded = $.encoded ) {
         return $encoded unless self<Filter>:exists;
-        PDF::Tools::Filter.decode( $encoded, :dict(self) );
+        PDF::Storage::Filter.decode( $encoded, :dict(self) );
     }
 
     method encode( Str $decoded = $.decoded) {
         return $decoded unless self<Filter>:exists;
-        PDF::Tools::Filter.encode( $decoded, :dict(self) );
+        PDF::Storage::Filter.encode( $decoded, :dict(self) );
     }
 
     method content {

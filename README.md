@@ -19,7 +19,7 @@ my $reader = PDF::Reader.new;
 $reader.open( $input-path );
 my $ast = $reader.ast;
 note :$ast.perl;
-$ast<pdf><comment>.push: "This PDF was brought to you by PDF::Tools!!";
+$ast<pdf><comment>.push: "This PDF was brought to you by PDF-Tools!!";
 
 my $root-object = $reader.root-object;
 my $pdf-writer = PDF::Writer.new( :$root-object );
@@ -32,11 +32,11 @@ This module is a proof of concept in the early stages of development.  It is sub
 
 # Classes
 
-## PDF::Tools::Filter
+## PDF::Storage::Filter
 
 Filter methods, based on PDF::API2::Core::PDF::Filter / Text::PDF::Filter
 
-PDF::Tools::Filter::RunLength, PDF::Tools::Filter::ASCII85, PDF::Tools::Filter::Flate, ...
+PDF::Storage::Filter::RunLength, PDF::Storage::Filter::ASCII85, PDF::Storage::Filter::Flate, ...
 
 Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding
 is recommended to enforce this.
@@ -44,7 +44,7 @@ is recommended to enforce this.
 `encode` and `decode` both return latin-1 encoded strings.
 
  ```
- my $filter = PDF::Tools::Filter.new-delegate( :dict{Filter<RunlengthEncode>} );
+ my $filter = PDF::Storage::Filter.new-delegate( :dict{Filter<RunlengthEncode>} );
  my $encoded = $filter.encode("This    is waaay toooooo loooong!", :eod);
  say $encoded.chars;
  ```
@@ -77,6 +77,10 @@ say $stream.obj.encoded;
 
 Loads a PDF index (cross reference table and/or stream), then allows random access via the `$.ind.obj(...)` method. The `$.ast()`
 method can be used to load the entire PDF into memory for reserialization, etc.
+
+## PDF::Storage::Serializer
+
+Constructs output objects. It can create output for full PDF's, or for incremental updates to existing PDF documents.
 
 ## PDF::Writer
 

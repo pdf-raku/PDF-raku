@@ -1,7 +1,7 @@
 use v6;
 # based on Perl 5's PDF::API::Core::PDF::Filter::ASCIIHexDecode
 
-class PDF::Tools::Filter::ASCIIHex;
+class PDF::Storage::Filter::ASCIIHex;
 
 # Maintainer's Note: ASCIIHexDecode is described in the PDF 1.7 spec
 # in section 7.4.2.

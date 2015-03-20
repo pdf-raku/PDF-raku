@@ -1,6 +1,6 @@
 use v6;
 
-class PDF::Tools::IndObj;
+class PDF::Storage::IndObj;
 
 use PDF::Object;
 

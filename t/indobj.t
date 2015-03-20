@@ -3,7 +3,7 @@ use Test;
 
 plan 30;
 
-use PDF::Tools::IndObj;
+use PDF::Storage::IndObj;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use lib '.';
@@ -16,7 +16,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 
-my $ind-obj = PDF::Tools::IndObj.new( :$input, |%( $ast.kv ) );
+my $ind-obj = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
 is $ind-obj.obj-num, 5, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $object = $ind-obj.object;
@@ -58,7 +58,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 $ast = $/.ast;
 
-$ind-obj = PDF::Tools::IndObj.new( :$input, |%( $ast.kv ) );
+$ind-obj = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
 my $tt-font-obj = $ind-obj.object;
 isa_ok $tt-font-obj, ::('PDF::Object::Type::Font::TrueType');
 is $tt-font-obj.Type, 'Font', 'tt font $.Type';
@@ -85,7 +85,7 @@ is +$num-obj, 4.2, 'composed object Num coercement';
 is_deeply ~$num-obj, '4.2', 'composed object Str coercement';
 is_deeply ?$num-obj, True, 'composed object Bool coercement';
 
-my $ind-obj2 = PDF::Tools::IndObj.new( :object($num-obj), :obj-num(4), :gen-num(2) );
+my $ind-obj2 = PDF::Storage::IndObj.new( :object($num-obj), :obj-num(4), :gen-num(2) );
 is_deeply $ind-obj2.object, $num-obj, ':object constructor';
 is_deeply $ind-obj2.obj-num, 4, ':object constructor';
 is_deeply $ind-obj2.gen-num, 2, ':object constructor';

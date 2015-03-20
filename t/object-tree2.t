@@ -2,7 +2,7 @@ use v6;
 use PDF::Object;
 use PDF::Object::Dict;
 use PDF::Object::Array;
-use PDF::Tools::IndObj;
+use PDF::Storage::IndObj;
 use Test;
 
 our %ties;
@@ -17,7 +17,7 @@ class t::DummyReader {
 
             my $ind-obj = [$obj-num,$gen-num, :%dict];
 
-            PDF::Tools::IndObj.new( :$ind-obj, :reader(self) );
+            PDF::Storage::IndObj.new( :$ind-obj, :reader(self) );
         }
     }
 }
