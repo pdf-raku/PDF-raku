@@ -44,7 +44,8 @@ isa_ok $obj<Kids>, PDF::Object::Array;
 is_deeply $obj<Kids>.reader, $reader, 'reader array stickyness';
 is_deeply $obj<Kids>[2], {Desc => "indirect object: 99 0 R", :Type("Test")}, 'array dereference';
 $obj<B><SubRef> = :ind-ref[77, 0];
-is_deeply $obj<B><SubRef>, {Desc => "indirect object: 77 0 R", :Type("Test")}, 'new hash entry';
+is_deeply $obj<B><SubRef>, {Desc => "indirect object: 77 0 R", :Type("Test")}, 'new hash entry - deref';
+is_deeply $obj<B>.raw<SubRef>, (:ind-ref[77, 0]), 'new hash entry - raw';
 lives_ok {++$obj<A>}, 'shallow reference preincrement';
 is_deeply $obj<Kids>[0], (42), 'deep reference';
 is_deeply $obj<Kids>[1].reader, $reader, 'deep reference stickyness';
@@ -58,12 +59,17 @@ lives_ok {$obj<Y><Z> = 'foo'}, 'vivification - lives';
 is $obj<Y><Z>, 'foo', 'vivification - value';
 isa_ok $obj<Y>, PDF::Object::Dict, 'vivification - type';
 is_deeply $obj<Y>.reader, $reader, 'vivification - reader stickyness';
-# potential circular reference
+# other abstracted methods
 $obj<Kids>[4] = $obj<B><SubRef>;
 is_deeply $obj<Kids>.raw[*-1], (:ind-ref[77, 0]), 'indirect reference assigment';
 $obj<Kids>.push: [1,2,3];
-todo ".push coercement etc";
-isa_ok $obj<Kids>.raw[*-1], PDF::Object::Array, 'push coercian';
+is +$obj<Kids>, 6, '+$obj<Kids>';
+isa_ok $obj<Kids>[*-1], PDF::Object::Array, 'push coercian';
+$obj<Kids>.splice(1,4, {:Foo<bar>});
+is +$obj<Kids>, 3, '+$obj<Kids>';
+isa_ok $obj<Kids>[1], PDF::Object::Dict, 'splice coercian';
+$obj<Kids>.unshift([99]);
+isa_ok $obj<Kids>[0], PDF::Object::Array, 'unshift coercian';
+is_deeply $obj<Kids>.raw, [[99], 42, {:Foo<bar>}, [1, 2, 3]], 'final';
 
 done;
-

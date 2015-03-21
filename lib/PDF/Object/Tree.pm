@@ -44,32 +44,41 @@ role PDF::Object::Tree {
              && $.reader === $obj.reader );
     }
 
-    method ASSIGN-KEY($key, $val) {
-        given $val {
-            when PDF::Object {
-                self!"is-ind-ref"($val)
-                    ?? nextwith($key, (:ind-ref[ $val.obj-num, $val.gen-num]) )
-                    !! nextsame
-            }
-            when Hash | Array  {
-                nextwith($key, $.coerce($val) );
-            }
-            default { nextsame }
+    method !lvalue($_) is rw {
+        when PDF::Object {
+            self!"is-ind-ref"($_)
+                ?? (:ind-ref[ .obj-num, .gen-num])
+                !! $_
         }
+        when Hash | Array {
+            $.coerce($_);
+        }
+        default { $_ }
+    }
+
+    method ASSIGN-KEY($key, $val) {
+        my $lval = self!"lvalue"($val);
+        nextwith( $key, $lval );
     }
 
     method ASSIGN-POS($pos, $val) {
-        given $val {
-            when PDF::Object {
-                self!"is-ind-ref"($val)
-                    ?? nextwith($pos, (:ind-ref[ $val.obj-num, $val.gen-num]) )
-                    !! nextsame
-            }
-            when Hash | Array {
-                nextwith($pos, $.coerce($val) );
-            }
-            default { nextsame }
-        }
+        my $lval = self!"lvalue"($val);
+        nextwith( $pos, $lval );
+    }
+
+    method push($val) {
+        my $lval = self!"lvalue"($val);
+        nextwith( $lval );
+    }
+
+    method unshift($val) {
+        my $lval = self!"lvalue"($val);
+        nextwith( $lval );
+    }
+
+    method splice($pos, $elems, *@replacement) {
+        my @lvals = @replacement.map({ self!"lvalue"($_).item });
+        nextwith( $pos, $elems, |@lvals);
     }
 
     multi method deref(Pair $ind-ref! is rw) {
@@ -97,12 +106,13 @@ role PDF::Object::Tree {
         $value
     }
 
-    our %raw-ref;
+    our %seen;
 
     method raw() {
-        die "illegal circular hash reference"
-            if %raw-ref{self.WHICH};
-        temp %raw-ref{self.WHICH} = True;
+        my $id = ~ self.WHICH;
+        die "illegal circular reference"
+            if %seen{$id};
+        temp %seen{$id} = True;
 
         given self {
             when Hash {

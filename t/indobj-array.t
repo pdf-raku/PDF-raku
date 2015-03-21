@@ -19,7 +19,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
 my $ast = $/.ast;
 my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
 my $object = $ind-obj.object;
-isa_ok $object, 'Array';
+isa_ok $object, Array;
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 my $content = $ind-obj.content;
