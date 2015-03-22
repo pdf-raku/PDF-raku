@@ -19,11 +19,12 @@ my $new-page = { :Type(/'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
 my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (and they all lived happily ever after!) Tj ET" ), :dict{ :Length(46) } } );
 $new-page<Contents> = $contents;
 $Pages<Kids>.push: $new-page;
-$Pages<Count> = $Pages<Count>++;
+$Pages<Count>++;
 
 my $updates = $reader.get-objects( :updates-only);
 
-is_deeply [ @$updates ], [ :ind-obj[3, 0, :dict{Count => :int(1),
+is_deeply [ @$updates ], [ :ind-obj[3, 0, :dict{
+                                           Count => :int(2),
                                            Kids => :array[ :ind-ref[4, 0],
                                                            :dict{ MediaBox => :array[ :int(0), :int(0), :int(420), :int(595)], 
                                                                   Resources => :dict{Font => :dict{F1 => :ind-ref[7, 0]},
