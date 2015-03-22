@@ -31,93 +31,109 @@ class PDF::Reader {
         $.load-xref( );
     }
 
-    method ind-obj( Int $obj-num!, Int $gen-num!, :$type, :$get-ast=False, :$fetch=True ) {
+    method !fetch-ind-obj($idx, :$obj-num, :$gen-num) {
+        # stantiate the object
+        my $ind-obj;
+        my $actual-obj-num;
+        my $actual-gen-num;
+ 
+        given $idx<type> {
+            when 1 {
+                # type 1 reference to an external object
+                my $offset = $idx<offset>;
+                my $end = $idx<end>;
+                my $max-length = $end - $offset - 1;
+                my $input = $.input.substr( $offset, $max-length );
+                PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
+                    // die "unable to parse indirect object: $obj-num $gen-num R \@$offset";
+
+                $ind-obj = $/.ast.value;
+                ($actual-obj-num, $actual-gen-num, my $obj-raw) = @$ind-obj;
+
+                if $obj-raw.key eq 'stream' {
+
+                    $obj-raw.value<encoded> //= do {
+                        die "stream mandatory /Length field is missing: $obj-num $gen-num R \@$offset"
+                            unless $obj-raw.value<dict><Length>;
+
+                        my $length = $.deref( $obj-raw.value<dict><Length>, :get-ast ).value;
+                        my $start = $obj-raw.value<start>:delete;
+                        die "stream Length $length appears too large (> $max-length): $obj-num $gen-num R \@$offset"
+                            if $start + $length > $max-length;
+
+                        # ensure stream is followed by an 'endstream' marker
+                        if $input.substr( $start + $length ) ~~ m{^ (.*?) <PDF::Grammar::PDF::stream-tail>} {
+                            if $0.chars {
+                                # hmm some unprocessed bytes
+                                warn "ignoring {$0.chars} bytes before 'endstream' marker: $obj-num $gen-num R \@$offset"
+                            }
+                        }
+                        else {
+                            die "die unable to locate 'endstream' marker after consuming /Length $length bytes: $obj-num $gen-num R \@$offset"
+                        }
+                        $input.substr( $start, $length );
+                    };
+                }
+            }
+            when 2 {
+                # type 2 embedded object
+                my $container-obj = $.ind-obj( $idx<ref-obj-num>, 0, :type<ObjStm> ).object;
+                my $type2-objects = $container-obj.decoded;
+
+                my $index = $idx<index>;
+                my $ind-obj-ref = $type2-objects[ $index ];
+                $actual-obj-num = $ind-obj-ref[0];
+                $actual-gen-num = 0;
+                my $input = $ind-obj-ref[1];
+
+                PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<object> )
+                    // die "unable to parse indirect object: $obj-num $gen-num R\n$input";
+                $ind-obj = [ $actual-obj-num, $actual-gen-num, $/.ast ];
+            }
+            default {die "unhandled index type: $_"};
+        }
+
+        die "index entry was: $obj-num $gen-num R. actual object: $actual-obj-num $actual-gen-num R"
+            unless $obj-num == $actual-obj-num && $gen-num == $actual-gen-num;
+
+        $ind-obj;
+    }
+
+    method ind-obj( Int $obj-num!, Int $gen-num!,
+                    :$type,             #| type assestion
+                    :$get-ast=False,    #| get ast data, not formulated objects
+                    :$eager=True,       #| only return already loaded objects
+        ) {
 
         my $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
             // die "unable to find object: $obj-num $gen-num R";
 
         my $ind-obj = $idx<ind-obj> //= do {
-            return unless $fetch;
-            # stantiate the object
-            my $ind-obj;
-            my $actual-obj-num;
-            my $actual-gen-num;
- 
-            given $idx<type> {
-                when 1 {
-                    # type 1 reference to an external object
-                    my $offset = $idx<offset>;
-                    my $end = $idx<end>;
-                    my $max-length = $end - $offset - 1;
-                    my $input = $.input.substr( $offset, $max-length );
-                    PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
-                        // die "unable to parse indirect object: $obj-num $gen-num R \@$offset";
-
-                    $ind-obj = $/.ast.value;
-                    ($actual-obj-num, $actual-gen-num, my $obj-raw) = @$ind-obj;
-
-                    if $obj-raw.key eq 'stream' {
-
-                        $obj-raw.value<encoded> //= do {
-                            die "stream mandatory /Length field is missing: $obj-num $gen-num R \@$offset"
-                                unless $obj-raw.value<dict><Length>;
-
-                            my $length = $.deref( $obj-raw.value<dict><Length>, :get-ast ).value;
-                            my $start = $obj-raw.value<start>:delete;
-                            die "stream Length $length appears too large (> $max-length): $obj-num $gen-num R \@$offset"
-                                if $start + $length > $max-length;
-
-                            # ensure stream is followed by an 'endstream' marker
-                            if $input.substr( $start + $length ) ~~ m{^ (.*?) <PDF::Grammar::PDF::stream-tail>} {
-                                if $0.chars {
-                                    # hmm some unprocessed bytes
-                                    warn "ignoring {$0.chars} bytes before 'endstream' marker: $obj-num $gen-num R \@$offset"
-                                }
-                            }
-                            else {
-                                die "die unable to locate 'endstream' marker after consuming /Length $length bytes: $obj-num $gen-num R \@$offset"
-                            }
-                            $input.substr( $start, $length );
-                        };
-                    }
-                }
-                when 2 {
-                    # type 2 embedded object
-                    my $container-obj = $.ind-obj( $idx<ref-obj-num>, 0, :type<ObjStm> ).object;
-                    my $type2-objects = $container-obj.decoded;
-
-                    my $index = $idx<index>;
-                    my $ind-obj-ref = $type2-objects[ $index ];
-                    $actual-obj-num = $ind-obj-ref[0];
-                    $actual-gen-num = 0;
-                    my $input = $ind-obj-ref[1];
-
-                    PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<object> )
-                        // die "unable to parse indirect object: $obj-num $gen-num R\n$input";
-                    $ind-obj = [ $actual-obj-num, $actual-gen-num, $/.ast ];
-                }
-                default {die "unhandled index type: $_"};
-            };
-
-            die "index entry was: $obj-num $gen-num R. actual object: $actual-obj-num $actual-gen-num R"
-                unless $obj-num == $actual-obj-num && $gen-num == $actual-gen-num;
-
+            return unless $eager;
+            my $ind-obj = self!"fetch-ind-obj"($idx, :$obj-num, :$gen-num);
             # only fully stantiate object when needed
-            $get-ast ?? $ind-obj !! PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) );
+            $get-ast ?? $ind-obj !! PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) )
         };
 
-        if $ind-obj.isa(PDF::Storage::IndObj) {
-            # regenerate ast from object, which may be updated between fetches
-            return $get-ast ?? $ind-obj.ast !! $ind-obj;
+        my $is-ind-obj = $ind-obj.isa(PDF::Storage::IndObj);
+        my $to-ast = $get-ast && $is-ind-obj;
+        my $to-obj = !$get-ast && !$is-ind-obj;
+
+        if $to-ast {
+            # regenerate ast from object, if required
+            $ind-obj = $ind-obj.ast
         }
-        elsif $get-ast {
-            # caller wants a raw object, that's what we've got
-            return (:$ind-obj);
+        elsif $to-obj {
+            # upgrade storage to object, if object requested
+            $ind-obj = $idx<ind-obj> = PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) )
+                unless $is-ind-obj;
         }
         else {
-            # need to create an object from the ast. save the object in the index
-            return $idx<ind-obj> //= PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) );
+            $ind-obj = :$ind-obj
+                unless $is-ind-obj;
         }
+
+        $ind-obj;
     }
 
     #| utility method for basic deferencing, e.g.
@@ -271,7 +287,10 @@ class PDF::Reader {
     #| -- keep type 2 objects
     #| :!unpack 1.5+ (/ObjStm aware) compatible asts:
     #| -- sift type 2 objects
-    method !get-objects(Bool :$unpack=True, Bool :$fetch=True) {
+    method get-objects(
+        Bool :$updates-only=False       #| only return updated objects
+        ) {
+        constant $unpack = True;
         my @object-refs;
 
         my %objstm-objects;
@@ -314,33 +333,53 @@ class PDF::Reader {
                     default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
                 }
 
-                my $ind-obj-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :$fetch)
-                    or next;
-                my $ind-obj = $ind-obj-ast.value[2];
+                my $updated-ast;
+                if $updates-only {
+                    # preparing incremental updates. only need to consider fetched objects
+                    $updated-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :!eager);
+
+                    # the object hasn't been fetched. It cannot have been updated!
+                    next unless $updated-ast;
+
+                    # check updated vs original PDF value.
+                    my $original-ast = self!"fetch-ind-obj"(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
+                    # discard, if not updated
+                    next if $original-ast eqv $updated-ast.value;
+                }
+                else {
+                    # renegerating PDF. need to eagerly copy updates + unaltered entries
+                    # from the full object tree.
+                    $updated-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :eager)
+                        or next;
+                }
+
+                my $ind-obj = $updated-ast.value[2];
 
                 if my $obj-type = $ind-obj.value<dict><Type> {
                     # discard existing /Type /XRef objects. These are specific to the input PDF
                     next if $obj-type.value eq 'XRef'
                 }
 
-                @object-refs.push: [ $ind-obj-ast, $offset + $seq ];
+                @object-refs.push: [ $updated-ast, $offset + $seq ];
             }
         }
 
         # preserve input order
         my @objects := @object-refs.sort({$^a[1]}).map: {.[0]};
 
-        # Discard Linearization aka "Fast Web View"
-        my $first-ind-obj = @objects[0].value[2];
-        if $first-ind-obj.key eq 'dict' && $first-ind-obj.value<Linearized> {
-            @objects.shift;
+        if !$updates-only && +@objects {
+            # Discard Linearization aka "Fast Web View"
+            my $first-ind-obj = @objects[0].value[2];
+            @objects.shift
+                if $first-ind-obj.key eq 'dict'
+                && $first-ind-obj.value<Linearized>;
         }
 
         return @objects.item;
     }
 
-    method ast( :$fetch=True ) {
-        my $objects = self!"get-objects"( :$fetch );
+    method ast( ) {
+        my $objects = self.get-objects( );
 
         :pdf{
             :header{ :$.version },
