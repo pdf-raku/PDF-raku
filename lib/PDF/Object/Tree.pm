@@ -27,9 +27,7 @@ role PDF::Object::Tree {
     # coerce Hash & Array assignments to objects
     multi method coerce(PDF::Object $val!) { $val }
     multi method coerce(Hash $val!) {
-        $val<stream>:exists
-            ?? PDF::Object.compose( :stream($val), :$.reader )
-            !! PDF::Object.compose( :dict($val), :$.reader )
+        PDF::Object.compose( :dict($val), :$.reader )
     }
     multi method coerce(Array $val!) {
         PDF::Object.compose( :array($val), :$.reader )
