@@ -107,34 +107,32 @@ role PDF::Object::Tree {
     our %seen;
 
     method raw() {
+        return self unless self ~~ Hash | Array;
+
         my $id = ~ self.WHICH;
-        die "illegal circular reference"
+        return %seen{$id}
             if %seen{$id};
-        temp %seen{$id} = True;
 
         given self {
             when Hash {
-                my %raw;
+                temp %seen{$id} = my $raw := {};
                 for self.pairs {
-                    %raw{.key} = do given .value {
+                    $raw{.key} = do given .value {
                         when PDF::Object && Array | Hash { .raw }
                         default { $_ }
                     }
                 }
-                %raw.item;
+                $raw;
             }
             when Array {
-                my @raw;
+                temp %seen{$id} = my $raw = [];
                 for self.pairs {
-                    @raw[.key] = do given .value {
+                    $raw[.key] = do given .value {
                         when PDF::Object && Array | Hash { .raw }
                         default { $_ }
                     }
                 }
-                @raw.item;
-            }
-            default {
-                self
+                $raw;
             }
         }
     }

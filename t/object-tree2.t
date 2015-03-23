@@ -49,9 +49,18 @@ is_deeply $obj<B>.raw<SubRef>, (:ind-ref[77, 0]), 'new hash entry - raw';
 lives_ok {++$obj<A>}, 'shallow reference preincrement';
 is_deeply $obj<Kids>[0], (42), 'deep reference';
 is_deeply $obj<Kids>[1].reader, $reader, 'deep reference stickyness';
+
 is $obj<Kids>[1]<X>, 99, 'deep reference';
 lives_ok {$obj<Kids>[1]<X>++;}, 'deep post increment';
 is $obj<Kids>[1]<X>, 100, 'incremented';
+
+lives_ok {$obj<Kids>[1]<Parent> = $obj}, 'circular assignment - lives';
+my $parent;
+lives_ok { $parent = $obj<Kids>[1]<Parent>}, 'circular deref - lives';
+is ~$parent.WHICH, ~$obj.WHICH, 'assign/deref - graphical integrity';
+my $raw;
+lives_ok {$raw = $obj.raw}, '.raw on circular struct - lives';
+is ~$raw.WHICH, ~$raw<Kids>[1]<Parent>.WHICH, '.raw - graphical integrity';
 $obj<Kids>.push( (:ind-ref[123,0]) );
 is_deeply $obj<Kids>[3], {Desc => "indirect object: 123 0 R", :Type("Test")}, 'new array entry - deref';
 is_deeply $obj<Kids>.raw[3], (:ind-ref[123, 0]), 'new array entry - raw';
