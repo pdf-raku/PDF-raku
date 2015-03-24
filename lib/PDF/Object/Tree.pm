@@ -81,7 +81,8 @@ role PDF::Object::Tree {
 
     multi method deref(Pair $ind-ref! is rw) {
         return $ind-ref
-            unless $ind-ref.key eq 'ind-ref' && $.reader;
+            unless $ind-ref.key eq 'ind-ref'
+            && $.reader && $.reader.tied;
 
         my $obj-num = $ind-ref.value[0];
         my $gen-num = $ind-ref.value[1];
@@ -107,34 +108,29 @@ role PDF::Object::Tree {
     our %seen;
 
     method raw() {
-        return self unless self ~~ Hash | Array;
 
-        my $id = ~ self.WHICH;
-        return %seen{$id}
-            if %seen{$id};
+        return self
+            unless self ~~ Hash | Array
+            && self.reader && self.reader.tied;
+
+        temp self.reader.tied = False;
+
+
+        my $raw;
 
         given self {
             when Hash {
-                temp %seen{$id} = my $raw := {};
-                for self.pairs {
-                    $raw{.key} = do given .value {
-                        when PDF::Object && Array | Hash { .raw }
-                        default { $_ }
-                    }
-                }
-                $raw;
+                $raw := {};
+                $raw{.key} = .value
+                    for self.pairs;
             }
             when Array {
-                temp %seen{$id} = my $raw = [];
-                for self.pairs {
-                    $raw[.key] = do given .value {
-                        when PDF::Object && Array | Hash { .raw }
-                        default { $_ }
-                    }
-                }
-                $raw;
+                $raw = [];
+                $raw[.key] = .value
+                    for self.pairs;
             }
         }
+        $raw;
     }
 
 }

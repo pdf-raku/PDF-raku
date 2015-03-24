@@ -10,8 +10,8 @@ class PDF::Reader {
     has Hash %!ind-obj-idx;
     has $.root is rw;
     has $.ast is rw;
+    has Bool $.tied is rw = True;
     has Rat $.version is rw;
-    has Bool $.debug is rw;
     has PDF::Grammar::PDF::Actions $!actions;
 
     method actions {

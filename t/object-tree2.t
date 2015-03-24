@@ -3,6 +3,7 @@ use PDF::Object;
 use PDF::Object::Dict;
 use PDF::Object::Array;
 use PDF::Storage::IndObj;
+use PDF::Grammar::Test :is-json-equiv;
 use Test;
 
 our %ties;
@@ -10,6 +11,7 @@ our $dummy-reader;
 
 class t::DummyReader {
     has %.object-cache;
+    has Bool $.tied is rw = True;
     method ind-obj($obj-num, $gen-num) {
         %ties{$obj-num}{$gen-num} //= do {
             my %dict = :Type<Test>,
@@ -40,6 +42,11 @@ my $obj = PDF::Object.compose(
 is $obj<A>, 10, 'shallow reference';
 isa_ok $obj, PDF::Object::Dict;
 is_deeply $obj<B>, {Desc => "indirect object: 42 5 R", :Type("Test")}, 'hash dereference';
+
+my $raw;
+lives_ok {$raw = $obj.raw}, '.raw - lives';
+is_deeply $raw<B>, (:ind-ref[42, 5]), 'new hash entry - .raw deref';
+
 isa_ok $obj<Kids>, PDF::Object::Array;
 is_deeply $obj<Kids>.reader, $reader, 'reader array stickyness';
 is_deeply $obj<Kids>[2], {Desc => "indirect object: 99 0 R", :Type("Test")}, 'array dereference';
@@ -58,9 +65,6 @@ lives_ok {$obj<Kids>[1]<Parent> = $obj}, 'circular assignment - lives';
 my $parent;
 lives_ok { $parent = $obj<Kids>[1]<Parent>}, 'circular deref - lives';
 is ~$parent.WHICH, ~$obj.WHICH, 'assign/deref - graphical integrity';
-my $raw;
-lives_ok {$raw = $obj.raw}, '.raw on circular struct - lives';
-is ~$raw.WHICH, ~$raw<Kids>[1]<Parent>.WHICH, '.raw - graphical integrity';
 $obj<Kids>.push( (:ind-ref[123,0]) );
 is_deeply $obj<Kids>[3], {Desc => "indirect object: 123 0 R", :Type("Test")}, 'new array entry - deref';
 is_deeply $obj<Kids>.raw[3], (:ind-ref[123, 0]), 'new array entry - raw';
@@ -79,6 +83,6 @@ is +$obj<Kids>, 3, '+$obj<Kids>';
 isa_ok $obj<Kids>[1], PDF::Object::Dict, 'splice coercian';
 $obj<Kids>.unshift([99]);
 isa_ok $obj<Kids>[0], PDF::Object::Array, 'unshift coercian';
-is_deeply $obj<Kids>.raw, [[99], 42, {:Foo<bar>}, [1, 2, 3]], 'final';
+is-json-equiv $obj<Kids>.raw, [[99], 42, {:Foo<bar>}, [1, 2, 3]], 'final';
 
 done;
