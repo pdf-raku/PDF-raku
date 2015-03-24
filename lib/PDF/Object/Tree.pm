@@ -54,12 +54,22 @@ role PDF::Object::Tree {
         default { $_ }
     }
 
+    #| handle hash assignments: $foo<bar> = 42; $foo{$baz} := $x;
     method ASSIGN-KEY($key, $val) {
         my $lval = self!"lvalue"($val);
         nextwith( $key, $lval );
     }
+    method BIND-KEY($pos, $val) is rw {
+        my $lval = self!"lvalue"($val);
+        nextwith( $pos, $lval );
+    }
 
+    #| handle array assignments: $foo[42] = 'bar'; $foo[99] := $baz;
     method ASSIGN-POS($pos, $val) {
+        my $lval = self!"lvalue"($val);
+        nextwith( $pos, $lval );
+    }
+    method BIND-POS($pos, $val) is rw {
         my $lval = self!"lvalue"($val);
         nextwith( $pos, $lval );
     }
@@ -101,20 +111,16 @@ role PDF::Object::Tree {
         self.ASSIGN-POS($pos, $value);
     }
     #| simple native type. no need to coerce
-    multi method deref($value) is default {
-        $value
-    }
+    multi method deref($value) is default { $value }
 
-    our %seen;
-
+    #| return a shallow unblessed/untied clone of a PDF::Object
     method raw() {
 
         return self
-            unless self ~~ Hash | Array
-            && self.reader && self.reader.tied;
+            if self !~~ Hash | Array
+            || ! self.reader || ! self.reader.tied;
 
         temp self.reader.tied = False;
-
 
         my $raw;
 

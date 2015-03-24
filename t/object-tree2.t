@@ -83,6 +83,10 @@ is +$obj<Kids>, 3, '+$obj<Kids>';
 isa_ok $obj<Kids>[1], PDF::Object::Dict, 'splice coercian';
 $obj<Kids>.unshift([99]);
 isa_ok $obj<Kids>[0], PDF::Object::Array, 'unshift coercian';
-is-json-equiv $obj<Kids>.raw, [[99], 42, {:Foo<bar>}, [1, 2, 3]], 'final';
+
+lives_ok {$obj<Kids>[4] := {}}, 'bind-pos array';
+lives_ok {$obj<Kids>[4]<Bound> := True}, 'bind-pos hash';
+is_deeply $obj<Kids>[4].reader, $reader, 'reader bind-array/pos stickyness';
+is-json-equiv $obj<Kids>.raw, [[99], 42, {:Foo<bar>}, [1, 2, 3], { :Bound(True) } ], 'final';
 
 done;
