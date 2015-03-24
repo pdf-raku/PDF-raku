@@ -30,7 +30,6 @@ multi submethod BUILD( Array :$ind-obj!, :$input, :$type, :$reader, *%etc ) {
             unless $actual-type eq $type
     }
 
-    %params.perl;
     $!object = PDF::Object.compose( :$reader, :$!obj-num, :$!gen-num, |%params);
 }
 
