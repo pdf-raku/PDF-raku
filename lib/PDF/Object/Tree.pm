@@ -59,17 +59,9 @@ role PDF::Object::Tree {
         my $lval = self!"lvalue"($val);
         nextwith( $key, $lval );
     }
-    method BIND-KEY($pos, $val) is rw {
-        my $lval = self!"lvalue"($val);
-        nextwith( $pos, $lval );
-    }
 
     #| handle array assignments: $foo[42] = 'bar'; $foo[99] := $baz;
     method ASSIGN-POS($pos, $val) {
-        my $lval = self!"lvalue"($val);
-        nextwith( $pos, $lval );
-    }
-    method BIND-POS($pos, $val) is rw {
         my $lval = self!"lvalue"($val);
         nextwith( $pos, $lval );
     }
