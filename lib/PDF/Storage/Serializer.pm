@@ -6,7 +6,7 @@ use PDF::Object::Stream;
 
 class PDF::Storage::Serializer {
 
-    has Int $!cur-obj-num = 0;
+    has Int $.size is rw = 1;  # first free object number
     has @.ind-objs;
     has %!obj-num;
     has %.ref-count;
@@ -34,7 +34,7 @@ class PDF::Storage::Serializer {
     }
 
     method !make-ind-ref( Pair $ind-obj! is rw, Str :$id!) {
-        my $obj-num = ++ $!cur-obj-num;
+        my $obj-num = $!size++;
         @.ind-objs.push: (:ind-obj[ $obj-num, 0, $ind-obj]);
         %!obj-num{$id} = $obj-num;
         :ind-ref[ $obj-num, 0];

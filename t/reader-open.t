@@ -11,6 +11,7 @@ my $pdf-in = PDF::Reader.new(:debug);
 $pdf-in.open( 't/pdf/pdf.in' );
 
 is $pdf-in.version, 1.2, 'loaded version';
+is $pdf-in.size, 9, 'loaded size';
 isa_ok $pdf-in.root.object, PDF::Object::Type::Catalog , 'root-obj';
 is $pdf-in.root.obj-num, 1, 'root-obj.obj-num';
 isa_ok $pdf-in.ind-obj(3, 0).object, PDF::Object::Dict, 'fetch via index';

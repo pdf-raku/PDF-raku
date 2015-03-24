@@ -5,6 +5,7 @@ class PDF::Reader {
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
     use PDF::Storage::IndObj;
+    use PDF::Object;
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
     has Hash %!ind-obj-idx;
@@ -13,6 +14,7 @@ class PDF::Reader {
     has Bool $.tied is rw = True;
     has Rat $.version is rw;
     has PDF::Grammar::PDF::Actions $!actions;
+    has $.size is rw;   #= /Size entry in trailer dict ~ first free object number
 
     method actions {
         $!actions //= PDF::Grammar::PDF::Actions.new
@@ -210,7 +212,7 @@ class PDF::Reader {
                 PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
                     or die "unable to parse index: $xref";
                 my ($xref-ast, $trailer-ast) = @( $/.ast );
-                $dict = $trailer-ast<trailer>.value;
+                $dict = PDF::Object.compose( |%($trailer-ast<trailer>) );
 
                 my $prev-offset;
 
@@ -245,6 +247,10 @@ class PDF::Reader {
             $root-ref //= $dict<Root>
                 if $dict<Root>:exists;
 
+            $.size = $dict<Size>:exists
+                ?? $dict<Size>
+                !! 1; # fix it up later
+
             $xref-offset = $dict<Prev>:exists
                 ?? $dict<Prev>
                 !! Mu;
@@ -273,6 +279,11 @@ class PDF::Reader {
 
             %!ind-obj-idx{ $obj-num }{ 0 } = { :type(2), :$index, :$ref-obj-num };
         }
+
+        #| don't entirely trust /Size entry in trailer dictionary
+        my $max-obj-num = max( %!ind-obj-idx.keys>>.Int );
+        $.size = $max-obj-num + 1
+            if $.size <= $max-obj-num;
 
         $root-ref.defined
             ?? $!root = $.ind-obj( $root-ref.value[0], $root-ref.value[1] )
