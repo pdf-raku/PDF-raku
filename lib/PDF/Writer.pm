@@ -62,9 +62,6 @@ class PDF::Writer {
             $!offset += @out[*-1].chars + 1;
         }
 
-        my $startxref = $.offset;
-        my $prev = $!prev-xref-offset;
-
         @entries = @entries.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
         my @xref;
@@ -73,7 +70,7 @@ class PDF::Writer {
         for @entries {
             # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
             # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
-            my $contigous = .<obj-num> && .<obj-num> == $size;
+            my $contigous = +@xref && .<obj-num> && .<obj-num> == $size;
             @xref.push: %( object-first-num => .<obj-num>, entries => [] ).item
                 unless $contigous;
             @xref[*-1]<entries>.push: $_;
@@ -82,6 +79,8 @@ class PDF::Writer {
         }
 
         my $xref-str = $.write( :@xref );
+        my $prev = $!prev-xref-offset;
+        my $startxref = $.offset;
         $!offset += $xref-str.chars;
         my $trailer = $body<trailer>
             // {};
