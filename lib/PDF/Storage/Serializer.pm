@@ -8,8 +8,9 @@ class PDF::Storage::Serializer {
 
     has Int $.size is rw = 1;  # first free object number
     has @.ind-objs;
-    has %!obj-num;
+    has %!obj-num-idx;
     has %.ref-count;
+    has Bool $.renumber is rw = True;
 
     #| analyse stage simply reference counts arrays and hashes. Any that occurs
     #| multiple times is automatically promoted to an indirect object.
@@ -29,15 +30,28 @@ class PDF::Storage::Serializer {
     }
 
     method !get-ind-ref( Str :$id!) {
-        :ind-ref[ %!obj-num{$id}, 0 ]
-            if %!obj-num{$id}:exists;
+        :ind-ref( %!obj-num-idx{$id} )
+            if %!obj-num-idx{$id}:exists;
     }
 
-    method !make-ind-ref( Pair $ind-obj! is rw, Str :$id!) {
-        my $obj-num = $!size++;
-        @.ind-objs.push: (:ind-obj[ $obj-num, 0, $ind-obj]);
-        %!obj-num{$id} = $obj-num;
-        :ind-ref[ $obj-num, 0];
+    method !index-object( Pair $ind-obj! is rw, Str :$id!, :$object) {
+        my $obj-num;
+        my $gen-num;
+
+        if ! $.renumber && $object.isa(PDF::Object) && $object.obj-num {
+            # keep original object number
+            $obj-num = $object.obj-num;
+            $gen-num = $object.gen-num;
+        }
+        else {
+            $obj-num = $!size++;
+            $gen-num = 0;
+        }
+
+        my $ind-ref = [ $obj-num, $gen-num ];
+        @.ind-objs.push: (:ind-obj[ $obj-num, $gen-num, $ind-obj]);
+        %!obj-num-idx{$id} = $ind-ref;
+        :$ind-ref;
     }
 
     method !freeze-dict( Hash $dict is rw) {
@@ -55,12 +69,12 @@ class PDF::Storage::Serializer {
     }
 
     #| handles PDF::Object::Dict, PDF::Object::Stream, (plain) Hash
-    multi method freeze( Hash $object! is rw, Bool :$is-root ) {
+    multi method freeze( Hash $object! is rw, Bool :$indirect ) {
         my $id = ~$object.WHICH;
 
         # already an indirect object
         return self!"get-ind-ref"(:$id )
-            if %!obj-num{$id}:exists;
+            if %!obj-num-idx{$id}:exists;
 
         my $has-type = $object<Type>:exists;
         my $is-stream = $object.isa(PDF::Object::Stream);
@@ -76,8 +90,8 @@ class PDF::Storage::Serializer {
         }
 
         # register prior to traversing the object. in case there are cyclical references
-        my $ret = $is-stream || $is-root || $has-type || %!ref-count{$id} > 1
-            ?? self!"make-ind-ref"($ind-obj, :$id )
+        my $ret = $is-stream || $indirect || $has-type || %!ref-count{$id} > 1
+            ?? self!"index-object"($ind-obj, :$id, :$object )
             !! $ind-obj;
 
         $slot = self!"freeze-dict"($object);
@@ -86,22 +100,22 @@ class PDF::Storage::Serializer {
     }
 
     #| handles PDF::Object::Array, (plain) Array
-    multi method freeze( Array $array! is rw, Bool :$is-root ) {
-        my $id = ~$array.WHICH;
+    multi method freeze( Array $object! is rw, Bool :$indirect ) {
+        my $id = ~$object.WHICH;
 
         # already an indirect object
         return self!"get-ind-ref"( :$id )
-            if %!obj-num{$id}:exists;
+            if %!obj-num-idx{$id}:exists;
 
         my $ind-obj = array => Mu;
         my $slot := $ind-obj.value;
 
         # register prior to traversing the object. in case there are cyclical references
-        my $ret = $is-root || %!ref-count{$id} > 1
-            ?? self!"make-ind-ref"($ind-obj, :$id )
+        my $ret = $indirect || %!ref-count{$id} > 1
+            ?? self!"index-object"($ind-obj, :$id, :$object )
             !! $ind-obj;
 
-        $slot = self!"freeze-array"($array);
+        $slot = self!"freeze-array"($object);
 
         $ret;
     }

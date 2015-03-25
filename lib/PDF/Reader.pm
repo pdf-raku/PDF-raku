@@ -344,34 +344,34 @@ class PDF::Reader {
                     default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
                 }
 
-                my $updated-ast;
+                my $final-ast;
                 if $updates-only {
                     # preparing incremental updates. only need to consider fetched objects
-                    $updated-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :!eager);
+                    $final-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :!eager);
 
                     # the object hasn't been fetched. It cannot have been updated!
-                    next unless $updated-ast;
+                    next unless $final-ast;
 
                     # check updated vs original PDF value.
                     my $original-ast = self!"fetch-ind-obj"(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
                     # discard, if not updated
-                    next if $original-ast eqv $updated-ast.value;
+                    next if $original-ast eqv $final-ast.value;
                 }
                 else {
                     # renegerating PDF. need to eagerly copy updates + unaltered entries
                     # from the full object tree.
-                    $updated-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :eager)
+                    $final-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :eager)
                         or next;
                 }
 
-                my $ind-obj = $updated-ast.value[2];
+                my $ind-obj = $final-ast.value[2];
 
                 if my $obj-type = $ind-obj.value<dict><Type> {
                     # discard existing /Type /XRef objects. These are specific to the input PDF
                     next if $obj-type.value eq 'XRef'
                 }
 
-                @object-refs.push: [ $updated-ast, $offset + $seq ];
+                @object-refs.push: [ $final-ast, $offset + $seq ];
             }
         }
 
@@ -387,6 +387,15 @@ class PDF::Reader {
         }
 
         return @objects.item;
+    }
+
+    method get-updates() {
+        my $raw-objects = $.get-objects( :updates-only );
+        $raw-objects.list.map({
+            my $obj-num = .value[0];
+            my $gen-num = .value[1];
+            $.ind-obj($obj-num, $gen-num).object;
+        });
     }
 
     method ast( ) {
