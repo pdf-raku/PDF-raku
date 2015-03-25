@@ -1,6 +1,7 @@
 use v6;
 
 use PDF::Object :to-ast;
+use PDF::Object::Array;
 use PDF::Object::Dict;
 use PDF::Object::Stream;
 
@@ -68,6 +69,25 @@ class PDF::Storage::Serializer {
         @frozen;
     }
 
+    #| should this be serialized as an indirect object?
+    method !is-indirect-object($object, :$id! --> Bool) {
+
+        # multiply referenced objects
+        return True if %!ref-count{$id} > 1;
+
+        # streams always need to be indirect objects
+        return True if $object ~~ PDF::Object::Stream;
+
+        # type objects are indirect, e.g. << /Type /Catalog .... >>
+        return True if ($object ~~ Hash) && ($object<Type>:exists);
+
+        # presumably sourced as an indirect object, so output as such.
+        return True if ($object ~~ PDF::Object::Dict | PDF::Object::Array)
+            && $object.obj-num;
+
+        return False;
+    }
+
     #| handles PDF::Object::Dict, PDF::Object::Stream, (plain) Hash
     multi method freeze( Hash $object! is rw, Bool :$indirect ) {
         my $id = ~$object.WHICH;
@@ -76,7 +96,6 @@ class PDF::Storage::Serializer {
         return self!"get-ind-ref"(:$id )
             if %!obj-num-idx{$id}:exists;
 
-        my $has-type = $object<Type>:exists;
         my $is-stream = $object.isa(PDF::Object::Stream);
 
         my $ind-obj;
@@ -95,7 +114,7 @@ class PDF::Storage::Serializer {
         }
 
         # register prior to traversing the object. in case there are cyclical references
-        my $ret = $is-stream || $indirect || $has-type || %!ref-count{$id} > 1
+        my $ret = $indirect || self!"is-indirect-object"( $object, :$id )
             ?? self!"index-object"($ind-obj, :$id, :$object )
             !! $ind-obj;
 
@@ -116,7 +135,7 @@ class PDF::Storage::Serializer {
         my $slot := $ind-obj.value;
 
         # register prior to traversing the object. in case there are cyclical references
-        my $ret = $indirect || %!ref-count{$id} > 1
+        my $ret = $indirect || self!"is-indirect-object"( $object, :$id )
             ?? self!"index-object"($ind-obj, :$id, :$object )
             !! $ind-obj;
 
