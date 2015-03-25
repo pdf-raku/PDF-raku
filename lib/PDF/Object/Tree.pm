@@ -34,24 +34,10 @@ role PDF::Object::Tree {
     }
     multi method coerce($val) is default { $val }
 
-    #| try to keep indirect references as such. avoids circular references.
-    method !is-ind-ref($obj) {
-        !! ( $.reader
-             && $obj ~~ Hash | Array
-             && $obj.obj-num
-             && $.reader === $obj.reader );
-    }
-
     method !lvalue($_) is rw {
-        when PDF::Object {
-            self!"is-ind-ref"($_)
-                ?? (:ind-ref[ .obj-num, .gen-num])
-                !! $_
-        }
-        when Hash | Array {
-            $.coerce($_);
-        }
-        default { $_ }
+        when PDF::Object  { $_ }
+        when Hash | Array { $.coerce($_) }
+        default           { $_ }
     }
 
     #| handle hash assignments: $foo<bar> = 42; $foo{$baz} := $x;

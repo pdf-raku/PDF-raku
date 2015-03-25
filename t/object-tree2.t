@@ -74,7 +74,6 @@ isa_ok $obj<Y>, PDF::Object::Dict, 'vivification - type';
 is_deeply $obj<Y>.reader, $reader, 'vivification - reader stickyness';
 # other abstracted methods
 $obj<Kids>[4] = $obj<B><SubRef>;
-is_deeply $obj<Kids>.raw[*-1], (:ind-ref[77, 0]), 'indirect reference assigment';
 $obj<Kids>.push: [1,2,3];
 is +$obj<Kids>, 6, '+$obj<Kids>';
 isa_ok $obj<Kids>[*-1], PDF::Object::Array, 'push coercian';
