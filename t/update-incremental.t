@@ -64,7 +64,6 @@ for $updates.list -> $object {
 }
 
 my $updated-objects = $serializer.ind-objs;
-todo "dict object looks wrong in stream object: 10 0 R";
 is-json-equiv $updated-objects, [
     :ind-obj[3, 0, :dict{ Kids => :array[ :ind-ref[4, 0], :ind-ref[9, 0]],
                           Count => :int(2),

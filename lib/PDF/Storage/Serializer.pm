@@ -79,14 +79,19 @@ class PDF::Storage::Serializer {
         my $has-type = $object<Type>:exists;
         my $is-stream = $object.isa(PDF::Object::Stream);
 
-        my $ind-obj = dict => Mu;
-        my $slot := $ind-obj.value;
+        my $ind-obj;
+        my $slot;
 
         if $is-stream {
             $ind-obj = :stream{
-                :$ind-obj,
+                :dict(Mu),
                 :encoded($object.encoded),
-            }
+            };
+            $slot := $ind-obj.value<dict>;
+        }
+        else {
+            $ind-obj = dict => Mu;
+            $slot := $ind-obj.value;
         }
 
         # register prior to traversing the object. in case there are cyclical references
