@@ -11,7 +11,7 @@ our $dummy-reader;
 
 class t::DummyReader {
     has %.object-cache;
-    has Bool $.tied is rw = True;
+    has Bool $.auto-deref is rw = True;
     method ind-obj($obj-num, $gen-num) {
         %ties{$obj-num}{$gen-num} //= do {
             my %dict = :Type<Test>,

@@ -36,8 +36,8 @@ is $catalog-obj.Type, 'Catalog', 'catalog $.Type';
 
 $dict<Type>:delete;
 lives_ok {$catalog-obj = ::('PDF::Object::Type::Catalog').new( :$dict )}, 'catalog .new with valid /Type - lives';
-isa_ok $catalog-obj.Type, Str, 'catalog $.Type (tied)';
-is $catalog-obj.Type, 'Catalog', 'catalog $.Type (tied)';
+isa_ok $catalog-obj.Type, Str, 'catalog $.Type';
+is $catalog-obj.Type, 'Catalog', 'catalog $.Type';
 
 $dict<Type> = :name<Wtf>;
 dies_ok {::('PDF::Object::Type::Catalog').new( :$dict )}, 'catalog .new with invalid /Type - dies';

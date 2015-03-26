@@ -16,17 +16,19 @@ $reader.open( 't/pdf/pdf-update.out', :a );
 my $root = $reader.root;
 my $root-obj = $root.object;
 
-my $Pages = $root-obj<Pages>;
-my $Resources = $Pages<Kids>[0]<Resources>;
-my $MediaBox = $Pages<Kids>[0]<MediaBox>;
-my $new-page = { :Type(/'Page'), :$MediaBox, :$Resources };
-my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
-$new-page<Contents> = $contents;
-$Pages<Kids>.push: $new-page;
-$Pages<Count>++;
+{
+    temp $reader.auto-deref = True;
+    my $Pages = $root-obj<Pages>;
+    my $Resources = $Pages<Kids>[0]<Resources>;
+    my $MediaBox = $Pages<Kids>[0]<MediaBox>;
+    my $new-page = { :Type(/'Page'), :$MediaBox, :$Resources };
+    my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
+    $new-page<Contents> = $contents;
+    $Pages<Kids>.push: $new-page;
+    $Pages<Count>++;
+}
 
 my $updates = $reader.get-updates;
-temp $reader.tied = False;
 
 is-json-equiv [ @$updates ], [ { :Count(2),
                                  :Kids[ { :ind-ref[ 4, 0 ] },
