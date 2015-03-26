@@ -20,19 +20,19 @@ my $Pages = $root-obj<Pages>;
 my $Resources = $Pages<Kids>[0]<Resources>;
 my $MediaBox = $Pages<Kids>[0]<MediaBox>;
 my $new-page = { :Type(/'Page'), :$MediaBox, :$Resources };
-my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (and they all lived happily ever after!) Tj ET" ) } );
+my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
 $new-page<Contents> = $contents;
 $Pages<Kids>.push: $new-page;
 $Pages<Count>++;
 
 my $updates = $reader.get-updates;
+temp $reader.tied = False;
 
-todo "dodgey is-json-equiv() ?";
 is-json-equiv [ @$updates ], [ { :Count(2),
                                  :Kids[ { :ind-ref[ 4, 0 ] },
                                         { :Type<Page>, :MediaBox[ 0, 0, 420, 595 ], :Resources{ :Font{ F1 => :ind-ref[ 7, 0 ]  },
                                                                                                 ProcSet =>  :ind-ref[ 6, 0 ] },
-                                          :Contents{ :Length(71) } }
+                                          :Contents{ :Length(70) } }
                                      ],
                                  :Type<Pages> } ], "update ast";
 
@@ -54,7 +54,6 @@ my $serializer = ::('PDF::Storage::Serializer').new;
 $serializer.size = $reader.size;
 $serializer.renumber = False;
 # avoid automatical object traversal
-temp $reader.tied = False;
 
 for $updates.list -> $object {
     # reference count new objects
@@ -66,27 +65,29 @@ for $updates.list -> $object {
 }
 
 my $updated-objects = $serializer.ind-objs;
-is-json-equiv $updated-objects, [
+is +$updated-objects, 3, 'number of updates';
+is-json-equiv $updated-objects[0], (
     :ind-obj[3, 0, :dict{ Kids => :array[ :ind-ref[4, 0], :ind-ref[9, 0]],
                           Count => :int(2),
                           Type => :name<Pages>,
-                         }],
+                         }]), 'altered /Pages';
+
+is-json-equiv $updated-objects[1], (
     :ind-obj[9, 0, :dict{ MediaBox => :array[ :int(0), :int(0), :int(420), :int(595)],
                           Contents => :ind-ref[10, 0],
                           Resources => :dict{ Font => :dict{ F1 => :ind-ref[7, 0]},
                                               ProcSet => :ind-ref[6, 0]},
                           Type => :name<Page>,
-                         }],
-    :ind-obj[10, 0, :stream{ :encoded("BT /F1 24 Tf  100 250 Td (and they all lived happily ever after!) Tj ET"),
-                             :dict{Length => :int(71) },
-                            }],
-    ], "serialized updates";
+                         }]), 'inserted page';
+
+is-json-equiv $updated-objects[2], (
+    :ind-obj[10, 0, :stream{ :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET"),
+                             :dict{Length => :int(70) },
+                            }]), 'inserted content';
 
 my $offset = $reader.input.chars + 1;
 my $prev = $reader.prev;
-note "offset: $offset";
 my $writer = PDF::Writer.new( :$root, :$offset, :$prev );
-note "writing...";
 my $body = { :objects($updated-objects) };
 my $new-body = "\n" ~ $writer.write( :$body );
 
