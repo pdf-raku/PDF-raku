@@ -14,6 +14,7 @@ class PDF::Reader {
     has Bool $.tied is rw = True;
     has Rat $.version is rw;
     has PDF::Grammar::PDF::Actions $!actions;
+    has $.prev;
     has $.size is rw;   #= /Size entry in trailer dict ~ first free object number
 
     method actions {
@@ -187,7 +188,8 @@ class PDF::Reader {
 
         PDF::Grammar::PDF.parse($tail, :$.actions, :rule<postamble>)
             or die "expected file trailer 'startxref ... \%\%EOF', got: {$tail.perl}";
-        my $xref-offset = $/.ast.value;
+        $!prev = $/.ast.value;
+        my $xref-offset = $!prev;
 
         my $root-ref;
         my @obj-idx;

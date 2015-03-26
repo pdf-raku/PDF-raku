@@ -9,10 +9,10 @@ class PDF::Writer {
     has $.ast is rw;
     has $.root;
     has $.offset = 0;
-    has $!prev-xref-offset;
+    has $!prev;
     has %!init;
 
-    submethod BUILD(:$input, :$!ast, :$root, :$!offset ) {
+    submethod BUILD(:$input, :$!ast, :$root, :$!offset, :$!prev ) {
 
         $!root = $root.can('ind-ref')
             ?? $root.ind-ref
@@ -26,7 +26,7 @@ class PDF::Writer {
     method Str {
         nextsame unless $.ast.defined;
         temp $!offset;
-        temp $!prev-xref-offset;
+        temp $!prev;
         $.write( $.ast );
     }
 
@@ -79,15 +79,16 @@ class PDF::Writer {
         }
 
         my $xref-str = $.write( :@xref );
-        my $prev = $!prev-xref-offset;
         my $startxref = $.offset;
         $!offset += $xref-str.chars;
         my $trailer = $body<trailer>
             // {};
-        @out.push: [~] ($xref-str,
-                        $.write( :$trailer, :$prev, :$size ),
-                        $.write( :$startxref ));
-        $!prev-xref-offset = $startxref;
+        @out.push: [~] (
+            $xref-str,
+            $.write( :$trailer, :$!prev, :$size ),
+            $.write( :$startxref ),
+            '%%EOF');
+        $!prev = $startxref;
         $!offset += @out[*-1].chars + 2;
 
         return @out.join: "\n";
@@ -188,7 +189,7 @@ class PDF::Writer {
             !! $.write( :comment<%¥±ë> );
         $!offset = $header.chars + $comment.chars + 2;  # since format is byte orientated
         my $body = $.write( :body($pdf<body>) );
-        [~] ($header, "\n", $comment, "\n", $body, '%%EOF', '');
+        [~] ($header, "\n", $comment, "\n", $body);
     }
 
     multi method write(Any :$header! ) {

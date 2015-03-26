@@ -8,11 +8,13 @@ use PDF::Grammar::Test :is-json-equiv;
 
 sub prefix:</>($name){ PDF::Object.compose(:$name) };
 
-my $reader = PDF::Reader.new(:debug);
+my $reader = PDF::Reader.new();
 
-$reader.open( 't/pdf/pdf.in' );
+'t/pdf/pdf.in'.IO.copy('t/pdf/pdf-update.out');
+$reader.open( 't/pdf/pdf-update.out', :a );
 
-my $root-obj = $reader.root.object;
+my $root = $reader.root;
+my $root-obj = $root.object;
 
 my $Pages = $root-obj<Pages>;
 my $Resources = $Pages<Kids>[0]<Resources>;
@@ -80,4 +82,15 @@ is-json-equiv $updated-objects, [
                             }],
     ], "serialized updates";
 
+my $offset = $reader.input.chars + 1;
+my $prev = $reader.prev;
+note "offset: $offset";
+my $writer = PDF::Writer.new( :$root, :$offset, :$prev );
+note "writing...";
+my $body = { :objects($updated-objects) };
+my $new-body = "\n" ~ $writer.write( :$body );
+
+# todo append to reader input
+##$reader.input.append( $new-body );
+'t/pdf/pdf-update.out'.IO.open(:a).write( $new-body.encode('latin-1') );
 done;
