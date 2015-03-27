@@ -2,6 +2,7 @@ use v6;
 use Test;
 
 use PDF::Object;
+use PDF::Storage::Serializer;
 use PDF::Writer;
 
 sub prefix:</>($name){ PDF::Object.compose(:$name) };
@@ -31,7 +32,7 @@ $page.Resources = { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
 my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 $page.Contents = $contents;
 
-my $result = $root-object.serialize;
+my $result = PDF::Storage::Serializer.new.serialize-doc($root-object);
 my $root = $result<root>;
 my $objects = $result<objects>;
 

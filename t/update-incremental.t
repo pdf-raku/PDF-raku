@@ -4,6 +4,7 @@ use Test;
 use PDF::Reader;
 use PDF::Writer;
 use PDF::Object;
+use PDF::Storage::Serializer;
 use PDF::Grammar::Test :is-json-equiv;
 
 sub prefix:</>($name){ PDF::Object.compose(:$name) };
@@ -38,35 +39,9 @@ is-json-equiv [ @$updates ], [ { :Count(2),
                                      ],
                                  :Type<Pages> } ], "update ast";
 
-# work in progress on implementation and tests,
-# tba serilization and writing stages, todo:
-# - based on https://blog.idrsolutions.com/2013/06/how-to-edit-pdf-files/, it seems that the updated
-#   objects can be re-appended and reindexed without the need to increment generation numbers, manage
-#   free lists, or cascade the updates back to the root Catalog (phew)
-# - the objects that need updating are: Pages
-# - new Stream and Page objects need to be written, object numbers: First+1, First+2 
-# - updated Pages needs to be written
-# - new incrmental index with entries for Pages, new Page and new Content. First = First+2
+my $serializer = PDF::Storage::Serializer.new;
 
-use PDF::Storage::Serializer;
-
-my $serializer = ::('PDF::Storage::Serializer').new;
-
-# only renumber new objects, starting from the highest input number + 1 (size)
-$serializer.size = $reader.size;
-$serializer.renumber = False;
-# avoid automatical object traversal
-
-for $updates.list -> $object {
-    # reference count new objects
-    $serializer.analyse( $object );
-}
-
-for $updates.list -> $object {
-    $serializer.freeze( $object, :indirect )
-}
-
-my $updated-objects = $serializer.ind-objs;
+my $updated-objects = $serializer.serialize-updates( $reader );
 is +$updated-objects, 3, 'number of updates';
 is-json-equiv $updated-objects[0], (
     :ind-obj[3, 0, :dict{ Kids => :array[ :ind-ref[4, 0], :ind-ref[9, 0]],
@@ -106,7 +81,6 @@ $reader = PDF::Reader.new();
 $reader.open( 't/pdf/pdf-updated.out', :a );
 
 my $ast = $reader.ast;
-note :$ast.perl;
 is +$ast<pdf><body><objects>, 10, 'read-back has 10 objects';
 is $ast<pdf><body><objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Length => :int(70)},
                                                            :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET")},

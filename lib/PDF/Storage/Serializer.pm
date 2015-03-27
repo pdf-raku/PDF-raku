@@ -30,6 +30,34 @@ class PDF::Storage::Serializer {
     multi method analyse( $other! is rw ) is default {
     }
 
+    #| complete reserialization, from the document root downwards
+    method serialize-doc( PDF::Object $root-object!) {
+        $.analyse( $root-object );
+        my $root = $.freeze( $root-object, :indirect );
+        my $objects = $.ind-objs;
+        $root-object.post-process( $objects );
+        return %( :$root, :$objects );
+    }
+
+    method serialize-updates( $reader ) {
+        # only renumber new objects, starting from the highest input number + 1 (size)
+        $.size = $reader.size;
+        temp $.renumber = False;
+        my $updates = $reader.get-updates;
+
+        for $updates.list -> $object {
+            # reference count new objects
+            $.analyse( $object );
+        }
+
+        for $updates.list -> $object {
+            $.freeze( $object, :indirect )
+        }
+
+        my $updated-objects = $.ind-objs;
+        return $updated-objects;
+    }
+
     method !get-ind-ref( Str :$id!) {
         :ind-ref( %!obj-num-idx{$id} )
             if %!obj-num-idx{$id}:exists;

@@ -25,7 +25,7 @@ $root-obj[2] := $root-obj;
 $root-obj[0]<Parent> := $root-obj;
 
 # our serializer should create indirect refs to resolve the above
-my $result = $root-obj.serialize;
+my $result = PDF::Storage::Serializer.new.serialize-doc($root-obj);
 my $s-objects = $result<objects>;
 is +$s-objects, 2, 'expected number of objects';
 is_deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => :ind-ref[1, 0]},
@@ -55,7 +55,7 @@ my $body = PDF::Object.compose( :dict{
     :Outlines{ :Type(/'Outlines'), :Count(0) },
     });
 
-my $results = $body.serialize;
+my $results = PDF::Storage::Serializer.new.serialize-doc($body);
 my $objects = $results<objects>;
 
 sub infix:<object-order-ok>($obj-a, $obj-b) {
@@ -90,13 +90,13 @@ my $obj-with-utf8 = PDF::Object.compose :dict{ :Name(/"Heydər Əliyev") };
 
 my $writer = PDF::Writer.new;
 
-$objects = $obj-with-utf8.serialize<objects>;
+$objects = PDF::Storage::Serializer.new.serialize-doc($obj-with-utf8)<objects>;
 is_deeply $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
 is $writer.write( :ind-obj($objects[0].value)), "1 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj", 'name write';
 
 # just to define current behaviour. blows up during final write.
 my $obj-with-bad-byte-string = PDF::Object.compose :dict{ :Name("Heydər Əliyev") };
-$objects = $obj-with-bad-byte-string.serialize<objects>;
+$objects = PDF::Storage::Serializer.new.serialize-doc($obj-with-bad-byte-string)<objects>;
 dies_ok {$writer.write( :ind-obj($objects[0].value) )}, 'out-of-range byte-string dies during write';
 
 done;

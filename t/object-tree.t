@@ -3,6 +3,7 @@ use Test;
 
 use PDF::Reader;
 use PDF::Writer;
+use PDF::Storage::Serializer;
 use PDF::Object;
 
 sub prefix:</>($name){ PDF::Object.compose(:$name) };
@@ -69,7 +70,7 @@ my $new-root = PDF::Object.compose( :dict{ :Type(/'Catalog') });
 $new-root.Outlines = $root-obj<Outlines>;
 $new-root.Pages = $root-obj<Pages>;
 
-my $result = $new-root.serialize;
+my $result = PDF::Storage::Serializer.new.serialize-doc($new-root);
 my $root = $result<root>;
 my $objects = $result<objects>;
 

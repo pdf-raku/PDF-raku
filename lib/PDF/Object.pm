@@ -2,17 +2,7 @@ use v6;
 
 class PDF::Object {
 
-    method serialize {
-        require ::('PDF::Storage::Serializer');
-        my $serializer = ::('PDF::Storage::Serializer').new;
-        $serializer.analyse( self );
-        my $root = $serializer.freeze( self, :indirect );
-        my $objects = $serializer.ind-objs;
-        $.post-process( $objects );
-        return %( :$root, :$objects );
-    }
-
-    #| insert Parent indirect references, etc
+    #| see issue #5
     method post-process( Array $ind-objs is rw) {
         for $ind-objs.list -> $ind-obj {
             next unless $ind-obj.key eq 'ind-obj' && $ind-obj.value[2].key eq 'dict';
