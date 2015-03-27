@@ -10,8 +10,8 @@ sub prefix:</>($name){ PDF::Object.compose(:$name) };
 
 my $reader = PDF::Reader.new();
 
-'t/pdf/pdf.in'.IO.copy('t/pdf/pdf-update.out');
-$reader.open( 't/pdf/pdf-update.out', :a );
+'t/pdf/pdf.in'.IO.copy('t/pdf/pdf-updated.out');
+$reader.open( 't/pdf/pdf-updated.out', :a );
 
 my $root = $reader.root;
 my $root-obj = $root.object;
@@ -95,5 +95,26 @@ my $new-body = "\n" ~ $writer.write( :$body );
 
 # todo append to reader input
 ##$reader.input.append( $new-body );
-'t/pdf/pdf-update.out'.IO.open(:a).write( $new-body.encode('latin-1') );
+'t/pdf/pdf-updated.out'.IO.open(:a).write( $new-body.encode('latin-1') );
+
+# now re-read the pdf. Will also test our ability to read a PDF
+# with multiple segments
+
+$reader = Mu;
+
+$reader = PDF::Reader.new();
+$reader.open( 't/pdf/pdf-updated.out', :a );
+
+my $ast = $reader.ast;
+note :$ast.perl;
+is +$ast<pdf><body><objects>, 10, 'read-back has 10 objects';
+is $ast<pdf><body><objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Length => :int(70)},
+                                                           :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET")},
+                              ]), 'inserted content';
+
+# do a full rewrite of the updated PDF. Output should be cleaned up, with a single body and
+# cleansed of old object versions.
+$writer = PDF::Writer.new( :$root );
+ok 't/pdf/pdf-updated-and-rewritten.out'.IO.spurt( $writer.write( $ast ), :enc<latin-1> ), 're-read + rewrite of updated PDF';
+
 done;
