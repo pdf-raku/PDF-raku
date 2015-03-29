@@ -193,7 +193,8 @@ class PDF::Writer {
     }
 
     multi method write(Any :$header! ) {
-        sprintf '%%PDF-%.1f', $header<version> // 1.2;
+        my $type = ($header<type> // 'pdf').uc;
+        sprintf '%%%s-%.1f', $type, $header<version> // 1.2;
     }
 
     multi method write( Numeric :$real! ) {

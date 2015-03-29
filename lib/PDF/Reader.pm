@@ -13,6 +13,7 @@ class PDF::Reader {
     has $.ast is rw;
     has Bool $.auto-deref is rw = False;
     has Rat $.version is rw;
+    has Str $.type is rw;
     has PDF::Grammar::PDF::Actions $!actions;
     has $.prev;
     has $.size is rw;   #= /Size entry in trailer dict ~ first free object number
@@ -173,7 +174,8 @@ class PDF::Reader {
         PDF::Grammar::PDF.parse($preamble, :$.actions, :rule<header>)
             or die "expected file header '%PDF-n.m', got: {$preamble.perl}";
 
-        $.version = $/.ast.value;
+        $.version = $/.ast<version>;
+        $.type = $/.ast<type>;
     }
 
     method load-xref() {
@@ -404,7 +406,7 @@ class PDF::Reader {
         my $objects = self.get-objects( );
 
         :pdf{
-            :header{ :$.version },
+            :header{ :$.type, :$.version },
             :body{ :$objects },
         };
     }
