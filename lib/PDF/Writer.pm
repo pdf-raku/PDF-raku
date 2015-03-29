@@ -269,8 +269,8 @@ class PDF::Writer {
 
     multi method write( Hash $ast!, :$node) {
         my %params = $node.defined
-            ?? $node => $ast{$node}
-        !! $ast.flat;
+            ?? ($node => $ast{$node})
+            !! $ast.flat;
 
         $.write( |%params );
     }

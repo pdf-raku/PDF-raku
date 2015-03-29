@@ -190,7 +190,7 @@ class PDF::Reader {
 
         PDF::Grammar::PDF.parse($tail, :$.actions, :rule<postamble>)
             or die "expected file trailer 'startxref ... \%\%EOF', got: {$tail.perl}";
-        $!prev = $/.ast.value;
+        $!prev = $/.ast<startxref>;
         my $xref-offset = $!prev;
 
         my $root-ref;
@@ -290,7 +290,7 @@ class PDF::Reader {
             if $.size <= $max-obj-num;
 
         $root-ref.defined
-            ?? $!root = $.ind-obj( $root-ref.value[0], $root-ref.value[1] )
+            ?? ($!root = $.ind-obj( $root-ref.value[0], $root-ref.value[1]) )
             !! die "unable to find root object";
     }
 
