@@ -3,13 +3,13 @@
 use Test;
 use JSON::Tiny;
 
-use PDF::Grammar::PDF;
-use PDF::Grammar::PDF::Actions;
+use PDF::Grammar::Doc;
+use PDF::Grammar::Doc::Actions;
 use PDF::Grammar::Test;
 use PDF::Storage::Input;
 use PDF::Writer;
 
-my $actions = PDF::Grammar::PDF::Actions.new();
+my $actions = PDF::Grammar::Doc::Actions.new();
 
 for 't/pdf'.IO.dir.list {
 
@@ -25,7 +25,7 @@ for 't/pdf'.IO.dir.list {
 
     my ($rule) = %ast.keys;
     my %expected = :%ast;
-    my $class = PDF::Grammar::PDF;
+    my $class = PDF::Grammar::Doc;
 
     PDF::Grammar::Test::parse-tests($class, ~$input, :$rule, :$actions, :suite("[$pdf-input-file]"), :%expected );
     PDF::Grammar::Test::parse-tests($class, ~$pdf-output, :$rule, :$actions, :suite("[$pdf-output-file]"), :%expected );

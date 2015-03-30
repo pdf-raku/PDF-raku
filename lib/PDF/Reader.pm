@@ -26,13 +26,18 @@ class PDF::Reader {
         $.open( $input.IO.open( :enc<latin-1> ), |%opts );
     }
 
-    multi method open( $input!) {
+    multi method open($input!) {
         use PDF::Storage::Input;
 
         $!input = PDF::Storage::Input.compose( :value($input) );
 
         $.load-header( );
-        $.load-xref( );
+        if $.type eq 'FDF' {
+            $.load-fdf;
+        }
+        else {
+            $.load-xref( );
+        }
     }
 
     method !fetch-ind-obj($idx, :$obj-num, :$gen-num) {
@@ -166,13 +171,14 @@ class PDF::Reader {
     }
 
     method load-header() {
+        use PDF::Grammar::Doc;
         # file should start with: %PDF-n.m, (where n, m are single
         # digits giving the major and minor version numbers).
             
         my $preamble = $.input.substr(0, 8);
 
-        PDF::Grammar::PDF.parse($preamble, :$.actions, :rule<header>)
-            or die "expected file header '%PDF-n.m', got: {$preamble.perl}";
+        PDF::Grammar::Doc.parse($preamble, :$.actions, :rule<header>)
+            or die "expected file header '%XXX-n.m', got: {$preamble.perl}";
 
         $.version = $/.ast<version>;
         $.type = $/.ast<type>;
@@ -289,9 +295,40 @@ class PDF::Reader {
         $.size = $max-obj-num + 1
             if $.size <= $max-obj-num;
 
-        $root-ref.defined
-            ?? ($!root = $.ind-obj( $root-ref.value[0], $root-ref.value[1]) )
+        $root-ref.defined ?? ($!root = $.ind-obj( $root-ref.value[0],
+                                                  $root-ref.value[1]) )
             !! die "unable to find root object";
+    }
+
+    #| do a full scan of the entire input. used to load unindexed FDF content.
+    #| Could be extended to 'repair; faulty PDF's.
+    method load-fdf() {
+        use PDF::Grammar::FDF;
+        use PDF::Grammar::FDF::Actions;
+        my $actions = PDF::Grammar::FDF::Actions.new;
+        PDF::Grammar::FDF.parse($.input, :$actions)
+            or die "unable to parse PDF document of type {$.header.type}";
+        my $ast = $/.ast;
+        my $body = $ast<body>;
+        my $root-ref;
+
+        for $body.flat.reverse {
+
+            for .<objects>.flat.reverse {
+                my ($type, $ind-obj) = .kv;
+                next unless $type eq 'ind-obj';
+                my ($obj-num, $gen-num, $ast) = @$ind-obj;
+                %!ind-obj-idx{$obj-num}{$gen-num}<ind-obj> //= $ind-obj;
+            }
+            my $dict = PDF::Object.compose( |%(.<trailer>) );
+            $root-ref //= $dict<Root>
+                if $dict<Root>:exists;
+        }
+
+        $root-ref.defined ?? ($!root = $.ind-obj( $root-ref.value[0],
+                                                  $root-ref.value[1]) )
+            !! die "unable to find root object";
+
     }
 
     #| - sift /XRef objects

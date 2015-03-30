@@ -1,0 +1,11 @@
+{ "pdf" : { "header" : { "type" : "FDF", "version" : 1.2 },
+            "body" : [ { "objects" : [ { "ind-obj" : [ 1, 0, { "dict" : { "FDF" : { "dict" : { "F" : { "literal" : "Document.pdf" },
+                                                                                               "ID" : { "array" : [ { "hex-string" : "z\u00061g\u008e\u00d4u\u00f0\u0089\u0088\u0015\u00f0\u00a8\u0018\u00cf\u00a1" }, { "hex-string" : "\u00be\u00f7rC\u0017\u00b3\u0011q\u008e\u0086u\u00b6w\u00ef\u009bN" } ] },
+                                                                                               "Fields" : { "array" : [ { "dict" : { "T" : { "literal" : "Street" }, "V" : { "literal" : "345 Park Ave." } } },
+                                                                                                                        { "dict" : { "T" : { "literal" : "City" }, "V" : { "literal" : "San Jose" } } } ]
+                                                                                                          }
+                                                                                             } } } } ] } ],
+                         "trailer" : { "dict" : { "Root" : { "ind-ref" : [ 1, 0 ] } } } }
+                     ]
+          }
+}

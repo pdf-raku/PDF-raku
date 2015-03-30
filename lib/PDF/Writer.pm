@@ -34,11 +34,11 @@ class PDF::Writer {
         ('[', $array.map({ $.write($_) }), ']').join: ' ';
     }
 
-    multi method write( Array :$body! ) {
-        $body.map({ $.write( :body($_) )}).join: "\n";
+    multi method write( Array :$body!, :$type='PDF' ) {
+        $body.map({ $.write( :body($_), :$type )}).join: "\n";
     }
 
-    multi method write( Hash :$body! ) {
+    multi method write( Hash :$body!, :$type = 'PDF' ) {
         my @entries = %( :type(0), :offset(0), :gen-num(65535), :obj-num(0) ).item;
         my @out;
 
@@ -62,33 +62,46 @@ class PDF::Writer {
             $!offset += @out[*-1].chars + 1;
         }
 
-        @entries = @entries.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
-
-        my @xref;
-        my $size = 1;
-
-        for @entries {
-            # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
-            # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
-            my $contigous = +@xref && .<obj-num> && .<obj-num> == $size;
-            @xref.push: %( object-first-num => .<obj-num>, entries => [] ).item
-                unless $contigous;
-            @xref[*-1]<entries>.push: $_;
-            @xref[*-1]<object-count>++;
-            $size = .<obj-num> + 1;
-        }
-
-        my $xref-str = $.write( :@xref );
-        my $startxref = $.offset;
-        $!offset += $xref-str.chars;
         my $trailer = $body<trailer>
             // {};
-        @out.push: [~] (
-            $xref-str,
-            $.write( :$trailer, :$!prev, :$size ),
-            $.write( :$startxref ),
-            '%%EOF');
-        $!prev = $startxref;
+
+        if $type eq 'FDF' {
+            # don't write an index
+            @out.push: [~] (
+                $.write( :$trailer ),
+                '%%EOF');
+        }
+        else {
+
+            @entries = @entries.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
+
+            my @xref;
+            my $size = 1;
+
+            for @entries {
+                # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
+                # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
+                my $contigous = +@xref && .<obj-num> && .<obj-num> == $size;
+                @xref.push: %( object-first-num => .<obj-num>, entries => [] ).item
+                    unless $contigous;
+                @xref[*-1]<entries>.push: $_;
+                @xref[*-1]<object-count>++;
+                $size = .<obj-num> + 1;
+            }
+
+            my $xref-str = $.write( :@xref );
+            my $startxref = $.offset;
+
+            @out.push: [~] (
+                $xref-str,
+                $.write( :$trailer, :$!prev, :$size ),
+                $.write( :$startxref ),
+                '%%EOF');
+
+            $!offset += $xref-str.chars;
+            $!prev = $startxref;
+        }
+
         $!offset += @out[*-1].chars + 2;
 
         return @out.join: "\n";
@@ -188,12 +201,14 @@ class PDF::Writer {
             ?? $.write( $pdf, :node<comment> )
             !! $.write( :comment<%¥±ë> );
         $!offset = $header.chars + $comment.chars + 2;  # since format is byte orientated
-        my $body = $.write( :body($pdf<body>) );
+        # Form Definition Format is normally written without an xref
+        my $type = $pdf<header><type>;
+        my $body = $.write( :body($pdf<body>), :$type );
         [~] ($header, "\n", $comment, "\n", $body);
     }
 
     multi method write(Any :$header! ) {
-        my $type = ($header<type> // 'pdf').uc;
+        my $type = $header<type> // 'PDF';
         sprintf '%%%s-%.1f', $type, $header<version> // 1.2;
     }
 

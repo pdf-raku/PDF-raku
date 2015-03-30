@@ -1,7 +1,7 @@
 {
   "pdf" : {
     "header" : {
-      "type" : "pdf",
+      "type" : "PDF",
       "version" : 1.2
     },
     "body" : [
