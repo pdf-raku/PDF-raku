@@ -65,7 +65,7 @@ class PDF::Writer {
         my $trailer = $body<trailer>
             // {};
 
-        if $type eq 'FDF' {
+        if $type && $type eq 'FDF' {
             # don't write an index
             @out.push: [~] (
                 $.write( :$trailer ),
