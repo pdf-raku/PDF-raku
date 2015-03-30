@@ -1,12 +1,13 @@
 use v6;
 use Test;
 
-plan 7;
+plan 15;
 
 use PDF::Storage::IndObj;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
+use PDF::Reader;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -14,8 +15,8 @@ my $input = q:to"--END-OBJ--";
 3 0 obj
 <<
   /Type /Pages
-  /Count 1
-  /Kids [4 0 R]
+  /Count 2
+  /Kids [4 0 R  5 0 R]
 >>
 endobj
 --END-OBJ--
@@ -29,6 +30,20 @@ is $ind-obj.gen-num, 0, '$.gen-num';
 my $pages-obj = $ind-obj.object;
 isa_ok $pages-obj, ::('PDF::Object')::('Type::Pages');
 is $pages-obj.Type, 'Pages', '$.Type accessor';
-is $pages-obj.Count, 1, '$.Count accessor';
-is-json-equiv $pages-obj.Kids, [ :ind-ref[4, 0] ], '$.Kids accessor';
+is $pages-obj.Count, 2, '$.Count accessor';
+is-json-equiv $pages-obj.Kids, [ :ind-ref[4, 0], :ind-ref[5, 0] ], '$.Kids accessor';
+is-json-equiv $pages-obj[0], (:ind-ref[4, 0]), '$pages[0] accessor';
+is-json-equiv $pages-obj[1], (:ind-ref[5, 0]), '$pages[1] accessor';
 is_deeply $ind-obj.ast, $ast, 'ast regeneration';
+
+my $fdf-input = 't/pdf/fdf-PageTree.in';
+my $reader = PDF::Reader.new( );
+$reader.open( $fdf-input );
+my $pages = $reader.root.object;
+
+is $pages.Count, 62, 'number of pages';
+is $pages[0].obj-num, 3, 'first page';
+is $pages[5].obj-num, 37, 'sixth page';
+is $pages[6].obj-num, 42, 'seventh page';
+is $pages[60].obj-num, 324, 'second-last page';
+is $pages[61].obj-num, 330, 'last page';

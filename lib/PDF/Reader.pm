@@ -33,10 +33,10 @@ class PDF::Reader {
 
         $.load-header( );
         if $.type eq 'FDF' {
-            $.load-fdf;
+            $.load-fdf();
         }
         else {
-            $.load-xref( );
+            $.load-xref();
         }
     }
 
@@ -113,6 +113,8 @@ class PDF::Reader {
                     :$get-ast=False,    #| get ast data, not formulated objects
                     :$eager=True,       #| only return already loaded objects
         ) {
+
+        temp $!auto-deref = True;
 
         my $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
             // die "unable to find object: $obj-num $gen-num R";
@@ -295,8 +297,8 @@ class PDF::Reader {
         $.size = $max-obj-num + 1
             if $.size <= $max-obj-num;
 
-        $root-ref.defined ?? ($!root = $.ind-obj( $root-ref.value[0],
-                                                  $root-ref.value[1]) )
+        $root-ref.defined
+            ?? ($!root = $.ind-obj( $root-ref.value[0], $root-ref.value[1]) )
             !! die "unable to find root object";
     }
 
@@ -306,29 +308,30 @@ class PDF::Reader {
         use PDF::Grammar::FDF;
         use PDF::Grammar::FDF::Actions;
         my $actions = PDF::Grammar::FDF::Actions.new;
+
         PDF::Grammar::FDF.parse($.input, :$actions)
-            or die "unable to parse PDF document of type {$.header.type}";
+            or die "unable to parse FDF document";
         my $ast = $/.ast;
         my $body = $ast<body>;
         my $root-ref;
 
         for $body.flat.reverse {
-
             for .<objects>.flat.reverse {
                 my ($type, $ind-obj) = .kv;
                 next unless $type eq 'ind-obj';
-                my ($obj-num, $gen-num, $ast) = @$ind-obj;
+                my $obj-num = $ind-obj[0];
+                my $gen-num = $ind-obj[1];
                 %!ind-obj-idx{$obj-num}{$gen-num}<ind-obj> //= $ind-obj;
             }
+
             my $dict = PDF::Object.compose( |%(.<trailer>) );
             $root-ref //= $dict<Root>
                 if $dict<Root>:exists;
         }
 
-        $root-ref.defined ?? ($!root = $.ind-obj( $root-ref.value[0],
-                                                  $root-ref.value[1]) )
+        $root-ref.defined
+            ?? ($!root = $.ind-obj( $root-ref.value[0], $root-ref.value[1]) )
             !! die "unable to find root object";
-
     }
 
     #| - sift /XRef objects
