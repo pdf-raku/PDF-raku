@@ -8,7 +8,7 @@ use PDF::Object;
 
 sub prefix:</>($name){ PDF::Object.compose(:$name) };
 
-my $reader = PDF::Reader.new(:auto-deref);
+my $reader = PDF::Reader.new();
 
 $reader.open( 't/pdf/pdf.in' );
 

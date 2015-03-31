@@ -43,6 +43,7 @@ class PDF::Storage::Serializer {
         # only renumber new objects, starting from the highest input number + 1 (size)
         $.size = $reader.size;
         temp $.renumber = False;
+        $reader.auto-deref = False;
         my $updates = $reader.get-updates;
 
         for $updates.list -> $object {

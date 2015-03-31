@@ -11,7 +11,7 @@ class PDF::Reader {
     has Hash %!ind-obj-idx;
     has $.root is rw;
     has $.ast is rw;
-    has Bool $.auto-deref is rw = False;
+    has Bool $.auto-deref is rw = True;
     has Rat $.version is rw;
     has Str $.type is rw;
     has PDF::Grammar::PDF::Actions $!actions;
@@ -113,8 +113,6 @@ class PDF::Reader {
                     :$get-ast=False,    #| get ast data, not formulated objects
                     :$eager=True,       #| only return already loaded objects
         ) {
-
-        temp $!auto-deref = True;
 
         my $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
             // die "unable to find object: $obj-num $gen-num R";
@@ -438,7 +436,9 @@ class PDF::Reader {
         $raw-objects.list.map({
             my $obj-num = .value[0];
             my $gen-num = .value[1];
-            $.ind-obj($obj-num, $gen-num).object;
+            my $object = $.ind-obj($obj-num, $gen-num).object;
+            $object.reader = Mu;
+            $object;
         });
     }
 

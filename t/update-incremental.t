@@ -18,7 +18,6 @@ my $root = $reader.root;
 my $root-obj = $root.object;
 
 {
-    temp $reader.auto-deref = True;
     my $Pages = $root-obj<Pages>;
     my $Resources = $Pages<Kids>[0]<Resources>;
     my $MediaBox = $Pages<Kids>[0]<MediaBox>;
@@ -30,14 +29,16 @@ my $root-obj = $root.object;
 }
 
 my $updates = $reader.get-updates;
-
-is-json-equiv [ @$updates ], [ { :Count(2),
-                                 :Kids[ { :ind-ref[ 4, 0 ] },
-                                        { :Type<Page>, :MediaBox[ 0, 0, 420, 595 ], :Resources{ :Font{ F1 => :ind-ref[ 7, 0 ]  },
-                                                                                                ProcSet =>  :ind-ref[ 6, 0 ] },
-                                          :Contents{ :Length(70) } }
-                                     ],
-                                 :Type<Pages> } ], "update ast";
+{
+    temp $reader.auto-deref = False;
+    is-json-equiv [ @$updates ], [ { :Count(2),
+                                     :Kids[ { :ind-ref[ 4, 0 ] },
+                                            { :Type<Page>, :MediaBox[ 0, 0, 420, 595 ], :Resources{ :Font{ F1 => :ind-ref[ 7, 0 ]  },
+                                                                                                    ProcSet =>  :ind-ref[ 6, 0 ] },
+                                              :Contents{ :Length(70) } }
+                                         ],
+                                     :Type<Pages> } ], "update ast";
+}
 
 my $serializer = PDF::Storage::Serializer.new;
 
