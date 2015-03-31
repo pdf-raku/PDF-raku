@@ -436,9 +436,7 @@ class PDF::Reader {
         $raw-objects.list.map({
             my $obj-num = .value[0];
             my $gen-num = .value[1];
-            my $object = $.ind-obj($obj-num, $gen-num).object;
-            $object.reader = Mu;
-            $object;
+            $.ind-obj($obj-num, $gen-num).object;
         });
     }
 
