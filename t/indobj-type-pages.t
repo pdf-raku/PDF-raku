@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 15;
+plan 18;
 
 use PDF::Storage::IndObj;
 use PDF::Grammar::PDF;
@@ -43,7 +43,15 @@ my $pages = $reader.root.object;
 
 is $pages.Count, 62, 'number of pages';
 is $pages[0].obj-num, 3, 'first page';
+is $pages[0].find-prop('Rotate'), 180, 'inheritance';
+
+is $pages[1].find-prop('Rotate'), 90, 'inheritance';
+
 is $pages[5].obj-num, 37, 'sixth page';
+
 is $pages[6].obj-num, 42, 'seventh page';
+
 is $pages[60].obj-num, 324, 'second-last page';
+
 is $pages[61].obj-num, 330, 'last page';
+is $pages[61].find-prop('Rotate'), Nil, 'inheritance';
