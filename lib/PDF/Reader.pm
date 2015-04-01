@@ -132,14 +132,13 @@ class PDF::Reader {
             # regenerate ast from object, if required
             $ind-obj = $ind-obj.ast
         }
-        elsif $to-obj {
+        elsif $to-obj && ! $is-ind-obj {
             # upgrade storage to object, if object requested
-            $ind-obj = $idx<ind-obj> = PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) )
-                unless $is-ind-obj;
+            $ind-obj = PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) );
+            $idx<ind-obj> = $ind-obj;
         }
-        else {
+        elsif ! $is-ind-obj  {
             $ind-obj = :$ind-obj
-                unless $is-ind-obj;
         }
 
         $ind-obj;
@@ -313,8 +312,8 @@ class PDF::Reader {
         my $body = $ast<body>;
         my $root-ref;
 
-        for $body.flat.reverse {
-            for .<objects>.flat.reverse {
+        for $body.list.reverse {
+            for .<objects>.list.reverse {
                 my ($type, $ind-obj) = .kv;
                 next unless $type eq 'ind-obj';
                 my $obj-num = $ind-obj[0];
