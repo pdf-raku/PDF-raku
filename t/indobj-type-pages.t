@@ -1,13 +1,14 @@
 use v6;
 use Test;
 
-plan 18;
+plan 22;
 
 use PDF::Storage::IndObj;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Reader;
+use PDF::Object::Type::Page;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -54,4 +55,10 @@ is $pages[6].obj-num, 42, 'seventh page';
 is $pages[60].obj-num, 324, 'second-last page';
 
 is $pages[61].obj-num, 330, 'last page';
-is $pages[61].find-prop('Rotate'), Nil, 'inheritance';
+is $pages[61].find-prop('Rotate'), 270, 'inheritance';
+
+my $new-page;
+lives_ok {$new-page = $pages.add-page}, 'add-page - lives';
+isa_ok $new-page, PDF::Object::Type::Page;
+is $pages.Count, 63, 'number of pages';
+is $pages[62].find-prop('Rotate'), 270, 'new page - inheritance';

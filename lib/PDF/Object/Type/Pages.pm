@@ -2,6 +2,7 @@ use v6;
 
 use PDF::Object::Dict;
 use PDF::Object::Type;
+use PDF::Object::Type::Page;
 use PDF::Object::Inheritance;
 
 # /Type /Pages - a node in the page tree
@@ -14,27 +15,40 @@ class PDF::Object::Type::Pages
     method Count is rw { self<Count> }
     method Kids is rw { self<Kids> }
 
+    #| add new last page
+    method add-page( $page = PDF::Object::Type::Page.new ) {
+        my $sub-pages = self.Kids[*-1]
+            if self.Kids;
+
+        if $sub-pages && $sub-pages.can('add-page') {
+            $sub-pages.add-page( $page )
+        }
+        else {
+            self.Kids.push: $page;
+        }
+
+        $page<Parent> = self;
+        self<Count>++;
+
+        $page
+    }
+
     #| terminal page node - no children
-    multi method find-page(Int $page-num where { self<Count> == + self<Kids> && $_ <= + self<Kids>}) {
-        my $page = self<Kids>[$page-num -1];
-        my $reader = self.reader
-            or return $page;
-        $reader.deref( $page );
+    multi method find-page(Int $page-num where { self.Count == + self.Kids && $_ <= + self.Kids}) {
+        self.Kids[$page-num -1];
     }
 
     #| traverse page tree
     multi method find-page(Int $page-num) {
-
         my $page-count = 0;
-        my $reader = self.reader
-            or die "no reader for page traversal";
 
-        for self<Kids>.list {
-            my $kid = $reader.deref( $_ );
+        for self.Kids.keys {
+            my $kid = self.Kids[$_];
 
-            if $kid.isa(PDF::Object::Type::Pages) {
+            if $kid.can('find-page') {
                 my $sub-pages = $kid<Count>;
                 my $sub-page-num = $page-num - $page-count;
+
                 return $kid.find-page( $sub-page-num )
                     if $sub-page-num > 0 && $sub-page-num <= $sub-pages;
 
@@ -53,4 +67,5 @@ class PDF::Object::Type::Pages
     method AT-POS($pos) is rw {
         self.find-page($pos + 1)
     }
+
 }
