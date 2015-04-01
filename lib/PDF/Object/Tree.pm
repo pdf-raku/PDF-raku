@@ -12,7 +12,7 @@ role PDF::Object::Tree {
     method AT-POS($pos) is rw {
         my $result := callsame;
         $result ~~ Pair | Array | Hash
-            ?? $.deref(:$pos,$result )
+            ?? $.deref(:$pos, $result )
             !! $result;
     }
 
@@ -20,7 +20,7 @@ role PDF::Object::Tree {
     method AT-KEY($key) is rw {
         my $result := callsame;
         $result ~~ Pair | Array | Hash
-            ?? $.deref(:$key,$result)
+            ?? $.deref(:$key, $result)
             !! $result;
     }
 
@@ -67,17 +67,13 @@ role PDF::Object::Tree {
         nextwith( $pos, $elems, |@lvals);
     }
 
-    multi method deref(Pair $ind-ref! is rw) {
-        return $ind-ref
-            unless $ind-ref.key eq 'ind-ref'
-            && $.reader && $.reader.auto-deref;
-
+    #| indirect reference
+    multi method deref(Pair $ind-ref! where {.key eq 'ind-ref' && $.reader && $.reader.auto-deref}) {
         my $obj-num = $ind-ref.value[0];
         my $gen-num = $ind-ref.value[1];
 
         $.reader.ind-obj( $obj-num, $gen-num ).object;
     }
-
     #| already an object
     multi method deref(PDF::Object $value) { $value }
     #| coerce and save hash entry
