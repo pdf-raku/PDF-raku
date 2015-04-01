@@ -3,7 +3,7 @@ use v6;
 use PDF::Object::Dict;
 use PDF::Object::Type;
 
-# /Type /Page - describes a single PDF page
+# /Type /Font - Describes a font
 
 class PDF::Object::Type::Font
     is PDF::Object::Dict
