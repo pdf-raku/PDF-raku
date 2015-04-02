@@ -55,6 +55,7 @@ is-json-equiv $updated-objects[1], (
                           Contents => :ind-ref[10, 0],
                           Resources => :dict{ Font => :dict{ F1 => :ind-ref[7, 0]},
                                               ProcSet => :ind-ref[6, 0]},
+                          Parent => :ind-ref[3, 0],
                           Type => :name<Page>,
                          }]), 'inserted page';
 

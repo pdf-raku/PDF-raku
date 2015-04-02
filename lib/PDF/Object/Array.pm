@@ -23,7 +23,16 @@ class PDF::Object::Array
         $obj;
     }
 
+    our %content-cache = ();
+
     method content {
-        :array[ self.map({ to-ast($_)}) ];
+        my $id = ~self.WHICH;
+        my $array = %content-cache{$id};
+        unless $array {
+            temp %content-cache{$id} = $array = [];
+            $array.push: to-ast($_)
+                for self.list;
+        }
+        :$array;
     }
 }

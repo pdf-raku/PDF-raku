@@ -13,4 +13,8 @@ class PDF::Object::Type::Catalog
     method Outlines is rw { self<Outlines> }
     method Resources is rw { self<Resources> }
 
+    method finish {
+        self<Pages>.finish;
+    }
+
 }

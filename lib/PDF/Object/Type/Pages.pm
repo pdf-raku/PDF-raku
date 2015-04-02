@@ -27,7 +27,7 @@ class PDF::Object::Type::Pages
             self.Kids.push: $page;
         }
 
-        $page<Parent> = self;
+        $page<Parent> //= self;
         self<Count>++;
 
         $page
@@ -66,6 +66,14 @@ class PDF::Object::Type::Pages
 
     method AT-POS($pos) is rw {
         self.find-page($pos + 1)
+    }
+
+    method finish {
+        my $kids = self.Kids;
+        for $kids.keys {
+            $kids[$_]<Parent> //= self;
+            $kids[$_].finish;
+        }
     }
 
 }

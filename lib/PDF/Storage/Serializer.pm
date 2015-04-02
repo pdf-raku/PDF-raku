@@ -32,15 +32,16 @@ class PDF::Storage::Serializer {
 
     #| complete reserialization, from the document root downwards
     method serialize-doc( PDF::Object $root-object!) {
+        $root-object.finish;
         $.analyse( $root-object );
         my $root = $.freeze( $root-object, :indirect );
         my $objects = $.ind-objs;
-        $root-object.post-process( $objects );
         return %( :$root, :$objects );
     }
 
     method serialize-updates( $reader ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
+        $reader.root.object.finish;
         $.size = $reader.size;
         temp $.renumber = False;
         $reader.auto-deref = False;
