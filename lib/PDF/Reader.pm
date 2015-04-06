@@ -36,7 +36,7 @@ class PDF::Reader {
             $.load-fdf();
         }
         else {
-            $.load-xref();
+            $.load-pdf();
         }
     }
 
@@ -183,7 +183,7 @@ class PDF::Reader {
         $.type = $/.ast<type>;
     }
 
-    method load-xref() {
+    method load-pdf() {
 
         # todo: utilize Perl 6 cat strings, when available 
         # locate and read the file trailer
@@ -318,7 +318,10 @@ class PDF::Reader {
                 next unless $type eq 'ind-obj';
                 my $obj-num = $ind-obj[0];
                 my $gen-num = $ind-obj[1];
-                %!ind-obj-idx{$obj-num}{$gen-num}<ind-obj> //= $ind-obj;
+                %!ind-obj-idx{$obj-num}{$gen-num} //= {
+                    :type(1),
+                    :$ind-obj,
+                };
             }
 
             my $dict = PDF::Object.compose( |%(.<trailer>) );

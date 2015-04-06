@@ -3,6 +3,7 @@
 { "ast" : { "dict" : { "foo" : { "literal" : "bar" }, "baz" : { "array" : [ { "int" : 42 }, { "real" : 4.2 } ] } } }, "pdf" : "<< /baz [ 42 4.2 ] /foo (bar) >>", "unboxed" : { "baz" : [ 42, 4.2 ], "foo" : "bar" } }
 { "ast" : { "stream" : { "dict" : { "Length" : { "int" : 9 } }, "encoded" : "Hi there!" } }, "pdf" : "<< /Length 9 >>\nstream\nHi there!\nendstream" }
 { "ast" : { "header" : { "version" : 1.5 } }, "pdf" : "%PDF-1.5" }
+{ "ast" : { "header" : { "version" : 1.2, "type" : "FDF" } }, "pdf" : "%FDF-1.2" }
 { "ast" : { "name" : "Zsófia" }, "pdf" : "/Zs#c3#b3fia", "unboxed" : "Zsófia" }
 { "ast" : { "name" : "Heydər Əliyev" }, "pdf" : "/Heyd#c9#99r#20#c6#8fliyev", "unboxed" : "Heydər Əliyev" }
 { "ast" : { "comment" : "I hope this works" }, "pdf" : "% I hope this works" }
