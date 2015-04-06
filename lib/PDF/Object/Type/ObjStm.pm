@@ -33,7 +33,6 @@ method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {
         $objects-str ~= $object-str;
     }
     my $idx-str = @idx.join: ' ';
-    $.Type = 'ObjStm' but PDF::Object::Name;
     $.First = $idx-str.chars + 1;
     $.N = +$objstm;
     
