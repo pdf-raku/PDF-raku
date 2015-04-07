@@ -26,7 +26,7 @@ class PDF::Reader {
         $.open( $input.IO.open( :enc<latin-1> ), |%opts );
     }
 
-    multi method open($input!) {
+    multi method open($input!, Bool :$repair = False) {
         use PDF::Storage::Input;
 
         $!input = PDF::Storage::Input.compose( :value($input) );
@@ -36,8 +36,35 @@ class PDF::Reader {
             $.load-fdf();
         }
         else {
-            $.load-pdf();
+            $.load-pdf( :$repair );
         }
+    }
+
+    method !fetch-stream-data(Array $ind-obj, $input, :$offset = $ind-obj[3], :$max-end) {
+
+        my ($obj-num, $gen-num, $obj-raw) = @$ind-obj;
+
+        $obj-raw.value<encoded> //= do {
+            die "stream mandatory /Length field is missing: $obj-num $gen-num R \@$offset"
+                unless $obj-raw.value<dict><Length>;
+
+            my $length = $.deref( $obj-raw.value<dict><Length>, :get-ast ).value;
+            my $start = $obj-raw.value<start>:delete;
+            die "stream Length $length appears too large (> {$max-end - $start}): $obj-num $gen-num R \@$offset"
+                if $max-end && $length > $max-end - $start;
+
+            # ensure stream is followed by an 'endstream' marker
+            if $input.substr( $start + $length, 20 ) ~~ m{^ (.*?) <PDF::Grammar::PDF::stream-tail>} {
+                if $0.chars {
+                    # hmm some unprocessed bytes
+                    warn "ignoring {$0.chars} bytes before 'endstream' marker: $obj-num $gen-num R \@$offset"
+                }
+            }
+            else {
+                die "die unable to locate 'endstream' marker after consuming /Length $length bytes: $obj-num $gen-num R \@$offset"
+            }
+            $input.substr( $start, $length );
+        };
     }
 
     method !fetch-ind-obj($idx, :$obj-num, :$gen-num) {
@@ -51,38 +78,17 @@ class PDF::Reader {
                 # type 1 reference to an external object
                 my $offset = $idx<offset>;
                 my $end = $idx<end>;
-                my $max-length = $end - $offset - 1;
-                my $input = $.input.substr( $offset, $max-length );
+                my $max-end = $end - $offset - 1;
+                my $input = $.input.substr( $offset, $max-end );
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
                     // die "unable to parse indirect object: $obj-num $gen-num R \@$offset";
 
                 $ind-obj = $/.ast.value;
-                ($actual-obj-num, $actual-gen-num, my $obj-raw) = @$ind-obj;
+                $actual-obj-num = $ind-obj[0];
+                $actual-gen-num = $ind-obj[1];
 
-                if $obj-raw.key eq 'stream' {
-
-                    $obj-raw.value<encoded> //= do {
-                        die "stream mandatory /Length field is missing: $obj-num $gen-num R \@$offset"
-                            unless $obj-raw.value<dict><Length>;
-
-                        my $length = $.deref( $obj-raw.value<dict><Length>, :get-ast ).value;
-                        my $start = $obj-raw.value<start>:delete;
-                        die "stream Length $length appears too large (> $max-length): $obj-num $gen-num R \@$offset"
-                            if $start + $length > $max-length;
-
-                        # ensure stream is followed by an 'endstream' marker
-                        if $input.substr( $start + $length ) ~~ m{^ (.*?) <PDF::Grammar::PDF::stream-tail>} {
-                            if $0.chars {
-                                # hmm some unprocessed bytes
-                                warn "ignoring {$0.chars} bytes before 'endstream' marker: $obj-num $gen-num R \@$offset"
-                            }
-                        }
-                        else {
-                            die "die unable to locate 'endstream' marker after consuming /Length $length bytes: $obj-num $gen-num R \@$offset"
-                        }
-                        $input.substr( $start, $length );
-                    };
-                }
+                self!"fetch-stream-data"($ind-obj, $input, :$offset, :$max-end)
+                    if $ind-obj[2].key eq 'stream';
             }
             when 2 {
                 # type 2 embedded object
@@ -183,7 +189,28 @@ class PDF::Reader {
         $.type = $/.ast<type>;
     }
 
-    method load-pdf() {
+    #| Load input in FDF (Form Data Definition) format.
+    #| Use full-scan mode, as these are not indexed.
+    method load-fdf() {
+        use PDF::Grammar::FDF;
+        use PDF::Grammar::FDF::Actions;
+        my $actions = PDF::Grammar::FDF::Actions.new;
+        self!"full-scan"( PDF::Grammar::FDF, $actions);
+    }
+
+    #| scan the entire PDF, bypass any indices. Populate index with
+    #| raw ast indirect objects.
+    multi method load-pdf( :$repair! where {$repair} ) {
+        use PDF::Grammar::PDF;
+        use PDF::Grammar::PDF::Actions;
+        my $actions = PDF::Grammar::PDF::Actions.new;
+        self!"full-scan"( PDF::Grammar::PDF, $actions);
+        # todo more post-processing and cross-checks
+    }
+
+    #| scan indices, starting at PDF tail. objects can be loaded on demand,
+    #| via the $.ind-obj() method.
+    multi method load-pdf() is default {
 
         # todo: utilize Perl 6 cat strings, when available 
         # locate and read the file trailer
@@ -203,7 +230,7 @@ class PDF::Reader {
 
         while $xref-offset.defined {
             die "xref '/Prev' cycle detected \@$xref-offset"
-                if %offsets-seen{0 + $xref-offset}++;
+                if %offsets-seen{$xref-offset}++;
             # see if our cross reference table is already contained in the current tail
             my $xref;
             my $dict;
@@ -283,10 +310,11 @@ class PDF::Reader {
 
         for @type2-obj-entries {
             my $obj-num = .<obj-num>;
+            my $gen-num = 0;
             my $index = .<index>;
             my $ref-obj-num = .<ref-obj-num>;
 
-            %!ind-obj-idx{ $obj-num }{ 0 } = { :type(2), :$index, :$ref-obj-num };
+            %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(2), :$index, :$ref-obj-num };
         }
 
         #| don't entirely trust /Size entry in trailer dictionary
@@ -299,34 +327,77 @@ class PDF::Reader {
             !! die "unable to find root object";
     }
 
-    #| do a full scan of the entire input. used to load unindexed FDF content.
-    #| Could be extended to 'repair; faulty PDF's.
-    method load-fdf() {
-        use PDF::Grammar::FDF;
-        use PDF::Grammar::FDF::Actions;
-        my $actions = PDF::Grammar::FDF::Actions.new;
-
-        PDF::Grammar::FDF.parse($.input, :$actions)
-            or die "unable to parse FDF document";
+    #| bypass any indices. directly parse and reconstruct index fromn objects.
+    method !full-scan( $grammar, $actions ) {
+        temp $actions.get-offsets = True;
+        $grammar.parse($.input, :$actions)
+            or die "unable to parse document";
         my $ast = $/.ast;
         my $body = $ast<body>;
         my $root-ref;
 
         for $body.list.reverse {
             for .<objects>.list.reverse {
-                my ($type, $ind-obj) = .kv;
-                next unless $type eq 'ind-obj';
-                my $obj-num = $ind-obj[0];
-                my $gen-num = $ind-obj[1];
+                next unless .key eq 'ind-obj';
+                my $ind-obj = .value;
+                my ($obj-num, $gen-num, $object, $offset) = @( $ind-obj );
+                
+                my $stream-type;
+                my $encoded;
+                my $dict;
+                my $value := $object.value;
+
+                if $object.key eq 'stream' {
+                    $dict = $value<dict>;
+                    $stream-type = $dict<Type> && $dict<Type>.value;
+
+                    my $start = $value<start>;
+                    my $end = $value<end>;
+                    my $max-end = $end + 1;
+                    self!"fetch-stream-data"($ind-obj, $.input, :$offset, :$max-end);
+                }
+                else {
+                    $dict = $value;
+                }
+
+                if $stream-type && $stream-type eq 'XRef' {
+                    $root-ref //= $dict<Root>
+                        if $dict<Root>:exists;
+                    # discard existing /Type /XRef stream objects. These are specific to the input PDF
+                    next;
+                }
+
                 %!ind-obj-idx{$obj-num}{$gen-num} //= {
                     :type(1),
                     :$ind-obj,
+                    :$offset,
                 };
+
+                if $stream-type && $stream-type eq 'ObjStm' {
+                    # Object Stream. Index contents as type 2 objects
+                    my $container-obj = $.ind-obj( $obj-num, $gen-num ).object;
+                    my $type2-objects = $container-obj.decoded;
+                    my $index = 0;
+
+                    for $type2-objects.list {
+                        my $ref-obj-num = $obj-num;
+                        my $obj-num2 = .[0];
+                        my $gen-num2 = 0;
+                        %!ind-obj-idx{$obj-num2}{$gen-num2} //= {
+                            :type(2),
+                            :$index,
+                            :$ref-obj-num,
+                        };
+                        $index++;
+                    }
+                }
             }
 
-            my $dict = PDF::Object.compose( |%(.<trailer>) );
-            $root-ref //= $dict<Root>
-                if $dict<Root>:exists;
+            if .<trailer> {
+                my $dict = PDF::Object.compose( |%(.<trailer>) );
+                $root-ref //= $dict<Root>
+                    if $dict<Root>:exists;
+            }
         }
 
         $root-ref.defined
