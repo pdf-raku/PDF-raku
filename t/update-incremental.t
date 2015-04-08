@@ -74,6 +74,10 @@ my $new-body = "\n" ~ $writer.write( :$body );
 ##$reader.input.append( $new-body );
 't/pdf/pdf-updated.out'.IO.open(:a).write( $new-body.encode('latin-1') );
 
+# ensure that reader has remained lazy. should not have loaded unreferenced objects
+ok $reader.ind-obj( 3, 0, :!eager ), 'referenced object loaded (Pages)';
+nok $reader.ind-obj( 5, 0, :!eager ), 'unreferenced object not loaded (Page 1 content)';
+
 # now re-read the pdf. Will also test our ability to read a PDF
 # with multiple segments
 
