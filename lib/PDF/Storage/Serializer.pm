@@ -13,13 +13,13 @@ class PDF::Storage::Serializer {
     has %.ref-count;
     has Bool $.renumber is rw = True;
 
-    #| analyse stage simply reference counts arrays and hashes. Any that occurs
-    #| multiple times is automatically promoted to an indirect object.
+    #| Reference count hashes. Could be derivate class of PDF::Object::Dict or PDF::Object::Stream.
     multi method analyse( Hash $dict! is rw) {
         return if %!ref-count{$dict.WHICH}++; # already encountered
         $.analyse($dict{$_}) for $dict.keys;
     }
 
+    #| Reference count arrays. Could be derivate class of PDF::Object::Array
     multi method analyse( Array $array! is rw ) {
         return if %!ref-count{$array.WHICH}++; # already encountered
         $.analyse($array[$_]) for $array.keys;
@@ -39,12 +39,23 @@ class PDF::Storage::Serializer {
         return %( :$root, :$objects );
     }
 
+    #| prepare a set of objects for an incremental update. Only return indirect objects:
+    #| - that have been fetched and updated, or
+    #| - have been newly inserted (no object-number)
+    #| of course, 
     method serialize-updates( $reader ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
         $reader.root.object.finish;
         $.size = $reader.size;
+
+        # disable auto-deref to keep all analysis and freeze stages lazy. We don't
+        # need to consider or load anything that has not been already.
+        temp $reader.auto-deref = False;
+
+        # preserve existing object numbers. objects need to overwritten using the same
+        # object and generation numbers
         temp $.renumber = False;
-        $reader.auto-deref = False;
+
         my $updates = $reader.get-updates;
 
         for $updates.list -> $object {
@@ -65,6 +76,8 @@ class PDF::Storage::Serializer {
             if %!obj-num-idx{$id}:exists;
     }
 
+    #| construct a reverse index that unique maps unique $objects, identfied by .WHICH,
+    #| to an object-number and generation-number. 
     method !index-object( Pair $ind-obj! is rw, Str :$id!, :$object) {
         my $obj-num;
         my $gen-num;
@@ -117,6 +130,13 @@ class PDF::Storage::Serializer {
 
         return False;
     }
+
+    #| prepare and object for output.
+    #| - if already encountered, return an indirect reference
+    #| - produce an AST from the object content
+    #| - determine if the object is indirect, if so index it,
+    #|   generating or reusing the object-number in the process.
+    proto method freeze(|) {*}
 
     #| handles PDF::Object::Dict, PDF::Object::Stream, (plain) Hash
     multi method freeze( Hash $object! is rw, Bool :$indirect ) {

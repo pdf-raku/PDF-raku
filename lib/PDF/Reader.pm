@@ -22,6 +22,7 @@ class PDF::Reader {
         $!actions //= PDF::Grammar::PDF::Actions.new
     }
 
+    #| open the named file
     multi method open( Str $input, *%opts) {
         $.open( $input.IO.open( :enc<latin-1> ), |%opts );
     }
@@ -40,8 +41,13 @@ class PDF::Reader {
         }
     }
 
-    method !fetch-stream-data(Array $ind-obj, $input, :$offset = $ind-obj[3], :$max-end) {
-
+    #| load the data for a stream object. Cross check actual size versus expected /Length
+    method !fetch-stream-data(Array $ind-obj,           #| primary object
+                              $input,                   #| associated input stream
+                              :$offset = $ind-obj[3],   #| offset of the object in the input stream
+                              :$max-end,                #| upper bound for the end of the stream
+        )
+    {
         my ($obj-num, $gen-num, $obj-raw) = @$ind-obj;
 
         $obj-raw.value<encoded> //= do {
@@ -67,6 +73,9 @@ class PDF::Reader {
         };
     }
 
+    #| follow the index. fetch either type-1, or type-2 objects:
+    #| type-1: fetch as a top level object from the pdf
+    #| type-2: dereference and extract from the containg object
     method !fetch-ind-obj($idx, :$obj-num, :$gen-num) {
         # stantiate the object
         my $ind-obj;
@@ -114,10 +123,11 @@ class PDF::Reader {
         $ind-obj;
     }
 
+    #| fetch and stantiate indirect objects. cache against the index
     method ind-obj( Int $obj-num!, Int $gen-num!,
-                    :$type,             #| type assestion
-                    :$get-ast=False,    #| get ast data, not formulated objects
-                    :$eager=True,       #| only return already loaded objects
+                    :$type,             #| type assertion
+                    :$get-ast = False,  #| get ast data, not formulated objects
+                    :$eager = True,     #| fetch pbject, if not already loaded
         ) {
 
         my $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
@@ -199,7 +209,8 @@ class PDF::Reader {
     }
 
     #| scan the entire PDF, bypass any indices. Populate index with
-    #| raw ast indirect objects.
+    #| raw ast indirect objects. Useful if the index is corrupt and/or
+    #| the PDF has been hand-created/edited.
     multi method load-pdf( :$repair! where {$repair} ) {
         use PDF::Grammar::PDF;
         use PDF::Grammar::PDF::Actions;
@@ -212,9 +223,6 @@ class PDF::Reader {
     #| via the $.ind-obj() method.
     multi method load-pdf() is default {
 
-        # todo: utilize Perl 6 cat strings, when available 
-        # locate and read the file trailer
-        # hmm, arbritary magic number
         my $tail-bytes = min(1024, $.input.chars);
         my $tail = $.input.substr(* - $tail-bytes);
 
@@ -504,6 +512,7 @@ class PDF::Reader {
         return @objects.item;
     }
 
+    #| get just updated objects. return as objects
     method get-updates() {
         my $raw-objects = $.get-objects( :updates-only );
         $raw-objects.list.map({
@@ -513,6 +522,8 @@ class PDF::Reader {
         });
     }
 
+    #| return an AST for the fully serialized PDF/FDF etc.
+    #| suitable as input to PDF::Writer
     method ast( ) {
         my $objects = self.get-objects( );
 
