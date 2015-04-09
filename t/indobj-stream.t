@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 12;
+plan 15;
 
 use PDF::Object::Stream;
 use PDF::Storage::IndObj;
@@ -13,7 +13,8 @@ my %dict = ( :Filter<ASCIIHexDecode>,
              :Length(58),
     );
 
-lives_ok { $stream-obj = PDF::Object::Stream.new( :decoded("100 100 Td (Hello, world!) Tj"), :%dict ) }, 'basic stream object construction';
+my $hw = '100 100 Td (Hello, world!) Tj';
+lives_ok { $stream-obj = PDF::Object::Stream.new( :decoded($hw), :%dict ) }, 'basic stream object construction';
 stream_tests( $stream-obj );
 
 my $ind-obj;
@@ -21,6 +22,13 @@ lives_ok { $ind-obj = PDF::Storage::IndObj.new( :ind-obj[123, 1, $stream-obj.con
 is $ind-obj.obj-num, 123, '$.obj-num';
 is $ind-obj.gen-num, 1, '$.gen-num';
 stream_tests( $ind-obj.object );
+$ind-obj.object.uncompress;
+is_deeply $ind-obj.object.encoded, $hw, 'stream object uncompressed';
+$ind-obj.object.compress;
+isnt $ind-obj.object.encoded, $hw, 'stream object compressed';
+
+$ind-obj.object.uncompress;
+is_deeply $ind-obj.object.encoded, $hw, 'stream object compressed, then uncompressed';
 
 sub stream_tests( $stream-obj) {
     isa_ok $stream-obj, PDF::Object::Stream;

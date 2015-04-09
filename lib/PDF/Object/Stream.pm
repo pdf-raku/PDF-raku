@@ -79,4 +79,24 @@ class PDF::Object::Stream
         my $dict = to-ast-native self;
         :stream( %( $dict, :$encoded ));
     }
+
+    method uncompress {
+        if self<Filter>:exists {
+            $.decoded();
+            $!encoded = Nil;
+            self<Filter>:delete;
+            self<DecodeParms>:delete;
+            self<Length> = $!decoded.chars;
+        }
+    }
+
+    method compress {
+        unless self<Filter>:exists {
+            $!decoded //= $!encoded;
+            $!encoded = Nil;
+            require PDF::Object;
+            self<Filter> = PDF::Object.compose( :name<FlateDecode> );
+            self<Length>:delete;        # recompute this later
+        }
+    }
 }
