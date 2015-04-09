@@ -82,11 +82,12 @@ class PDF::Object::Stream
 
     method uncompress {
         if self<Filter>:exists {
-            $.decoded();
-            $!encoded = Nil;
-            self<Filter>:delete;
-            self<DecodeParms>:delete;
-            self<Length> = $!decoded.chars;
+            if try { $.decoded(); True } {
+                $!encoded = Nil;
+                self<Filter>:delete;
+                self<DecodeParms>:delete;
+                self<Length> = $!decoded.chars;
+            }
         }
     }
 
