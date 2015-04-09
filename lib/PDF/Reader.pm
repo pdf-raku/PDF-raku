@@ -232,6 +232,7 @@ class PDF::Reader {
             or die "expected file trailer 'startxref ... \%\%EOF', got: {$tail.perl}";
         $!prev = $/.ast<startxref>;
         my $xref-offset = $!prev;
+        my $input-bytes = $.input.chars;
 
         my $root-ref;
         my @obj-idx;
@@ -242,18 +243,35 @@ class PDF::Reader {
             # see if our cross reference table is already contained in the current tail
             my $xref;
             my $dict;
-            my $tail-xref-pos = $xref-offset - $.input.chars + $tail-bytes;
-            if $tail-xref-pos >= 0 {
-                $xref = $tail.substr( $tail-xref-pos );
+            my &fallback = sub {};
+            constant SIZE = 4096;       # big enough to usually contain xref
+
+            if $xref-offset >= $input-bytes - $tail-bytes {
+                $xref = $tail.substr( $xref-offset - $input-bytes + $tail-bytes )
+            }
+            elsif $input-bytes - $tail-bytes - $xref-offset <= SIZE {
+                # xref abuts currently read $tail
+                my $lumbar-bytes = min(SIZE, $input-bytes - $tail-bytes - $xref-offset);
+                $xref = $.input.substr( $xref-offset, $lumbar-bytes) ~ $tail;                
             }
             else {
-                my $xref-len = min(2048, $.input.chars - $xref-offset);
+                my $xref-len = min(SIZE, $input-bytes - $xref-offset);
                 $xref = $.input.substr( $xref-offset, $xref-len );
+                &fallback = sub {
+                    if $input-bytes - $xref-offset > SIZE {
+                        constant SIZE2 = SIZE * 16;
+                        # xref not contained in SIZE bytes? subparse a much bigger chunk to make sure
+                        $xref-len = min( SIZE2, $input-bytes - $xref-offset - SIZE );
+                        $xref ~= $.input.substr( $xref-offset + SIZE, $xref-len );
+                        PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
+                    }
+                };
             }
 
             if $xref ~~ /^'xref'/ {
                 # PDF 1.4- xref table followed by trailer
-                PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
+                ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
+                  // &fallback() )
                     or die "unable to parse index: $xref";
                 my ($xref-ast, $trailer-ast) = @( $/.ast );
                 $dict = PDF::Object.compose( |%($trailer-ast<trailer>) );
@@ -309,7 +327,7 @@ class PDF::Reader {
             my $obj-num = $v<obj-num>;
             my $gen-num = $v<gen-num>;
             my $offset = $v<offset>;
-            my $end = $k + 1 < +@type1-obj-entries ?? @type1-obj-entries[$k + 1]<offset> !! $.input.chars;
+            my $end = $k + 1 < +@type1-obj-entries ?? @type1-obj-entries[$k + 1]<offset> !! $input-bytes;
             %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(1), :$offset, :$end };
         }
 
