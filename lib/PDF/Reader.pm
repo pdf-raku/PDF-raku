@@ -508,8 +508,8 @@ class PDF::Reader {
                 my $ind-obj = $final-ast.value[2];
 
                 if my $obj-type = $ind-obj.value<dict><Type> {
-                    # discard existing /Type /XRef objects. These are specific to the input PDF
-                    next if $obj-type.value eq 'XRef'
+                    # discard existing /Type /XRef and ObjStm objects.
+                    next if $obj-type.value eq 'XRef' | 'ObjStm';
                 }
 
                 @object-refs.push: [ $final-ast, $offset + $seq ];
