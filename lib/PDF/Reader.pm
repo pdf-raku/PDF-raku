@@ -62,7 +62,7 @@ class PDF::Reader {
             die "stream mandatory /Length field is missing: $obj-num $gen-num R \@$offset "
                 unless $obj-raw.value<dict><Length>;
 
-            my $length = $.deref( $obj-raw.value<dict><Length>, :get-ast ).value;
+            my $length = $.deref( $obj-raw.value<dict><Length> );
             my $start = $obj-raw.value<start>:delete;
             die "stream Length $length appears too large (> {$max-end - $start}): $obj-num $gen-num R \@$offset"
                 if $max-end && $length > $max-end - $start;
@@ -120,7 +120,7 @@ class PDF::Reader {
                 my $input = $ind-obj-ref[1];
 
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<object> )
-                    // die "unable to parse indirect object: $obj-num $gen-num R {synopsis($input)}";
+                    or die "unable to parse indirect object: $obj-num $gen-num R {synopsis($input)}";
                 $ind-obj = [ $actual-obj-num, $actual-gen-num, $/.ast ];
             }
             default {die "unhandled index type: $_"};
@@ -171,9 +171,9 @@ class PDF::Reader {
 
     #| utility method for basic deferencing, e.g.
     #| $reader.deref($root,<Pages>,<Kids>,[0],<Contents>)
-    method deref($val is copy, *@ops, :$get-ast) is rw {
+    method deref($val is copy, *@ops ) is rw {
         for @ops -> $op {
-            $val = self!"ind-deref"($val, :$get-ast)
+            $val = self!"ind-deref"($val)
                 if $val.isa(Pair);
             $val = do given $op {
                 when Array { $val[ $op[0] ] }
@@ -181,17 +181,16 @@ class PDF::Reader {
                 default    {die "bad $.deref arg: {.perl}"}
             };
         }
-        $val = self!"ind-deref"($val, :$get-ast)
+        $val = self!"ind-deref"($val)
             if $val.isa(Pair);
         $val;
     }
 
-    method !ind-deref(Pair $_!, :$get-ast ) {
-        return $_ unless .key eq 'ind-ref';
+    method !ind-deref(Pair $_! ) {
+        return .value unless .key eq 'ind-ref';
         my $obj-num = .value[0].Int;
         my $gen-num = .value[1].Int;
-        my $val = $.ind-obj( $obj-num, $gen-num, :$get-ast );
-        $get-ast ?? $val !! $val.object;
+        $.ind-obj( $obj-num, $gen-num ).object;
     }
 
     method load-header() {
@@ -280,7 +279,7 @@ class PDF::Reader {
             if $xref ~~ /^'xref'/ {
                 # PDF 1.4- xref table followed by trailer
                 ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
-                  // &fallback() )
+                  or &fallback() )
                     or die "unable to parse index: $xref";
                 my ($xref-ast, $trailer-ast) = @( $/.ast );
                 $dict = PDF::Object.compose( |%($trailer-ast<trailer>) );
