@@ -4,26 +4,43 @@ perl6-PDF
 ** Under Construction **  This module provides tools and resources for manipulation of PDF content.
 
 ```
+#!/usr/bin/env perl6
+# creates /tmp/helloworld.pdf
 use v6;
+use Test;
 
-# Simple round trip read and rewrite a PDF
-use v6;
-use PDF::Reader;
+use PDF::Object;
+use PDF::Storage::Serializer;
 use PDF::Writer;
 
-my $input-path = "t/pdf/pdf.in";
-my $output-path = "examples/helloworld.pdf";
+sub prefix:</>($name){ PDF::Object.compose(:$name) };
 
-my $reader = PDF::Reader.new;
- 
-$reader.open( $input-path );
-my $ast = $reader.ast;
-note :$ast.perl;
-$ast<pdf><comment>.push: "This PDF was brought to you by PDF-Tools!!";
+my $root-object = PDF::Object.compose( :dict{ :Type(/'Catalog') });
+$root-object.Outlines = { :Type(/'Outlines'), :Count(0) };
+$root-object.Pages = { :Type(/'Pages') };
 
-my $root-object = $reader.root-object;
-my $pdf-writer = PDF::Writer.new( :$root-object );
-$output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
+$root-object.Pages.Kids = [ { :Type(/'Page'), :MediaBox[0, 0, 420, 595] } ];
+my $page1 = $root-object.Pages.Kids[0];
+
+my $font = {
+        :Type(/'Font'),
+        :Subtype(/'Type1'),
+        :Name(/'F1'),
+        :BaseFont(/'Helvetica'),
+        :Encoding(/'MacRomanEncoding'),
+    };
+
+$page1.Resources = { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
+$page1.Contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
+
+my $result = PDF::Storage::Serializer.new.serialize-doc($root-object);
+my $root = $result<root>;
+my $objects = $result<objects>;
+
+my $ast = :pdf{ :version(1.2), :body{ :$objects } };
+my $writer = PDF::Writer.new( :$root );
+'/tmp/helloworld.pdf'.IO.spurt( $writer.write( $ast ), :enc<latin1> );
+
 ```
 
 ## Status / Development Notes
@@ -73,14 +90,15 @@ is recommended to enforce this.
 `encode` and `decode` both return latin-1 encoded strings.
 
  ```
- my $filter = PDF::Storage::Filter.new-delegate( :dict{Filter<RunlengthEncode>} );
- my $encoded = $filter.encode("This    is waaay toooooo loooong!", :eod);
+ my $encoded = PDF::Storage::Filter.encode( :dict{ :Filter<RunLengthEncode> }, "This    is waaay toooooo loooong!", :eod);
  say $encoded.chars;
  ```
 
 ## PDF::Storage::Serializer
 
 Constructs output objects. It can create output for full PDF's, or for incremental updates to existing PDF documents.
+
+
 
 ## PDF::Writer
 
