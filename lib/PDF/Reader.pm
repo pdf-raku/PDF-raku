@@ -200,7 +200,7 @@ class PDF::Reader {
             
         my $preamble = $.input.substr(0, 8);
 
-        PDF::Grammar::Doc.parse($preamble, :$.actions, :rule<header>)
+        PDF::Grammar::Doc.subparse($preamble, :$.actions, :rule<header>)
             or die "expected file header '%XXX-n.m', got: {synopsis($preamble)}";
 
         $.version = $/.ast<version>;
