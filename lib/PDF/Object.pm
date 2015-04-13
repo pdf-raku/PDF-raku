@@ -60,8 +60,8 @@ class PDF::Object {
             if $stream{$_}:exists;
         }
         my $dict = $stream<dict> // {};
-        require ::("PDF::Object::Stream");
-        return ::("PDF::Object::Stream").delegate( :$dict ).new( :$dict, |%params );
+        require ::("PDF::Object::Content");
+        return ::("PDF::Object::Content").delegate( :$dict ).new( :$dict, |%params );
     }
 
     proto sub to-ast(|) is export(:to-ast) {*};
