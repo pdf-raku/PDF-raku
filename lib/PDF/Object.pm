@@ -160,6 +160,10 @@ class PDF::Object {
         die "unable to from-ast {%opt.keys} struct: {%opt.perl}"
     }
 
+    #| unique identifier for this object instance
+    method id { ~ self.WHICH }
+
+    #| my be overrided by sub-classes to do final processing and checks, e.g. PDF::Object::Type::Page
     method finish {}
 
 }

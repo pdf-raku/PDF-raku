@@ -6,7 +6,10 @@ use PDF::Object::Dict;
 use PDF::Object::Content;
 use PDF::Object::Type::Catalog;
 use PDF::Object::Type::Page;
+use PDF::Object::Type::Pages;
 use PDF::Object::Type::XObject::Form;
+use PDF::Object::Type::XObject::Image;
+use PDF::Grammar::Test :is-json-equiv;
 
 my $pdf-in = PDF::Reader.new();
 
@@ -27,8 +30,24 @@ isa_ok $page, PDF::Object::Type::Page;
 my $xobject = $page.to-xobject;
 isa_ok $xobject, PDF::Object::Type::XObject::Form;
 is $xobject.decoded, $pdf-in.ind-obj(5, 0).object.encoded, 'xobject encoding';
-temp $pdf-in.auto-deref = False;
-is_deeply $xobject.BBox, $page.MediaBox, 'xobject BBox';
-is_deeply $xobject.Resources, $page.Resources, 'xobject Resources';
-done;
+is-json-equiv $xobject.BBox, $page.MediaBox, 'xobject BBox';
+is-json-equiv $xobject.Resources, $page.Resources, 'xobject Resources';
 
+my $new-page = $pdf-in.root.object.Pages.add-page();
+isa_ok $new-page, PDF::Object::Type::Page, 'new page';
+my $fm1 = $new-page.register-xobject( $xobject );
+is $fm1, 'Fm1', 'xobject form name';
+
+my $xobject2 = PDF::Object::Type::XObject::Form.new;
+my $xobject3 = PDF::Object::Type::XObject::Image.new;
+my $fm2 = $new-page.register-xobject( $xobject2 );
+is $fm2, 'Fm2', 'xobject form name';
+
+my $im1 = $new-page.register-xobject( $xobject3 );
+is $im1, 'Im1', 'xobject form name';
+
+my $fm1-again = $new-page.register-xobject( $xobject );
+is $fm1-again, $fm1, 'xobject form name, reregistered';
+
+is-json-equiv $new-page<Resources><XObject>, { :Fm1($xobject), :Fm2($xobject2), :Im1($xobject3) }, 'Resource XObject content';
+done;

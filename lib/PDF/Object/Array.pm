@@ -26,7 +26,7 @@ class PDF::Object::Array
     our %content-cache = ();
 
     method content {
-        my $id = ~self.WHICH;
+        my $id = self.id;
         my $array = %content-cache{$id};
         unless $array {
             temp %content-cache{$id} = $array = [];
