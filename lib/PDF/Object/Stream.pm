@@ -18,7 +18,7 @@ class PDF::Object::Stream
     method new(Hash :$dict = {}, *%etc) {
         my $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
-        unless $obj {
+        unless $obj.defined {
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
             # this may trigger cascading PDF::Object::Tree coercians
             # e.g. native Array to PDF::Object::Array
@@ -50,8 +50,8 @@ class PDF::Object::Stream
     }
 
     method encoded {
-        if $!decoded.defined && ! $!encoded.defined {
-            $!encoded = $.encode( $!decoded );
+        if $!decoded.defined {
+            $!encoded //= $.encode( $!decoded );
         }
         self<Length> = $!encoded.chars;
         $!encoded;
@@ -99,5 +99,15 @@ class PDF::Object::Stream
             self<Filter> = PDF::Object.compose( :name<FlateDecode> );
             self<Length>:delete;        # recompute this later
         }
+    }
+
+    method get-stream() {
+        my %stream;
+        %stream<encoded> = $!encoded if $!encoded.defined;
+        %stream<decoded> = $!decoded if $!decoded.defined;
+        %stream<dict><Filter> = $.Filter if $.Filter;
+        %stream<dict><DecodeParms> = $.DecodeParms if $.DecodeParms;
+
+        %stream;
     }
 }

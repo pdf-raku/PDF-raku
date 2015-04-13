@@ -16,4 +16,16 @@ class PDF::Object::Type::Page
     method MediaBox is rw { self<MediaBox> }
     method Contents is rw { self<Contents> }
 
+    #| produce an XObject form for this page
+    method to-xobject() {
+        require ::('PDF::Object::Type::XObject::Form');
+        my $contents = self.Contents;
+        my %params = $contents.get-stream();
+        my $xobject = ::('PDF::Object::Type::XObject::Form').new( |%params );
+        $xobject.Resources = self.find-prop('Resources');
+        $xobject.BBox = self.find-prop('MediaBox');
+
+        $xobject;
+    }
+
 }
