@@ -60,15 +60,19 @@ class PDF::Object {
             if $stream{$_}:exists;
         }
         my $dict = $stream<dict> // {};
+        my $stream-class;
+
         if $dict<Type>:exists {
             require ::("PDF::Object::Stream");
-            return ::("PDF::Object::Stream").delegate( :$dict ).new( :$dict, |%params );
+            $stream-class = ::("PDF::Object::Stream").delegate( :$dict )
         }
         else {
             # Assume Content when there's no /Type entry in the dictionary
             require ::("PDF::Object::Content");
-            return ::("PDF::Object::Content").new( :$dict, |%params );
-        }
+            $stream-class = ::("PDF::Object::Content");
+        };
+
+        $stream-class.new( :$dict, |%params );
     }
 
     proto sub to-ast(|) is export(:to-ast) {*};
