@@ -3,8 +3,9 @@ use v6;
 use PDF::Object::Dict;
 use PDF::Object::Type;
 use PDF::Object::Inheritance;
-use PDF::Object::Type::XObject;
+use PDF::Object::Type::XObject::Image;
 use PDF::Object::Type::XObject::Form;
+use PDF::Object::Type::Font;
 
 # /Type /Page - describes a single PDF page
 
@@ -29,36 +30,42 @@ class PDF::Object::Type::Page
         $xobject;
     }
 
+    multi method register-resource( PDF::Object::Type::XObject::Form $object) {
+        self!"register-resource"( $object, :base-name<Fm>, );
+    }
+
+    multi method register-resource( PDF::Object::Type::XObject::Image $object) {
+        self!"register-resource"( $object, :base-name<Im>, );
+    }
+
+    multi method register-resource( PDF::Object::Type::Font $object) {
+        self!"register-resource"( $object, :base-name<F>, );
+    }
+
     #| ensure that the object is registered as a page resource. Return a unique
     #| name for it.
-    method register-xobject(PDF::Object::Type::XObject $xobject) {
-        my $id = $xobject.id;
+    method !register-resource(PDF::Object $object, Str :$base-name = <Obj>, :$type = $object.Type) {
+        my $id = $object.id;
         my $resources = self.find-prop('Resources')
             // do {
                 self.Resources = {};
                 self.Resources
         };
 
-        $resources<XObject> //= {};
+        $resources{$type} //= {};
 
-        for $resources<XObject>.keys -> $xo-name {
-            my $xo-id = $resources<XObject>{$xo-name}.id;
+        for $resources{$type}.keys {
+            my $xo-id = $resources{$type}{$_}.id;
 
             # we've already got that object, thanks!
-            return $xo-name
+            return $_
                 if $xo-id eq $id;
         }
 
-        # generate a name and register it in this page's resources
-        my $base = $xobject.isa(PDF::Object::Type::XObject::Form)
-            ?? 'Fm'
-            !! 'Im';
+        my $name = (1..*).map({$base-name ~ $_}).first({ $resources{$type}{$_}:!exists });
+        $resources{$type}{$name} = $object;
 
-        my $n = (1..*).first({ $resources<XObject>{$base~$_}:!exists });
-        my $name = $base ~ $n;
-        $resources<XObject>{$name} = $xobject;
-
-        $name;
+        self.compose( :$name );
     }
 
 }
