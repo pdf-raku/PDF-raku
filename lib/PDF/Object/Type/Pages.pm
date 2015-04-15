@@ -69,11 +69,15 @@ class PDF::Object::Type::Pages
     }
 
     method finish {
+        my $count = 0;
         my $kids = self.Kids;
         for $kids.keys {
-            $kids[$_]<Parent> //= self;
-            $kids[$_].finish;
+            my $kid = $kids[$_];
+            $kid.<Parent> //= self;
+            $kid.finish;
+            $count += $kid.can('Count') ?? $kid.Count !! 1;
         }
+        self<Count> = $count;
     }
 
 }
