@@ -25,7 +25,6 @@ my $page1 = $root-object.Pages.Kids[0];
 my $font = {
         :Type(/'Font'),
         :Subtype(/'Type1'),
-        :Name(/'F1'),
         :BaseFont(/'Helvetica'),
         :Encoding(/'MacRomanEncoding'),
     };
@@ -45,7 +44,7 @@ my $writer = PDF::Writer.new( :$root );
 
 ## Status / Development Notes
 
-This module is a proof of concept in the early stages of development.  It is subject to change, refactoring or reorganization  at any time.
+This module is under construction.  It is subject to change, refactoring or reorganization  at any time.
 
 # Classes
 
