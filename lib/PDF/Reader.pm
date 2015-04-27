@@ -223,7 +223,7 @@ class PDF::Reader {
         use PDF::Grammar::PDF;
         use PDF::Grammar::PDF::Actions;
         my $actions = PDF::Grammar::PDF::Actions.new;
-        self!"full-scan"( PDF::Grammar::PDF, $actions);
+        self!"full-scan"( PDF::Grammar::PDF, $actions, :repair);
         # todo more post-processing and cross-checks
     }
 
@@ -362,7 +362,7 @@ class PDF::Reader {
     }
 
     #| bypass any indices. directly parse and reconstruct index fromn objects.
-    method !full-scan( $grammar, $actions ) {
+    method !full-scan( $grammar, $actions, :$repair ) {
         temp $actions.get-offsets = True;
         $grammar.parse($.input, :$actions)
             or die "unable to parse document";
@@ -388,6 +388,11 @@ class PDF::Reader {
                     my $start = $value<start>;
                     my $end = $value<end>;
                     my $max-end = $end + 1;
+
+                    # reset/repair stream length
+                    $dict<Length> = :int($end - $start + 1)
+                        if $repair;
+
                     self!"fetch-stream-data"($ind-obj, $.input, :$offset, :$max-end);
                 }
                 else {
