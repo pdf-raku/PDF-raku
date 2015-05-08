@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 9;
+plan 10;
 
 use PDF::Storage::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
@@ -35,4 +35,5 @@ is $object.Subtype, 'Type1', '$.Subype accessor';
 is $object.Name, 'F1', '$.Name accessor';
 is $object.BaseFont, 'Helvetica', '$.BaseFont accessor';
 is $object.Encoding, 'MacRomanEncoding', '$.Encoding accessor';
+is $object.encode("aB,~Æ."), "aB,~®.", "encode method"; 
 is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';
