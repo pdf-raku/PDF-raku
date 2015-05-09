@@ -1,10 +1,8 @@
 use v6;
 
-use PDF::Storage::Filter;
-use PDF::Object :to-ast-native;
+use PDF::Object :from-ast, :to-ast-native;
 use PDF::Object::Type;
 use PDF::Object::Tree;
-use PDF::Object :from-ast;
 
 #| Dict - base class for dictionary objects, e.g. Catalog Page ...
 class PDF::Object::Dict
