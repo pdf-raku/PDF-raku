@@ -281,24 +281,26 @@ class PDF::Reader {
                 ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
                   or &fallback() )
                     or die "unable to parse index: $xref";
-                my ($xref-ast, $trailer-ast) = @( $/.ast );
-                $dict = PDF::Object.compose( |%($trailer-ast<trailer>) );
+                my $index = $/.ast;
+                $dict = PDF::Object.compose( |%($index<trailer>) );
 
                 my $prev-offset;
 
-                for $xref-ast<xref>.list {
-                    my $obj-num = .<object-first-num>;
-                    for @( .<entries> ) {
-                        my $type = .<type>;
-                        my $gen-num = .<gen-num>;
-                        my $offset = .<offset>;
+                if $index<xref>:exists {
+                    for $index<xref>.list {
+                        my $obj-num = .<object-first-num>;
+                        for @( .<entries> ) {
+                            my $type = .<type>;
+                            my $gen-num = .<gen-num>;
+                            my $offset = .<offset>;
 
-                        given $type {
-                            when 0  {} # ignore free objects
-                            when 1  { @obj-idx.push: { :$type, :$obj-num, :$gen-num, :$offset } }
-                            default { die "unhandled type: $_" }
+                            given $type {
+                                when 0  {} # ignore free objects
+                                when 1  { @obj-idx.push: { :$type, :$obj-num, :$gen-num, :$offset } }
+                                default { die "unhandled type: $_" }
+                            }
+                            $obj-num++;
                         }
-                        $obj-num++;
                     }
                 }
             }
