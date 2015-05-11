@@ -172,13 +172,10 @@ class PDF::Writer {
 
         [~] '(',
             $literal.comb.map({
-                %escapes{$_}:exists
-                    ?? '\\' ~ %escapes{$_}
-                    !! do {
-                        when $_ ge ' ' && $_ le '~' { $_ }
-                        when $_ ge "\o0" && $_ le "\o377" { sprintf "\\%03o", .ord }
-                        default {die "illegal non-latin character in string: U+" ~ .ord.base(16)}
-                    }
+                when %escapes{$_}:exists { '\\' ~ %escapes{$_} }
+                when ' ' .. '~' { $_ }
+                when "\o0".. "\o377" { sprintf "\\%03o", .ord }
+                default {die "illegal non-latin character in string: U+" ~ .ord.base(16)}
             }),
            ')';
     }
