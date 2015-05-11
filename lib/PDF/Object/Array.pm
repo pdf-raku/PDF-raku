@@ -14,7 +14,7 @@ class PDF::Object::Array
     method new(Array :$array = [], *%etc) {
         my $id = ~$array.WHICH;
         my $obj = %obj-cache{$id};
-        unless $obj {
+        unless $obj.defined {
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
             # this may trigger cascading PDF::Object::Tree coercians
             # e.g. native Array to PDF::Object::Array
