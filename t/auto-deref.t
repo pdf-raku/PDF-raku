@@ -14,10 +14,10 @@ class t::DummyReader {
     has Bool $.auto-deref is rw = True;
     method ind-obj($obj-num, $gen-num) {
         %ties{$obj-num}{$gen-num} //= do {
-            my %dict = :Type<Test>,
+            my %dict = :Name<Test>,
             :Desc("indirect object: $obj-num $gen-num R");
 
-            my $ind-obj = [$obj-num,$gen-num, :%dict];
+            my $ind-obj = [$obj-num, $gen-num, :%dict];
 
             PDF::Storage::IndObj.new( :$ind-obj, :reader(self) );
         }
@@ -41,7 +41,7 @@ my $obj = PDF::Object.compose(
 
 is $obj<A>, 10, 'shallow reference';
 isa_ok $obj, PDF::Object::Dict;
-is_deeply $obj<B>, {Desc => "indirect object: 42 5 R", :Type("Test")}, 'hash dereference';
+is_deeply $obj<B>, {Desc => "indirect object: 42 5 R", :Name<Test>}, 'hash dereference';
 
 my $raw;
 lives_ok {$raw = $obj.raw}, '.raw - lives';
@@ -49,9 +49,9 @@ is_deeply $raw<B>, (:ind-ref[42, 5]), 'new hash entry - .raw deref';
 
 isa_ok $obj<Kids>, PDF::Object::Array;
 is_deeply $obj<Kids>.reader, $reader, 'reader array stickyness';
-is_deeply $obj<Kids>[2], {Desc => "indirect object: 99 0 R", :Type("Test")}, 'array dereference';
+is_deeply $obj<Kids>[2], {Desc => "indirect object: 99 0 R", :Name<Test>}, 'array dereference';
 $obj<B><SubRef> = :ind-ref[77, 0];
-is_deeply $obj<B><SubRef>, {Desc => "indirect object: 77 0 R", :Type("Test")}, 'new hash entry - deref';
+is_deeply $obj<B><SubRef>, {Desc => "indirect object: 77 0 R", :Name<Test>}, 'new hash entry - deref';
 is_deeply $obj<B>.raw<SubRef>, (:ind-ref[77, 0]), 'new hash entry - raw';
 lives_ok {++$obj<A>}, 'shallow reference preincrement';
 is_deeply $obj<Kids>[0], (42), 'deep reference';
@@ -66,7 +66,7 @@ my $parent;
 lives_ok { $parent = $obj<Kids>[1]<Parent>}, 'circular deref - lives';
 is ~$parent.WHICH, ~$obj.WHICH, 'assign/deref - graphical integrity';
 $obj<Kids>.push( (:ind-ref[123,0]) );
-is_deeply $obj<Kids>[3], {Desc => "indirect object: 123 0 R", :Type("Test")}, 'new array entry - deref';
+is_deeply $obj<Kids>[3], {Desc => "indirect object: 123 0 R", :Name<Test>}, 'new array entry - deref';
 is_deeply $obj<Kids>.raw[3], (:ind-ref[123, 0]), 'new array entry - raw';
 lives_ok {$obj<Y><Z> = 'foo'}, 'vivification - lives';
 is $obj<Y><Z>, 'foo', 'vivification - value';
