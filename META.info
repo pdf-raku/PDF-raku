@@ -21,6 +21,7 @@
         "PDF::Object::Tree" : "lib/PDF/Object/Tree.pm",
         "PDF::Object::Type" : "lib/PDF/Object/Type.pm",
         "PDF::Object::Type::Catalog" : "lib/PDF/Object/Type/Catalog.pm",
+        "PDF::Object::Type::Encoding" : "lib/PDF/Object/Type/Encoding.pm",
         "PDF::Object::Type::Font" : "lib/PDF/Object/Type/Font.pm",
         "PDF::Object::Type::Font::CIDFontType0" : "lib/PDF/Object/Type/Font/CIDFontType0.pm",
         "PDF::Object::Type::Font::CIDFontType2" : "lib/PDF/Object/Type/Font/CIDFontType2.pm",
