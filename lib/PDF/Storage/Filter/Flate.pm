@@ -4,33 +4,34 @@ use v6;
 use PDF::Storage::Filter::Role::Predictors;
 
 class PDF::Storage::Filter::Flate
-    does PDF::Storage::Filter::Role::Predictors;
+    does PDF::Storage::Filter::Role::Predictors {
 
-use Compress::Zlib;
+    use Compress::Zlib;
 
-# Maintainer's Note: Flate is described in the PDF 1.7 spec in section 3.3.3.
-# See also http://www.libpng.org/pub/png/book/chapter09.html - PNG predictors
+    # Maintainer's Note: Flate is described in the PDF 1.7 spec in section 3.3.3.
+    # See also http://www.libpng.org/pub/png/book/chapter09.html - PNG predictors
 
-method encode(Str $input, *%params) {
+    method encode(Str $input, *%params) {
 
-    if $input ~~ m{(<-[\x0 .. \xFF]>)} {
-        die 'illegal wide byte: U+' ~ $0.ord.base(16)
+        if $input ~~ m{(<-[\x0 .. \xFF]>)} {
+            die 'illegal wide byte: U+' ~ $0.ord.base(16)
+        }
+
+        my $buf = $input.encode('latin-1');
+
+        $buf = $.prediction( $buf, |%params )
+            if %params<Predictor>:exists;
+
+        compress( $buf ).decode('latin-1');
     }
 
-    my $buf = $input.encode('latin-1');
+    method decode(Str $input, Hash *%params --> Str) {
 
-    $buf = $.prediction( $buf, |%params )
-        if %params<Predictor>:exists;
+        my $buf = uncompress( $input.encode('latin-1') );
 
-    compress( $buf ).decode('latin-1');
-}
+        $buf = $.post-prediction( $buf, |%params )
+            if %params<Predictor>:exists;
 
-method decode(Str $input, Hash *%params --> Str) {
-
-    my $buf = uncompress( $input.encode('latin-1') );
-
-    $buf = $.post-prediction( $buf, |%params )
-        if %params<Predictor>:exists;
-
-    $buf.decode('latin-1');
+        $buf.decode('latin-1');
+    }
 }
