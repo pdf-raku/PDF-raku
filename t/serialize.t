@@ -72,17 +72,17 @@ ok ([object-order-ok] @$objects), 'objects are in order';
 is +$objects, 6, 'number of objects';
 is-json-equiv $objects[0], (:ind-obj[1, 0, :dict{
                                                Type => { :name<Catalog> },
-                                               Pages => :ind-ref[2, 0],
-                                               Outlines => :ind-ref[6, 0],
+                                               Pages => :ind-ref[3, 0],
+                                               Outlines => :ind-ref[2, 0],
                                              },
                                    ]), 'root object';
 
-is-json-equiv $objects[2], (:ind-obj[3, 0, :dict{
+is-json-equiv $objects[3], (:ind-obj[4, 0, :dict{
                                               Resources => :dict{Procset => :array[ :name<PDF>, :name<Text>],
-                                              Font => :dict{F1 => :ind-ref[4, 0]}},
+                                              Font => :dict{F1 => :ind-ref[5, 0]}},
                                               Type => :name<Page>,
-                                              Contents => :ind-ref[5, 0],
-                                              Parent => :ind-ref[2, 0],
+                                              Contents => :ind-ref[6, 0],
+                                              Parent => :ind-ref[3, 0],
                                                },
                                    ]), 'page object';
 

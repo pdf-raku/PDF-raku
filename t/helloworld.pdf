@@ -10,16 +10,16 @@ endobj
 << /Count 1 /Kids [ 4 0 R ] /Type /Pages >>
 endobj
 4 0 obj
-<< /Contents 6 0 R /MediaBox [ 0 0 420 595 ] /Parent 3 0 R /Resources << /Font << /F1 5 0 R >> /Procset [ /PDF /Text ] >> /Type /Page >>
+<< /Contents 5 0 R /MediaBox [ 0 0 420 595 ] /Parent 3 0 R /Resources << /Font << /F1 6 0 R >> /Procset [ /PDF /Text ] >> /Type /Page >>
 endobj
 5 0 obj
-<< /BaseFont /Helvetica /Encoding /MacRomanEncoding /Name /F1 /Subtype /Type1 /Type /Font >>
-endobj
-6 0 obj
 << /Length 46 >>
 stream
 BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
 endstream
+endobj
+6 0 obj
+<< /BaseFont /Helvetica /Encoding /MacRomanEncoding /Name /F1 /Subtype /Type1 /Type /Font >>
 endobj
 xref
 0 7
@@ -29,7 +29,7 @@ xref
 0000000125 00000 n 
 0000000184 00000 n 
 0000000336 00000 n 
-0000000444 00000 n 
+0000000432 00000 n 
 trailer
 << /Root 1 0 R /Size 7 >>
 startxref
