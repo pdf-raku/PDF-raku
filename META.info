@@ -31,6 +31,7 @@
         "PDF::Object::Type::Font::Type1" : "lib/PDF/Object/Type/Font/Type1.pm",
         "PDF::Object::Type::Font::Type3" : "lib/PDF/Object/Type/Font/Type3.pm",
         "PDF::Object::Type::Metadata::XML" : "lib/PDF/Object/Type/Metadata/XML.pm",
+        "PDF::Object::Type::OBJR" : "lib/PDF/Object/Type/OBJR.pm",
         "PDF::Object::Type::ObjStm" : "lib/PDF/Object/Type/ObjStm.pm",
         "PDF::Object::Type::Outlines" : "lib/PDF/Object/Type/Outlines.pm",
         "PDF::Object::Type::Page" : "lib/PDF/Object/Type/Page.pm",

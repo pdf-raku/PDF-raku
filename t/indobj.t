@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 33;
+plan 37;
 
 use PDF::Storage::IndObj;
 use PDF::Grammar::PDF;
@@ -98,3 +98,11 @@ my $enc-obj = $enc-ind-obj.object;
 isa-ok $enc-obj, ::('PDF::Object::Type::Encoding');
 is $enc-obj.Type, 'Encoding', '$enc.Type';
 is $enc-obj.BaseEncoding, 'MacRomanEncoding', '$enc.BaseEncoding';
+
+my $objr-ast = :ind-obj[6, 0, :dict{ :Type( :name<OBJR> ), :Pg( :ind-ref[6, 1] ), :Obj( :ind-ref[6, 2]) } ];
+my $objr-ind-obj = PDF::Storage::IndObj.new( |%($objr-ast) );
+my $objr-obj = $objr-ind-obj.object;
+isa-ok $objr-obj, ::('PDF::Object::Type::OBJR');
+is $objr-obj.Type, 'OBJR', '$objr.Type';
+is-deeply $objr-obj.Pg, (:ind-ref[6, 1]), '$objr.Pg';
+is-deeply $objr-obj.Obj, (:ind-ref[6, 2]), '$objr.Obj';

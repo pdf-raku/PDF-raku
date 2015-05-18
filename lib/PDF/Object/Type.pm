@@ -7,7 +7,7 @@ role PDF::Object::Type {
     method Subtype is rw { self<Subtype> }
 
     method find-delegate( Str $type-name is copy, $subtype-name ) {
-        BEGIN constant KnownTypes = set <Catalog Encoding Font Metadata ObjStm Outlines Page Pages XObject XRef>;
+        BEGIN constant KnownTypes = set <Catalog Encoding Font Metadata OBJR ObjStm Outlines Page Pages XObject XRef>;
         BEGIN constant SubTypes = %(
             Font => set(<Type0 Type1 MMType1 Type3 TrueType CIDFontType0 CIDFontType2>),
             Metadata => set(<XML>),
