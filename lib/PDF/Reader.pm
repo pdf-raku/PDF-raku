@@ -278,10 +278,10 @@ class PDF::Reader {
 
             if $xref ~~ /^'xref'/ {
                 # PDF 1.4- xref table followed by trailer
-                ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
-                  or &fallback() )
+                my $parse = ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
+                              || &fallback() )
                     or die "unable to parse index: $xref";
-                my $index = $/.ast;
+                my $index = $parse.ast;
                 $dict = PDF::Object.compose( |%($index<trailer>) );
 
                 my $prev-offset;
