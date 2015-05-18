@@ -2,7 +2,7 @@
     "name"        : "PDF::Tools",
     "version"     : "0.1",
     "description" : "Basic PDF Tools for reading, construction and serialization etc.",
-    "depends"     : [ "Compress::Zlib", "PDF::Grammar", "Font::AFM", "JSON::Tiny"  ],
+    "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Tiny"  ],
     "source-url"  : "git://github.com/p6-css/p6-PDF-Tools.git",
     "provides"    : {
 
