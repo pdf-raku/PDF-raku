@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 37;
+plan 41;
 
 use PDF::Storage::IndObj;
 use PDF::Grammar::PDF;
@@ -13,7 +13,7 @@ my $actions = PDF::Grammar::PDF::Actions.new;
 
 my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
-    // die "parse failed";
+    // die "parse failed: $input";
 my $ast = $/.ast;
 
 my $ind-obj = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
@@ -55,7 +55,7 @@ endobj
 --END--
 
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
-    // die "parse failed";
+    // die "parse failed: $input";
 $ast = $/.ast;
 
 # misc types follow
@@ -106,3 +106,26 @@ isa-ok $objr-obj, ::('PDF::Object::Type::OBJR');
 is $objr-obj.Type, 'OBJR', '$objr.Type';
 is-deeply $objr-obj.Pg, (:ind-ref[6, 1]), '$objr.Pg';
 is-deeply $objr-obj.Obj, (:ind-ref[6, 2]), '$objr.Obj';
+
+$input = q:to"--END--";
+99 0 obj
+<< /Type /OutputIntent  % Output intent dictionary
+/S /GTS_PDFX
+/OutputCondition (CGATS TR 001 (SWOP))
+/OutputConditionIdentifier (CGATS TR 001)
+/RegistryName (http://www.color.org)
+/DestOutputProfile 100 0 R
+>>
+endobj
+--END--
+
+PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
+    // die "parse failed: $input";
+$ast = $/.ast;
+
+$ind-obj = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
+my $oi-font-obj = $ind-obj.object;
+isa_ok $oi-font-obj, ::('PDF::Object::Type::OutputIntent');
+is $oi-font-obj.S, 'GTS_PDFX', 'OutputIntent S';
+is $oi-font-obj.OutputCondition, 'CGATS TR 001 (SWOP)', 'OutputIntent OutputCondition';
+is $oi-font-obj.RegistryName, 'http://www.color.org', 'OutputIntent RegistryName';
