@@ -116,6 +116,20 @@ class PDF::Writer {
         $bool ?? 'true' !! 'false';
     }
 
+    #| inverter for PDF::Grammar::Content::Actions
+    multi method write( Array :$content! ) {
+        $content.map({ $.write( :content($_) ) }).join("\n");
+    }
+
+    multi method write( :$content! ) {
+        my ($op, $args) = $content.kv;
+        $args //= [];
+
+        ($args.map({ $.write( $_ ) }), $.write( :$op )).join(' ');
+    }
+
+    multi method write( Str :$op! where /^\w+/ ) { $op }
+
     multi method write(List :$comment!) {
         $comment.map({ $.write( :comment($_) ) }).join: "\n";
     }
@@ -279,7 +293,7 @@ class PDF::Writer {
         $.write( %$ast );
     }
 
-    multi method write( Hash $ast!, :$node) {
+    multi method write( Hash $ast!, :$node?) {
         my %params = $node.defined
             ?? ($node => $ast{$node})
             !! $ast.flat;
