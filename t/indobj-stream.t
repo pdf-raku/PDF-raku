@@ -14,26 +14,26 @@ my %dict = ( :Filter<ASCIIHexDecode>,
     );
 
 my $hw = '100 100 Td (Hello, world!) Tj';
-lives_ok { $stream-obj = PDF::Object::Stream.new( :decoded($hw), :%dict ) }, 'basic stream object construction';
+lives-ok { $stream-obj = PDF::Object::Stream.new( :decoded($hw), :%dict ) }, 'basic stream object construction';
 stream_tests( $stream-obj );
 
 my $ind-obj;
-lives_ok { $ind-obj = PDF::Storage::IndObj.new( :ind-obj[123, 1, $stream-obj.content] ); }, 'stream object rebuilt';
+lives-ok { $ind-obj = PDF::Storage::IndObj.new( :ind-obj[123, 1, $stream-obj.content] ); }, 'stream object rebuilt';
 is $ind-obj.obj-num, 123, '$.obj-num';
 is $ind-obj.gen-num, 1, '$.gen-num';
 stream_tests( $ind-obj.object );
 $ind-obj.object.uncompress;
-is_deeply $ind-obj.object.encoded, $hw, 'stream object uncompressed';
+is-deeply $ind-obj.object.encoded, $hw, 'stream object uncompressed';
 $ind-obj.object.compress;
 isnt $ind-obj.object.encoded, $hw, 'stream object compressed';
 
 $ind-obj.object.uncompress;
-is_deeply $ind-obj.object.encoded, $hw, 'stream object compressed, then uncompressed';
+is-deeply $ind-obj.object.encoded, $hw, 'stream object compressed, then uncompressed';
 
 sub stream_tests( $stream-obj) {
-    isa_ok $stream-obj, PDF::Object::Stream;
+    isa-ok $stream-obj, PDF::Object::Stream;
     is-json-equiv $stream-obj, %dict, 'stream object dictionary';
-    is_deeply $stream-obj.decoded, '100 100 Td (Hello, world!) Tj', 'stream object decoded';
-    is_deeply $stream-obj.encoded, '31303020313030205464202848656c6c6f2c20776f726c64212920546a', 'stream object encoded';
+    is-deeply $stream-obj.decoded, '100 100 Td (Hello, world!) Tj', 'stream object decoded';
+    is-deeply $stream-obj.encoded, '31303020313030205464202848656c6c6f2c20776f726c64212920546a', 'stream object encoded';
 }
 

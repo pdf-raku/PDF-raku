@@ -29,7 +29,7 @@ my $ind-obj = PDF::Storage::IndObj.new( |%$ast);
 my $object = $ind-obj.object;
 is $ind-obj.obj-num, 7, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
-isa_ok $object, ::('PDF::Object')::('Type::Font::Type1');
+isa-ok $object, ::('PDF::Object')::('Type::Font::Type1');
 is $object.Type, 'Font', '$.Type accessor';
 is $object.Subtype, 'Type1', '$.Subype accessor';
 is $object.Name, 'F1', '$.Name accessor';

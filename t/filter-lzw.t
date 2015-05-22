@@ -24,14 +24,14 @@ my $dict = to-obj( |%$ast )<dict>;
 my $raw-content = $pdf-input.stream-data( |%$ast )[0];
 my $content;
 
-lives_ok { $content = PDF::Storage::Filter.decode( $raw-content, :$dict ) }, 'basic content decode - lives';
+lives-ok { $content = PDF::Storage::Filter.decode( $raw-content, :$dict ) }, 'basic content decode - lives';
 
 my $raw-content2;
-lives_ok { $raw-content2 = PDF::Storage::Filter.encode( $content, :$dict ) }, 'basic content decode - lives';
+lives-ok { $raw-content2 = PDF::Storage::Filter.encode( $content, :$dict ) }, 'basic content decode - lives';
 
 my $content2;
-lives_ok { $content2 = PDF::Storage::Filter.decode( $raw-content2, :$dict ) }, 'basic content decode - lives';
+lives-ok { $content2 = PDF::Storage::Filter.decode( $raw-content2, :$dict ) }, 'basic content decode - lives';
 
-is_deeply $content, $content2,
+is-deeply $content, $content2,
     q{basic LZW decompression - round trip};
 

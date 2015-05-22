@@ -29,13 +29,13 @@ my $ind-obj = PDF::Storage::IndObj.new( |%$ast);
 is $ind-obj.obj-num, 3, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $pages-obj = $ind-obj.object;
-isa_ok $pages-obj, ::('PDF::Object')::('Type::Pages');
+isa-ok $pages-obj, ::('PDF::Object')::('Type::Pages');
 is $pages-obj.Type, 'Pages', '$.Type accessor';
 is $pages-obj.Count, 2, '$.Count accessor';
 is-json-equiv $pages-obj.Kids, [ :ind-ref[4, 0], :ind-ref[5, 0] ], '$.Kids accessor';
 is-json-equiv $pages-obj[0], (:ind-ref[4, 0]), '$pages[0] accessor';
 is-json-equiv $pages-obj[1], (:ind-ref[5, 0]), '$pages[1] accessor';
-is_deeply $ind-obj.ast, $ast, 'ast regeneration';
+is-deeply $ind-obj.ast, $ast, 'ast regeneration';
 
 my $fdf-input = 't/pdf/fdf-PageTree.in';
 my $reader = PDF::Reader.new( );
@@ -58,7 +58,7 @@ is $pages[61].obj-num, 330, 'last page';
 is $pages[61].find-prop('Rotate'), 270, 'inheritance';
 
 my $new-page;
-lives_ok {$new-page = $pages.add-page}, 'add-page - lives';
-isa_ok $new-page, PDF::Object::Type::Page;
+lives-ok {$new-page = $pages.add-page}, 'add-page - lives';
+isa-ok $new-page, PDF::Object::Type::Page;
 is $pages.Count, 63, 'number of pages';
 is $pages[62].find-prop('Rotate'), 270, 'new page - inheritance';

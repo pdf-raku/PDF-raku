@@ -9,15 +9,15 @@ my $in = '--- Look at this test string. ---';
 my $out = "\x[fe]-\x01 L\xffo\x16k at this test string. \xfe-";
 my $filter = PDF::Storage::Filter::RunLength.new;
 
-is_deeply $filter.encode($in),
+is-deeply $filter.encode($in),
    $out,
    q{RunLength test string is encoded correctly};
 
-is_deeply $filter.decode($out),
+is-deeply $filter.decode($out),
    $in,
    q{RunLength test string is decoded correctly};
 
-dies_ok { $filter.decode($out, :eod) },
+dies-ok { $filter.decode($out, :eod) },
     q{RunLength missing EOD marker is handled correctly};
 
 my %dict = :Filter<RunLengthDecode>;

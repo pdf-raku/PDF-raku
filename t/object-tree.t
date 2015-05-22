@@ -13,8 +13,8 @@ my $reader = PDF::Reader.new();
 $reader.open( 't/pdf/pdf.in' );
 
 my $root-obj = $reader.root.object;
-isa_ok $root-obj, ::('PDF::Object::Type::Catalog');
-is_deeply $root-obj.reader, $reader, 'root object .reader';
+isa-ok $root-obj, ::('PDF::Object::Type::Catalog');
+is-deeply $root-obj.reader, $reader, 'root object .reader';
 is $root-obj.obj-num, 1, 'root object .obj-num';
 is $root-obj.gen-num, 0, 'root object .gen-num';
 
@@ -22,10 +22,10 @@ is $root-obj.gen-num, 0, 'root object .gen-num';
 
 ok $root-obj<Type>:exists, 'root object existance';
 ok $root-obj<Wtf>:!exists, 'root object non-existance';
-lives_ok {$root-obj<Wtf> = 'Yup' }, 'key stantiation - lives';
+lives-ok {$root-obj<Wtf> = 'Yup' }, 'key stantiation - lives';
 ok $root-obj<Wtf>:exists, 'key stantiation';
 is $root-obj<Wtf>, 'Yup', 'key stantiation';
-lives_ok {$root-obj<Wtf>:delete}, 'key deletion - lives';
+lives-ok {$root-obj<Wtf>:delete}, 'key deletion - lives';
 ok $root-obj<Wtf>:!exists, 'key deletion';
 
 my $type = $root-obj<Type>;
@@ -35,12 +35,12 @@ is $type, 'Catalog', '$root-obj<Type>';
 
 my $Pages := $root-obj<Pages>;
 is $Pages<Type>, 'Pages', 'Pages<Type>';
-is_deeply $Pages.reader, $reader, 'root has deref - stickyness';
+is-deeply $Pages.reader, $reader, 'root has deref - stickyness';
 
 my $Kids = $Pages<Kids>;
-is_deeply $Kids.reader, $reader, 'hash -> array deref - reader stickyness';
+is-deeply $Kids.reader, $reader, 'hash -> array deref - reader stickyness';
 my $kid := $Kids[0];
-is_deeply $kid.reader, $reader, 'array -> hash deref - reader stickyness';
+is-deeply $kid.reader, $reader, 'array -> hash deref - reader stickyness';
 is $kid<Type>, 'Page', 'Kids[0]<Type>';
 
 is $Pages<Kids>[0]<Parent>.WHERE, $Pages.WHERE, '$Pages<Kids>[0]<Parent>.WHERE == $Pages.WHERE';
@@ -57,7 +57,7 @@ ET
 # demonstrate low level construction of a PDF. First page is copied from an
 # input PDF. Second page is constructed from scratch.
 
-lives_ok {
+lives-ok {
     my $Resources = $Pages<Kids>[0]<Resources>;
     my $new-page = PDF::Object.compose( :dict{ :Type(/'Page'), :MediaBox[0, 0, 420, 595], :$Resources } );
     my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );

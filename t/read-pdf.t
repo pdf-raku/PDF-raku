@@ -19,23 +19,23 @@ $pdf-in.open( 't/pdf/pdf.in' );
 is $pdf-in.version, 1.2, 'loaded version';
 is $pdf-in.type, 'PDF', 'loaded type';
 is $pdf-in.size, 9, 'loaded size';
-isa_ok $pdf-in.root.object, PDF::Object::Type::Catalog , 'root-obj';
+isa-ok $pdf-in.root.object, PDF::Object::Type::Catalog , 'root-obj';
 is $pdf-in.root.obj-num, 1, 'root-obj.obj-num';
-isa_ok $pdf-in.ind-obj(3, 0).object, PDF::Object::Dict, 'fetch via index';
-isa_ok $pdf-in.ind-obj(5, 0).object, PDF::Object::Content, 'fetch via index';
+isa-ok $pdf-in.ind-obj(3, 0).object, PDF::Object::Dict, 'fetch via index';
+isa-ok $pdf-in.ind-obj(5, 0).object, PDF::Object::Content, 'fetch via index';
 is $pdf-in.ind-obj(5, 0).object.encoded, "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET", 'stream content';
 
 my $page = $pdf-in.ind-obj(4, 0).object;
-isa_ok $page, PDF::Object::Type::Page;
+isa-ok $page, PDF::Object::Type::Page;
 
 my $xobject = $page.to-xobject;
-isa_ok $xobject, PDF::Object::Type::XObject::Form;
+isa-ok $xobject, PDF::Object::Type::XObject::Form;
 is $xobject.decoded, $pdf-in.ind-obj(5, 0).object.encoded, 'xobject encoding';
 is-json-equiv $xobject.BBox, $page.MediaBox, 'xobject BBox';
 is-json-equiv $xobject.Resources, $page.Resources, 'xobject Resources';
 
 my $new-page = $pdf-in.root.object.Pages.add-page();
-isa_ok $new-page, PDF::Object::Type::Page, 'new page';
+isa-ok $new-page, PDF::Object::Type::Page, 'new page';
 my $fm1 = $new-page.register-resource( $xobject );
 is $fm1, 'Fm1', 'xobject form name';
 

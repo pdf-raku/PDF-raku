@@ -18,7 +18,7 @@ is(PDF::Storage::Filter::ASCII85.decode($out),
    $in,
    q{ASCII85 test string is decoded correctly});
 
-dies_ok { PDF::Storage::Filter::ASCII85.decode($out, :eod) },
+dies-ok { PDF::Storage::Filter::ASCII85.decode($out, :eod) },
     q{ASCII85 missing eod marker handled};
 
 my %dict = :Filter<ASCII85Decode>;
@@ -43,6 +43,6 @@ is(PDF::Storage::Filter::ASCII85.decode($out),
    q{ASCII85 test string with EOD marker is decoded correctly});
 
 # Check for death if invalid characters are included
-dies_ok { PDF::Storage::Filter::ASCII85.decode('This is not valid input{|}') },
+dies-ok { PDF::Storage::Filter::ASCII85.decode('This is not valid input{|}') },
     q{ASCII85 dies if invalid characters are passed to decode};
 

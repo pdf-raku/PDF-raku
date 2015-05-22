@@ -30,21 +30,21 @@ my $png-post-prediction = buf8.new: [
     1,   2,   3,    4,
     ];
 
-is_deeply PDF::Storage::Filter::Role::Predictors.post-prediction( $prediction-in,
+is-deeply PDF::Storage::Filter::Role::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(1), ),
     $prediction-in,
     "NOOP predictive filter sanity";
 
-is_deeply PDF::Storage::Filter::Role::Predictors.post-prediction( $prediction-in,
+is-deeply PDF::Storage::Filter::Role::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(2), ),
     $tiff-post-prediction,
     "TIFF predictive filter sanity";
 
-is_deeply PDF::Storage::Filter::Role::Predictors.post-prediction( $prediction-in,
+is-deeply PDF::Storage::Filter::Role::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Predictor(12), ),
     $png-post-prediction,
@@ -68,7 +68,7 @@ for None => 1, TIFF => 2, PNG => 10 {
                                                                      :Columns(4),
                                                                      :$Predictor, );
 
-    is_deeply $post-prediction, $rand-data, "$desc predictor ($Predictor) - appears lossless";
+    is-deeply $post-prediction, $rand-data, "$desc predictor ($Predictor) - appears lossless";
 }
 
 my $flate-dict = { :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) } };
@@ -79,10 +79,10 @@ my $rand-chrs = [~] $rand-data.list.grep({ $_ <= 0xFF }).map: { .chr };
 for $flate-dict, $lzw-dict -> $dict {
 
     my $encoded;
-    lives_ok {$encoded = PDF::Storage::Filter.encode($rand-chrs, :$dict)}, "$dict<Filter> encode with prediction";
+    lives-ok {$encoded = PDF::Storage::Filter.encode($rand-chrs, :$dict)}, "$dict<Filter> encode with prediction";
 
     my $decoded;
-    lives_ok {$decoded = PDF::Storage::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with prediction";
+    lives-ok {$decoded = PDF::Storage::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with prediction";
 
     is $decoded, $rand-chrs, "$dict<Filter> round-trip with prediction";
 }

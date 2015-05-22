@@ -13,12 +13,12 @@ use t::Object :to-obj;
 sub ind-obj-tests( :$ind-obj!, :$class!, :$to-obj!) {
     my $dict-obj = PDF::Storage::IndObj.new( :$ind-obj );
     my $object = $dict-obj.object;
-    isa_ok $object, $class;
+    isa-ok $object, $class;
     is $dict-obj.obj-num, $ind-obj[0], '$.obj-num';
     is $dict-obj.gen-num, $ind-obj[1], '$.gen-num';
     my $content = $dict-obj.content;
-    isa_ok $content, Pair;
-    isa_ok to-obj( $content ), Hash, '$.content to-obj';
+    isa-ok $content, Pair;
+    isa-ok to-obj( $content ), Hash, '$.content to-obj';
     is-json-equiv to-obj( $content ), $to-obj, '$.content to-obj';
     is-json-equiv $dict-obj.ast, (:$ind-obj), 'ast regeneration';
 }

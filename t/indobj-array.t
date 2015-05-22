@@ -19,14 +19,14 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
 my $ast = $/.ast;
 my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
 my $object = $ind-obj.object;
-isa_ok $object, Array;
+isa-ok $object, Array;
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 my $content = $ind-obj.content;
-isa_ok $content, Pair;
+isa-ok $content, Pair;
 is-json-equiv $content, ( :array[:real(0.9505e0), :real(1e0), :real(1.089e0),
                              :array[:int(1), :int(2), :literal<abc>],
                      ]), '$.content';
 is-json-equiv to-obj( $content ), [0.9505e0, 1e0, 1.089e0, [1, 2, "abc"]], '$.content to-obj';
 
-is_deeply $ind-obj.ast, $ast, 'ast regeneration';
+is-deeply $ind-obj.ast, $ast, 'ast regeneration';

@@ -16,15 +16,15 @@ for 'ASCIIHexDecode', 'FlateDecode', 'RunLengthDecode', ['FlateDecode', 'RunLeng
     my $filter-name = $filter.join: ', ';
     my %dict = Filter => $filter;
 
-    dies_ok { PDF::Storage::Filter.encode($wide-chars, :%dict) }, $filter-name ~' decode chars > \xFF - dies';
+    dies-ok { PDF::Storage::Filter.encode($wide-chars, :%dict) }, $filter-name ~' decode chars > \xFF - dies';
 
     for :$empty, :$latin-chars, :$low-repeat, :$high-repeat, :$longish {
         my ($name, $input) = .kv;
 
         my $output;
-        lives_ok { $output = PDF::Storage::Filter.encode($input, :%dict) }, $filter-name ~' encoding - lives';
+        lives-ok { $output = PDF::Storage::Filter.encode($input, :%dict) }, $filter-name ~' encoding - lives';
 
-        is_deeply PDF::Storage::Filter.decode($output, :%dict), $input, "$filter-name roundtrip: $name"
+        is-deeply PDF::Storage::Filter.decode($output, :%dict), $input, "$filter-name roundtrip: $name"
             or diag :$input.perl;
 
     }

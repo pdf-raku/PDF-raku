@@ -17,13 +17,13 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
-isa_ok $ind-obj.object, Str;
+isa-ok $ind-obj.object, Str;
 is $ind-obj.object, 'HiThere';
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 my $content = $ind-obj.content;
-isa_ok $content, Pair;
-is_deeply $content, (:name<HiThere>), '$.content';
-isa_ok to-obj( $content ), Str, '$.content to-obj';
+isa-ok $content, Pair;
+is-deeply $content, (:name<HiThere>), '$.content';
+isa-ok to-obj( $content ), Str, '$.content to-obj';
 is to-obj( $content ), 'HiThere', '$.content to-obj';
-is_deeply $ind-obj.ast, $ast, 'ast regeneration';
+is-deeply $ind-obj.ast, $ast, 'ast regeneration';

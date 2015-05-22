@@ -28,11 +28,11 @@ $root-obj[0]<Parent> := $root-obj;
 my $result = PDF::Storage::Serializer.new.serialize-doc($root-obj);
 my $s-objects = $result<objects>;
 is +$s-objects, 2, 'expected number of objects';
-is_deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => :ind-ref[1, 0]},
+is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => :ind-ref[1, 0]},
                                                  :ind-ref[2, 0],
                                                  :ind-ref[1, 0]]]), "circular array reference resolution";
 
-is_deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], ID => :int(2)}]), "circular hash ref resolution";
+is-deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], ID => :int(2)}]), "circular hash ref resolution";
 
 my $body = PDF::Object.compose( :dict{
     :Type(/'Catalog'),
@@ -91,12 +91,12 @@ my $obj-with-utf8 = PDF::Object.compose :dict{ :Name(/"Heydər Əliyev") };
 my $writer = PDF::Writer.new;
 
 $objects = PDF::Storage::Serializer.new.serialize-doc($obj-with-utf8)<objects>;
-is_deeply $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
+is-deeply $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
 is $writer.write( :ind-obj($objects[0].value)), "1 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj", 'name write';
 
 # just to define current behaviour. blows up during final write.
 my $obj-with-bad-byte-string = PDF::Object.compose :dict{ :Name("Heydər Əliyev") };
 $objects = PDF::Storage::Serializer.new.serialize-doc($obj-with-bad-byte-string)<objects>;
-dies_ok {$writer.write( :ind-obj($objects[0].value) )}, 'out-of-range byte-string dies during write';
+dies-ok {$writer.write( :ind-obj($objects[0].value) )}, 'out-of-range byte-string dies during write';
 
 done;

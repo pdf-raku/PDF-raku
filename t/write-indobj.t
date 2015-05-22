@@ -28,4 +28,4 @@ $ast = $/.ast;
 
 my $ind-obj2 = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
 
-is_deeply $ind-obj.object.decoded, $ind-obj2.object.decoded, 'writer round trip';
+is-deeply $ind-obj.object.decoded, $ind-obj2.object.decoded, 'writer round trip';

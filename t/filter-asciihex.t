@@ -16,7 +16,7 @@ is(PDF::Storage::Filter::ASCIIHex.decode($out),
    $in,
    q{ASCIIHex test string is decoded correctly});
 
-dies_ok { PDF::Storage::Filter::ASCIIHex.decode($out, :eod) },
+dies-ok { PDF::Storage::Filter::ASCIIHex.decode($out, :eod) },
     q{ASCIIHex missing eod marker handled};
 
 my %dict = :Filter<ASCIIHexDecode>;
@@ -49,7 +49,7 @@ is(PDF::Storage::Filter::ASCIIHex.decode($out),
 
 
 # Check for death if invalid characters are included
-dies_ok { PDF::Storage::Filter::ASCIIHex.decode('This is not valid input') },
+dies-ok { PDF::Storage::Filter::ASCIIHex.decode('This is not valid input') },
     q{ASCIIHex dies if invalid characters are passed to decode};
 
 # PDF 1.7, section 7.4.2:

@@ -104,7 +104,7 @@ my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input);
 is $ind-obj.obj-num, 10, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $metadata-obj = $ind-obj.object;
-isa_ok $metadata-obj, ::('PDF::Object')::('Type::Metadata::XML');
+isa-ok $metadata-obj, ::('PDF::Object')::('Type::Metadata::XML');
 is $metadata-obj.Type, 'Metadata', '$.Type accessor';
 is $metadata-obj.Subtype, 'XML', '$.Subtype accessor';
 is $metadata-obj.encoded.substr(0,51), '<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>', '$.encoded accessor (sample)';
