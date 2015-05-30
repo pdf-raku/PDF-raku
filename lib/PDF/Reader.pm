@@ -14,12 +14,12 @@ class PDF::Reader {
     has Bool $.auto-deref is rw = True;
     has Rat $.version is rw;
     has Str $.type is rw;
-    has PDF::Grammar::PDF::Actions $!actions;
     has $.prev;
     has $.size is rw;   #= /Size entry in trailer dict ~ first free object number
+    has $.trailer-dict;
 
     method actions {
-        $!actions //= PDF::Grammar::PDF::Actions.new
+        state $actions //= PDF::Grammar::PDF::Actions.new
     }
 
     #| open the named file
@@ -311,6 +311,8 @@ class PDF::Reader {
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;
             }
 
+            $!trailer-dict //= $dict.content<dict>;
+
             $root-ref //= $dict<Root>
                 if $dict<Root>:exists;
 
@@ -556,7 +558,11 @@ class PDF::Reader {
     #| suitable as input to PDF::Writer
     method ast( ) {
         my $objects = self.get-objects( );
-        my %dict = :Root($.root.ind-ref);
+        my %dict = self.trailer-dict.list
+            if self.trailer-dict.defined;
+
+        %dict<Prev>:delete;
+        %dict<Root> = $.root.ind-ref;
         %dict<Size> = :int($.size)
             unless $.type eq 'FDF';
 

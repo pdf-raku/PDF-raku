@@ -117,6 +117,7 @@ class PDF::Writer {
     }
 
     #| inverter for PDF::Grammar::Content::Actions
+
     multi method write( Array :$content! ) {
         $content.map({ $.write( :content($_) ) }).join("\n");
     }

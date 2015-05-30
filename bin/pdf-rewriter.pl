@@ -5,7 +5,7 @@ use v6;
 use PDF::Reader;
 use PDF::Writer;
 
-sub MAIN (Str $input-path, Str $output-path, Bool :$repair = False, Bool :$compress? is copy, Bool :$uncompress?) {
+multi sub MAIN (Str $input-path, Str $output-path, Bool :$repair = False, Bool :$compress? is copy, Bool :$uncompress?) {
 
     die "conflicting arguments: --compress --uncompress"
         if $compress && $uncompress;
