@@ -22,7 +22,47 @@ class PDF::Reader {
         state $actions //= PDF::Grammar::PDF::Actions.new
     }
 
-    #| open the named file
+    #| derserialize a json dump
+    multi method open( Str $input  where m:i/'.json' $/ ) {
+        my $ast = from-json( $input.IO.slurp );
+        die "doesn't contain pdf: $input"
+            unless $ast<pdf>:exists;
+        $!type = $ast<pdf><header><type> // 'PDF';
+        $!version = $ast<pdf><header><version> // 1.2;
+        $!trailer-dict = $ast<pdf><trailer><dict>;
+
+        my $root-ref;
+
+        for $ast<pdf><body> {
+
+            for .<objects>.list.reverse {
+                next unless .<ind-obj>:exists;
+                my $ind-obj = .<ind-obj>;
+                my ($obj-num, $gen-num, $object) = @( $ind-obj );
+                
+                %!ind-obj-idx{$obj-num}{$gen-num} //= {
+                    :type(1),
+                    :$ind-obj,
+                };
+
+            }
+
+            if .<trailer> {
+                my $dict = PDF::Object.compose( |%(.<trailer>) );
+                $!trailer-dict //= $dict.content<dict>;
+                $root-ref //= .<trailer><dict><Root><ind-ref>
+                    if .<trailer><dict><Root>:exists;
+            }
+       }
+
+        $root-ref.defined
+            ?? ($!root = $.ind-obj( $root-ref[0], $root-ref[1]) )
+            !! die "unable to find root object";
+
+        $ast;
+    }
+
+    #| open the named PDF/FDF file
     multi method open( Str $input, *%opts) {
         $.open( $input.IO.open( :enc<latin-1> ), |%opts );
     }
@@ -433,6 +473,7 @@ class PDF::Reader {
 
             if .<trailer> {
                 my $dict = PDF::Object.compose( |%(.<trailer>) );
+                self.trailer-dict //= $dict.content<dict>;
                 $root-ref //= $dict<Root>
                     if $dict<Root>:exists;
             }
@@ -521,11 +562,12 @@ class PDF::Reader {
 
                 my $ind-obj = $final-ast.value[2];
 
-                if my $obj-type = $ind-obj.value<dict><Type> {
+                if $ind-obj<stream>:exists && (my $obj-type = $ind-obj<stream><dict><Type>) {
                     # discard existing /Type /XRef and ObjStm objects.
-                    next if $obj-type.value eq 'XRef' | 'ObjStm';
+                    next if $obj-type<name> eq 'XRef' | 'ObjStm';
                 }
 
+                $offset ||= 0;
                 @object-refs.push: [ $final-ast, $offset + $seq ];
             }
         }
@@ -537,8 +579,8 @@ class PDF::Reader {
             # Discard Linearization aka "Fast Web View"
             my $first-ind-obj = @objects[0].value[2];
             @objects.shift
-                if $first-ind-obj.key eq 'dict'
-                && $first-ind-obj.value<Linearized>;
+                if ($first-ind-obj<dict>:exists)
+                && ($first-ind-obj<dict><Linearized>:exists);
         }
 
         return @objects.item;
@@ -573,6 +615,20 @@ class PDF::Reader {
                 :trailer{ :%dict },
             },
         };
+    }
+
+    #| dump to json
+    multi method write( $output-path where m:i/'.json' $/, :$ast = $.ast, :$reader ) is default {
+        note "dumping {$output-path}...";
+        $output-path.IO.spurt( to-json( $ast ) );
+    }
+
+    #| write to PDF/FDF
+    multi method write( $output-path, :$ast = $.ast ) is default {
+        note "writing {$output-path}...";
+        require ::('PDF::Writer');
+        my $pdf-writer = ::('PDF::Writer').new( :$.root, :$.input );
+        $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
     }
 
 }
