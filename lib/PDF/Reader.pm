@@ -33,12 +33,7 @@ class PDF::Reader {
         $!input = PDF::Storage::Input.compose( :value($input) );
 
         $.load-header( );
-        if $.type eq 'FDF' {
-            $.load-fdf();
-        }
-        else {
-            $.load-pdf( :$repair );
-        }
+        $.load( $.type, :$repair );
     }
 
     sub synopsis($input) {
@@ -209,7 +204,7 @@ class PDF::Reader {
 
     #| Load input in FDF (Form Data Definition) format.
     #| Use full-scan mode, as these are not indexed.
-    method load-fdf() {
+    multi method load('FDF') {
         use PDF::Grammar::FDF;
         use PDF::Grammar::FDF::Actions;
         my $actions = PDF::Grammar::FDF::Actions.new;
@@ -219,7 +214,7 @@ class PDF::Reader {
     #| scan the entire PDF, bypass any indices. Populate index with
     #| raw ast indirect objects. Useful if the index is corrupt and/or
     #| the PDF has been hand-created/edited.
-    multi method load-pdf( :$repair! where {$repair} ) {
+    multi method load('PDF', :$repair! where {$repair} ) {
         use PDF::Grammar::PDF;
         use PDF::Grammar::PDF::Actions;
         my $actions = PDF::Grammar::PDF::Actions.new;
@@ -229,7 +224,7 @@ class PDF::Reader {
 
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
     #| via the $.ind-obj() method.
-    multi method load-pdf() is default {
+    multi method load('PDF') is default {
 
         my $tail-bytes = min(1024, $.input.chars);
         my $tail = $.input.substr(* - $tail-bytes);
@@ -444,6 +439,8 @@ class PDF::Reader {
         $root-ref.defined
             ?? ($!root = $.ind-obj( $root-ref.value[0], $root-ref.value[1]) )
             !! die "unable to find root object";
+
+        $ast;
     }
 
     #| - sift /XRef objects
