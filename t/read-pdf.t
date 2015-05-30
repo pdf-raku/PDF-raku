@@ -25,6 +25,12 @@ isa-ok $pdf-in.ind-obj(3, 0).object, PDF::Object::Dict, 'fetch via index';
 isa-ok $pdf-in.ind-obj(5, 0).object, PDF::Object::Content, 'fetch via index';
 is $pdf-in.ind-obj(5, 0).object.encoded, "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET", 'stream content';
 
+my $ast = $pdf-in.ast;
+is-json-equiv $ast<pdf><header>, {:type<PDF>, :version(1.2)}, '$ast header';
+is +$ast<pdf><body><objects>, 8, '$ast objjects';
+is-json-equiv $ast<pdf><body><objects>[0], (:ind-obj([1, 0, :dict({:Outlines(:ind-ref([2, 0])), :Pages(:ind-ref([3, 0])), :Type(:name("Catalog"))})])), '$ast<body><objects>[0]';
+is-json-equiv $ast<pdf><body><trailer>, (:dict({:Root(:ind-ref([1, 0])), :Size(:int(9))})), '$ast trailer';
+
 my $page = $pdf-in.ind-obj(4, 0).object;
 isa-ok $page, PDF::Object::Type::Page;
 

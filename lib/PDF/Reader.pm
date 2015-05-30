@@ -556,10 +556,16 @@ class PDF::Reader {
     #| suitable as input to PDF::Writer
     method ast( ) {
         my $objects = self.get-objects( );
+        my %dict = :Root($.root.ind-ref);
+        %dict<Size> = :int($.size)
+            unless $.type eq 'FDF';
 
         :pdf{
             :header{ :$.type, :$.version },
-            :body{ :$objects },
+            :body{
+                :$objects,
+                :trailer{ :%dict },
+            },
         };
     }
 
