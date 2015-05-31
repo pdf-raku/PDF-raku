@@ -35,7 +35,7 @@ is $ind-obj.obj-num, 123, '$.obj-num';
 is $ind-obj.gen-num, 4, '$.gen-num';
 $content = $ind-obj.content;
 isa-ok $content, Pair;
-is-deeply to-obj( $content ), 'snoopy', '$.content to-obj';
+is to-obj( $content ), 'snoopy', '$.content to-obj';
 is-deeply $content, (:hex-string<snoopy>), '$.content';
 
 is-deeply $ind-obj.ast, $ast, 'ast regeneration';

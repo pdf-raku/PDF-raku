@@ -122,7 +122,7 @@ class PDF::Object {
         $dict;
     }
 
-    multi sub from-ast( Str :$hex-string! ) { $hex-string }
+    multi sub from-ast( Str :$hex-string! ) { PDF::Object.compose( :$hex-string ) }
 
     multi sub from-ast( Array :$ind-ref! ) {
         :$ind-ref;

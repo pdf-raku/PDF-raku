@@ -352,7 +352,7 @@ class PDF::Reader {
 
                 # XRef dictionary contains a lot of guff. just copy what we're interested in
                 my $ID = $dict.content<stream><dict><ID>;
-                $!trailer-dict //= { :$ID } if $ID.defined;
+                $!trailer-dict //= %( $ID.defined ?? :$ID !! () )
             }
 
             $root-ref //= $dict<Root>
