@@ -33,9 +33,12 @@ my $updates = $reader.get-updates;
     temp $reader.auto-deref = False;
     is-json-equiv [ @$updates ], [ { :Count(2),
                                      :Kids[ { :ind-ref[ 4, 0 ] },
-                                            { :Type<Page>, :MediaBox[ 0, 0, 420, 595 ], :Resources{ :Font{ F1 => :ind-ref[ 7, 0 ]  },
-                                                                                                    ProcSet =>  :ind-ref[ 6, 0 ] },
-                                              :Contents{ :Length(70) } }
+                                            { :Type<Page>,
+                                              :MediaBox[ 0, 0, 420, 595 ],
+                                              :Resources{ :Font{ F1 => :ind-ref[ 7, 0 ] },
+                                                           ProcSet =>  :ind-ref[ 6, 0 ] },
+                                              :Contents{ :Length(70) },
+                                             }
                                          ],
                                      :Type<Pages> } ], "update ast";
 }
