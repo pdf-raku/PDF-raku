@@ -106,8 +106,8 @@ class PDF::Object {
         from-ast( |%( $p.kv ) );
     }
 
-    multi sub from-ast( Hash $h! ) {
-        from-ast( |%( $h ) );
+    multi sub from-ast( Hash $h! where .<name>:exists ) {
+        from-ast( :name($h<name>) )
     }
 
     multi sub from-ast( Array :$array! ) {

@@ -29,7 +29,6 @@ class PDF::Reader {
             unless $ast<pdf>:exists;
         $!type = $ast<pdf><header><type> // 'PDF';
         $!version = $ast<pdf><header><version> // 1.2;
-        $!trailer-dict = $ast<pdf><trailer><dict>;
 
         my $root-ref;
 
@@ -318,6 +317,7 @@ class PDF::Reader {
                     or die "unable to parse index: $xref";
                 my $index = $parse.ast;
                 $dict = PDF::Object.compose( |%($index<trailer>) );
+                $!trailer-dict //= $dict.content<dict>;
 
                 my $prev-offset;
 
@@ -349,9 +349,11 @@ class PDF::Reader {
                 my $xref-obj = $ind-obj.object;
                 $dict = $xref-obj;
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;
-            }
 
-            $!trailer-dict //= $dict.content<dict>;
+                # XRef dictionary contains a lot of guff. just copy what we're interested in
+                my $ID = $dict.content<stream><dict><ID>;
+                $!trailer-dict //= { :$ID } if $ID.defined;
+            }
 
             $root-ref //= $dict<Root>
                 if $dict<Root>:exists;
@@ -439,8 +441,10 @@ class PDF::Reader {
                 }
 
                 if $stream-type && $stream-type eq 'XRef' {
-                    $root-ref //= $dict<Root>
-                        if $dict<Root>:exists;
+                    if $dict<Root>:exists {
+                        $!trailer-dict //= $dict;
+                        $root-ref //= $dict<Root>
+                    }
                     # discard existing /Type /XRef stream objects. These are specific to the input PDF
                     next;
                 }
@@ -473,7 +477,8 @@ class PDF::Reader {
 
             if .<trailer> {
                 my $dict = PDF::Object.compose( |%(.<trailer>) );
-                self.trailer-dict //= $dict.content<dict>;
+                $!trailer-dict //= $dict.content<dict>
+                    if $dict.content<dict>:exists;
                 $root-ref //= $dict<Root>
                     if $dict<Root>:exists;
             }
