@@ -180,15 +180,14 @@ class PDF::Writer {
 
     multi method write(Int :$int!) {sprintf "%d", $int}
 
-    BEGIN my %escapes = "\b" => 'b', "\f" => 'f', "\n" => 'n', "\r" => 'r', "\t" => 't'
-        , "\n" => 'n', '(' => '(', ')' => ')', '\\' => '\\';
+    BEGIN my %escapes = "\b" => '\\b', "\f" => '\\f', "\n" => '\\n', "\r" => '\\r', "\t" => '\\t'
+        , "\n" => '\\n', '(' => '\\(', ')' => '\\)', '\\' => '\\\\';
 
     multi method write( Str :$literal! ) {
 
         [~] '(',
             $literal.comb.map({
-                when %escapes{$_}:exists { '\\' ~ %escapes{$_} }
-                when ' ' .. '~' { $_ }
+                when ' ' .. '~' { %escapes{$_} // $_ }
                 when "\o0".. "\o377" { sprintf "\\%03o", .ord }
                 default {die "illegal non-latin character in string: U+" ~ .ord.base(16)}
             }),
