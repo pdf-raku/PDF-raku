@@ -60,17 +60,10 @@ class PDF::Object {
             if $stream{$_}:exists;
         }
         my $dict = $stream<dict> // {};
-        my $stream-class;
-
-        if $dict<Type>:exists {
-            require ::("PDF::Object::Stream");
-            $stream-class = ::("PDF::Object::Stream").delegate( :$dict )
-        }
-        else {
-            # Assume Content when there's no /Type entry in the dictionary
-            require ::("PDF::Object::Content");
-            $stream-class = ::("PDF::Object::Content");
-        };
+        require ::("PDF::Object::Stream");
+        my $stream-class = $dict<Type>:exists
+            ?? ::("PDF::Object::Stream").delegate( :$dict )
+            !! ::("PDF::Object::Stream").delegate( :dict{ :Type<Content> });
 
         $stream-class.new( :$dict, |%params );
     }

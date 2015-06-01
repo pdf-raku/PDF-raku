@@ -3,7 +3,7 @@ use Test;
 
 use PDF::Reader;
 use PDF::Object::Dict;
-use PDF::Object::Content;
+use PDF::Object::Type::Content;
 use PDF::Object::Type::Catalog;
 use PDF::Object::Type::Page;
 use PDF::Object::Type::Pages;
@@ -22,7 +22,7 @@ is $pdf-in.size, 9, 'loaded size';
 isa-ok $pdf-in.root.object, PDF::Object::Type::Catalog , 'root-obj';
 is $pdf-in.root.obj-num, 1, 'root-obj.obj-num';
 isa-ok $pdf-in.ind-obj(3, 0).object, PDF::Object::Dict, 'fetch via index';
-isa-ok $pdf-in.ind-obj(5, 0).object, PDF::Object::Content, 'fetch via index';
+isa-ok $pdf-in.ind-obj(5, 0).object, PDF::Object::Type::Content, 'fetch via index';
 is $pdf-in.ind-obj(5, 0).object.encoded, "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET", 'stream content';
 
 my $ast = $pdf-in.ast;
