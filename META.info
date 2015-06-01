@@ -35,6 +35,7 @@
         "PDF::Object::Type::ObjStm" : "lib/PDF/Object/Type/ObjStm.pm",
         "PDF::Object::Type::Outlines" : "lib/PDF/Object/Type/Outlines.pm",
         "PDF::Object::Type::OutputIntent" : "lib/PDF/Object/Type/OutputIntent.pm",
+        "PDF::Object::Type::OutputIntent::GTS_PDFX" : "lib/PDF/Object/Type/OutputIntent/GTS_PDFX.pm",
         "PDF::Object::Type::Page" : "lib/PDF/Object/Type/Page.pm",
         "PDF::Object::Type::Pages" : "lib/PDF/Object/Type/Pages.pm",
         "PDF::Object::Type::XObject" : "lib/PDF/Object/Type/XObject.pm",

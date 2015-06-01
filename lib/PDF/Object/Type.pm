@@ -6,40 +6,55 @@ role PDF::Object::Type {
     method Type is rw { self<Type> }
     method Subtype is rw { self<Subtype> }
 
-    method find-delegate( Str $type-name is copy, $subtype-name ) {
-        BEGIN constant KnownTypes = set <Catalog Encoding Font Metadata OBJR ObjStm Outlines OutputIntent Page Pages XObject XRef>;
-        BEGIN constant SubTypes = %(
-            Font => set(<Type0 Type1 MMType1 Type3 TrueType CIDFontType0 CIDFontType2>),
-            Metadata => set(<XML>),
-            XObject => set(<Form Image>),
-            );
+    our %handler;
 
-        if $type-name {
-            if ($type-name~'' ∈ KnownTypes) {
-                $type-name ~= '::' ~ $subtype-name
-                    if $subtype-name
-                    && (SubTypes{$type-name}:exists)
-                    && $subtype-name~'' ∈ SubTypes{$type-name};
-                # autoload
-                require ::("PDF::Object::Type")::($type-name);
-                return ::("PDF::Object::Type")::($type-name);
-            }
-            else {
-                # it has a /Type that we don't known about
-                warn "unimplemented Indirect Stream Object: /Type /$type-name"
+    multi method install-delegate( :$type!, :$subtype, :$handler-class! ) {
+        my $pdf-class = $subtype
+            ?? [~] $type, '::', $subtype
+            !! $type;
+        self.install-delegate( :$pdf-class, :$handler-class );
+    }
+
+    multi method install-delegate( :$pdf-class!, :$handler-class ) {
+        %handler{$pdf-class} = $handler-class;
+    }
+
+    multi method find-delegate( :$type!, :$subtype!) {
+        my $pdf-class = $subtype
+            ?? [~] $type, '::', $subtype
+            !! $type;
+        self.find-delegate( :$pdf-class );
+    }
+
+    multi method find-delegate( :$pdf-class! where %handler{$_}:exists ) {
+        %handler{$pdf-class}
+    }
+
+    multi method find-delegate( :$pdf-class! ) is default {
+
+        my $handler-class;
+        {
+            # autoload
+            require ::("PDF::Object::Type")::($pdf-class);
+            $handler-class = ::("PDF::Object::Type")::($pdf-class);
+
+            CATCH {
+                warn "No handler class: PDF::Object::Type::$pdf-class";
+                $handler-class = self.WHAT;
             }
         }
 
-        self;
+        self.install-delegate( :$pdf-class, :$handler-class );
     }
 
     method delegate( Hash :$dict! ) {
 
         if $dict<Type>:exists {
-            $.find-delegate( from-ast($dict<Type>), from-ast($dict<Subtype> // $dict<S>) );
+            $.find-delegate( :type( from-ast($dict<Type>) ),
+                             :subtype( from-ast($dict<Subtype> // $dict<S>) ) );
         }
         else {
-            self;
+            self.WHAT;
         }
     }
 
