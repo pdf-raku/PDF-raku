@@ -28,10 +28,10 @@ my $root-obj = $root.object;
     $Pages<Count>++;
 }
 
-my $updates = $reader.get-updates;
+my $updated-objects = $reader.get-updates;
 {
     temp $reader.auto-deref = False;
-    is-json-equiv [ @$updates ], [ { :Count(2),
+    is-json-equiv [ @$updated-objects ], [ { :Count(2),
                                      :Kids[ { :ind-ref[ 4, 0 ] },
                                             { :Type<Page>,
                                               :MediaBox[ 0, 0, 420, 595 ],
@@ -40,12 +40,16 @@ my $updates = $reader.get-updates;
                                               :Contents{ :Length(70) },
                                              }
                                          ],
-                                     :Type<Pages> } ], "update ast";
+                                     :Type<Pages> } ], "updated objects";
 }
 
 my $serializer = PDF::Storage::Serializer.new;
 
-my $updated-objects = $serializer.serialize-updates( $reader );
+my $body = $serializer.body( $reader, :updates );
+is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
+is-deeply $body<trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';
+is-deeply $body<trailer><dict><Prev>, (:int(578)), 'body trailer dict - Prev';
+$updated-objects = $body<objects>;
 is +$updated-objects, 3, 'number of updates';
 is-json-equiv $updated-objects[0], (
     :ind-obj[3, 0, :dict{ Kids => :array[ :ind-ref[4, 0], :ind-ref[9, 0]],
@@ -68,9 +72,8 @@ is-json-equiv $updated-objects[2], (
                             }]), 'inserted content';
 
 my $offset = $reader.input.chars + 1;
-my $prev = $reader.prev;
+my $prev = $body<trailer><dict><Prev>.value;
 my $writer = PDF::Writer.new( :$root, :$offset, :$prev );
-my $body = { :objects($updated-objects) };
 my $new-body = "\n" ~ $writer.write( :$body );
 
 # todo append to reader input

@@ -70,8 +70,8 @@ my $new-root = PDF::Object.compose( :dict{ :Type(/'Catalog') });
 $new-root.Outlines = $root-obj<Outlines>;
 $new-root.Pages = $root-obj<Pages>;
 
-my $result = PDF::Storage::Serializer.new.serialize-doc($new-root);
-my $root = $result<root>;
+my $result = PDF::Storage::Serializer.new.body($new-root);
+my $root = $result<trailer><dict><Root>;
 my $objects = $result<objects>;
 
 # write the two page pdf

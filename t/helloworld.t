@@ -32,11 +32,10 @@ $page.Resources = { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
 my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 $page.Contents = $contents;
 
-my $result = PDF::Storage::Serializer.new.serialize-doc($root-object);
-my $root = $result<root>;
-my $objects = $result<objects>;
+my $body = PDF::Storage::Serializer.new.body($root-object);
+my $root = $body<trailer><dict><Root>;
 
-my $ast = :pdf{ :version(1.2), :body{ :$objects } };
+my $ast = :pdf{ :version(1.2), :$body };
 
 my $writer = PDF::Writer.new( :$root );
 ok 't/helloworld.pdf'.IO.spurt( $writer.write( $ast ), :enc<latin-1> ), 'hello world';

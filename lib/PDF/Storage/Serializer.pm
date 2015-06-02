@@ -25,28 +25,29 @@ class PDF::Storage::Serializer {
         $.analyse($array[$_]) for $array.keys;
     }
 
-    #| we don't reference count anything else at the moment. Might consider
-    #| making ind-refs for longish duplicated strings.
+    #| we don't reference count anything else at the moment.
     multi method analyse( $other! is rw ) is default {
     }
 
-    #| complete reserialization, from the document root downwards
-    method serialize-doc( PDF::Object $root-object!) {
+    #| rebuilds the body
+    multi method body( PDF::Object $root-object!) {
         $root-object.finish;
         $.analyse( $root-object );
         my $root = $.freeze( $root-object, :indirect );
         my $objects = $.ind-objs;
-        return %( :$root, :$objects );
+        return %( :$objects, :trailer{ :dict{ :Root($root), :Size(:int($.size)) } } );
     }
 
     #| prepare a set of objects for an incremental update. Only return indirect objects:
     #| - that have been fetched and updated, or
     #| - have been newly inserted (no object-number)
     #| of course, 
-    method serialize-updates( $reader ) {
+    multi method body( $reader, Bool :$updates! where $_ ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
         $reader.root.object.finish;
         $.size = $reader.size;
+        my $prev = $reader.prev;
+        my $root = $reader.root.ind-ref;
 
         # disable auto-deref to keep all analysis and freeze stages lazy. We don't
         # need to consider or load anything that has not been already.
@@ -56,19 +57,28 @@ class PDF::Storage::Serializer {
         # object and generation numbers
         temp $.renumber = False;
 
-        my $updates = $reader.get-updates;
+        my $updated-objects = $reader.get-updates;
 
-        for $updates.list -> $object {
+        for $updated-objects.list -> $object {
             # reference count new objects
             $.analyse( $object );
         }
 
-        for $updates.list -> $object {
+        for $updated-objects.list -> $object {
             $.freeze( $object, :indirect )
         }
 
-        my $updated-objects = $.ind-objs;
-        return $updated-objects;
+        my $objects = $.ind-objs;
+        return {
+            :$objects,
+            :trailer{
+                :dict{
+                    :Root($root),
+                    :Size( :int($.size) ),
+                    :Prev( :int($prev) ),
+                }
+            }
+        }
     }
 
     method !get-ind-ref( Str :$id!) {
