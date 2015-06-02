@@ -93,9 +93,9 @@ $reader = PDF::Reader.new();
 $reader.open( 't/pdf/pdf-updated.out', :a );
 
 my $ast = $reader.ast;
-is +$ast<pdf><body><objects>, 10, 'read-back has 10 objects';
-is $ast<pdf><body><objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Length => :int(70)},
-                                                           :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET")},
+is +$ast<pdf><body><objects>, 9, 'read-back has object count';
+is $ast<pdf><body><objects>[8], ( :ind-obj[9, 0, :stream{ :dict{ Length => :int(70)},
+                                                          :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET")},
                               ]), 'inserted content';
 
 # do a full rewrite of the updated PDF. Output should be cleaned up, with a single body and

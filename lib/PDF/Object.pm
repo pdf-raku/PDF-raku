@@ -96,8 +96,9 @@ class PDF::Object {
         from-ast( |%( $p.kv ) );
     }
 
-    multi sub from-ast( Hash $h! where .<name>:exists ) {
-        from-ast( :name($h<name>) )
+    #| for JSON deserialization, e.g. { :int(42) } => :int(42)
+    multi sub from-ast( Hash $h! where { .keys == 1 && .keys[0] ~~ /^<[a..z]>/} ) {
+        from-ast( |%$h )
     }
 
     multi sub from-ast( Array :$array! ) {
