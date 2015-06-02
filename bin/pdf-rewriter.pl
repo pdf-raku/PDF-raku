@@ -5,7 +5,7 @@ use v6;
 use PDF::Reader;
 use PDF::Writer;
 
-sub MAIN (Str $input-path, Str $output-path, Bool :$repair = False, Bool :$compress? is copy, Bool :$uncompress?) {
+sub MAIN (Str $input-path, Str $output-path, Bool :$repair = False, Bool :$compress? is copy, Bool :$uncompress?, Bool :$rebuild) {
 
     die "conflicting arguments: --compress --uncompress"
         if $compress && $uncompress;
@@ -38,7 +38,7 @@ sub MAIN (Str $input-path, Str $output-path, Bool :$repair = False, Bool :$compr
         }
     }
     note "building ast ...";
-    my $ast = $reader.ast();
+    my $ast = $reader.ast( :$rebuild );
     $reader.write($output-path, :$ast); 
     note "done";
 

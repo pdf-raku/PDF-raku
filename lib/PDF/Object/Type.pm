@@ -39,8 +39,10 @@ role PDF::Object::Type {
             $handler-class = ::("PDF::Object::Type")::($pdf-class);
 
             CATCH {
-                warn "No handler class: PDF::Object::Type::$pdf-class";
-                $handler-class = self.WHAT;
+                default {
+                    warn "No handler class: PDF::Object::Type::$pdf-class";
+                    $handler-class = self.WHAT;
+                }
             }
         }
 

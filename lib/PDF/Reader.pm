@@ -5,6 +5,7 @@ class PDF::Reader {
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
     use PDF::Storage::IndObj;
+    use PDF::Storage::Serializer;
     use PDF::Object;
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
@@ -601,9 +602,17 @@ class PDF::Reader {
         });
     }
 
+    multi method ast( Bool :$rebuild where $_ ) {
+        my $body = PDF::Storage::Serializer.new.body( self.root.object );
+        :pdf{
+            :header{ :$.type, :$.version },
+            :$body,
+        }
+    }
+
     #| return an AST for the fully serialized PDF/FDF etc.
     #| suitable as input to PDF::Writer
-    method ast( ) {
+    multi method ast( ) {
         my $objects = self.get-objects( );
         my %dict = self.trailer-dict.list
             if self.trailer-dict.defined;
