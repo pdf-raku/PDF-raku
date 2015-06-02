@@ -17,9 +17,10 @@ sub MAIN (Str $input-path, Str $output-path, Bool :$repair = False, Bool :$compr
     note "opening {$input-path} ...";
     $reader.open( $input-path, :$repair );
 
-    if $compress.defined {
+    if $compress || $uncompress {
         # locate and compress/uncompress stream objects
         my $objects = $reader.get-objects;
+        note $compress ?? "compressing ..." !! "uncompressing ...";
 
         for $objects.list {
             my ($type, $ind-obj) = .kv;

@@ -48,14 +48,10 @@ role PDF::Object::Type {
     }
 
     method delegate( Hash :$dict! ) {
-
-        if $dict<Type>:exists {
-            $.find-delegate( :type( from-ast($dict<Type>) ),
-                             :subtype( from-ast($dict<Subtype> // $dict<S>) ) );
-        }
-        else {
-            self.WHAT;
-        }
+        $dict<Type>:exists
+            ?? $.find-delegate( :type( from-ast($dict<Type>) ),
+                                :subtype( from-ast($dict<Subtype> // $dict<S>) ) )
+            !! self.WHAT;
     }
 
     #| enforce tie-ins between /Type, /Subtype & the class name. e.g.

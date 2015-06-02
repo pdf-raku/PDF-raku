@@ -61,10 +61,7 @@ class PDF::Object {
         }
         my $dict = $stream<dict> // {};
         require ::("PDF::Object::Stream");
-        my $stream-class = $dict<Type>:exists
-            ?? ::("PDF::Object::Stream").delegate( :$dict )
-            !! ::("PDF::Object::Stream").delegate( :dict{ :Type<Content> });
-
+        my $stream-class = ::("PDF::Object::Stream").delegate( :$dict );
         $stream-class.new( :$dict, |%params );
     }
 

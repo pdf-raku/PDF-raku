@@ -49,7 +49,7 @@ class PDF::Object::Type::ObjStm
 
         my $actions = PDF::Grammar::PDF::Actions.new;
         PDF::Grammar::PDF.parse($object-index-str, :rule<object-stream-index>, :$actions)
-            // die "unable to parse object stream index: $object-index-str";
+            or die "unable to parse object stream index: $object-index-str";
 
         my $object-index = $/.ast;
         # these should possibly be structured exceptions

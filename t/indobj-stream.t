@@ -13,8 +13,8 @@ my %dict = ( :Filter<ASCIIHexDecode>,
              :Length(58),
     );
 
-my $hw = '100 100 Td (Hello, world!) Tj';
-lives-ok { $stream-obj = PDF::Object::Stream.new( :decoded($hw), :%dict ) }, 'basic stream object construction';
+my $decoded = '100 100 Td (Hello, world!) Tj';
+lives-ok { $stream-obj = PDF::Object.compose( :$decoded, :stream{ :%dict } ) }, 'basic stream object construction';
 stream_tests( $stream-obj );
 
 my $ind-obj;
@@ -23,12 +23,12 @@ is $ind-obj.obj-num, 123, '$.obj-num';
 is $ind-obj.gen-num, 1, '$.gen-num';
 stream_tests( $ind-obj.object );
 $ind-obj.object.uncompress;
-is-deeply $ind-obj.object.encoded, $hw, 'stream object uncompressed';
+is-deeply $ind-obj.object.encoded, $decoded, 'stream object uncompressed';
 $ind-obj.object.compress;
-isnt $ind-obj.object.encoded, $hw, 'stream object compressed';
+isnt $ind-obj.object.encoded, $decoded, 'stream object compressed';
 
 $ind-obj.object.uncompress;
-is-deeply $ind-obj.object.encoded, $hw, 'stream object compressed, then uncompressed';
+is-deeply $ind-obj.object.encoded, $decoded, 'stream object compressed, then uncompressed';
 
 sub stream_tests( $stream-obj) {
     isa-ok $stream-obj, PDF::Object::Stream;

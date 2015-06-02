@@ -10,7 +10,6 @@
         "PDF::Object::Array" : "lib/PDF/Object/Array.pm",
         "PDF::Object::Bool" : "lib/PDF/Object/Bool.pm",
         "PDF::Object::ByteString" : "lib/PDF/Object/ByteString.pm",
-        "PDF::Object::Content" : "lib/PDF/Object/Content.pm",
         "PDF::Object::Dict" : "lib/PDF/Object/Dict.pm",
         "PDF::Object::Inheritance" : "lib/PDF/Object/Inheritance.pm",
         "PDF::Object::Int" : "lib/PDF/Object/Int.pm",
