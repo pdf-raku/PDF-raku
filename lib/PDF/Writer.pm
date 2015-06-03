@@ -139,13 +139,14 @@ class PDF::Writer {
         $comment ~~ /^ '%'/ ?? $comment !! '% ' ~ $comment;
     }
 
-    multi method write(Hash :$dict!, :@keys = $dict.keys.sort) {
+    multi method write(Hash :$dict!) {
 
-        ('<<',
-         @keys.map( -> $key {
-             [~] $.write( :name($key)), ' ', $.write( $dict{$key} ),
-                    }),
-         '>>').join: ' ';
+        ( '<<',
+          $dict.keys.sort.map( -> $key {
+              [~] $.write( :name($key)), ' ', $.write( $dict{$key} ),
+          }),
+          '>>'
+        ).join: ' ';
 
     }
 
@@ -194,10 +195,12 @@ class PDF::Writer {
            ')';
     }
 
+    BEGIN constant Name-Reg-Chars = set ('!'..'~').grep({/<PDF::Grammar::name-reg-char>/});
+
     multi method write( Str :$name! ) {
         [~] '/', $name.comb.map( {
+            when $_ ∈ Name-Reg-Chars { $_ }
             when '#' { '##' }
-            when /<PDF::Grammar::name-reg-char>/ { $_ }
             default {
                 .encode.list.map({ sprintf '#%02x', $_ }).join('');
             }
