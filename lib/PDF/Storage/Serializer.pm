@@ -30,19 +30,25 @@ class PDF::Storage::Serializer {
     }
 
     #| rebuilds the body
-    multi method body( PDF::Object $root-object!) {
+    multi method body( PDF::Object $root-object!, Hash :$trailer-dict = {}) {
         $root-object.finish;
         $.analyse( $root-object );
         my $root = $.freeze( $root-object, :indirect );
         my $objects = $.ind-objs;
-        return %( :$objects, :trailer{ :dict{ :Root($root), :Size(:int($.size)) } } );
+
+        my %dict = $trailer-dict.list;
+        %dict<Prev>:delete;
+        %dict<Root> = $root;
+        %dict<Size> = :int($.size);
+
+        return %( :$objects, :trailer{ :%dict } );
     }
 
     #| prepare a set of objects for an incremental update. Only return indirect objects:
     #| - that have been fetched and updated, or
     #| - have been newly inserted (no object-number)
     #| of course, 
-    multi method body( $reader, Bool :$updates! where $_ ) {
+    multi method body( $reader, Bool :$updates! where $_, Hash :$trailer-dict = {} ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
         $reader.root.object.finish;
         $.size = $reader.size;
@@ -68,16 +74,15 @@ class PDF::Storage::Serializer {
             $.freeze( $object, :indirect )
         }
 
+        my %dict = $trailer-dict.list;
+        %dict<Prev> = :int($prev);
+        %dict<Root> = $root;
+        %dict<Size> = :int($.size);
+
         my $objects = $.ind-objs;
         return {
             :$objects,
-            :trailer{
-                :dict{
-                    :Root($root),
-                    :Size( :int($.size) ),
-                    :Prev( :int($prev) ),
-                }
-            }
+            :trailer{ :%dict },
         }
     }
 

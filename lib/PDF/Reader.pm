@@ -352,9 +352,18 @@ class PDF::Reader {
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;
 
                 # XRef dictionary contains a lot of guff. just copy what we're interested in
-                my $ID = $dict.content<stream><dict><ID>;
-                $!trailer-dict //= %( $ID.defined ?? :$ID !! () )
+                # [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
+                my $stream-dict = $dict.content<stream><dict>;
+                $!trailer-dict //= {};
+                for <Encrypt Info ID> {
+                    $!trailer-dict{$_} = $stream-dict{$_}
+                        if $stream-dict{$_}:exists
+                }
             }
+
+            $xref-offset = $dict<Prev>:exists
+                ?? $dict<Prev>
+                !! Mu;
 
             $root-ref //= $dict<Root>
                 if $dict<Root>:exists;
@@ -363,9 +372,6 @@ class PDF::Reader {
                 ?? $dict<Size>
                 !! 1; # fix it up later
 
-            $xref-offset = $dict<Prev>:exists
-                ?? $dict<Prev>
-                !! Mu;
         }
 
         my %obj-entries-of-type = @obj-idx.classify({.<type>});
@@ -603,7 +609,8 @@ class PDF::Reader {
     }
 
     multi method ast( Bool :$rebuild! where $rebuild ) {
-        my $body = PDF::Storage::Serializer.new.body( self.root.object );
+
+        my $body = PDF::Storage::Serializer.new.body( $.root.object, :$.trailer-dict );
         :pdf{
             :header{ :$.type, :$.version },
             :$body,
