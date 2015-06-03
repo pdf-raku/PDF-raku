@@ -25,7 +25,7 @@ isa-ok $pdf-in.ind-obj(3, 0).object, PDF::Object::Dict, 'fetch via index';
 isa-ok $pdf-in.ind-obj(5, 0).object, PDF::Object::Stream, 'fetch via index';
 is $pdf-in.ind-obj(5, 0).object.encoded, "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET", 'stream content';
 
-my $ast = $pdf-in.ast;
+my $ast = $pdf-in.ast( :rebuild );
 is-json-equiv $ast<pdf><header>, {:type<PDF>, :version(1.2)}, '$ast header';
 is +$ast<pdf><body><objects>, 7, '$ast objects';
 is-json-equiv $ast<pdf><body><objects>[0], (:ind-obj([1, 0, :dict({:Outlines(:ind-ref([2, 0])), :Pages(:ind-ref([3, 0])), :Type(:name("Catalog"))})])), '$ast<body><objects>[0]';

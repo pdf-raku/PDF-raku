@@ -85,7 +85,7 @@ class PDF::Object {
     multi sub to-ast-native(Str $literal!) {:$literal}
     multi sub to-ast-native(Bool $bool!) {:$bool}
     multi sub to-ast-native($other) is default {
-        return :null(Any)
+        return (:null(Any))
             unless $other.defined;
         die "don't know how to to-ast: {$other.perl}";
     }

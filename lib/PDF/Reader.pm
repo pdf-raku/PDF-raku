@@ -602,7 +602,7 @@ class PDF::Reader {
         });
     }
 
-    multi method ast( Bool :$rebuild where $_ ) {
+    multi method ast( Bool :$rebuild! where $rebuild ) {
         my $body = PDF::Storage::Serializer.new.body( self.root.object );
         :pdf{
             :header{ :$.type, :$.version },
@@ -632,7 +632,7 @@ class PDF::Reader {
     }
 
     #| dump to json
-    multi method write( $output-path where m:i/'.json' $/, :$ast = $.ast, :$reader ) is default {
+    multi method write( $output-path where m:i/'.json' $/, :$ast = $.ast ) {
         note "dumping {$output-path}...";
         $output-path.IO.spurt( to-json( $ast ) );
     }

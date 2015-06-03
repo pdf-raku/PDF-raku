@@ -92,7 +92,7 @@ $reader = Mu;
 $reader = PDF::Reader.new();
 $reader.open( 't/pdf/pdf-updated.out', :a );
 
-my $ast = $reader.ast;
+my $ast = $reader.ast( :rebuild );
 is +$ast<pdf><body><objects>, 9, 'read-back has object count';
 is $ast<pdf><body><objects>[8], ( :ind-obj[9, 0, :stream{ :dict{ Length => :int(70)},
                                                           :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET")},
