@@ -15,12 +15,12 @@ use PDF::Writer;
 
 sub prefix:</>($name){ PDF::Object.compose(:$name) };
 
-my $root-object = PDF::Object.compose( :dict{ :Type(/'Catalog') });
-$root-object.Outlines = { :Type(/'Outlines'), :Count(0) };
-$root-object.Pages = { :Type(/'Pages') };
+my $root = PDF::Object.compose( :dict{ :Type(/'Catalog') });
+$root.Outlines = { :Type(/'Outlines'), :Count(0) };
+$root.Pages = { :Type(/'Pages') };
 
-$root-object.Pages.Kids = [ { :Type(/'Page'), :MediaBox[0, 0, 420, 595] } ];
-my $page1 = $root-object.Pages.Kids[0];
+$root.Pages.Kids = [ { :Type(/'Page'), :MediaBox[0, 0, 420, 595] } ];
+my $page1 = $root.Pages.Kids[0];
 
 my $font = {
         :Type(/'Font'),
@@ -32,11 +32,9 @@ my $font = {
 $page1.Resources = { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
 $page1.Contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 
-my $result = PDF::Storage::Serializer.new.serialize-doc($root-object);
-my $root = $result<root>;
-my $objects = $result<objects>;
+my $body = PDF::Storage::Serializer.new.body($root);
 
-my $ast = :pdf{ :version(1.2), :body{ :$objects } };
+my $ast = :pdf{ :header{ :version(1.2) }, :$body };
 my $writer = PDF::Writer.new( :$root );
 '/tmp/helloworld.pdf'.IO.spurt( $writer.write( $ast ), :enc<latin1> );
 
