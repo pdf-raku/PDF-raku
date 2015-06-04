@@ -23,7 +23,6 @@ class PDF::Reader {
         state $actions //= PDF::Grammar::PDF::Actions.new
     }
 
-    #| XRef dictionary contains a lot of guff. just copy what we're interested in
     #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
     method !get-trailer-dict($dict) {
         $!trailer-dict //= {};
@@ -182,7 +181,7 @@ class PDF::Reader {
     method ind-obj( Int $obj-num!, Int $gen-num!,
                     :$type,             #| type assertion
                     :$get-ast = False,  #| get ast data, not formulated objects
-                    :$eager = True,     #| fetch pbject, if not already loaded
+                    :$eager = True,     #| fetch object, if not already loaded
         ) {
 
         my $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
@@ -270,7 +269,6 @@ class PDF::Reader {
         use PDF::Grammar::PDF::Actions;
         my $actions = PDF::Grammar::PDF::Actions.new;
         self!"full-scan"( PDF::Grammar::PDF, $actions, :repair);
-        # todo more post-processing and cross-checks
     }
 
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
