@@ -5,17 +5,27 @@ use v6;
 use PDF::Reader;
 use PDF::Writer;
 
-sub MAIN (Str $input-path, Str $output-path, Bool :$repair = False, Bool :$compress? is copy, Bool :$uncompress?, Bool :$rebuild = False) {
+#| rewrite a PDF or FDF  and/or convert to/from JSON
+sub MAIN (
+    Str $pdf-or-json-file-in,    # input PDF, FDF or JSON file (.json extension)
+    Str $pdf-or-json-file-out,   # output PDF, FDF or JSON file (.json extension)
+    Bool :$repair = False,       # bypass and repair index. recompute stream lengths. Handy when
+                                 # when PDF files have been hand-edited.
+    Bool :$rebuild    = False,   # rebuild object tree (renumber, garbage collect and deduplicate objects)
+    Bool :$compress   = False,   # uncompress streams
+    Bool :$uncompress = False,   # compress streams
+    ) {
 
     die "conflicting arguments: --compress --uncompress"
         if $compress && $uncompress;
 
-    $compress = False if $uncompress;
-
     my $reader = PDF::Reader.new( );
  
-    note "opening {$input-path} ...";
-    $reader.open( $input-path, :$repair );
+    note "opening {$pdf-or-json-file-in} ...";
+    $reader.open( $pdf-or-json-file-in, :$repair );
+
+    note "Document is encrypted."
+        if $reader.trailer-dict<Encrypt>:exists;
 
     if $compress || $uncompress {
         # locate and compress/uncompress stream objects
@@ -39,7 +49,7 @@ sub MAIN (Str $input-path, Str $output-path, Bool :$repair = False, Bool :$compr
     }
     note "building ast ...";
     my $ast = $reader.ast( :$rebuild );
-    $reader.write($output-path, :$ast); 
+    $reader.write($pdf-or-json-file-out, :$ast); 
     note "done";
 
 }
