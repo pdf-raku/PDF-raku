@@ -1,0 +1,221 @@
+{
+  "pdf" : {
+    "body" : [
+      {
+        "trailer" : {
+          "dict" : {
+            "Root" : {
+              "ind-ref" : [
+                1,
+                0
+              ]
+            },
+            "Size" : {
+              "int" : 9
+            }
+          }
+        },
+        "objects" : [
+          {
+            "ind-obj" : [
+              1,
+              0,
+              {
+                "dict" : {
+                  "Outlines" : {
+                    "ind-ref" : [
+                      2,
+                      0
+                    ]
+                  },
+                  "Pages" : {
+                    "ind-ref" : [
+                      3,
+                      0
+                    ]
+                  },
+                  "Type" : {
+                    "name" : "Catalog"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              2,
+              0,
+              {
+                "dict" : {
+                  "Count" : {
+                    "int" : 0
+                  },
+                  "Type" : {
+                    "name" : "Outlines"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              3,
+              0,
+              {
+                "dict" : {
+                  "Count" : {
+                    "int" : 1
+                  },
+                  "Kids" : {
+                    "array" : [
+                      {
+                        "ind-ref" : [
+                          4,
+                          0
+                        ]
+                      }
+                    ]
+                  },
+                  "Type" : {
+                    "name" : "Pages"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              4,
+              0,
+              {
+                "dict" : {
+                  "Contents" : {
+                    "ind-ref" : [
+                      5,
+                      0
+                    ]
+                  },
+                  "Resources" : {
+                    "dict" : {
+                      "ProcSet" : {
+                        "ind-ref" : [
+                          6,
+                          0
+                        ]
+                      },
+                      "Font" : {
+                        "dict" : {
+                          "F1" : {
+                            "ind-ref" : [
+                              7,
+                              0
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "Parent" : {
+                    "ind-ref" : [
+                      3,
+                      0
+                    ]
+                  },
+                  "MediaBox" : {
+                    "array" : [
+                      {
+                        "int" : 0
+                      },
+                      {
+                        "int" : 0
+                      },
+                      {
+                        "int" : 420
+                      },
+                      {
+                        "int" : 595
+                      }
+                    ]
+                  },
+                  "Type" : {
+                    "name" : "Page"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              5,
+              0,
+              {
+                "stream" : {
+                  "encoded" : "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET",
+                  "dict" : {
+                    "Length" : {
+                      "int" : 45
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              6,
+              0,
+              {
+                "array" : [
+                  {
+                    "name" : "PDF"
+                  },
+                  {
+                    "name" : "Text"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              7,
+              0,
+              {
+                "dict" : {
+                  "Encoding" : {
+                    "name" : "MacRomanEncoding"
+                  },
+                  "BaseFont" : {
+                    "name" : "Helvetica"
+                  },
+                  "Name" : {
+                    "name" : "F1"
+                  },
+                  "Subtype" : {
+                    "name" : "Type1"
+                  },
+                  "Type" : {
+                    "name" : "Font"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              8,
+              0,
+              {
+                "int" : 45
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "header" : {
+      "type" : "PDF",
+      "version" : 1.2
+    }
+  }
+}

@@ -18,6 +18,7 @@ for 't/pdf'.IO.dir.list {
     my %ast = %( from-json( $json-file.IO.slurp ) );
 
     my $pdf-input-file = $json-file.subst( /'.json'$/, '.in' );
+    next unless $pdf-input-file.IO.e;
     my $pdf-output-file = $json-file.subst( /'.json'$/, '.out' );
     my $input = PDF::Storage::Input.compose( :value($pdf-input-file.IO.open( :r, :enc<latin-1>) ) );
     my $pdf-output = PDF::Writer.new( :$input, :offset(0), :%ast );

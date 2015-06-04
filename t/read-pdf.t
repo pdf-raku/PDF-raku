@@ -13,7 +13,6 @@ use PDF::Object::Type::Font;
 use PDF::Grammar::Test :is-json-equiv;
 
 my $pdf-in = PDF::Reader.new();
-
 $pdf-in.open( 't/pdf/pdf.in' );
 
 is $pdf-in.version, 1.2, 'loaded version';
@@ -27,9 +26,19 @@ is $pdf-in.ind-obj(5, 0).object.encoded, "BT\n/F1 24 Tf\n100 100 Td (Hello, worl
 
 my $ast = $pdf-in.ast( :rebuild );
 is-json-equiv $ast<pdf><header>, {:type<PDF>, :version(1.2)}, '$ast header';
-is +$ast<pdf><body><objects>, 7, '$ast objects';
-is-json-equiv $ast<pdf><body><objects>[0], (:ind-obj([1, 0, :dict({:Outlines(:ind-ref([2, 0])), :Pages(:ind-ref([3, 0])), :Type(:name("Catalog"))})])), '$ast<body><objects>[0]';
-is-json-equiv $ast<pdf><body><trailer>, (:dict({:Root(:ind-ref([1, 0])), :Size(:int(8))})), '$ast trailer';
+is +$ast<pdf><body>, 1, 'single body';
+is +$ast<pdf><body>[0]<objects>, 7, '$ast objects';
+is-json-equiv $ast<pdf><body>[0]<objects>[0], (:ind-obj([1, 0, :dict({:Outlines(:ind-ref([2, 0])), :Pages(:ind-ref([3, 0])), :Type(:name("Catalog"))})])), '$ast<body><objects>[0]';
+is-json-equiv $ast<pdf><body>[0]<trailer>, (:dict({:Root(:ind-ref([1, 0])), :Size(:int(8))})), '$ast trailer';
+
+my $pdf-repaired = PDF::Reader.new();
+$pdf-repaired.open( 't/pdf/pdf.in', :repair );
+is-deeply $pdf-repaired.ast( :rebuild ), $ast, '$reader.open( :repair )';
+
+my $pdf-json = PDF::Reader.new();
+$pdf-in.write( 't/pdf/pdf-rewritten.json', :rebuild );
+$pdf-json.open( 't/pdf/pdf-rewritten.json' );
+is-deeply $pdf-json.ast( :rebuild ), $ast, '$reader.open( "pdf.json" )';
 
 my $page = $pdf-in.ind-obj(4, 0).object;
 isa-ok $page, PDF::Object::Type::Page;

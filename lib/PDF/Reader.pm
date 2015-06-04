@@ -6,7 +6,7 @@ class PDF::Reader {
     use PDF::Grammar::PDF::Actions;
     use PDF::Storage::IndObj;
     use PDF::Storage::Serializer;
-    use PDF::Object;
+    use PDF::Object :to-ast;
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
     has Hash %!ind-obj-idx;
@@ -23,17 +23,28 @@ class PDF::Reader {
         state $actions //= PDF::Grammar::PDF::Actions.new
     }
 
+    #| XRef dictionary contains a lot of guff. just copy what we're interested in
+    #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
+    method !get-trailer-dict($dict) {
+        $!trailer-dict //= {};
+        
+        for <Encrypt Info ID> {
+            $!trailer-dict{$_} //= to-ast $dict{$_}
+            if $dict{$_}:exists
+        }
+    }
+
     #| derserialize a json dump
-    multi method open( Str $input  where m:i/'.json' $/ ) {
-        my $ast = from-json( $input.IO.slurp );
-        die "doesn't contain pdf: $input"
-            unless $ast<pdf>:exists;
+    multi method open( Str $input-file  where m:i/'.json' $/ ) {
+        my $ast = from-json( $input-file.IO.slurp );
+        die "doesn't contain a pdf struct: $input-file"
+            unless $ast.isa(Hash) && ($ast<pdf>:exists);
         $!type = $ast<pdf><header><type> // 'PDF';
         $!version = $ast<pdf><header><version> // 1.2;
 
         my $root-ref;
 
-        for $ast<pdf><body> {
+        for $ast<pdf><body>.list {
 
             for .<objects>.list.reverse {
                 next unless .<ind-obj>:exists;
@@ -49,7 +60,7 @@ class PDF::Reader {
 
             if .<trailer> {
                 my $dict = PDF::Object.compose( |%(.<trailer>) );
-                $!trailer-dict //= $dict.content<dict>;
+                self!"get-trailer-dict"( $dict.content<dict> );
                 $root-ref //= .<trailer><dict><Root><ind-ref>
                     if .<trailer><dict><Root>:exists;
             }
@@ -63,14 +74,14 @@ class PDF::Reader {
     }
 
     #| open the named PDF/FDF file
-    multi method open( Str $input, *%opts) {
-        $.open( $input.IO.open( :enc<latin-1> ), |%opts );
+    multi method open( Str $input-file, *%opts) {
+        $.open( $input-file.IO.open( :enc<latin-1> ), |%opts );
     }
 
-    multi method open($input!, Bool :$repair = False) {
+    multi method open($input-file!, Bool :$repair = False) {
         use PDF::Storage::Input;
 
-        $!input = PDF::Storage::Input.compose( :value($input) );
+        $!input = PDF::Storage::Input.compose( :value($input-file) );
 
         $.load-header( );
         $.load( $.type, :$repair );
@@ -318,7 +329,6 @@ class PDF::Reader {
                     or die "unable to parse index: $xref";
                 my $index = $parse.ast;
                 $dict = PDF::Object.compose( |%($index<trailer>) );
-                $!trailer-dict //= $dict.content<dict>;
 
                 my $prev-offset;
 
@@ -350,16 +360,9 @@ class PDF::Reader {
                 my $xref-obj = $ind-obj.object;
                 $dict = $xref-obj;
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;
-
-                # XRef dictionary contains a lot of guff. just copy what we're interested in
-                # [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
-                my $stream-dict = $dict.content<stream><dict>;
-                $!trailer-dict //= {};
-                for <Encrypt Info ID> {
-                    $!trailer-dict{$_} = $stream-dict{$_}
-                        if $stream-dict{$_}:exists
-                }
             }
+
+            self!"get-trailer-dict"($dict);
 
             $xref-offset = $dict<Prev>:exists
                 ?? $dict<Prev>
@@ -449,7 +452,7 @@ class PDF::Reader {
 
                 if $stream-type && $stream-type eq 'XRef' {
                     if $dict<Root>:exists {
-                        $!trailer-dict //= $dict;
+                        self!"get-trailer-dict"( $dict );
                         $root-ref //= $dict<Root>
                     }
                     # discard existing /Type /XRef stream objects. These are specific to the input PDF
@@ -484,7 +487,7 @@ class PDF::Reader {
 
             if .<trailer> {
                 my $dict = PDF::Object.compose( |%(.<trailer>) );
-                $!trailer-dict //= $dict.content<dict>
+                self!"get-trailer-dict"( $dict.content<dict> )
                     if $dict.content<dict>:exists;
                 $root-ref //= $dict<Root>
                     if $dict<Root>:exists;
@@ -613,7 +616,7 @@ class PDF::Reader {
         my $body = PDF::Storage::Serializer.new.body( $.root.object, :$.trailer-dict );
         :pdf{
             :header{ :$.type, :$.version },
-            :$body,
+            :body[ $body ],
         }
     }
 
@@ -631,10 +634,10 @@ class PDF::Reader {
 
         :pdf{
             :header{ :$.type, :$.version },
-            :body{
+            :body[{
                 :$objects,
                 :trailer{ :%dict },
-            },
+            }],
         };
     }
 
