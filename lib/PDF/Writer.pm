@@ -35,6 +35,7 @@ class PDF::Writer {
     }
 
     multi method write( Array :$body!, :$type='PDF' ) {
+        temp $!prev = Any;
         $body.map({ $.write( :body($_), :$type )}).join: "\n";
     }
 
@@ -151,18 +152,20 @@ class PDF::Writer {
     }
 
     multi method write( Str :$hex-char! ) {
-        my $ord = $hex-char.ord;
-        die "illegal hex character: {$hex-char.perl}"
-            unless $hex-char.chars == 1 && $ord >= 0 && $ord <= 255;
-        sprintf '#%02X', $ord
+        for $hex-char {
+            die "multi or zero-byte hex character: {.perl}"
+                unless .chars == 1;
+            die "illegal non-latin hex character: U+" ~ .ord.base(16)
+                unless 0 <= .ord <= 0xFF;
+            sprintf '#%02X', .ord
+        }
     }
 
     multi method write( Str :$hex-string! ) {
         [~] '<', $hex-string.comb.map({ 
-            my $ord = .ord;
-            die "illegal non-latin character in string: U+" ~ $ord.base(16)
-                if $ord > 0xFF;
-            sprintf '%02X', $ord;
+            die "illegal non-latin character in string: U+" ~ .ord.base(16)
+                unless 0 <= .ord <= 0xFF;
+            sprintf '%02X', .ord;
         }), '>';
     }
 
