@@ -3,14 +3,14 @@ use v6;
 use PDF::Storage::Filter;
 use PDF::Object :to-ast-native;
 use PDF::Object :from-ast;
-use PDF::Object::Type;
+use PDF::DOM;
 use PDF::Object::Tree;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 class PDF::Object::Stream
     is PDF::Object
     is Hash
-    does PDF::Object::Type 
+    does PDF::DOM 
     does PDF::Object::Tree {
 
     our %obj-cache = (); #= to catch circular references

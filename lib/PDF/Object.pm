@@ -158,7 +158,7 @@ class PDF::Object {
     #| unique identifier for this object instance
     method id { ~ self.WHICH }
 
-    #| my be overrided by sub-classes to do final processing and checks, e.g. PDF::Object::Type::Page
+    #| my be overrided by sub-classes to do final processing and checks, e.g. PDF::DOM::Page
     method finish {}
 
 }

@@ -4,12 +4,12 @@ use Test;
 use PDF::Reader;
 use PDF::Object::Dict;
 use PDF::Object::Stream;
-use PDF::Object::Type::Catalog;
-use PDF::Object::Type::Page;
-use PDF::Object::Type::Pages;
-use PDF::Object::Type::XObject::Form;
-use PDF::Object::Type::XObject::Image;
-use PDF::Object::Type::Font;
+use PDF::DOM::Catalog;
+use PDF::DOM::Page;
+use PDF::DOM::Pages;
+use PDF::DOM::XObject::Form;
+use PDF::DOM::XObject::Image;
+use PDF::DOM::Font;
 use PDF::Grammar::Test :is-json-equiv;
 
 my $pdf-in = PDF::Reader.new();
@@ -18,7 +18,7 @@ $pdf-in.open( 't/pdf/pdf.in' );
 is $pdf-in.version, 1.2, 'loaded version';
 is $pdf-in.type, 'PDF', 'loaded type';
 is $pdf-in.size, 9, 'loaded size';
-isa-ok $pdf-in.root.object, PDF::Object::Type::Catalog , 'root-obj';
+isa-ok $pdf-in.root.object, PDF::DOM::Catalog , 'root-obj';
 is $pdf-in.root.obj-num, 1, 'root-obj.obj-num';
 isa-ok $pdf-in.ind-obj(3, 0).object, PDF::Object::Dict, 'fetch via index';
 isa-ok $pdf-in.ind-obj(5, 0).object, PDF::Object::Stream, 'fetch via index';
@@ -41,22 +41,22 @@ $pdf-json.open( 't/pdf/pdf-rewritten.json' );
 is-deeply $pdf-json.ast( :rebuild ), $ast, '$reader.open( "pdf.json" )';
 
 my $page = $pdf-in.ind-obj(4, 0).object;
-isa-ok $page, PDF::Object::Type::Page;
+isa-ok $page, PDF::DOM::Page;
 
 my $xobject = $page.to-xobject;
-isa-ok $xobject, PDF::Object::Type::XObject::Form;
+isa-ok $xobject, PDF::DOM::XObject::Form;
 is $xobject.decoded, $pdf-in.ind-obj(5, 0).object.encoded, 'xobject encoding';
 is-json-equiv $xobject.BBox, $page.MediaBox, 'xobject BBox';
 is-json-equiv $xobject.Resources, $page.Resources, 'xobject Resources';
 
 my $new-page = $pdf-in.root.object.Pages.add-page();
-isa-ok $new-page, PDF::Object::Type::Page, 'new page';
+isa-ok $new-page, PDF::DOM::Page, 'new page';
 my $fm1 = $new-page.register-resource( $xobject );
 is $fm1, 'Fm1', 'xobject form name';
 
-my $object2 = PDF::Object::Type::XObject::Form.new;
-my $object3 = PDF::Object::Type::XObject::Image.new;
-my $object4 = PDF::Object::Type::Font.new;
+my $object2 = PDF::DOM::XObject::Form.new;
+my $object3 = PDF::DOM::XObject::Image.new;
+my $object4 = PDF::DOM::Font.new;
 my $fm2 = $new-page.register-resource( $object2 );
 is $fm2, 'Fm2', 'xobject form name';
 

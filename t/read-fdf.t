@@ -4,7 +4,7 @@ use Test;
 use PDF::Reader;
 use PDF::Object::Dict;
 use PDF::Object::Stream;
-use PDF::Object::Type::Catalog;
+use PDF::DOM::Catalog;
 
 my $pdf-in = PDF::Reader.new();
 

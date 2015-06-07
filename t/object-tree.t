@@ -13,7 +13,7 @@ my $reader = PDF::Reader.new();
 $reader.open( 't/pdf/pdf.in' );
 
 my $root-obj = $reader.root.object;
-isa-ok $root-obj, ::('PDF::Object::Type::Catalog');
+isa-ok $root-obj, ::('PDF::DOM::Catalog');
 is-deeply $root-obj.reader, $reader, 'root object .reader';
 is $root-obj.obj-num, 1, 'root object .obj-num';
 is $root-obj.gen-num, 0, 'root object .gen-num';
