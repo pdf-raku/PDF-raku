@@ -21,26 +21,11 @@ my $root-obj = $root.object;
     my $Pages = $root-obj<Pages>;
     my $Resources = $Pages<Kids>[0]<Resources>;
     my $MediaBox = $Pages<Kids>[0]<MediaBox>;
-    my $new-page = { :Type(/'Page'), :$MediaBox, :$Resources };
+    my $new-page = { :Type(/'Page'), :$MediaBox, :$Resources, :Parent($Pages) };
     my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
     $new-page<Contents> = $contents;
     $Pages<Kids>.push: $new-page;
     $Pages<Count>++;
-}
-
-my $updated-objects = $reader.get-updates;
-{
-    temp $reader.auto-deref = False;
-    is-json-equiv [ @$updated-objects ], [ { :Count(2),
-                                     :Kids[ { :ind-ref[ 4, 0 ] },
-                                            { :Type<Page>,
-                                              :MediaBox[ 0, 0, 420, 595 ],
-                                              :Resources{ :Font{ F1 => :ind-ref[ 7, 0 ] },
-                                                           ProcSet =>  :ind-ref[ 6, 0 ] },
-                                              :Contents{ :Length(70) },
-                                             }
-                                         ],
-                                     :Type<Pages> } ], "updated objects";
 }
 
 my $serializer = PDF::Storage::Serializer.new;
@@ -49,7 +34,7 @@ my $body = $serializer.body( $reader, :updates );
 is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
 is-deeply $body<trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';
 is-deeply $body<trailer><dict><Prev>, (:int(578)), 'body trailer dict - Prev';
-$updated-objects = $body<objects>;
+my $updated-objects = $body<objects>;
 is +$updated-objects, 3, 'number of updates';
 is-json-equiv $updated-objects[0], (
     :ind-obj[3, 0, :dict{ Kids => :array[ :ind-ref[4, 0], :ind-ref[9, 0]],

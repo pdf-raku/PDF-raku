@@ -9,14 +9,14 @@ sub prefix:</>($name){ PDF::Object.compose(:$name) };
 
 my $root-object = PDF::Object.compose( :dict{ :Type(/'Catalog') });
 my $outlines = PDF::Object.compose( :dict{ :Type(/'Outlines'), :Count(0) } );
-$root-object.Outlines = $outlines;
+$root-object<Outlines> = $outlines;
 
 my $pages = PDF::Object.compose( :dict{ :Type(/'Pages') } );
-$root-object.Pages = $pages;
+$root-object<Pages> = $pages;
 
 my $page = PDF::Object.compose( :dict{ :Type(/'Page'), :MediaBox[0, 0, 420, 595] } );
-$pages.Kids = [ $page ];
-$pages.Count = + $pages.Kids;
+$pages<Kids> = [ $page ];
+$pages<Count> = + $pages<Kids>;
 
 my $font = PDF::Object.compose(
     :dict{
@@ -27,10 +27,11 @@ my $font = PDF::Object.compose(
         :Encoding(/'MacRomanEncoding'),
     });
 
-$page.Resources = { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
+$page<Resources> = { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
 
 my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
-$page.Contents = $contents;
+$page<Contents> = $contents;
+$page<Parent> = $pages;
 
 my $body = PDF::Storage::Serializer.new.body($root-object);
 my $root = $body<trailer><dict><Root>;

@@ -57,6 +57,8 @@ my $body = PDF::Object.compose( :dict{
     :Outlines{ :Type(/'Outlines'), :Count(0) },
     });
 
+$body<Pages><Kids>[0]<Parent> = $body<Pages>;
+
 my $results = PDF::Storage::Serializer.new.body($body);
 my $objects = $results<objects>;
 

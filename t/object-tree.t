@@ -13,7 +13,6 @@ my $reader = PDF::Reader.new();
 $reader.open( 't/pdf/pdf.in' );
 
 my $root-obj = $reader.root.object;
-isa-ok $root-obj, ::('PDF::DOM::Catalog');
 is-deeply $root-obj.reader, $reader, 'root object .reader';
 is $root-obj.obj-num, 1, 'root object .obj-num';
 is $root-obj.gen-num, 0, 'root object .gen-num';
@@ -62,13 +61,14 @@ lives-ok {
     my $new-page = PDF::Object.compose( :dict{ :Type(/'Page'), :MediaBox[0, 0, 420, 595], :$Resources } );
     my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );
     $new-page<Contents> = $contents;
+    $new-page<Parent> = $Pages;
     $Pages<Kids>.push: $new-page;
     $Pages<Count> = $Pages<Count> + 1;
     }, 'page addition';
 
 my $new-root = PDF::Object.compose( :dict{ :Type(/'Catalog') });
-$new-root.Outlines = $root-obj<Outlines>;
-$new-root.Pages = $root-obj<Pages>;
+$new-root<Outlines> = $root-obj<Outlines>;
+$new-root<Pages> = $root-obj<Pages>;
 
 my $result = PDF::Storage::Serializer.new.body($new-root);
 my $root = $result<trailer><dict><Root>;
