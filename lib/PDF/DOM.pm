@@ -1,6 +1,5 @@
 role PDF::DOM {
 
-    use PDF::Object::Name;
     use PDF::Object :from-ast;
 
     method Type is rw { self<Type> }
@@ -32,15 +31,19 @@ role PDF::DOM {
 
     multi method find-delegate( :$pdf-class! ) is default {
 
+        my $dom-class = $pdf-class eq 'XRef' | 'ObjStm'
+            ?? 'PDF::Object::Type'
+            !! 'PDF::DOM';
+
         my $handler-class;
         {
             # autoload
-            require ::("PDF::DOM")::($pdf-class);
-            $handler-class = ::("PDF::DOM")::($pdf-class);
+            require ::($dom-class)::($pdf-class);
+            $handler-class = ::($dom-class)::($pdf-class);
 
             CATCH {
                 default {
-                    warn "No handler class: PDF::DOM::$pdf-class";
+                    warn "No handler class: $dom-class::$pdf-class";
                     $handler-class = self.WHAT;
                 }
             }
@@ -66,7 +69,7 @@ role PDF::DOM {
                 my $type-name = ~$0;
 
                 if $dict<Type>:!exists {
-                    $dict<Type> = $type-name but PDF::Object::Name;
+                    $dict<Type> = PDF::Object.compose( :name($type-name) );
                 }
                 else {
                     # /Type already set. check it agrees with the class name
@@ -78,7 +81,7 @@ role PDF::DOM {
                     my $subtype-name = ~$1;
 
                     if $dict<Subtype>:!exists {
-                        $dict<Subtype> = $subtype-name but PDF::Object::Name;
+                        $dict<Subtype> = PDF::Object.compose( :name($subtype-name) );
                     }
                     else {
                         # /Subtype already set. check it agrees with the class name

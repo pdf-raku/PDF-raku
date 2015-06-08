@@ -15,7 +15,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
-isa-ok $ind-obj.object, ::('PDF::DOM')::('ObjStm');
+isa-ok $ind-obj.object, ::('PDF::Object::Type')::('ObjStm');
 
 my $objstm;
 lives-ok { $objstm = $ind-obj.object.decode }, 'basic content decode - lives';
@@ -38,11 +38,11 @@ my $objstm-roundtrip = $ind-obj2.object.decode( $objstm-recompressed );
 
 is-deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';
 
-my $objstm-new = ::('PDF::DOM')::('ObjStm').new(:dict{}, :decoded[[10, '<< /Foo (bar) >>'], [11, '[ 42 true ]']] );
+my $objstm-new = ::('PDF::Object::Type')::('ObjStm').new(:dict{}, :decoded[[10, '<< /Foo (bar) >>'], [11, '[ 42 true ]']] );
 lives-ok {$objstm-new.encode( :check )}, '$.encode( :check ) - with valid data lives';
-is $objstm-new.Type, 'ObjStm', '$xref.new .Name auto-setup';
-is $objstm-new.N, 2, '$xref.new .N auto-setup';
-is $objstm-new.First, 11, '$xref.new .First auto-setup';
+is $objstm-new.Type, 'ObjStm', '$objstm.new .Name auto-setup';
+is $objstm-new.N, 2, '$objstm.new .N auto-setup';
+is $objstm-new.First, 11, '$objstm.new .First auto-setup';
 
 my $invalid-decoding =  [[10, '<< /Foo wtf!! (bar) >>'], [11, '[ 42 true ]']];
 lives-ok {$objstm-new.encode( $invalid-decoding) }, 'encoding invalid data without :check (lives)';

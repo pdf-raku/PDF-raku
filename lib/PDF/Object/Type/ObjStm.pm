@@ -1,18 +1,21 @@
 use v6;
 
+use PDF::Object;
 use PDF::Object::Stream;
 use PDF::Object::Name;
 use PDF::Object::Int;
-use PDF::DOM;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
-class PDF::DOM::ObjStm
-    is PDF::Object::Stream
-    does PDF::DOM {
+class PDF::Object::Type::ObjStm
+    is PDF::Object::Stream {
 
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
+
+    method setup-type( Hash $dict is rw ) {
+        $dict<Type> = PDF::Object.compose( :name<ObjStm> );
+    }
 
     method First is rw { self<First> }
     method N is rw { self<N> }

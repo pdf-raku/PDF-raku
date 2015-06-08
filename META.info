@@ -18,9 +18,9 @@
         "PDF::Object::Real" : "lib/PDF/Object/Real.pm",
         "PDF::Object::Stream" : "lib/PDF/Object/Stream.pm",
         "PDF::Object::Tree" : "lib/PDF/Object/Tree.pm",
+        "PDF::Object::Type::ObjStm" : "lib/PDF/Object/Type/ObjStm.pm",
+        "PDF::Object::Type::XRef" : "lib/PDF/Object/Type/XRef.pm",
         "PDF::DOM" : "lib/PDF/DOM.pm",
-        "PDF::DOM::ObjStm" : "lib/PDF/DOM/ObjStm.pm",
-        "PDF::DOM::XRef" : "lib/PDF/DOM/XRef.pm",
 
         "PDF::Reader" : "lib/PDF/Reader.pm",
 
