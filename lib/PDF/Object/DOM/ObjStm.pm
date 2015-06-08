@@ -7,13 +7,13 @@ use PDF::Object::Int;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
-class PDF::Object::Type::ObjStm
+class PDF::Object::DOM::ObjStm
     is PDF::Object::Stream {
 
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
 
-    method setup-type( Hash $dict is rw ) {
+    method cb-setup-type( Hash $dict is rw ) {
         $dict<Type> = PDF::Object.compose( :name<ObjStm> );
     }
 

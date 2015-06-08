@@ -3,14 +3,14 @@ use v6;
 use PDF::Storage::Filter;
 use PDF::Object :to-ast-native;
 use PDF::Object :from-ast;
-use PDF::DOM;
+use PDF::Object::DOM;
 use PDF::Object::Tree;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 class PDF::Object::Stream
     is PDF::Object
     is Hash
-    does PDF::DOM 
+    does PDF::Object::DOM 
     does PDF::Object::Tree {
 
     our %obj-cache = (); #= to catch circular references
@@ -23,7 +23,7 @@ class PDF::Object::Stream
             # this may trigger cascading PDF::Object::Tree coercians
             # e.g. native Array to PDF::Object::Array
             $obj{ .key } = from-ast(.value) for $dict.pairs;
-            $obj.setup-type($obj);
+            $obj.cb-setup-type($obj);
         }
         $obj;
     }

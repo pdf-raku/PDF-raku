@@ -5,7 +5,7 @@ use PDF::Object::Stream;
 
 # /Type /XRef - cross reference stream
 # introduced with PDF 1.5
-our class PDF::Object::Type::XRef
+our class PDF::Object::DOM::XRef
     is PDF::Object::Stream {
 
     use PDF::Storage::Util :resample;
@@ -17,7 +17,7 @@ our class PDF::Object::Type::XRef
     method first-obj-num is rw { self<Index>[0] }
     method next-obj-num is rw { self<Size> }
 
-    method setup-type( Hash $dict is rw ) {
+    method cb-setup-type( Hash $dict is rw ) {
         $dict<Type> = PDF::Object.compose( :name<XRef> );
     }
 

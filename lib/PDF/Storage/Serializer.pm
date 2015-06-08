@@ -31,7 +31,8 @@ class PDF::Storage::Serializer {
 
     #| rebuilds the body
     multi method body( PDF::Object $root-object!, Hash :$trailer-dict = {}) {
-        $root-object.finish;
+        $root-object.cb-finish
+            if $root-object.can('cb-finish');
         $.analyse( $root-object );
         my $root = $.freeze( $root-object, :indirect );
         my $objects = $.ind-objs;
@@ -50,10 +51,13 @@ class PDF::Storage::Serializer {
     #| of course, 
     multi method body( $reader, Bool :$updates! where $_, Hash :$trailer-dict = {} ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
-        $reader.root.object.finish;
+        my $root-object = $reader.root.object;
+        $root-object.cb-finish
+            if $root-object.can('cb-finish');
+
         $.size = $reader.size;
         my $prev = $reader.prev;
-        my $root = $reader.root.ind-ref;
+        my $root-ref = $reader.root.ind-ref;
 
         # disable auto-deref to keep all analysis and freeze stages lazy. We don't
         # need to consider or load anything that has not been already.
@@ -76,7 +80,7 @@ class PDF::Storage::Serializer {
 
         my %dict = $trailer-dict.list;
         %dict<Prev> = :int($prev);
-        %dict<Root> = $root;
+        %dict<Root> = $root-ref;
         %dict<Size> = :int($.size);
 
         my $objects = $.ind-objs;
