@@ -38,32 +38,27 @@ role PDF::Object::DOM {
 
     multi method find-delegate( :$pdf-class! ) is default {
 
-        my $handler-class;
+        my $handler-class = self.WHAT;
         my $resolved;
 
         for @search-path, 'PDF::Object::DOM' -> $dom-class {
 
             # autoload
-            require ::($dom-class)::($pdf-class);
-            $handler-class = ::($dom-class)::($pdf-class);
-            $resolved = True;
-            last;
-
-            CATCH {
-                default {
-                        $resolved = False;
-                }
+            try {
+                require ::($dom-class)::($pdf-class);
+                $handler-class = ::($dom-class)::($pdf-class);
+                $resolved = True;
+                last;
             }
+
         }
 
-        if $resolved {
-            self.install-delegate( :$pdf-class, :$handler-class );
-        }
-        else {
+        unless $resolved {
             warn "No DOM handler class in path @search-path[] PDF::Object::DOM: {$pdf-class}"
                 if @search-path;
-            $handler-class = self.WHAT;
         }
+
+        self.install-delegate( :$pdf-class, :$handler-class );
     }
 
     method delegate( Hash :$dict! ) {

@@ -14,7 +14,12 @@ sub MAIN (
     Bool :$rebuild    = False,   # rebuild object tree (renumber, garbage collect and deduplicate objects)
     Bool :$compress   = False,   # uncompress streams
     Bool :$uncompress = False,   # compress streams
+    Bool :$dom = False,          # require PDF::DOM
     ) {
+
+    if $dom {
+        require ::('PDF::DOM')
+    }
 
     die "conflicting arguments: --compress --uncompress"
         if $compress && $uncompress;
