@@ -78,16 +78,16 @@ If PDF::DOM is loaded, the document can be traversed as a DOM object tree:
 ```
 use PDF::Reader;
 use PDF::DOM;
-my $pdf-r = PDF::Reader.new();
-$pdf-r.open( 't/helloworld.pdf' );
-my $catalog = $pdf-r.root.object;
+my $reader = PDF::Reader.new();
+$reader.open( 't/helloworld.pdf' );
+my $catalog = $reader.root.object;
 my $page1 = $catalog<Pages><Kids>[0];
 
 # or, using the DOM::Pages.find-page method
 $page1 = $catalog<Pages>.find-page(1);
 
 # objects can be directly fetched by object-number and generation-number:
-$page1 = $pdf-r.ind-obj(4, 0).object;
+$page1 = $reader.ind-obj(4, 0).object;
 
 # the PDF can be edited using DOM functions
 my $end-page = $catalog<Pages>.add-page();
@@ -97,15 +97,19 @@ my $times-roman = $end-page.core-font('Times-Bold');
 $end-page.set-font($times-roman, 16);
 $end-page.text('The End!');
 
-# the ast method can be used to reserialize the document for output by PDF::Writer.
-# The `:update` option prepares an incremental body segment that includes only
-# updated PDF objects. We never need to load the  input PDF in it's entirety.
-# Small updates can be made quickly and effectively made as inplace edits to large
-# PDF files.
+```
 
+## PDF::Storage::Serializer
+
+Constructs AST for output by PDF::Writer. It can create full PDF bodies, or just changes
+for in-place incremental update to a PDF.
+
+In place edits are particularly effective for making small changes to large PDF's, when we can avoid
+loading large unmodified portions of the PDF.
+
+````
 my $serializer = PDF::Storage::Serializer.new;
 my $body = $serializer.body( $reader, :updates );
-
 ```
 
 ## PDF::Writer
@@ -134,10 +138,6 @@ is recommended to enforce this.
  my $encoded = PDF::Storage::Filter.encode( :dict{ :Filter<RunLengthEncode> }, "This    is waaay toooooo loooong!", :eod);
  say $encoded.chars;
  ```
-
-## PDF::Storage::Serializer
-
-Constructs output objects. It can create output for full PDF's, or for incremental updates to existing PDF documents.
 
 
 
