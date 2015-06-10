@@ -508,7 +508,7 @@ class PDF::Reader {
     #| :!unpack 1.5+ (/ObjStm aware) compatible asts:
     #| -- sift type 2 objects
     method get-objects(
-        Bool :$updates-only=False       #| only return updated objects
+        Bool :$incremental=False       #| only return updated objects
         ) {
         constant $unpack = True;
         my @object-refs;
@@ -554,7 +554,7 @@ class PDF::Reader {
                 }
 
                 my $final-ast;
-                if $updates-only {
+                if $incremental {
                     # preparing incremental updates. only need to consider fetched objects
                     $final-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :!eager);
 
@@ -588,7 +588,7 @@ class PDF::Reader {
         # preserve input order
         my @objects := @object-refs.sort({$^a[1]}).map: {.[0]};
 
-        if !$updates-only && +@objects {
+        if !$incremental && +@objects {
             # Discard Linearization aka "Fast Web View"
             my $first-ind-obj = @objects[0].value[2];
             @objects.shift
@@ -601,7 +601,7 @@ class PDF::Reader {
 
     #| get just updated objects. return as objects
     method get-updates() {
-        my $raw-objects = $.get-objects( :updates-only );
+        my $raw-objects = $.get-objects( :incremental );
         $raw-objects.list.map({
             my $obj-num = .value[0];
             my $gen-num = .value[1];
