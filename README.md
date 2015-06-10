@@ -64,16 +64,60 @@ say $stream.obj.encoded;
 - PDF::Object::Dict - abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
 - PDF::Object::Array - array indirect objects (not subclassed)
 - PDF::Object::Bool, PDF::Object::Name, PDF::Object::Null, PDF::Object::Num, PDF::Object::ByteString - simple indirect objects
-- PDF::DOM::* - this namespace represents specific indirect object types as distinguished by the `/Type` dictionary entry. These may subclass either PDF::Object::Stream or PDF::Object::Dict.
-  - PDF::DOM::Catalog - PDF Catalog dictionary
-  - PDF::DOM::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
-  - PDF::DOM::XRef - PDF 1.5+ Cross Reference stream
-  - ... many more to come
+- PDF 1.5+ Compressed object support (reader only). DOM objects:
+  - PDF::Object::DOM::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
+  - PDF::Object::DOM::XRef - PDF 1.5+ Cross Reference stream
 
 ## PDF::Reader
 
 Loads a PDF index (cross reference table and/or stream), then allows random access via the `$.ind.obj(...)` method. The `$.ast()`
 method can be used to load the entire PDF into memory for reserialization, etc.
+
+If PDF::DOM is loaded, the document can be traversed as a DOM object tree:
+
+```
+use PDF::Reader;
+use PDF::DOM;
+my $pdf-r = PDF::Reader.new();
+$pdf-r.open( 't/helloworld.pdf' );
+my $catalog = $pdf-r.root.object;
+my $page1 = $catalog<Pages><Kids>[0];
+
+# or, using the DOM::Pages.find-page method
+$page1 = $catalog<Pages>.find-page(1);
+
+# objects can be directly fetched by object-number and generation-number:
+$page1 = $pdf-r.ind-obj(4, 0).object;
+
+# the PDF can be edited using DOM functions
+my $end-page = $catalog<Pages>.add-page();
+
+$end-page.move(100, 50);
+my $times-roman = $end-page.core-font('Times-Bold');
+$end-page.set-font($times-roman, 16);
+$end-page.text('The End!');
+
+# the ast method can be used to reserialize the document for output by PDF::Writer.
+# The `:update` option prepares an incremental body segment that includes only
+# updated PDF objects. We never need to load the  input PDF in it's entirety.
+# Small updates can be made quickly and effectively made as inplace edits to large
+# PDF files.
+
+my $serializer = PDF::Storage::Serializer.new;
+my $body = $serializer.body( $reader, :updates );
+
+```
+
+## PDF::Writer
+
+Reserializes an AST back to a PDF image with a rebuilt cross reference table.
+
+```
+my $offset = $reader.input.chars + 1;
+my $prev = $body<trailer><dict><Prev>.value;
+my $writer = PDF::Writer.new( :$root, :$offset, :$prev );
+my $new-body = "\n" ~ $writer.write( :$body );
+```
 
 ## PDF::Storage::Filter
 
@@ -96,8 +140,4 @@ is recommended to enforce this.
 Constructs output objects. It can create output for full PDF's, or for incremental updates to existing PDF documents.
 
 
-
-## PDF::Writer
-
-Reserializes an AST back to a PDF image with a rebuilt cross reference table.
 
