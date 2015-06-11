@@ -47,10 +47,10 @@ startxref
 578
 %%EOF
 3 0 obj
-<< /Count 2 /Kids [ 4 0 R 9 0 R ] /Type /Pages >>
+<< /Type /Pages /Count 2 /Kids [ 4 0 R 9 0 R ] >>
 endobj
 9 0 obj
-<< /Contents 10 0 R /MediaBox [ 0 0 420 595 ] /Parent 3 0 R /Resources << /Font << /F1 7 0 R >> /ProcSet 6 0 R >> /Type /Page >>
+<< /Type /Page /Contents 10 0 R /MediaBox [ 0 0 420 595 ] /Parent 3 0 R /Resources << /Font << /F1 7 0 R >> /ProcSet 6 0 R >> >>
 endobj
 10 0 obj
 << /Length 70 >>

@@ -142,8 +142,15 @@ class PDF::Writer {
 
     multi method write(Hash :$dict!) {
 
+        # prioritize /Type and /Subtype entries
+        my @keys = $dict.keys.sort({
+            when 'Type' {"0"}
+            when 'Subtype' | 'S' {"1"}
+            default {$_}
+        });
+
         ( '<<',
-          $dict.keys.sort.map( -> $key {
+          @keys.map( -> $key {
               [~] $.write( :name($key)), ' ', $.write( $dict{$key} ),
           }),
           '>>'

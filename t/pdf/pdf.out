@@ -1,16 +1,16 @@
 %PDF-1.2
 %¥±ë
 1 0 obj
-<< /Outlines 2 0 R /Pages 3 0 R /Type /Catalog >>
+<< /Type /Catalog /Outlines 2 0 R /Pages 3 0 R >>
 endobj
 2 0 obj
-<< /Count 0 /Type /Outlines >>
+<< /Type /Outlines /Count 0 >>
 endobj
 3 0 obj
-<< /Count 1 /Kids [ 4 0 R ] /Type /Pages >>
+<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>
 endobj
 4 0 obj
-<< /Contents 5 0 R /MediaBox [ 0 0 420 595 ] /Parent 3 0 R /Resources << /Font << /F1 7 0 R >> /ProcSet 6 0 R >> /Type /Page >>
+<< /Type /Page /Contents 5 0 R /MediaBox [ 0 0 420 595 ] /Parent 3 0 R /Resources << /Font << /F1 7 0 R >> /ProcSet 6 0 R >> >>
 endobj
 5 0 obj
 << /Length 45 >>
@@ -25,7 +25,7 @@ endobj
 [ /PDF /Text ]
 endobj
 7 0 obj
-<< /BaseFont /Helvetica /Encoding /MacRomanEncoding /Name /F1 /Subtype /Type1 /Type /Font >>
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /MacRomanEncoding /Name /F1 >>
 endobj
 8 0 obj
 45
