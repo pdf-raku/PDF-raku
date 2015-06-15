@@ -1,13 +1,13 @@
 use v6;
 
 use PDF::Object :to-ast;
-use PDF::Object::Tree;
+use PDF::Object::Tie::Array;
 use PDF::Object :from-ast;
 
 class PDF::Object::Array
     is PDF::Object
     is Array
-    does PDF::Object::Tree {
+    does PDF::Object::Tie::Array {
 
     our %obj-cache = (); #= to catch circular references
 
@@ -16,7 +16,7 @@ class PDF::Object::Array
         my $obj = %obj-cache{$id};
         unless $obj.defined {
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
-            # this may trigger cascading PDF::Object::Tree coercians
+            # this may trigger cascading PDF::Object::Tie coercians
             # e.g. native Array to PDF::Object::Array
             $obj[ .key ] = from-ast(.value) for $array.pairs;
         }

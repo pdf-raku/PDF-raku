@@ -4,14 +4,14 @@ use PDF::Storage::Filter;
 use PDF::Object :to-ast-native;
 use PDF::Object :from-ast;
 use PDF::Object::DOM;
-use PDF::Object::Tree;
+use PDF::Object::Tie::Hash;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 class PDF::Object::Stream
     is PDF::Object
     is Hash
     does PDF::Object::DOM 
-    does PDF::Object::Tree {
+    does PDF::Object::Tie::Hash {
 
     our %obj-cache = (); #= to catch circular references
 
@@ -20,7 +20,7 @@ class PDF::Object::Stream
         my $obj = %obj-cache{$id};
         unless $obj.defined {
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
-            # this may trigger cascading PDF::Object::Tree coercians
+            # this may trigger cascading PDF::Object::Tie coercians
             # e.g. native Array to PDF::Object::Array
             $obj{ .key } = from-ast(.value) for $dict.pairs;
             $obj.cb-setup-type($obj);
