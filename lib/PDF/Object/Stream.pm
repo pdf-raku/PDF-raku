@@ -46,7 +46,7 @@ class PDF::Object::Stream
     multi submethod BUILD( :$!encoded!) {
     }
 
-    multi submethod BUILD() {
+    multi submethod BUILD() is default {
     }
 
     method encoded {
@@ -62,6 +62,19 @@ class PDF::Object::Stream
             if $!encoded.defined;
 
         $!decoded;
+    }
+
+    method edit( Str :$prepend = '', Str :$append = '' ) {
+        for $prepend, $append {
+            for .comb {
+                die "illegal non-latin hex byte: U+" ~ .ord.base(16)
+                    unless 0 <= .ord <= 0xFF;
+            }
+        }
+        $.decoded;
+        $!encoded = Any;
+        $!decoded //= '';
+        $!decoded = $prepend ~ $!decoded ~ $append;
     }
 
     method decode( Str $encoded = $.encoded ) {

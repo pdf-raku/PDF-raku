@@ -199,7 +199,7 @@ class PDF::Writer {
         [~] '(',
             $literal.comb.map({
                 when ' ' .. '~' { %escapes{$_} // $_ }
-                when "\o0".. "\o377" { sprintf "\\%03o", .ord }
+                when "\o0" .. "\o377" { sprintf "\\%03o", .ord }
                 default {die "illegal non-latin character in string: U+" ~ .ord.base(16)}
             }),
            ')';
