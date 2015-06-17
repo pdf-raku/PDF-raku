@@ -123,11 +123,15 @@ class PDF::Writer {
         $content.map({ $.write( :content($_) ) }).join("\n");
     }
 
-    multi method write( :$content! ) {
+    multi method write( :$content! where Pair | Hash) {
         my ($op, $args) = $content.kv;
         $args //= [];
 
         ($args.map({ $.write( $_ ) }), $.write( :$op )).join(' ');
+    }
+
+    multi method write( Str :$content! ) {
+        $content
     }
 
     multi method write( Str :$op! where /^\w+/ ) { $op }
