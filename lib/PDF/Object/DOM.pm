@@ -68,8 +68,4 @@ role PDF::Object::DOM {
             !! self.WHAT;
     }
 
-    # callbacks
-
-    method cb-setup-type($) {}
-    method cb-finish() {}
 }

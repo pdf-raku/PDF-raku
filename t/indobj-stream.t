@@ -25,7 +25,7 @@ is $ind-obj.gen-num, 1, '$.gen-num';
 
 stream_tests( $ind-obj.object );
 
-$ind-obj.object.edit( :prepend('q '), :append(' Q'));
+$ind-obj.object.edit-stream( :prepend('q '), :append(' Q'));
 is $ind-obj.object.decoded, "q $decoded Q", '.edit';
 is $ind-obj.object.encoded, "7120{$encoded}2051", '.edit + encoding';
 
