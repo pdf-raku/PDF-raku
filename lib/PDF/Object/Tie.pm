@@ -38,7 +38,7 @@ role PDF::Object::Tie {
     multi method deref($value) is default { $value }
 
     #| return a shallow unblessed/unauto-deref clone of a PDF::Object
-    method raw() {
+    method clone() {
 
         return self
             if self !~~ Hash | Array

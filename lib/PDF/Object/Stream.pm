@@ -15,7 +15,7 @@ class PDF::Object::Stream
 
     our %obj-cache = (); #= to catch circular references
 
-    method new(Hash :$dict = {}, *%etc) {
+    method new(Hash :$dict = {}, *%etc, *@args) {
         my $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
@@ -115,12 +115,16 @@ class PDF::Object::Stream
         }
     }
 
-    method get-stream() {
+    method clone() {
         my %stream;
-        %stream<encoded> = $!encoded if $!encoded.defined;
-        %stream<decoded> = $!decoded if $!decoded.defined;
-        %stream<dict><Filter> = $.Filter if $.Filter;
-        %stream<dict><DecodeParms> = $.DecodeParms if $.DecodeParms;
+        if $!decoded.defined {
+            %stream<decoded> = $!decoded
+        }
+        elsif $!encoded.defined {
+            %stream<encoded> = $!encoded
+        }
+        %stream<dict><Filter> = $.Filter.clone if $.Filter;
+        %stream<dict><DecodeParms> = $.DecodeParms.clone if $.DecodeParms;
 
         %stream;
     }
