@@ -116,16 +116,13 @@ class PDF::Object::Stream
     }
 
     method clone() {
-        my %stream;
-        if $!decoded.defined {
-            %stream<decoded> = $!decoded
-        }
-        elsif $!encoded.defined {
-            %stream<encoded> = $!encoded
-        }
-        %stream<dict><Filter> = $.Filter.clone if $.Filter;
-        %stream<dict><DecodeParms> = $.DecodeParms.clone if $.DecodeParms;
+        my %dict = self.keys.map( {
+            $_ => self{$_}.clone;
+        });
+        my %params = :%dict;
+        %params<decoded> = $!decoded if $!decoded.defined;
+        %params<encoded> = $!encoded if $!encoded.defined;
 
-        %stream;
+        self.new( |%params );
     }
 }
