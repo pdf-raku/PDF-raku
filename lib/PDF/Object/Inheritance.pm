@@ -4,7 +4,7 @@ role PDF::Object::Inheritance {
 
     #| find an heritable property
     proto method find-prop(|) {*}
-    multi method find-prop($prop where self{$_}:exists) {
+    multi method find-prop($prop where { self{$_}:exists }) {
         self{$prop}
     }
     multi method find-prop($prop where { self<Parent>:exists }) {

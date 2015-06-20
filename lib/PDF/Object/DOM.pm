@@ -32,7 +32,7 @@ role PDF::Object::DOM {
         self.find-delegate( :$pdf-class );
     }
 
-    multi method find-delegate( :$pdf-class! where %handler{$_}:exists ) {
+    multi method find-delegate( :$pdf-class! where { %handler{$_}:exists } ) {
         %handler{$pdf-class}
     }
 
