@@ -31,8 +31,7 @@ class PDF::Storage::Serializer {
 
     #| rebuilds the body
     multi method body( PDF::Object $root-object!, Hash :$trailer-dict = {}) {
-        $root-object.cb-finish
-            if $root-object.can('cb-finish');
+        $root-object.?cb-finish;
         $.analyse( $root-object );
         my $root = $.freeze( $root-object, :indirect );
         my $objects = $.ind-objs;
@@ -52,8 +51,7 @@ class PDF::Storage::Serializer {
     multi method body( $reader, Bool :$updates! where $_, Hash :$trailer-dict = {} ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
         my $root-object = $reader.root.object;
-        $root-object.cb-finish
-            if $root-object.can('cb-finish');
+        $root-object.?cb-finish;
 
         $.size = $reader.size;
         my $prev = $reader.prev;
