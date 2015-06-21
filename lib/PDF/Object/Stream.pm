@@ -115,14 +115,4 @@ class PDF::Object::Stream
         }
     }
 
-    method clone() {
-        my %dict = self.keys.map( {
-            $_ => self{$_}.clone;
-        });
-        my %params = :%dict;
-        %params<decoded> = $!decoded if $!decoded.defined;
-        %params<encoded> = $!encoded if $!encoded.defined;
-
-        self.new( |%params );
-    }
 }
