@@ -18,8 +18,4 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
         nextwith( $key, $lval );
     }
 
-    #| coerce and save hash entry
-    multi method deref($value where Hash | Array , :$key!) {
-        self.ASSIGN-KEY($key, $value);
-    }
 }

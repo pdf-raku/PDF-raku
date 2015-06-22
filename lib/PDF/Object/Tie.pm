@@ -34,6 +34,16 @@ role PDF::Object::Tie {
     #| already an object
     multi method deref(PDF::Object $value) { $value }
 
+    #| coerce and save hash entry
+    multi method deref($value where Hash | Array , :$key!) {
+        self.ASSIGN-KEY($key, $value);
+    }
+
+    #| coerce and save array entry
+    multi method deref($value where Hash | Array , :$pos!) {
+        self.ASSIGN-POS($pos, $value);
+    }
+
     #| simple native type. no need to coerce
     multi method deref($value) is default { $value }
 

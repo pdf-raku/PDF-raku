@@ -33,9 +33,4 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
         nextwith( $pos, $elems, |@lvals);
     }
 
-    #| coerce and save array entry
-    multi method deref($value where Hash | Array , :$pos!) {
-        self.ASSIGN-POS($pos, $value);
-    }
-
 }
