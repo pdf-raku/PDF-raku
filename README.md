@@ -92,10 +92,9 @@ $page1 = $reader.ind-obj(4, 0).object;
 # the PDF can be edited using DOM functions
 my $end-page = $catalog<Pages>.add-page();
 
-$end-page.move(100, 50);
-my $times-roman = $end-page.core-font('Times-Bold');
-$end-page.set-font($times-roman, 16);
-$end-page.text('The End!');
+my $font = $end-page.core-font('Times-Bold');
+my $font-size = 24;
+$end-page.gfx.text('The End!', :$font, :$font-size, :top(300), :left(50), );
 
 ```
 
