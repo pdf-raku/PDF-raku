@@ -9,6 +9,7 @@ class PDF::Reader {
     use PDF::Object :to-ast;
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
+    has $.file-name;
     has Hash %!ind-obj-idx;
     has $.root is rw;
     has $.ast is rw;
@@ -73,8 +74,8 @@ class PDF::Reader {
     }
 
     #| open the named PDF/FDF file
-    multi method open( Str $input-file, *%opts) {
-        $.open( $input-file.IO.open( :enc<latin-1> ), |%opts );
+    multi method open( Str $!file-name, *%opts) {
+        $.open( $!file-name.IO.open( :enc<latin-1> ), |%opts );
     }
 
     multi method open($input-file!, Bool :$repair = False) {
