@@ -54,7 +54,7 @@ sub MAIN (
     }
     note "building ast ...";
     my $ast = $reader.ast( :$rebuild );
-    $reader.write($pdf-or-json-file-out, :$ast); 
+    $reader.save-as($pdf-or-json-file-out, :$ast); 
     note "done";
 
 }
