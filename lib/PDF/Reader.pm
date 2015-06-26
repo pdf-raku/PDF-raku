@@ -20,6 +20,7 @@ class PDF::Reader {
     has $.prev;
     has $.size is rw;   #= /Size entry in trailer dict ~ first free object number
     has $.trailer-dict;
+    has Bool $.defunct is rw = False;
 
     method actions {
         state $actions //= PDF::Grammar::PDF::Actions.new
@@ -185,6 +186,9 @@ class PDF::Reader {
                     :$get-ast = False,  #| get ast data, not formulated objects
                     :$eager = True,     #| fetch object, if not already loaded
         ) {
+
+        die "input pdf has been updated; reader object is now defunct"
+             if $!defunct;
 
         my $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
             // die "unable to find object: $obj-num $gen-num R";

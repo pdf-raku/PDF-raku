@@ -72,7 +72,8 @@ nok $reader.ind-obj( 5, 0, :!eager ), 'unreferenced object not loaded (Page 1 co
 # now re-read the pdf. Will also test our ability to read a PDF
 # with multiple segments
 
-$reader = Mu;
+$reader.defunct = True;
+dies-ok {$reader.ind-obj( 5, 0, :!eager ),}, "defunct reader access - dies";
 
 $reader = PDF::Reader.new();
 $reader.open( 't/pdf/pdf-updated.out', :a );
