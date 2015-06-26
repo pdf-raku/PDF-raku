@@ -32,6 +32,7 @@ class PDF::Storage::Serializer {
     #| rebuilds the body
     multi method body( PDF::Object $root-object!, Hash :$trailer-dict = {}) {
         $root-object.?cb-finish;
+        %!ref-count = ();
         $.analyse( $root-object );
         my $root = $.freeze( $root-object, :indirect );
         my $objects = $.ind-objs;
@@ -64,6 +65,7 @@ class PDF::Storage::Serializer {
         # preserve existing object numbers. objects need to overwritten using the same
         # object and generation numbers
         temp $.renumber = False;
+        %!ref-count = ();
 
         my $updated-objects = $reader.get-updates;
 

@@ -29,7 +29,7 @@ $pdf-repaired.open( 't/pdf/pdf.in', :repair );
 is-deeply $pdf-repaired.ast( :rebuild ), $ast, '$reader.open( :repair )';
 
 my $pdf-json = PDF::Reader.new();
-$pdf-in.write( 't/pdf/pdf-rewritten.json', :rebuild );
+$pdf-in.save-as( 't/pdf/pdf-rewritten.json', :rebuild );
 $pdf-json.open( 't/pdf/pdf-rewritten.json' );
 is-deeply $pdf-json.ast( :rebuild ), $ast, '$reader.open( "pdf.json" )';
 

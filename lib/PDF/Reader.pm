@@ -7,6 +7,7 @@ class PDF::Reader {
     use PDF::Storage::IndObj;
     use PDF::Storage::Serializer;
     use PDF::Object :to-ast;
+    use PDF::Writer;
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
     has $.file-name;
@@ -641,16 +642,15 @@ class PDF::Reader {
     }
 
     #| dump to json
-    multi method write( $output-path where m:i/'.json' $/, :$ast = $.ast ) {
+    multi method save-as( $output-path where m:i/'.json' $/, :$ast = $.ast ) {
         note "dumping {$output-path}...";
         $output-path.IO.spurt( to-json( $ast ) );
     }
 
     #| write to PDF/FDF
-    multi method write( $output-path, :$ast = $.ast ) is default {
-        note "writing {$output-path}...";
-        require ::('PDF::Writer');
-        my $pdf-writer = ::('PDF::Writer').new( :$.root, :$.input );
+    multi method save-as( $output-path, :$ast = $.ast ) is default {
+        note "saving {$output-path}...";
+        my $pdf-writer = PDF::Writer.new( :$.root, :$.input );
         $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
     }
 
