@@ -33,4 +33,13 @@ $pdf-in.save-as( 't/pdf/pdf-rewritten.json', :rebuild );
 $pdf-json.open( 't/pdf/pdf-rewritten.json' );
 is-deeply $pdf-json.ast( :rebuild ), $ast, '$reader.open( "pdf.json" )';
 
+$pdf-json.recompress( :compress );
+$pdf-json.save-as('t/pdf/pdf-compressed.pdf');
+my $pdf-compressed = PDF::Reader.new();
+$pdf-compressed.open( 't/pdf/pdf-compressed.pdf' );
+$ast = $pdf-compressed.ast;
+my $stream = $ast<pdf><body>[0]<objects>.first({ .key eq 'ind-obj' && .value[2].key eq 'stream'});
+ok $stream.defined, 'got stream';
+is-deeply $stream.value[2]<stream><dict><Filter><name>, 'FlateDecode', 'stream is compressed';
+
 done;
