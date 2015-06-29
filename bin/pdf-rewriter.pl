@@ -32,26 +32,12 @@ sub MAIN (
     note "Document is encrypted."
         if $reader.trailer-dict<Encrypt>:exists;
 
-    if $compress || $uncompress {
-        # locate and compress/uncompress stream objects
-        my $objects = $reader.get-objects;
+    
+    if $uncompress || $compress {
         note $compress ?? "compressing ..." !! "uncompressing ...";
-
-        for $objects.list {
-            my ($type, $ind-obj) = .kv;
-            next unless $type eq 'ind-obj';
-            my ($obj-type, $obj-raw) = $ind-obj[2].kv;
-            if $obj-type eq 'stream' {
-                my $is-compressed = $obj-raw<dict><Filter>:exists;
-                next if $compress == $is-compressed;
-                my $obj-num = $ind-obj[0];
-                my $gen-num = $ind-obj[1];
-                # fully stantiate object and adjust compression
-                my $object = $reader.ind-obj( $obj-num, $gen-num).object;
-                $compress ?? $object.compress !! $object.uncompress;
-            }
-        }
+        $reader.recompress(:$compress)
     }
+
     note "building ast ...";
     my $ast = $reader.ast( :$rebuild );
     $reader.save-as($pdf-or-json-file-out, :$ast); 

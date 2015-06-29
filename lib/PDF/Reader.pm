@@ -615,9 +615,29 @@ class PDF::Reader {
         });
     }
 
+    multi method recompress(Bool :$compress = True) {
+        # locate and compress/uncompress stream objects
+
+        for self.get-objects.list {
+            my ($type, $ind-obj) = .kv;
+            next unless $type eq 'ind-obj';
+            my ($obj-type, $obj-raw) = $ind-obj[2].kv;
+            if $obj-type eq 'stream' {
+                my $is-compressed = $obj-raw<dict><Filter>:exists;
+                next if $compress == $is-compressed;
+                my $obj-num = $ind-obj[0];
+                my $gen-num = $ind-obj[1];
+                # fully stantiate object and adjust compression
+                my $object = self.ind-obj( $obj-num, $gen-num).object;
+                $compress ?? $object.compress !! $object.uncompress;
+            }
+        }
+    }
+
     multi method ast( Bool :$rebuild! where $rebuild ) {
 
         my $body = PDF::Storage::Serializer.new.body( $.root.object, :$.trailer-dict );
+
         :pdf{
             :header{ :$.type, :$.version },
             :body[ $body ],

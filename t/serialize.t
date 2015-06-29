@@ -36,7 +36,7 @@ is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => 
 
 is-deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], ID => :int(2)}]), "circular hash ref resolution";
 
-my $body = PDF::Object.compose( :dict{
+my $doc = PDF::Object.compose( :dict{
     :Type(/'Catalog'),
     :Pages{
             :Type(/'Pages'),
@@ -57,10 +57,10 @@ my $body = PDF::Object.compose( :dict{
     :Outlines{ :Type(/'Outlines'), :Count(0) },
     });
 
-$body<Pages><Kids>[0]<Parent> = $body<Pages>;
+$doc<Pages><Kids>[0]<Parent> = $doc<Pages>;
 
-my $results = PDF::Storage::Serializer.new.body($body);
-my $objects = $results<objects>;
+my $body = PDF::Storage::Serializer.new.body($doc);
+my $objects = $body<objects>;
 
 sub infix:<object-order-ok>($obj-a, $obj-b) {
     my ($obj-num-a, $gen-num-a) = @( $obj-a.value );
@@ -97,6 +97,11 @@ my $writer = PDF::Writer.new;
 $objects = PDF::Storage::Serializer.new.body($obj-with-utf8)<objects>;
 is-deeply $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
 is $writer.write( :ind-obj($objects[0].value)), "1 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj", 'name write';
+
+my $objects-compressed = PDF::Storage::Serializer.new.body($doc, :compress)<objects>;
+my $stream = $objects-compressed[*-1].value[2]<stream>;
+is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'compressed dict';
+is $stream<encoded>.chars, 54, 'compressed stream length';
 
 # just to define current behaviour. blows up during final write.
 my $obj-with-bad-byte-string = PDF::Object.compose :dict{ :Name("Heydər Əliyev") };

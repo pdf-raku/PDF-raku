@@ -30,11 +30,11 @@ class PDF::Storage::Serializer {
     }
 
     #| rebuilds the body
-    multi method body( PDF::Object $root-object!, Hash :$trailer-dict = {}) {
+    multi method body( PDF::Object $root-object!, Hash :$trailer-dict = {}, :$*compress) {
         $root-object.?cb-finish;
         %!ref-count = ();
         $.analyse( $root-object );
-        my $root = $.freeze( $root-object, :indirect );
+        my $root = $.freeze( $root-object, :indirect);
         my $objects = $.ind-objs;
 
         my %dict = $trailer-dict.list;
@@ -49,7 +49,7 @@ class PDF::Storage::Serializer {
     #| - that have been fetched and updated, or
     #| - have been newly inserted (no object-number)
     #| of course, 
-    multi method body( $reader, Bool :$updates! where $_, Hash :$trailer-dict = {} ) {
+    multi method body( $reader, Bool :$updates! where $_, Hash :$trailer-dict = {}, :$*compress ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
         my $root-object = $reader.root.object;
         $root-object.?cb-finish;
@@ -158,7 +158,7 @@ class PDF::Storage::Serializer {
     proto method freeze(|) {*}
 
     #| handles PDF::Object::Dict, PDF::Object::Stream, (plain) Hash
-    multi method freeze( Hash $object! is rw, Bool :$indirect ) {
+    multi method freeze( Hash $object! is rw, Bool :$indirect) {
         my $id = ~$object.WHICH;
 
         # already an indirect object
@@ -166,6 +166,10 @@ class PDF::Storage::Serializer {
             if %!obj-num-idx{$id}:exists;
 
         my $is-stream = $object.isa(PDF::Object::Stream);
+
+        if $is-stream && $*compress.defined {
+            $*compress ?? $object.compress !! $object.uncompress;
+        }
 
         my $ind-obj;
         my $slot;
