@@ -50,7 +50,13 @@ class PDF::Object::Stream
     multi submethod BUILD() is default {
     }
 
-    method encoded {
+    multi method encoded(Str $stream!) {
+        $!decoded = Any;
+        self<Length> = $stream.chars;
+        $!encoded = $stream;
+    }
+
+    multi method encoded is default {
         if $!decoded.defined {
             $!encoded //= $.encode( $!decoded );
         }
@@ -58,7 +64,13 @@ class PDF::Object::Stream
         $!encoded;
     }
 
-    method decoded {
+    multi method decoded(Str $stream!) {
+        $!encoded = Any;
+        self<Length>:delete;
+        $!decoded = $stream;
+    }
+
+    multi method decoded is default {
         $!decoded //= $.decode( $!encoded )
             if $!encoded.defined;
 
