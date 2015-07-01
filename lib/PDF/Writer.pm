@@ -146,11 +146,12 @@ class PDF::Writer {
 
     multi method write(Hash :$dict!) {
 
-        # prioritize /Type and /Subtype entries
+        # prioritize /Type and /Subtype entries. output /Length as last entry
         my @keys = $dict.keys.sort({
-            when 'Type' {"0"}
+            when 'Type'          {"0"}
             when 'Subtype' | 'S' {"1"}
-            default {$_}
+            when 'Length'        {"z"}
+            default              {$_}
         });
 
         ( '<<',
