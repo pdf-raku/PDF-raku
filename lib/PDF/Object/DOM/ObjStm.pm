@@ -17,8 +17,9 @@ class PDF::Object::DOM::ObjStm
         $dict<Type> = PDF::Object.compose( :name<ObjStm> );
     }
 
-    method First is rw { self<First> }
-    method N is rw { self<N> }
+    method First is rw returns Int { self<First> }
+    method N is rw returns Int { self<N> }
+    method Extends is rw returns PDF::Object::Stream:_ { self<Extends> }
 
     method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {
         my @idx;
@@ -36,8 +37,8 @@ class PDF::Object::DOM::ObjStm
             $objects-str ~= $object-str;
         }
         my $idx-str = @idx.join: ' ';
-        $.First = $idx-str.chars + 1;
-        $.N = +$objstm;
+        self<First> = $idx-str.chars + 1;
+        self<N> = +$objstm;
 
         nextwith( [~] $idx-str, ' ', $objects-str );
     }

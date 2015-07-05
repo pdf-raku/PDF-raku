@@ -11,9 +11,11 @@ our class PDF::Object::DOM::XRef
     use PDF::Storage::Util :resample;
 
     # See [PDF 1.7 Table 3.15]
-    method W is rw { self<W>; }
-    method Size is rw { self<Size>; }
-    method Index is rw { self<Index> }
+    method Size is rw returns Int { self<Size>; }
+    method Index is rw returns Array:_ { self<Index> }
+    method Prev is rw returns Int:_ { self<Prev> }
+    method W is rw returns Array { self<W>; }
+
     method first-obj-num is rw { self<Index>[0] }
     method next-obj-num is rw { self<Size> }
 
@@ -29,10 +31,10 @@ our class PDF::Object::DOM::XRef
         die 'mandatory /Size entry is missing or zero'
             unless $.next-obj-num;
 
-        $.W //= [ 1, 2, 1 ];
-        $.Size //= 0;
-        $.Index[0] //= 0;
-        $.Index[1] //= $.Size;
+        self<W> //= [ 1, 2, 1 ];
+        self<Size> //= 0;
+        self<Index>[0] //= 0;
+        self<Index>[1] //= $.Size;
 
         # /W resize to widest byte-widths, if needed
         for 0..2 -> $i {

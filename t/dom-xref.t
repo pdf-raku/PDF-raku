@@ -63,7 +63,7 @@ is-deeply $xref, $xref-roundtrip2, '$xref.new round-trip';
 my $xref-wide = PDF::Object.compose( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>) }, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]]} );
 dies-ok {$xref-wide.encode}, 'encode incomplete setup';
 $xref-wide.first-obj-num = 42;
-$xref-wide.Size = 2;
+$xref-wide<Size> = 2;
 lives-ok {$xref-wide.encode}, 'encode completed setup';
 is $xref-wide.Type, 'XRef', '$xref.new .Name auto-setup';
 is-json-equiv $xref-wide.W, [ 1, 3, 2], '$xref.new .W auto-setup';

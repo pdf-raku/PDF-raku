@@ -2,8 +2,9 @@ role PDF::Object::DOM {
 
     use PDF::Object :from-ast;
 
-    method Type is rw { self<Type> }
+    method Type is rw returns Str { self<Type> }
     method Subtype is rw { self<Subtype> }
+    method S is rw { self<S> }
 
     BEGIN our @search-path = ();
     our %handler;
