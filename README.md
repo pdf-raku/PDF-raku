@@ -1,7 +1,7 @@
 perl6-PDF
 =========
 
-** Under Construction **  This module provides tools and resources for manipulation of PDF content.
+** Under Construction **  This module provides low-level tools for reading, writing and update of PDF content.
 
 ```
 #!/usr/bin/env perl6
@@ -98,6 +98,22 @@ $end-page.gfx.text('The End!', :$font, :$font-size, :top(300), :left(50), );
 
 ```
 
+## PDF::Storage::Filter
+
+Filter methods, based on PDF::API2::Core::PDF::Filter / Text::PDF::Filter
+
+PDF::Storage::Filter::RunLength, PDF::Storage::Filter::ASCII85, PDF::Storage::Filter::Flate, ...
+
+Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding
+is recommended to enforce this.
+
+`encode` and `decode` both return latin-1 encoded strings.
+
+ ```
+ my $encoded = PDF::Storage::Filter.encode( :dict{ :Filter<RunLengthEncode> }, "This    is waaay toooooo loooong!", :eod);
+ say $encoded.chars;
+ ```
+
 ## PDF::Storage::Serializer
 
 Constructs AST for output by PDF::Writer. It can create full PDF bodies, or just changes
@@ -121,22 +137,4 @@ my $prev = $body<trailer><dict><Prev>.value;
 my $writer = PDF::Writer.new( :$root, :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 ```
-
-## PDF::Storage::Filter
-
-Filter methods, based on PDF::API2::Core::PDF::Filter / Text::PDF::Filter
-
-PDF::Storage::Filter::RunLength, PDF::Storage::Filter::ASCII85, PDF::Storage::Filter::Flate, ...
-
-Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding
-is recommended to enforce this.
-
-`encode` and `decode` both return latin-1 encoded strings.
-
- ```
- my $encoded = PDF::Storage::Filter.encode( :dict{ :Filter<RunLengthEncode> }, "This    is waaay toooooo loooong!", :eod);
- say $encoded.chars;
- ```
-
-
 
