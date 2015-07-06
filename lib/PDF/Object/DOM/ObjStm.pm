@@ -12,14 +12,15 @@ class PDF::Object::DOM::ObjStm
 
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
+    use PDF::Object::Tie;
+
+    has Int $!First; method First { self.tie(:$!First) };
+    has Int $!N; method N { self.tie(:$!N) };
+    has PDF::Object::Stream:_ $!Extends; method Extends { self.tie(:$!Extends) };
 
     method cb-setup-type( Hash $dict is rw ) {
         $dict<Type> = PDF::Object.compose( :name<ObjStm> );
     }
-
-    method First is rw returns Int { self<First> }
-    method N is rw returns Int { self<N> }
-    method Extends is rw returns PDF::Object::Stream:_ { self<Extends> }
 
     method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {
         my @idx;

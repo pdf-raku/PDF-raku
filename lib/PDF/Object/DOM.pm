@@ -1,10 +1,11 @@
 role PDF::Object::DOM {
 
     use PDF::Object :from-ast;
+    use PDF::Object::Tie;
 
-    method Type is rw returns Str { self<Type> }
-    method Subtype is rw { self<Subtype> }
-    method S is rw { self<S> }
+    has Str $!Type;      method Type { $.tie(:$!Type) };
+    has Str:_ $!Subtype; method Subtype { $.tie(:$!Subtype) };
+    has Str:_ $!S;       method S { $.tie(:$!S) };
 
     BEGIN our @search-path = ();
     our %handler;
@@ -63,7 +64,7 @@ role PDF::Object::DOM {
     }
 
     method delegate( Hash :$dict! ) {
-        $dict<Type>:exists
+        $dict<Type>
             ?? $.find-delegate( :type( from-ast($dict<Type>) ),
                                 :subtype( from-ast($dict<Subtype> // $dict<S>) ) )
             !! self.WHAT;

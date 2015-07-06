@@ -66,6 +66,9 @@ lives-ok {
     $Pages<Count> = $Pages<Count> + 1;
     }, 'page addition';
 
+$contents<Length> = 41;
+is $contents.Length, 41, '$stream<Length> is tied to $stream.Length';
+
 my $new-root = PDF::Object.compose( :dict{ :Type(/'Catalog') });
 $new-root<Outlines> = $root-obj<Outlines>;
 $new-root<Pages> = $root-obj<Pages>;

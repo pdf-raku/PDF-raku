@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 20;
+plan 21;
 
 use PDF::Storage::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
@@ -30,8 +30,7 @@ is-deeply $xref, $expected-xref, 'decoded index as expected';
 my $xref-recompressed = $xref-obj.encode;
 
 my %ast2;
-#lives-ok {
- %ast2 = %( $ind-obj.ast ) ;#}, '$.ast - lives';
+lives-ok {%ast2 = %( $ind-obj.ast ) }, '$.ast - lives';
 
 my $ind-obj2 = PDF::Storage::IndObj.new( |%ast2);
 my $xref-roundtrip = $ind-obj2.object.decode( $xref-recompressed );

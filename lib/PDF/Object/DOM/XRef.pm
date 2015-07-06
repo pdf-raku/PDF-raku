@@ -9,12 +9,13 @@ our class PDF::Object::DOM::XRef
     is PDF::Object::Stream {
 
     use PDF::Storage::Util :resample;
+    use PDF::Object::Tie;
 
     # See [PDF 1.7 Table 3.15]
-    method Size is rw returns Int { self<Size>; }
-    method Index is rw returns Array:_ { self<Index> }
-    method Prev is rw returns Int:_ { self<Prev> }
-    method W is rw returns Array { self<W>; }
+    has Int $!Size; method Size { self.tie(:$!Size) };
+    has Array:_ $!Index; method Index { self.tie(:$!Index) };
+    has Int:_ $!Prev; method Prev { self.tie(:$!Prev) };
+    has Array $!W; method W { self.tie(:$!W) };
 
     method first-obj-num is rw { self<Index>[0] }
     method next-obj-num is rw { self<Size> }
@@ -47,7 +48,7 @@ our class PDF::Object::DOM::XRef
             } until $val == 0;
 
             $.W[$i] = $max-bytes
-                if $.W[$i] < $max-bytes;
+                if !$.W[$i] || $.W[$i] < $max-bytes;
         }
 
         my $str = resample( $xref, $.W, 8 ).chrs;
@@ -77,7 +78,7 @@ our class PDF::Object::DOM::XRef
             $size = $entry<obj-num> + 1;
         }
 
-        $.Size = $size;
+        self<Size> = $size;
         self<Index> = @index;
 
         $.encode($encoded);

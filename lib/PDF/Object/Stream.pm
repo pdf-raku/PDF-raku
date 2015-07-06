@@ -4,6 +4,7 @@ use PDF::Storage::Filter;
 use PDF::Object :to-ast-native;
 use PDF::Object :from-ast;
 use PDF::Object::DOM;
+use PDF::Object::Tie;
 use PDF::Object::Tie::Hash;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
@@ -12,6 +13,13 @@ class PDF::Object::Stream
     is Hash
     does PDF::Object::DOM 
     does PDF::Object::Tie::Hash {
+
+    has $!encoded;
+    has $!decoded;
+
+    has Str:_ $!Filter;       method Filter { $.tie(:$!Filter) }
+    has Hash:_ $!DecodeParms; method DecodeParms { $.tie(:$!DecodeParms) }
+    has Int:_ $!Length;       method Length { $.tie(:$!Length) }
 
     our %obj-cache = (); #= to catch circular references
 
@@ -22,19 +30,12 @@ class PDF::Object::Stream
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
             # this may trigger cascading PDF::Object::Tie coercians
             # e.g. native Array to PDF::Object::Array
-            $obj{ .key } = from-ast(.value) for $dict.pairs;
+            $obj{.key} = from-ast(.value) for $dict.pairs;
             $obj.cb-setup-type($obj)
                 if $obj.can('cb-setup-type');
         }
         $obj;
     }
-
-    has $!encoded;
-    has $!decoded;
-
-    method Filter is rw { self<Filter> }
-    method DecodeParms is rw { self<DecodeParms> }
-    method Length is rw { self<Length> }
 
     multi submethod BUILD( :$start!, :$end!, :$input!) {
         my $length = $end - $start + 1;
