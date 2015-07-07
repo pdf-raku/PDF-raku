@@ -4,7 +4,6 @@ use PDF::Storage::Filter;
 use PDF::Object :to-ast-native;
 use PDF::Object :from-ast;
 use PDF::Object::DOM;
-use PDF::Object::Tie;
 use PDF::Object::Tie::Hash;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...

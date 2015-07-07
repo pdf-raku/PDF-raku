@@ -12,7 +12,6 @@ class PDF::Object::DOM::ObjStm
 
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
-    use PDF::Object::Tie;
 
     has Int $!First; method First { self.tie(:$!First) };
     has Int $!N; method N { self.tie(:$!N) };

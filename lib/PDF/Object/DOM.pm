@@ -1,7 +1,7 @@
 role PDF::Object::DOM {
 
     use PDF::Object :from-ast;
-    use PDF::Object::Tie;
+    use PDF::Object::Tie::Hash;
 
     has Str $!Type;      method Type { $.tie(:$!Type) };
     has Str:_ $!Subtype; method Subtype { $.tie(:$!Subtype) };

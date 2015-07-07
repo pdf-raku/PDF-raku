@@ -9,7 +9,6 @@ our class PDF::Object::DOM::XRef
     is PDF::Object::Stream {
 
     use PDF::Storage::Util :resample;
-    use PDF::Object::Tie;
 
     # See [PDF 1.7 Table 3.15]
     has Int $!Size; method Size { self.tie(:$!Size) };
