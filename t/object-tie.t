@@ -68,6 +68,8 @@ lives-ok {
 
 $contents<Length> = 41;
 is $contents.Length, 41, '$stream<Length> is tied to $stream.Length';
+$contents<Length>:delete;
+ok !$contents.Length.defined, '$stream<Length>:delete propagates to $stream.Length';
 
 my $new-root = PDF::Object.compose( :dict{ :Type(/'Catalog') });
 $new-root<Outlines> = $root-obj<Outlines>;
