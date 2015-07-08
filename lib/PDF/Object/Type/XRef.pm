@@ -5,7 +5,7 @@ use PDF::Object::Stream;
 
 # /Type /XRef - cross reference stream
 # introduced with PDF 1.5
-our class PDF::Object::DOM::XRef
+our class PDF::Object::Type::XRef
     is PDF::Object::Stream {
 
     use PDF::Storage::Util :resample;

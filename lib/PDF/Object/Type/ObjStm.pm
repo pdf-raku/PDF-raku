@@ -5,7 +5,7 @@ use PDF::Object::Stream;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
-class PDF::Object::DOM::ObjStm
+class PDF::Object::Type::ObjStm
     is PDF::Object::Stream {
 
     use PDF::Grammar::PDF;

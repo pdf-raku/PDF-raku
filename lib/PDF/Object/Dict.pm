@@ -1,14 +1,14 @@
 use v6;
 
 use PDF::Object :from-ast, :to-ast-native;
-use PDF::Object::DOM;
+use PDF::Object::Type;
 use PDF::Object::Tie::Hash;
 
 #| Dict - base class for dictionary objects, e.g. Catalog Page ...
 class PDF::Object::Dict
     is PDF::Object
     is Hash
-    does PDF::Object::DOM
+    does PDF::Object::Type
     does PDF::Object::Tie::Hash {
 
     our %obj-cache = (); #= to catch circular references

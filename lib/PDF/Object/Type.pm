@@ -1,4 +1,4 @@
-role PDF::Object::DOM {
+role PDF::Object::Type {
 
     use PDF::Object :from-ast;
     use PDF::Object::Tie::Hash;
@@ -43,7 +43,7 @@ role PDF::Object::DOM {
         my $handler-class = self.WHAT;
         my $resolved;
 
-        for @search-path, 'PDF::Object::DOM' -> $dom-class {
+        for @search-path, 'PDF::Object::Type' -> $dom-class {
 
             # autoload
             try {
@@ -56,7 +56,7 @@ role PDF::Object::DOM {
         }
 
         unless $resolved {
-            warn "No DOM handler class in path @search-path[] PDF::Object::DOM: {$pdf-class}"
+            warn "No DOM handler class in path @search-path[] PDF::Object::Type: {$pdf-class}"
                 if @search-path;
         }
 

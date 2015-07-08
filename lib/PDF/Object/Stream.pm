@@ -3,14 +3,14 @@ use v6;
 use PDF::Storage::Filter;
 use PDF::Object :to-ast-native;
 use PDF::Object :from-ast;
-use PDF::Object::DOM;
+use PDF::Object::Type;
 use PDF::Object::Tie::Hash;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 class PDF::Object::Stream
     is PDF::Object
     is Hash
-    does PDF::Object::DOM 
+    does PDF::Object::Type 
     does PDF::Object::Tie::Hash {
 
     has $!encoded;
