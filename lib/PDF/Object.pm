@@ -113,6 +113,8 @@ class PDF::Object {
         $dict;
     }
 
+    multi sub from-ast( Str :$encoded! ) { $encoded }
+
     multi sub from-ast( Str :$hex-string! ) { PDF::Object.compose( :$hex-string ) }
 
     multi sub from-ast( Array :$ind-ref! ) {

@@ -140,7 +140,7 @@ class PDF::Writer {
 
     #| ID <bytes> - ImageData
     multi method write-op('ID', $image-data) {
-        ('ID', $image-data<stream>).join: "\n";
+        ('ID', $image-data<encoded>).join: "\n";
     }
 
     multi method write-op(Str $op, *@args) is default {
