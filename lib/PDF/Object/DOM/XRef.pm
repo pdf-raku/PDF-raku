@@ -11,10 +11,10 @@ our class PDF::Object::DOM::XRef
     use PDF::Storage::Util :resample;
 
     # See [PDF 1.7 Table 3.15]
-    has Int $!Size; method Size { self.tie(:$!Size) };
-    has Array:_ $!Index; method Index { self.tie(:$!Index) };
-    has Int:_ $!Prev; method Prev { self.tie(:$!Prev) };
-    has Array $!W; method W { self.tie(:$!W) };
+    has Int $!Size; method Size { self.tie($!Size) };
+    has Array:_ $!Index; method Index { self.tie($!Index) };
+    has Int:_ $!Prev; method Prev { self.tie($!Prev) };
+    has Array $!W; method W { self.tie($!W) };
 
     method first-obj-num is rw { self<Index>[0] }
     method next-obj-num is rw { self<Size> }

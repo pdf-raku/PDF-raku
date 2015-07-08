@@ -3,9 +3,9 @@ role PDF::Object::DOM {
     use PDF::Object :from-ast;
     use PDF::Object::Tie::Hash;
 
-    has Str $!Type;      method Type { $.tie(:$!Type) };
-    has Str:_ $!Subtype; method Subtype { $.tie(:$!Subtype) };
-    has Str:_ $!S;       method S { $.tie(:$!S) };
+    has Str $!Type;      method Type { self.tie($!Type) };
+    has Str:_ $!Subtype; method Subtype { self.tie($!Subtype) };
+    has Str:_ $!S;       method S { self.tie($!S) };
 
     BEGIN our @search-path = ();
     our %handler;

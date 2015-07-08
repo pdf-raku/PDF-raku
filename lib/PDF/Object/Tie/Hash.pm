@@ -4,13 +4,20 @@ use PDF::Object::Tie;
 
 role PDF::Object::Tie::Hash does PDF::Object::Tie {
 
-    method tie(*%kv where {+%kv == 1}) {
-        my $key := %kv.keys[0]; my $att = %kv.values[0];
-        my $v := self{$key};
-        $att //= $v if $v.defined;
-        $att.defined
-            ?? do { self{$key} := $att }
-            !! $att;
+    method tie($att is rw) {
+        my $key = $att.VAR.name.subst(/^'$!'/, '');
+        if self{$key}:exists {
+            my $v := self{$key};
+            if $att !=== $v {
+                # bind
+                $att = $v;
+                self{$key} := $att;
+            }
+        }
+        else {
+            $att = Nil;
+        }
+        $att;
     }
 
     #| for hash lookups, typically $foo<bar>
@@ -28,10 +35,4 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
         nextwith( $key, $lval );
     }
     
-    method DELETE-KEY($key) {
-        # Nil any bound variables
-        self{$key} = Nil;
-        nextsame;
-    }
-
 }

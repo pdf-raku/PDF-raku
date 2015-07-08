@@ -8,7 +8,9 @@ role PDF::Object::Inheritance {
         self{$prop}
     }
     multi method find-prop($prop where { self<Parent>:exists }) {
-        self<Parent>.?find-prop($prop)
+        self<Parent>.can('find-prop')
+            ?? self<Parent>.find-prop($prop)
+            !! self<Parent>{$prop}
     }
     multi method find-prop($prop) is default {
     }

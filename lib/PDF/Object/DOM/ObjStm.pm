@@ -2,8 +2,6 @@ use v6;
 
 use PDF::Object;
 use PDF::Object::Stream;
-use PDF::Object::Name;
-use PDF::Object::Int;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
@@ -13,9 +11,9 @@ class PDF::Object::DOM::ObjStm
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
 
-    has Int $!First; method First { self.tie(:$!First) };
-    has Int $!N; method N { self.tie(:$!N) };
-    has PDF::Object::Stream:_ $!Extends; method Extends { self.tie(:$!Extends) };
+    has Int $!First; method First { self.tie($!First) };
+    has Int $!N; method N { self.tie($!N) };
+    has PDF::Object::Stream:_ $!Extends; method Extends { self.tie($!Extends) };
 
     method cb-setup-type( Hash $dict is rw ) {
         $dict<Type> = PDF::Object.compose( :name<ObjStm> );

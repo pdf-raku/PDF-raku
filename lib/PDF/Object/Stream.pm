@@ -16,9 +16,9 @@ class PDF::Object::Stream
     has $!encoded;
     has $!decoded;
 
-    has Str:_ $!Filter;       method Filter { $.tie(:$!Filter) }
-    has Hash:_ $!DecodeParms; method DecodeParms { $.tie(:$!DecodeParms) }
-    has Int:_ $!Length;       method Length { $.tie(:$!Length) }
+    has Str:_ $!Filter;       method Filter { self.tie($!Filter) }
+    has Hash:_ $!DecodeParms; method DecodeParms { self.tie($!DecodeParms) }
+    has Int:_ $!Length;       method Length { self.tie($!Length) }
 
     our %obj-cache = (); #= to catch circular references
 

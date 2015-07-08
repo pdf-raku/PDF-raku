@@ -80,21 +80,21 @@ use PDF::Reader;
 use PDF::DOM;
 my $reader = PDF::Reader.new();
 $reader.open( 't/helloworld.pdf' );
-my $catalog = $reader.root.object;
-my $page1 = $catalog<Pages><Kids>[0];
+my $pdf = $reader.root.object;
+my $page1 = $pdf<Pages><Kids>[0];
 
-# or, using the DOM::Pages.find-page method
-$page1 = $catalog<Pages>.find-page(1);
+# or, using the DOM::Pages.page method
+$page1 = $pdf.page(1);
 
 # objects can be directly fetched by object-number and generation-number:
 $page1 = $reader.ind-obj(4, 0).object;
 
 # the PDF can be edited using DOM functions
-my $end-page = $catalog<Pages>.add-page();
+my $end-page = $pdf.add-page();
 
 my $font = $end-page.core-font('Times-Bold');
 my $font-size = 24;
-$end-page.gfx.text('The End!', :$font, :$font-size, :top(300), :left(50), );
+$end-page.gfx.text('The End!', 300, 50, :$font, :$font-size );
 
 ```
 
