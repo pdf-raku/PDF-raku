@@ -126,8 +126,25 @@ class PDF::Writer {
     multi method write( :$content! where Pair | Hash) {
         my ($op, $args) = $content.kv;
         $args //= [];
+        $.write-op($op, |@$args);
+    }
 
-        ($args.map({ $.write( $_ ) }), $.write( :$op )).join(' ');
+    #| BI <dict> - BeginImage
+    multi method write-op('BI', *@args) {
+        my %entries = @args; # seems a bit strange, rakudobug?
+        my @lines = 'BI', %entries.pairs.sort.map( {
+            [~] $.write( :name( .key )), ' ', $.write( .value ),
+        });
+        @lines.join: "\n";
+    }
+
+    #| ID <bytes> - ImageData
+    multi method write-op('ID', Str $image-data) {
+        ('ID', $image-data).join: "\n";
+    }
+
+    multi method write-op(Str $op, *@args) is default {
+        (@args.map({ $.write( $_ ) }), $.write( :$op )).join(' ');
     }
 
     multi method write( Str :$content! ) {
