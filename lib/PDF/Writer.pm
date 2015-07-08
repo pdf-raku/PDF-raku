@@ -130,17 +130,17 @@ class PDF::Writer {
     }
 
     #| BI <dict> - BeginImage
-    multi method write-op('BI', *@args) {
-        my %entries = @args; # seems a bit strange, rakudobug?
-        my @lines = 'BI', %entries.pairs.sort.map( {
+    multi method write-op('BI', $arg = :dict{}) {
+        my $entries = $arg<dict>;
+        my @lines = 'BI', $entries.pairs.sort.map( {
             [~] $.write( :name( .key )), ' ', $.write( .value ),
         });
         @lines.join: "\n";
     }
 
     #| ID <bytes> - ImageData
-    multi method write-op('ID', Str $image-data) {
-        ('ID', $image-data).join: "\n";
+    multi method write-op('ID', $image-data) {
+        ('ID', $image-data<stream>).join: "\n";
     }
 
     multi method write-op(Str $op, *@args) is default {
