@@ -1,4 +1,4 @@
-B{
+{
     "name"        : "PDF",
     "version"     : "0.1",
     "description" : "Base Tools for PDF construction, reading and serialization etc.",
