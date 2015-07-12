@@ -258,6 +258,14 @@ class PDF::Writer {
         sprintf '%%%s-%.1f', $type, $header<version> // 1.2;
     }
 
+    multi method write( Num :$real! ) {
+	my $int = $real.Int;
+
+	$int == $real.round(1e-5)
+	    ?? ~$int
+	    !! sprintf("%.5f", $real);
+    }
+
     multi method write( Numeric :$real! ) {
         ~$real
     }

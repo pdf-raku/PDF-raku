@@ -7,6 +7,8 @@ use PDF::Writer;
 use lib '.';
 use t::Object :to-obj;
 
+is PDF::Writer.new.write(:array[ :real(0.31415926e0), :real(1.3e-17), :real(0.00000000), :real(0e0), :real(1) ]), '[ 0.31416 0 0 0 1 ]';
+
 for 't/write-ast.json'.IO.lines {
 
     next if .substr(0,2) eq '//';
