@@ -259,10 +259,12 @@ class PDF::Writer {
     }
 
     multi method write( Num :$real! ) {
-	my $int = $real.Int;
+	constant Epsilon = 1e-5;
 
-	$int == $real.round(1e-5)
-	    ?? ~$int
+	my $int = $real.round(1).Int;
+
+	abs($real - $int) < Epsilon
+	    ?? ~$int   # assume int, give or take
 	    !! sprintf("%.5f", $real);
     }
 
