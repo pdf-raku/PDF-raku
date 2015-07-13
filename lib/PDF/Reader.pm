@@ -30,7 +30,7 @@ class PDF::Reader {
     method !get-trailer-dict($dict) {
         $!trailer-dict //= {};
         
-        for <Encrypt Info ID> {
+        for <Root Encrypt Info ID> {
             $!trailer-dict{$_} //= to-ast $dict{$_}
             if $dict{$_}:exists
         }
