@@ -5,7 +5,7 @@ use PDF::Object::Tie;
 role PDF::Object::Tie::Hash does PDF::Object::Tie {
 
     method tie($att is rw) {
-        my $key = $att.VAR.name.subst(/^'$!'/, '');
+        my Str $key = $att.VAR.name.subst(/^'$!'/, '');
         if self{$key}:exists {
             my $v := self{$key};
             if $att !=== $v {

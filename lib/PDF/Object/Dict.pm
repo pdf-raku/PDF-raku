@@ -14,7 +14,7 @@ class PDF::Object::Dict
     our %obj-cache = (); #= to catch circular references
 
     method new(Hash :$dict = {}, *%etc) {
-        my $id = ~$dict.WHICH;
+        my Str $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
             temp %obj-cache{$id} = $obj = self.bless(|%etc);

@@ -13,15 +13,15 @@ class PDF::Storage::Filter::LZW
         my $dict-size = 256;
         my %dictionary = (.chr => .chr for ^$dict-size);
 
-        my $buf = $input.encode('latin-1');
+        my Blob $buf = $input.encode('latin-1');
         $buf = $.prediction( $buf, |%params )
             if %params<Predictor>:exists;
 
-        my $w = "";
-        my $str = join( '', gather {
+        my Str $w = "";
+        my Str $str = join( '', gather {
             for $buf.list {
-                my $c = .chr;
-                my $wc = $w ~ $c;
+                my Str $c = .chr;
+                my Str $wc = $w ~ $c;
                 if %dictionary{$wc}:exists { $w = $wc }
                 else {
                     take %dictionary{$w};
@@ -42,8 +42,8 @@ class PDF::Storage::Filter::LZW
         my %dictionary = (.chr => .chr for ^$dict-size);
         my @compressed = $input.comb;
 
-        my $w = shift @compressed;
-        my $str = join '', gather {
+        my Str $w = shift @compressed;
+        my Str $str = join '', gather {
             take $w;
             for @compressed -> $k {
                 my $entry;
@@ -57,7 +57,7 @@ class PDF::Storage::Filter::LZW
         };
 
         if %params<Predictor>:exists {
-            my $buf = $str.encode('latin-1');
+            my Blob $buf = $str.encode('latin-1');
             $buf = $.post-prediction( $buf, |%params );
             $str = $buf.decode('latin-1');
         }

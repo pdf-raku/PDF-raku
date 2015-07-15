@@ -24,7 +24,7 @@ class PDF::Storage::Input::IOH
     }
 
     multi method substr( WhateverCode $from-whatever!, $length? ) {
-        my $from = $from-whatever( $.chars );
+        my Int $from = $from-whatever( $.chars );
         $.substr( $from, $length );
     }
 

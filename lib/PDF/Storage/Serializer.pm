@@ -98,8 +98,8 @@ class PDF::Storage::Serializer {
     #| construct a reverse index that unique maps unique $objects, identfied by .WHICH,
     #| to an object-number and generation-number. 
     method !index-object( Pair $ind-obj! is rw, Str :$id!, :$object) {
-        my $obj-num;
-        my $gen-num;
+        my Int $obj-num;
+        my Int $gen-num;
 
         if ! $.renumber && $object.isa(PDF::Object) && $object.obj-num {
             # keep original object number
@@ -165,7 +165,7 @@ class PDF::Storage::Serializer {
         return self!"get-ind-ref"(:$id )
             if %!obj-num-idx{$id}:exists;
 
-        my $is-stream = $object.isa(PDF::Object::Stream);
+        my Bool $is-stream = $object.isa(PDF::Object::Stream);
 
         if $is-stream && $*compress.defined {
             $*compress ?? $object.compress !! $object.uncompress;

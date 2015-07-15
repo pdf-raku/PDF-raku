@@ -26,8 +26,8 @@ role PDF::Object::Tie {
 
     #| indirect reference
     multi method deref(Pair $ind-ref! where {.key eq 'ind-ref' && $.reader && $.reader.auto-deref}) {
-        my $obj-num = $ind-ref.value[0];
-        my $gen-num = $ind-ref.value[1];
+        my Int $obj-num = $ind-ref.value[0];
+        my Int $gen-num = $ind-ref.value[1];
 
         $.reader.ind-obj( $obj-num, $gen-num ).object;
     }

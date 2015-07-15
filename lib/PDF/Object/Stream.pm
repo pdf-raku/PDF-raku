@@ -23,7 +23,7 @@ class PDF::Object::Stream
     our %obj-cache = (); #= to catch circular references
 
     method new(Hash :$dict = {}, *%etc, *@args) {
-        my $id = ~$dict.WHICH;
+        my Str $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
@@ -37,7 +37,7 @@ class PDF::Object::Stream
     }
 
     multi submethod BUILD( :$start!, :$end!, :$input!) {
-        my $length = $end - $start + 1;
+        my Int $length = $end - $start + 1;
         $!encoded = $input.substr($start, $length );
     }
 

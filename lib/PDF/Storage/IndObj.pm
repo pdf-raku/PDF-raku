@@ -23,7 +23,7 @@ class PDF::Storage::IndObj {
 
         if $type.defined {
             # cross check the actual vs expected type of the object
-            my $actual-type = (%params<stream> //%params)<dict><Type>.value // '??';
+            my Str $actual-type = (%params<stream> //%params)<dict><Type>.value // '??';
             die "expected object of Type $type, but /Type is missing"
                 unless $actual-type.defined;
             die "expected object of Type $type, got $actual-type"
@@ -34,12 +34,12 @@ class PDF::Storage::IndObj {
     }
 
     #| recreate a PDF::Grammar::PDF / PDF::Writer compatibile ast from the object
-    method ast {
+    method ast returns Pair {
         :ind-obj[ $.obj-num, $.gen-num, %$.content ]
     }
 
     #| create ast for an indirect reference to this object
-    method ind-ref {
+    method ind-ref returns Pair {
         :ind-ref[ $.obj-num, $.gen-num ]
     }
 

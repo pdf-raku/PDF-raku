@@ -10,16 +10,16 @@ class PDF::Reader {
     use PDF::Writer;
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)
-    has $.file-name;
+    has Str $.file-name;
     has Hash %!ind-obj-idx;
-    has $.root is rw;
+    has PDF::Storage::IndObj $.root is rw;
     has $.ast is rw;
     has Bool $.auto-deref is rw = True;
     has Rat $.version is rw;
     has Str $.type is rw;
-    has $.prev;
-    has $.size is rw;   #= /Size entry in trailer dict ~ first free object number
-    has $.trailer-dict;
+    has Int $.prev;
+    has Int $.size is rw;   #= /Size entry in trailer dict ~ first free object number
+    has Hash $.trailer-dict;
     has Bool $.defunct is rw = False;
 
     method actions {
@@ -200,9 +200,9 @@ class PDF::Reader {
             $get-ast ?? $ind-obj !! PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) )
         };
 
-        my $is-ind-obj = $ind-obj.isa(PDF::Storage::IndObj);
-        my $to-ast = $get-ast && $is-ind-obj;
-        my $to-obj = !$get-ast && !$is-ind-obj;
+        my Bool $is-ind-obj = $ind-obj.isa(PDF::Storage::IndObj);
+        my Bool $to-ast = $get-ast && $is-ind-obj;
+        my Bool $to-obj = !$get-ast && !$is-ind-obj;
 
         if $to-ast {
             # regenerate ast from object, if required
@@ -239,8 +239,8 @@ class PDF::Reader {
 
     method !ind-deref(Pair $_! ) {
         return .value unless .key eq 'ind-ref';
-        my $obj-num = .value[0].Int;
-        my $gen-num = .value[1].Int;
+        my Int $obj-num = .value[0];
+        my Int $gen-num = .value[1];
         $.ind-obj( $obj-num, $gen-num ).object;
     }
 
@@ -249,7 +249,7 @@ class PDF::Reader {
         # file should start with: %PDF-n.m, (where n, m are single
         # digits giving the major and minor version numbers).
             
-        my $preamble = $.input.substr(0, 8);
+        my Str $preamble = $.input.substr(0, 8);
 
         PDF::Grammar::Doc.subparse($preamble, :$.actions, :rule<header>)
             or die "expected file header '%XXX-n.m', got: {synopsis($preamble)}";
@@ -281,16 +281,16 @@ class PDF::Reader {
     #| via the $.ind-obj() method.
     multi method load('PDF') is default {
 
-        my $tail-bytes = min(1024, $.input.chars);
-        my $tail = $.input.substr(* - $tail-bytes);
+        my Int $tail-bytes = min(1024, $.input.chars);
+        my Str $tail = $.input.substr(* - $tail-bytes);
 
         my %offsets-seen;
 
         PDF::Grammar::PDF.parse($tail, :$.actions, :rule<postamble>)
             or die "expected file trailer 'startxref ... \%\%EOF', got: {synopsis($tail)}";
         $!prev = $/.ast<startxref>;
-        my $xref-offset = $!prev;
-        my $input-bytes = $.input.chars;
+        my Int:_ $xref-offset = $!prev;
+        my Int $input-bytes = $.input.chars;
 
         my $root-ref;
         my @obj-idx;
@@ -313,7 +313,7 @@ class PDF::Reader {
                 $xref = $.input.substr( $xref-offset, $lumbar-bytes) ~ $tail;                
             }
             else {
-                my $xref-len = min(SIZE, $input-bytes - $xref-offset);
+                my Int $xref-len = min(SIZE, $input-bytes - $xref-offset);
                 $xref = $.input.substr( $xref-offset, $xref-len );
                 &fallback = sub {
                     if $input-bytes - $xref-offset > SIZE {
@@ -331,7 +331,7 @@ class PDF::Reader {
                 my $parse = ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
                               || &fallback() )
                     or die "unable to parse index: $xref";
-                my $index = $parse.ast;
+                my Hash $index = $parse.ast;
                 $dict = PDF::Object.compose( |%($index<trailer>) );
 
                 my $prev-offset;
@@ -340,9 +340,9 @@ class PDF::Reader {
                     for $index<xref>.list {
                         my $obj-num = .<object-first-num>;
                         for @( .<entries> ) {
-                            my $type = .<type>;
-                            my $gen-num = .<gen-num>;
-                            my $offset = .<offset>;
+                            my Int $type = .<type>;
+                            my Int $gen-num = .<gen-num>;
+                            my Int $offset = .<offset>;
 
                             given $type {
                                 when 0  {} # ignore free objects
@@ -370,7 +370,7 @@ class PDF::Reader {
 
             $xref-offset = $dict<Prev>:exists
                 ?? $dict<Prev>
-                !! Mu;
+                !! Nil;
 
             $root-ref //= $dict<Root>
                 if $dict<Root>:exists;
@@ -387,10 +387,10 @@ class PDF::Reader {
             if %obj-entries-of-type<1>:exists;
 
         for @type1-obj-entries.kv -> $k, $v {
-            my $obj-num = $v<obj-num>;
-            my $gen-num = $v<gen-num>;
-            my $offset = $v<offset>;
-            my $end = $k + 1 < +@type1-obj-entries ?? @type1-obj-entries[$k + 1]<offset> !! $input-bytes;
+            my Int $obj-num = $v<obj-num>;
+            my Int $gen-num = $v<gen-num>;
+            my Int $offset = $v<offset>;
+            my Int $end = $k + 1 < +@type1-obj-entries ?? @type1-obj-entries[$k + 1]<offset> !! $input-bytes;
             %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(1), :$offset, :$end };
         }
 
@@ -398,16 +398,16 @@ class PDF::Reader {
         if %obj-entries-of-type<2>:exists;
 
         for @type2-obj-entries {
-            my $obj-num = .<obj-num>;
-            my $gen-num = 0;
-            my $index = .<index>;
-            my $ref-obj-num = .<ref-obj-num>;
+            my Int $obj-num = .<obj-num>;
+            my Int $gen-num = 0;
+            my Int $index = .<index>;
+            my Int $ref-obj-num = .<ref-obj-num>;
 
             %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(2), :$index, :$ref-obj-num };
         }
 
         #| don't entirely trust /Size entry in trailer dictionary
-        my $max-obj-num = max( %!ind-obj-idx.keys>>.Int );
+        my Int $max-obj-num = max( %!ind-obj-idx.keys>>.Int );
         $.size = $max-obj-num + 1
             if $.size <= $max-obj-num;
 
@@ -422,7 +422,7 @@ class PDF::Reader {
         $grammar.parse($.input, :$actions)
             or die "unable to parse document";
         my $ast = $/.ast;
-        my $body = $ast<body>;
+        my Array $body = $ast<body>;
         my $root-ref;
 
         for $body.list.reverse {
@@ -440,9 +440,9 @@ class PDF::Reader {
                     $dict = $value<dict>;
                     $stream-type = $dict<Type> && $dict<Type>.value;
 
-                    my $start = $value<start>;
-                    my $end = $value<end>;
-                    my $max-end = $end + 1;
+                    my Int $start = $value<start>;
+                    my Int $end = $value<end>;
+                    my Int $max-end = $end + 1;
 
                     # reset/repair stream length
                     $dict<Length> = :int($end - $start + 1)
@@ -472,8 +472,8 @@ class PDF::Reader {
                 if $stream-type && $stream-type eq 'ObjStm' {
                     # Object Stream. Index contents as type 2 objects
                     my $container-obj = $.ind-obj( $obj-num, $gen-num ).object;
-                    my $type2-objects = $container-obj.decoded;
-                    my $index = 0;
+                    my Array $type2-objects = $container-obj.decoded;
+                    my Int $index = 0;
 
                     for $type2-objects.list {
                         my $ref-obj-num = $obj-num;
@@ -527,16 +527,16 @@ class PDF::Reader {
         }
 
         for %!ind-obj-idx.pairs {
-            my $obj-num = .key.Int;
+            my Int $obj-num = .key.Int;
 
             # discard objstm objects (/Type /ObjStm)
             next
                 if $unpack && %objstm-objects{$obj-num};
 
             for .value.pairs {
-                my $gen-num = .key.Int;
-                my $entry = .value;
-                my $seq = 0;
+                my Int $gen-num = .key.Int;
+                my Hash $entry = .value;
+                my Int $seq = 0;
                 my $offset;
 
                 given $entry<type> {
@@ -607,10 +607,10 @@ class PDF::Reader {
 
     #| get just updated objects. return as objects
     method get-updates() {
-        my $raw-objects = $.get-objects( :incremental );
+        my List $raw-objects = $.get-objects( :incremental );
         $raw-objects.list.map({
-            my $obj-num = .value[0];
-            my $gen-num = .value[1];
+            my Int $obj-num = .value[0];
+            my Int $gen-num = .value[1];
             $.ind-obj($obj-num, $gen-num).object;
         });
     }
@@ -625,8 +625,8 @@ class PDF::Reader {
             if $obj-type eq 'stream' {
                 my $is-compressed = $obj-raw<dict><Filter>:exists;
                 next if $compress == $is-compressed;
-                my $obj-num = $ind-obj[0];
-                my $gen-num = $ind-obj[1];
+                my Int $obj-num = $ind-obj[0];
+                my Int $gen-num = $ind-obj[1];
                 # fully stantiate object and adjust compression
                 my $object = self.ind-obj( $obj-num, $gen-num).object;
                 $compress ?? $object.compress !! $object.uncompress;
@@ -647,7 +647,7 @@ class PDF::Reader {
     #| return an AST for the fully serialized PDF/FDF etc.
     #| suitable as input to PDF::Writer
     multi method ast( ) {
-        my $objects = self.get-objects( );
+        my List $objects = self.get-objects( );
         my %dict = self.trailer-dict.list
             if self.trailer-dict.defined;
 

@@ -19,7 +19,7 @@ class PDF::Storage::Filter::ASCIIHex {
 
     method decode(Str $input, Bool :$eod --> Str) {
 
-        my $str = $input.subst(/\s/, '', :g);
+        my Str $str = $input.subst(/\s/, '', :g);
 
         if $str && $str.substr(*-1,1) eq '>' {
             $str = $str.chop;

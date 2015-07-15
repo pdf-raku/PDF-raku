@@ -38,8 +38,8 @@ our class PDF::Object::Type::XRef
 
         # /W resize to widest byte-widths, if needed
         for 0..2 -> $i {
-            my $val = $xref.map({ .[$i] }).max;
-            my $max-bytes;
+            my Int $val = $xref.map({ .[$i] }).max;
+            my Int $max-bytes;
 
             repeat {
                 $max-bytes++;
@@ -50,7 +50,7 @@ our class PDF::Object::Type::XRef
                 if !$.W[$i] || $.W[$i] < $max-bytes;
         }
 
-        my $str = resample( $xref, $.W, 8 ).chrs;
+        my Str $str = resample( $xref, $.W, 8 ).chrs;
         nextwith( $str );
     }
 
@@ -61,14 +61,14 @@ our class PDF::Object::Type::XRef
         my @xref;
         my $size = 0;
         my @index;
-        my $encoded = [];
+        my Array $encoded = [];
 
         for @entries -> $entry {
-            my $contigous = $entry<obj-num> && $entry<obj-num> == $size;
+            my Bool $contigous = ?( $entry<obj-num> && $entry<obj-num> == $size );
             @index.push( $entry<obj-num>,  0 )
                 unless $contigous;
             @index[*-1]++;
-            my $item = do given $entry<type> {
+            my Array $item = do given $entry<type> {
                 when 0|1 { [ $entry<type>, $entry<offset>, $entry<gen-num> ] }
                 when 2   { [ $entry<type>, $entry<ref-obj-num>, $entry<index> ] }
                 default  { die "unknown object type in XRef index: $_"}
@@ -88,7 +88,7 @@ our class PDF::Object::Type::XRef
         my $W = $.W
             // die "missing mandatory /XRef param: /W";
 
-        my $xref-array = resample( $chars.encode('latin-1'), 8, $W );
+        my Array $xref-array = resample( $chars.encode('latin-1'), 8, $W );
         my $Size = $.Size
             // die "missing mandatory /XRef param: /Size";
 
@@ -105,28 +105,28 @@ our class PDF::Object::Type::XRef
     #= an extra decoding stage - build index entries from raw decoded data
     multi method decode-to-stage2($encoded = $.encoded) {
 
-        my $i = 0;
-        my $index = $.Index // [ 0, $.Size ];
-        my $decoded-stage2 = [];
+        my Int $i = 0;
+        my Array $index = $.Index // [ 0, $.Size ];
+        my Array $decoded-stage2 = [];
 
-        my $decoded = $.decode( $encoded );
+        my Array $decoded = $.decode( $encoded );
 
         for $index.list -> $obj-num is rw, $num-entries {
 
             for 1 .. $num-entries {
-                my $idx = $decoded[$i++];
-                my $type = $idx[0];
+                my Array $idx = $decoded[$i++];
+                my Int $type = $idx[0];
                 given $type {
                     when 0|1 {
                         # free or inuse objects
-                        my $offset = $idx[1];
-                        my $gen-num = $idx[2];
+                        my Int $offset = $idx[1];
+                        my Int $gen-num = $idx[2];
                         $decoded-stage2.push: { :$type, :$obj-num, :$gen-num, :$offset };
                     }
                     when 2 {
                         # embedded objects
-                        my $ref-obj-num = $idx[1];
-                        my $index = $idx[2];
+                        my Int $ref-obj-num = $idx[1];
+                        my Int $index = $idx[2];
                         $decoded-stage2.push: { :$type, :$obj-num, :$ref-obj-num, :$index };
                     }
                     default {

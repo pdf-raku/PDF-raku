@@ -8,6 +8,9 @@ class PDF::Storage::Filter {
     use PDF::Storage::Filter::LZW;
     use PDF::Storage::Filter::RunLength;
 
+    proto method decode(|c) returns Str {*}
+    proto method encode(|c) returns Str {*}
+
     multi method decode( $input, Hash :$dict! where !.<Filter>.defined) {
         # nothing to do
         $input;

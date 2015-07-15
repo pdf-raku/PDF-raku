@@ -17,7 +17,7 @@ class PDF::Storage::Filter::Flate
             die 'illegal wide byte: U+' ~ $0.ord.base(16)
         }
 
-        my $buf = $input.encode('latin-1');
+        my Blob $buf = $input.encode('latin-1');
 
         $buf = $.prediction( $buf, |%params )
             if %params<Predictor>:exists;
@@ -27,7 +27,7 @@ class PDF::Storage::Filter::Flate
 
     method decode(Str $input, Hash *%params --> Str) {
 
-        my $buf = uncompress( $input.encode('latin-1') );
+        my Blob $buf = uncompress( $input.encode('latin-1') );
 
         $buf = $.post-prediction( $buf, |%params )
             if %params<Predictor>:exists;

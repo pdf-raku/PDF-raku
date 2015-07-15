@@ -7,12 +7,12 @@ class PDF::Writer {
 
     has PDF::Storage::Input $.input;
     has $.ast is rw;
-    has $.root;
-    has $.offset = 0;
-    has $!prev;
+    has Pair:_ $.root;
+    has Int:_ $.offset;
+    has Int:_ $!prev;
     has %!init;
 
-    submethod BUILD(:$input, :$!ast, :$root, :$!offset, :$!prev ) {
+    submethod BUILD(:$input, :$!ast, :$root, :$!offset = Nil, :$!prev = Nil) {
 
         $!root = $root.can('ind-ref')
             ?? $root.ind-ref
@@ -35,7 +35,7 @@ class PDF::Writer {
     }
 
     multi method write( Array :$body!, :$type='PDF' ) {
-        temp $!prev = Any;
+        temp $!prev = Nil;
         $body.map({ $.write( :body($_), :$type )}).join: "\n";
     }
 
@@ -46,8 +46,8 @@ class PDF::Writer {
         for $body<objects>.list -> $obj {
 
             if my $ind-obj = $obj<ind-obj> {
-                my $obj-num = $ind-obj[0].Int;
-                my $gen-num = $ind-obj[1].Int;
+                my Int $obj-num = $ind-obj[0];
+                my Int $gen-num = $ind-obj[1];
 
                 @entries.push: %( :type(1), :$.offset, :$gen-num, :$obj-num ).item;
                 @out.push: $.write( :$ind-obj );
@@ -63,7 +63,7 @@ class PDF::Writer {
             $!offset += @out[*-1].chars + 1;
         }
 
-        my $trailer = $body<trailer>
+        my Hash $trailer = $body<trailer>
             // {};
 
         if $type && $type eq 'FDF' {
@@ -77,7 +77,7 @@ class PDF::Writer {
             @entries = @entries.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
             my @xref;
-            my $size = 1;
+            my Int $size = 1;
 
             for @entries {
                 # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
@@ -90,8 +90,8 @@ class PDF::Writer {
                 $size = .<obj-num> + 1;
             }
 
-            my $xref-str = $.write( :@xref );
-            my $startxref = $.offset;
+            my Str $xref-str = $.write( :@xref );
+            my Int $startxref = $.offset;
 
             @out.push: [~] (
                 $xref-str,
@@ -131,7 +131,7 @@ class PDF::Writer {
 
     #| BI <dict> - BeginImage
     multi method write-op('BI', $arg = :dict{}) {
-        my $entries = $arg<dict>;
+        my Hash $entries = $arg<dict>;
         my @lines = 'BI', $entries.pairs.sort.map( {
             [~] $.write( :name( .key )), ' ', $.write( .value ),
         });
@@ -199,7 +199,7 @@ class PDF::Writer {
     }
 
     multi method write(Array :$ind-obj! ) {
-        my ($obj-num, $gen-num, $object) = @$ind-obj;
+        my (Int $obj-num, Int $gen-num, $object where Pair | Hash) = @$ind-obj;
 
         (sprintf('%d %d obj', $obj-num, $gen-num),
          $.write( $object ),
@@ -242,19 +242,19 @@ class PDF::Writer {
     multi method write( Any :$null! ) { 'null' }
 
     multi method write( Hash :$pdf! ) {
-        my $header = $.write( $pdf, :node<header> );
-        my $comment = $pdf<comment>:exists
+        my Str $header = $.write( $pdf, :node<header> );
+        my Str $comment = $pdf<comment>:exists
             ?? $.write( $pdf, :node<comment> )
             !! $.write( :comment<%¥±ë> );
         $!offset = $header.chars + $comment.chars + 2;  # since format is byte orientated
         # Form Definition Format is normally written without an xref
-        my $type = $pdf<header><type>;
+        my Str $type = $pdf<header><type> // 'PDF';
         my $body = $.write( :body($pdf<body>), :$type );
         [~] ($header, "\n", $comment, "\n", $body);
     }
 
     multi method write(Any :$header! ) {
-        my $type = $header<type> // 'PDF';
+        my Str $type = $header<type> // 'PDF';
         sprintf '%%%s-%.1f', $type, $header<version> // 1.2;
     }
 
@@ -319,7 +319,7 @@ class PDF::Writer {
         (
          $xref<object-first-num> ~ ' ' ~ $xref<object-count>,
          $xref<entries>.map({
-             my $status = do given .<type> {
+             my Str $status = do given .<type> {
                  when (0) {'f'} # free
                  when (1) {'n'} # inuse
                  when (2) { die "unable to write type-2 (embedded) objects in a PDF 1.4 cross reference table"}

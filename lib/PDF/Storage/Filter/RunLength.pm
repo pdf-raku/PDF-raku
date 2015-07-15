@@ -11,8 +11,8 @@ class PDF::Storage::Filter::RunLength {
 
         for $input.comb(/(.)$0**0..127/) -> $/ {
 
-            my $ord = $0.ord;
-            my $len = $/.chars;
+            my Int $ord = $0.ord;
+            my Int $len = $/.chars;
 
             die 'illegal wide byte: U+' ~ $ord.base(16)
                 if $ord > 0xFF;
@@ -41,7 +41,7 @@ class PDF::Storage::Filter::RunLength {
 
     method decode(Str $input, Bool :$eod --> Str) {
 
-        my $idx = 0;
+        my Int $idx = 0;
         my @in = $input.comb;
         my @out;
 

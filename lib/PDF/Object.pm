@@ -25,7 +25,7 @@ class PDF::Object {
     multi method compose( Str :$hex-string!) {
         require ::("PDF::Object::ByteString");
 
-        my $str = $hex-string but ::("PDF::Object::ByteString");
+        my Str $str = $hex-string but ::("PDF::Object::ByteString");
         $str.type = 'hex-string';
         $str;
     }
@@ -33,7 +33,7 @@ class PDF::Object {
     multi method compose( Str :$literal!) {
         require ::("PDF::Object::ByteString");
 
-        my $str = $literal but ::("PDF::Object::ByteString");
+        my Str $str = $literal but ::("PDF::Object::ByteString");
         $str.type = 'literal';
         $str;
     }
@@ -59,7 +59,7 @@ class PDF::Object {
             %params{$_} = $stream{$_}
             if $stream{$_}:exists;
         }
-        my $dict = $stream<dict> // {};
+        my Hash $dict = $stream<dict> // {};
         require ::("PDF::Object::Stream");
         my $stream-class = ::("PDF::Object::Stream").delegate( :$dict );
         $stream-class.new( :$dict, |%params );
@@ -159,8 +159,5 @@ class PDF::Object {
 
     #| unique identifier for this object instance
     method id { ~ self.WHICH }
-
-    #| my be overrided by DOM handled to do final processing and checks, e.g. PDF::DOM::Page
-    method finish {}
 
 }

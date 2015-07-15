@@ -12,7 +12,7 @@ class PDF::Object::Array
     our %obj-cache = (); #= to catch circular references
 
     method new(Array :$array = [], *%etc) {
-        my $id = ~$array.WHICH;
+        my Str $id = ~$array.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
@@ -26,7 +26,7 @@ class PDF::Object::Array
     our %content-cache = ();
 
     method content {
-        my $id = self.id;
+        my Str $id = self.id;
         my $array = %content-cache{$id};
         unless $array {
             temp %content-cache{$id} = $array = [];

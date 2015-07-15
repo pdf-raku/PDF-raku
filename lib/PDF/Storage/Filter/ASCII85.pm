@@ -9,8 +9,8 @@ class PDF::Storage::Filter::ASCII85 {
 
     method encode(Str $input, Bool :$eod --> Str) {
 
-        my $chars = $input.chars;
-        my $padding = 0.chr  x  (-$chars % 4);
+        my Int $chars = $input.chars;
+        my Str $padding = 0.chr  x  (-$chars % 4);
         my $buf = ($input ~ $padding).encode('latin-1');
         my @buf32 = resample( $buf, 8, 32);
 
@@ -40,7 +40,7 @@ class PDF::Storage::Filter::ASCII85 {
 
     method decode(Str $input, Bool :$eod --> Str) {
 
-        my $str = $input.subst(/\s/, '', :g).subst(/z/, '!!!!', :g);
+        my Str $str = $input.subst(/\s/, '', :g).subst(/z/, '!!!!', :g);
 
         if $str.chars && $str.substr(*-2) eq '~>' {
             $str = $str.substr(0, *-2);

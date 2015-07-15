@@ -17,7 +17,7 @@ role PDF::Object::Type {
     }
 
     multi method install-delegate( :$type!, :$subtype, :$handler-class! ) {
-        my $pdf-class = $subtype
+        my Str $pdf-class = $subtype
             ?? [~] $type, '::', $subtype
             !! $type;
         self.install-delegate( :$pdf-class, :$handler-class );
@@ -28,7 +28,7 @@ role PDF::Object::Type {
     }
 
     multi method find-delegate( :$type!, :$subtype!) {
-        my $pdf-class = $subtype
+        my Str $pdf-class = $subtype
             ?? [~] $type, '::', $subtype
             !! $type;
         self.find-delegate( :$pdf-class );
