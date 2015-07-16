@@ -23,12 +23,14 @@ class PDF::Writer {
             if $input.defined;
     }
 
-    method Str {
+    method Str returns Str {
         nextsame unless $.ast.defined;
         temp $!offset;
         temp $!prev;
         $.write( $.ast );
     }
+
+    proto method write(|c) returns Str {*}
 
     multi method write( Array :$array! ) {
         ('[', $array.map({ $.write($_) }), ']').join: ' ';
