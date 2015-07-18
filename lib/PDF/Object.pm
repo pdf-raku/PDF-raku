@@ -50,7 +50,7 @@ class PDF::Object {
 
     multi method compose( Hash :$dict!, *%etc) {
         require ::("PDF::Object::Dict");
-        return ::("PDF::Object::Dict").delegate( :$dict ).new( :$dict, |%etc );
+        return ::("PDF::Object::Dict").classify( :$dict ).new( :$dict, |%etc );
     }
 
     multi method compose( Hash :$stream!, *%etc) {
@@ -61,7 +61,7 @@ class PDF::Object {
         }
         my Hash $dict = $stream<dict> // {};
         require ::("PDF::Object::Stream");
-        my $stream-class = ::("PDF::Object::Stream").delegate( :$dict );
+        my $stream-class = ::("PDF::Object::Stream").classify( :$dict );
         $stream-class.new( :$dict, |%params );
     }
 
@@ -155,6 +155,61 @@ class PDF::Object {
             if @args;
         
         die "unable to from-ast {%opt.keys} struct: {%opt.perl}"
+    }
+
+    BEGIN our @class-path = ();
+    our %handler;
+
+    method add-class-path(Str $dom-class!) {
+        @class-path.unshift( $dom-class )
+            unless @class-path && @class-path[0] eq $dom-class;
+        @class-path;
+    }
+
+    multi method install-delegate( :$type!, :$subtype, :$handler-class! ) {
+        my Str $subclass = $subtype
+            ?? [~] $type, '::', $subtype
+            !! $type;
+        self.install-delegate( :$subclass, :$handler-class );
+    }
+
+    multi method install-delegate( :$subclass!, :$handler-class ) {
+        %handler{$subclass} = $handler-class;
+    }
+
+    multi method find-delegate( :$type!, :$subtype!) {
+        my Str $subclass = $subtype
+            ?? [~] $type, '::', $subtype
+            !! $type;
+        self.find-delegate( :$subclass );
+    }
+
+    multi method find-delegate( :$subclass! where { %handler{$_}:exists } ) {
+        %handler{$subclass}
+    }
+
+    multi method find-delegate( :$subclass! ) is default {
+
+        my $handler-class = self.WHAT;
+        my $resolved;
+
+        for @class-path, 'PDF::Object::Type' -> $dom-class {
+
+            try {
+		require ::($dom-class)::($subclass);
+		$handler-class = ::($dom-class)::($subclass);
+		$resolved = True;
+		last;
+	    }
+		
+        }
+
+        unless $resolved {
+            warn "unable to load DOM subclass {$subclass} in paths: @class-path[] PDF::Object::Type"
+                if @class-path;
+        }
+
+        self.install-delegate( :$subclass, :$handler-class );
     }
 
     #| unique identifier for this object instance

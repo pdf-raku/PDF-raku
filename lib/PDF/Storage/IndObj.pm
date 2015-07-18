@@ -21,15 +21,6 @@ class PDF::Storage::IndObj {
         %params<input> = $input
             if $input.defined;
 
-        if $type.defined {
-            # cross check the actual vs expected type of the object
-            my Str $actual-type = (%params<stream> //%params)<dict><Type>.value // '??';
-            die "expected object of Type $type, but /Type is missing"
-                unless $actual-type.defined;
-            die "expected object of Type $type, got $actual-type"
-                unless $actual-type eq $type
-        }
-
         $!object = PDF::Object.compose( :$reader, :$!obj-num, :$!gen-num, |%params);
     }
 
