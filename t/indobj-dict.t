@@ -4,7 +4,7 @@ use Test;
 plan 14;
 
 use PDF::Storage::IndObj;
-use PDF::Object :to-ast;
+use PDF::Object::Util :to-ast;
 use PDF::Object::Dict;
 use PDF::Grammar::Test :is-json-equiv;
 use lib '.';

@@ -1,6 +1,5 @@
 role PDF::Object::Type {
 
-    use PDF::Object :from-ast;
     use PDF::Object::Tie::Hash;
 
     has Str $!Type;      method Type { self.tie($!Type) };

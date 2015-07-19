@@ -6,7 +6,8 @@ class PDF::Reader {
     use PDF::Grammar::PDF::Actions;
     use PDF::Storage::IndObj;
     use PDF::Storage::Serializer;
-    use PDF::Object :to-ast;
+    use PDF::Object;
+    use PDF::Object::Util :to-ast;
     use PDF::Writer;
 
     has $.input is rw;  # raw PDF image (latin-1 encoding)

@@ -1,11 +1,12 @@
 use v6;
 
-use PDF::Object :to-ast;
-use PDF::Object::Array;
-use PDF::Object::Dict;
-use PDF::Object::Stream;
-
 class PDF::Storage::Serializer {
+
+    use PDF::Object;
+    use PDF::Object::Array;
+    use PDF::Object::Dict;
+    use PDF::Object::Stream;
+    use PDF::Object::Util :to-ast;
 
     has Int $.size is rw = 1;  # first free object number
     has @.ind-objs;

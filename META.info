@@ -23,6 +23,8 @@
         "PDF::Object::Type" : "lib/PDF/Object/Type.pm",
         "PDF::Object::Type::ObjStm" : "lib/PDF/Object/Type/ObjStm.pm",
         "PDF::Object::Type::XRef" : "lib/PDF/Object/Type/XRef.pm",
+        "PDF::Object::Delegator" : "lib/PDF/Object/Delegator.pm",
+        "PDF::Object::Util" : "lib/PDF/Object/Util.pm",
 
         "PDF::Reader" : "lib/PDF/Reader.pm",
 

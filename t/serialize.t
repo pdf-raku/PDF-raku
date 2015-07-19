@@ -2,7 +2,7 @@ use v6;
 use Test;
 
 use PDF::Storage::Serializer;
-use PDF::Object :to-ast;
+use PDF::Object::Util :to-ast;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Writer;
 

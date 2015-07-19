@@ -1,6 +1,6 @@
 use v6;
 
-use PDF::Object :from-ast, :to-ast-native;
+use PDF::Object;
 use PDF::Object::Type;
 use PDF::Object::Tie::Hash;
 
@@ -10,6 +10,8 @@ class PDF::Object::Dict
     is Hash
     does PDF::Object::Type
     does PDF::Object::Tie::Hash {
+
+    use PDF::Object::Util :from-ast, :to-ast-native;
 
     our %obj-cache = (); #= to catch circular references
 

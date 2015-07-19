@@ -1,6 +1,6 @@
 use v6;
 
-use PDF::Object :from-ast;
+use PDF::Object::Util :from-ast;
 
 class t::Object {
 

@@ -1,13 +1,14 @@
 use v6;
 
-use PDF::Object :to-ast;
+use PDF::Object;
 use PDF::Object::Tie::Array;
-use PDF::Object :from-ast;
 
 class PDF::Object::Array
     is PDF::Object
     is Array
     does PDF::Object::Tie::Array {
+
+    use PDF::Object::Util :from-ast, :to-ast;
 
     our %obj-cache = (); #= to catch circular references
 

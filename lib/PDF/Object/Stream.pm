@@ -1,8 +1,6 @@
 use v6;
 
-use PDF::Storage::Filter;
-use PDF::Object :to-ast-native;
-use PDF::Object :from-ast;
+use PDF::Object;
 use PDF::Object::Type;
 use PDF::Object::Tie::Hash;
 
@@ -12,6 +10,9 @@ class PDF::Object::Stream
     is Hash
     does PDF::Object::Type 
     does PDF::Object::Tie::Hash {
+
+    use PDF::Storage::Filter;
+    use PDF::Object::Util :from-ast, :to-ast-native;
 
     has $!encoded;
     has $!decoded;
