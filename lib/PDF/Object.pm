@@ -50,7 +50,8 @@ class PDF::Object {
 
     multi method compose( Hash :$dict!, *%etc) {
         require ::("PDF::Object::Dict");
-        return ::("PDF::Object::Dict").classify( :$dict ).new( :$dict, |%etc );
+	my $fallback = ::("PDF::Object::Dict");
+        $.delegate( :$dict, :$fallback ).new( :$dict, |%etc );
     }
 
     multi method compose( Hash :$stream!, *%etc) {
@@ -61,8 +62,9 @@ class PDF::Object {
         }
         my Hash $dict = $stream<dict> // {};
         require ::("PDF::Object::Stream");
-        my $stream-class = ::("PDF::Object::Stream").classify( :$dict );
-        $stream-class.new( :$dict, |%params );
+	my $fallback = ::("PDF::Object::Stream");
+        my $stream-delegate =  $.delegate( :$dict, :$fallback );
+        $stream-delegate.new( :$dict, |%params );
     }
 
     proto sub to-ast(|) is export(:to-ast) {*};
@@ -177,20 +179,20 @@ class PDF::Object {
         %handler{$subclass} = $handler-class;
     }
 
-    multi method find-delegate( :$type!, :$subtype!) {
+    multi method find-delegate( :$type!, :$subtype!, :$fallback!) {
         my Str $subclass = $subtype
             ?? [~] $type, '::', $subtype
             !! $type;
-        self.find-delegate( :$subclass );
+        self.find-delegate( :$subclass, :$fallback );
     }
 
     multi method find-delegate( :$subclass! where { %handler{$_}:exists } ) {
         %handler{$subclass}
     }
 
-    multi method find-delegate( :$subclass! ) is default {
+    multi method find-delegate( :$subclass!, :$fallback! ) is default {
 
-        my $handler-class = self.WHAT;
+        my $handler-class = $fallback;
         my $resolved;
 
         for @class-path, 'PDF::Object::Type' -> $dom-class {
@@ -210,6 +212,16 @@ class PDF::Object {
         }
 
         self.install-delegate( :$subclass, :$handler-class );
+    }
+
+    multi method delegate( Hash :$dict! where {$dict<Type>:exists}, :$fallback) {
+	my $type = from-ast($dict<Type>);
+	my $subtype = from-ast($dict<Subtype> // $dict<S>);
+	$.find-delegate( :$type, :$subtype, :$fallback );
+    }
+
+    multi method delegate( :$fallback! ) is default {
+	$fallback;
     }
 
     #| unique identifier for this object instance
