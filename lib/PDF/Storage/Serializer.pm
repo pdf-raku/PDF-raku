@@ -133,23 +133,22 @@ class PDF::Storage::Serializer {
     }
 
     #| should this be serialized as an indirect object?
-    method !is-indirect-object($object, :$id! --> Bool) {
+    multi method is-indirect($ --> Bool) {*}
 
-        # multiply referenced objects
-        return True if %!ref-count{$id} > 1;
+    #| streams always need to be indirect objects
+    multi method is-indirect(PDF::Object::Stream $object)                 {True}
 
-        # streams always need to be indirect objects
-        return True if $object ~~ PDF::Object::Stream;
+    #| avoid duplication of multiply referenced objects
+    multi method is-indirect($, :$id! where {%!ref-count{$id} > 1})       {True}
 
-        # type objects are indirect, e.g. << /Type /Catalog .... >>
-        return True if $object ~~ Hash && PDF::Object.is-typed($object);
+    #| typed objects should be indirect, e.g. << /Type /Catalog .... >>
+    multi method is-indirect(Hash $obj where PDF::Object.is-typed($obj))  {True}
 
-        # presumably sourced as an indirect object, so output as such.
-        return True if ($object ~~ PDF::Object::Dict | PDF::Object::Array)
-            && $object.obj-num;
+    #| presumably sourced as an indirect object, so output as such.
+    multi method is-indirect($obj where { .can('obj-num') && .obj-num })  {True}
 
-        return False;
-    }
+    #| allow anything else to inline
+    multi method is-indirect($) is default                                {False}
 
     #| prepare and object for output.
     #| - if already encountered, return an indirect reference
@@ -188,7 +187,7 @@ class PDF::Storage::Serializer {
         }
 
         # register prior to traversing the object. in case there are cyclical references
-        my $ret = $indirect || self!"is-indirect-object"( $object, :$id )
+        my $ret = $indirect || $.is-indirect( $object, :$id )
             ?? self!"index-object"($ind-obj, :$id, :$object )
             !! $ind-obj;
 
@@ -209,7 +208,7 @@ class PDF::Storage::Serializer {
         my $slot := $ind-obj.value;
 
         # register prior to traversing the object. in case there are cyclical references
-        my $ret = $indirect || self!"is-indirect-object"( $object, :$id )
+        my $ret = $indirect || $.is-indirect( $object, :$id )
             ?? self!"index-object"($ind-obj, :$id, :$object )
             !! $ind-obj;
 
