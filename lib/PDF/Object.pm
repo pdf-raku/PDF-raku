@@ -4,7 +4,8 @@ class PDF::Object {
 
     multi method compose( Array :$array!, *%etc) {
         require ::("PDF::Object::Array");
-        ::("PDF::Object::Array").new( :$array, |%etc);
+        my $fallback = ::("PDF::Object::Array");
+        $.delegate( :$array, :$fallback ).new( :$array, |%etc );
     }
 
     multi method compose( Bool :$bool!) {

@@ -23,7 +23,7 @@ class PDF::Object::Stream
 
     our %obj-cache = (); #= to catch circular references
 
-    method new(Hash :$dict = {}, *%etc, *@args) {
+    method new(Hash :$dict = {}, *%etc) {
         my Str $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {

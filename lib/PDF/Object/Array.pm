@@ -20,6 +20,7 @@ class PDF::Object::Array
             # this may trigger cascading PDF::Object::Tie coercians
             # e.g. native Array to PDF::Object::Array
             $obj[ .key ] = from-ast(.value) for $array.pairs;
+            $obj.?cb-setup-type($obj);
         }
         $obj;
     }

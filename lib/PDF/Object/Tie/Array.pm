@@ -4,6 +4,21 @@ use PDF::Object::Tie;
 
 role PDF::Object::Tie::Array does PDF::Object::Tie {
 
+    method tie(Int $idx, $att is rw) {
+	my $v := self[$idx];
+	if self[$idx]:exists {
+	    if $att !=== $v {
+		# bind
+		$att = $v;
+		self[$idx] := $att;
+	    }
+	}
+	else {
+	    $att = Nil;
+	}
+        $att;
+    }
+
     #| for array lookups, typically $foo[42]
     method AT-POS($pos) is rw {
         my $result := callsame;
