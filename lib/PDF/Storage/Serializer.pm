@@ -142,7 +142,7 @@ class PDF::Storage::Serializer {
         return True if $object ~~ PDF::Object::Stream;
 
         # type objects are indirect, e.g. << /Type /Catalog .... >>
-        return True if ($object ~~ Hash) && ($object<Type>:exists);
+        return True if $object ~~ Hash && PDF::Object.is-typed($object);
 
         # presumably sourced as an indirect object, so output as such.
         return True if ($object ~~ PDF::Object::Dict | PDF::Object::Array)

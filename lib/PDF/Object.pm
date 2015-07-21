@@ -51,8 +51,10 @@ class PDF::Object {
 
     multi method compose( Hash :$dict!, *%etc) {
         require ::("PDF::Object::Dict");
-	my $fallback = ::("PDF::Object::Dict");
-        $.delegate( :$dict, :$fallback ).new( :$dict, |%etc );
+	my $class = ::("PDF::Object::Dict");
+	$class = $.delegate( :$dict, :fallback($class) )
+	    if self.is-typed($dict);
+	$class.new( :$dict, |%etc );
     }
 
     multi method compose( Hash :$stream!, *%etc) {
@@ -63,10 +65,26 @@ class PDF::Object {
         }
         my Hash $dict = $stream<dict> // {};
         require ::("PDF::Object::Stream");
-	my $fallback = ::("PDF::Object::Stream");
-        my $stream-delegate =  $.delegate( :$dict, :$fallback );
-        $stream-delegate.new( :$dict, |%params );
+	my $class = ::("PDF::Object::Stream");
+	$class = $.delegate( :$dict, :fallback($class) )
+	    if self.is-typed($dict);
+        $class.new( :$dict, |%params );
     }
+
+    proto method is-typed(|c --> Bool) {*}
+
+    multi method is-typed(Hash $dict!) {
+	? <Type FunctionType PatternType ShadingType>.first({$dict{$_}:exists});
+    }
+
+    #| tba
+    multi method is-typed(Array $array) {
+	Mu
+    }
+
+    multi method is-typed($) {
+	False
+    }				    
 
     #| Extension point for PDF::DOM etc
     our $delegator;
