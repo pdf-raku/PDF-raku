@@ -10,10 +10,11 @@ class PDF::Object::Type::ObjStm
 
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
+    use PDF::Object::Tie;
 
-    has Int $!First; method First { self.tie($!First) };
-    has Int $!N; method N { self.tie($!N) };
-    has PDF::Object::Stream:_ $!Extends; method Extends { self.tie($!Extends) };
+    has Int $!First is tied;
+    has Int $!N is tied;
+    has PDF::Object::Stream:_ $!Extends is tied;
 
     method cb-setup-type( Hash $dict is rw ) {
         $dict<Type> = PDF::Object.compose( :name<ObjStm> );

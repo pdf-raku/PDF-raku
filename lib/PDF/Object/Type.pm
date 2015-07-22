@@ -1,9 +1,9 @@
 role PDF::Object::Type {
 
-    use PDF::Object::Tie::Hash;
+    use PDF::Object::Tie;
 
-    has Str $!Type;      method Type { self.tie($!Type) };
-    has Str:_ $!Subtype; method Subtype { self.tie($!Subtype) };
-    has Str:_ $!S;       method S { self.tie($!S) };
+    has Str $!Type is tied;
+    has Str:_ $!Subtype is tied;
+    has Str:_ $!S is tied;
 
 }

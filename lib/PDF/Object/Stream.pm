@@ -11,15 +11,16 @@ class PDF::Object::Stream
     does PDF::Object::Type 
     does PDF::Object::Tie::Hash {
 
+    use PDF::Object::Tie;
     use PDF::Storage::Filter;
     use PDF::Object::Util :from-ast, :to-ast-native;
 
     has $!encoded;
     has $!decoded;
 
-    has Str:_ $!Filter;       method Filter { self.tie($!Filter) }
-    has Hash:_ $!DecodeParms; method DecodeParms { self.tie($!DecodeParms) }
-    has Int:_ $!Length;       method Length { self.tie($!Length) }
+    has Str:_ $!Filter is tied;
+    has Hash:_ $!DecodeParms is tied;
+    has Int:_ $!Length is tied;
 
     our %obj-cache = (); #= to catch circular references
 
@@ -28,11 +29,11 @@ class PDF::Object::Stream
         my $obj = %obj-cache{$id};
         unless $obj.defined {
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
+	    PDF::Object::Tie.compose($obj.WHAT);
             # this may trigger cascading PDF::Object::Tie coercians
             # e.g. native Array to PDF::Object::Array
             $obj{.key} = from-ast(.value) for $dict.pairs;
-            $obj.cb-setup-type($obj)
-                if $obj.can('cb-setup-type');
+            $obj.?cb-setup-type($obj);
         }
         $obj;
     }

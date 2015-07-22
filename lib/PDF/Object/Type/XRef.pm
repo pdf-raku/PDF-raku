@@ -9,12 +9,13 @@ our class PDF::Object::Type::XRef
     is PDF::Object::Stream {
 
     use PDF::Storage::Util :resample;
+    use PDF::Object::Tie;
 
     # See [PDF 1.7 Table 3.15]
-    has Int $!Size; method Size { self.tie($!Size) };
-    has Array:_ $!Index; method Index { self.tie($!Index) };
-    has Int:_ $!Prev; method Prev { self.tie($!Prev) };
-    has Array $!W; method W { self.tie($!W) };
+    has Int $!Size is tied;
+    has Array:_ $!Index is tied;
+    has Int:_ $!Prev is tied;
+    has Array $!W is tied;
 
     method first-obj-num is rw { self<Index>[0] }
     method next-obj-num is rw { self<Size> }
