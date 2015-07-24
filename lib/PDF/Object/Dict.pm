@@ -20,7 +20,7 @@ class PDF::Object::Dict
         my Str $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
-	    my %entries = PDF::Object::Tie.compose(self.WHAT);
+	    my %entries = PDF::Object::Tie::Hash.compose(self.WHAT);
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
             # this may trigger cascading PDF::Object::Tie coercians
             # e.g. native Array to PDF::Object::Array

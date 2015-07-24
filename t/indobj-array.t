@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 7;
+plan 11;
 
 use PDF::Storage::IndObj;
 
@@ -30,3 +30,23 @@ is-json-equiv $content, ( :array[:real(0.9505e0), :real(1e0), :real(1.089e0),
 is-json-equiv to-obj( $content ), [0.9505e0, 1e0, 1.089e0, [1, 2, "abc"]], '$.content to-obj';
 
 is-deeply $ind-obj.ast, $ast, 'ast regeneration';
+
+use PDF::Object::Array;
+use PDF::Object::Tie;
+
+class ColorSpaceArray
+    is PDF::Object::Array {
+
+    method type {'ColorSpace'}
+    has Str $!Subtype is index(0);
+    has Hash $!Dict is index(1);
+}
+
+my $cs = ColorSpaceArray.new;
+$cs[0] = 'Lab';
+$cs[1] = { :WhitePoint[1.0, 1.0, 1.0] };
+
+is $cs.Subtype, 'Lab', 'tied index [0]';
+is-json-equiv $cs.Dict, { :WhitePoint[1.0, 1.0, 1.0] }, 'tied index [1]';
+lives-ok {$cs.Subtype = 'CalRGB'}, 'tied index assignment';
+is $cs.Subtype, 'CalRGB', 'tied index fetch';

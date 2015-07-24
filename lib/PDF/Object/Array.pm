@@ -16,9 +16,11 @@ class PDF::Object::Array
         my Str $id = ~$array.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
+	    my @index = PDF::Object::Tie::Array.compose(self.WHAT);
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
             # this may trigger cascading PDF::Object::Tie coercians
             # e.g. native Array to PDF::Object::Array
+	    $obj.index = @index;
             $obj[ .key ] = from-ast(.value) for $array.pairs;
             $obj.?cb-setup-type($obj);
         }

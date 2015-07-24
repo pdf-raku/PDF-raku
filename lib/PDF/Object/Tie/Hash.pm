@@ -4,7 +4,8 @@ use PDF::Object::Tie;
 
 role PDF::Object::Tie::Hash does PDF::Object::Tie {
 
-    # preferred
+    has Hash $.entries is rw;
+
     sub tie-att-hash(Hash $hash, Str $key, Attribute $att) is rw {
 
 	#| untyped attribute
@@ -40,6 +41,23 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 
     multi method tie-att(Str $key!, $att is copy) {
 	tie-att-hash(self, $key, $att);
+    }
+
+    method compose($class) {
+	my $class-name = $class.^name;
+	my %entries;
+
+	for $class.^attributes.grep({ .name ~~ /^'$!'<[A..Z]>/ && .can('entry') }) -> $att {
+	    my $key = $att.name.subst(/^'$!'/, '');
+	    %entries{$key} = $att;
+
+	    unless $class.^declares_method($key) {
+		$att.set_rw;
+		$class.^add_method( $key, method {
+		    self.tie-att( $key, $att ) } );
+	    }
+	}
+	%entries;
     }
 
     #| for hash lookups, typically $foo<bar>
