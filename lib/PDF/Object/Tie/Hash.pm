@@ -54,7 +54,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
     #| handle hash assignments: $foo<bar> = 42; $foo{$baz} := $x;
     method ASSIGN-KEY($key, $val) {
         my $lval = self.lvalue($val);
-	if $.tied-atts{$key}:exists {
+	if $.entries{$key}:exists {
 	    # tied to an attribute
 	    self."$key"() = $lval
 	}

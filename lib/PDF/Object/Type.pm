@@ -2,8 +2,8 @@ role PDF::Object::Type {
 
     use PDF::Object::Tie;
 
-    has Str $!Type is tied;
-    has Str $!Subtype is tied;
-    has $!S is tied;
+    has Str $!Type is entry;
+    has Str $!Subtype is entry;
+    has $!S is entry;
 
 }

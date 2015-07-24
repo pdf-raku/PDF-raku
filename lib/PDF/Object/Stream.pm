@@ -18,9 +18,9 @@ class PDF::Object::Stream
     has $!encoded;
     has $!decoded;
 
-    has Str $!Filter is tied;
-    has Hash $!DecodeParms is tied;
-    has Int $!Length is tied;
+    has Str $!Filter is entry;
+    has Hash $!DecodeParms is entry;
+    has Int $!Length is entry;
 
     our %obj-cache = (); #= to catch circular references
 
@@ -28,11 +28,11 @@ class PDF::Object::Stream
         my Str $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
-	    my %tied-atts = PDF::Object::Tie.compose(self.WHAT);
+	    my %entries = PDF::Object::Tie.compose(self.WHAT);
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
             # this may trigger cascading PDF::Object::Tie coercians
             # e.g. native Array to PDF::Object::Array
-	    $obj.tied-atts = %tied-atts;
+	    $obj.entries = %entries;
             $obj{.key} = from-ast(.value) for $dict.pairs;
             $obj.?cb-setup-type($obj);
         }

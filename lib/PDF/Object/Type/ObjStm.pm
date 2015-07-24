@@ -12,9 +12,9 @@ class PDF::Object::Type::ObjStm
     use PDF::Grammar::PDF::Actions;
     use PDF::Object::Tie;
 
-    has Int $!First is tied(:required);
-    has Int $!N is tied(:required);
-    has PDF::Object::Stream $!Extends is tied;
+    has Int $!First is entry(:required);
+    has Int $!N is entry(:required);
+    has PDF::Object::Stream $!Extends is entry;
 
     method cb-setup-type( Hash $dict is rw ) {
         $dict.Type = PDF::Object.compose( :name<ObjStm> );
