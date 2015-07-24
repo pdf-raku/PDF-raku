@@ -12,12 +12,12 @@ class PDF::Object::Type::ObjStm
     use PDF::Grammar::PDF::Actions;
     use PDF::Object::Tie;
 
-    has Int $!First is tied;
-    has Int $!N is tied;
-    has PDF::Object::Stream:_ $!Extends is tied;
+    has Int $!First is tied(:required);
+    has Int $!N is tied(:required);
+    has PDF::Object::Stream $!Extends is tied;
 
     method cb-setup-type( Hash $dict is rw ) {
-        $dict<Type> = PDF::Object.compose( :name<ObjStm> );
+        $dict.Type = PDF::Object.compose( :name<ObjStm> );
     }
 
     method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {
@@ -44,8 +44,8 @@ class PDF::Object::Type::ObjStm
 
     method decode($? --> Array) {
         my Str $chars = callsame;
-        my Int $first = ( $.First // die "missing mandatory /ObjStm param: /First" );
-        my Int $n = ( $.N // die "missing mandatory /ObjStm param: /N" );
+        my Int $first = $.First;
+        my Int $n = $.N;
 
         my Str $object-index-str = substr($chars, 0, $first - 1);
         my Str $objects-str = substr($chars, $first);

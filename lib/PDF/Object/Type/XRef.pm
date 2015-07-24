@@ -12,10 +12,10 @@ our class PDF::Object::Type::XRef
     use PDF::Object::Tie;
 
     # See [PDF 1.7 Table 3.15]
-    has Int $!Size is tied;
-    has Array:_ $!Index is tied;
-    has Int:_ $!Prev is tied;
-    has Array $!W is tied;
+    has Int $!Size is tied(:required);
+    has Array $!Index is tied(:required);
+    has Int $!Prev is tied(:required);
+    has Array $!W is tied(:required);
 
     method first-obj-num is rw { self<Index>[0] }
     method next-obj-num is rw { self<Size> }

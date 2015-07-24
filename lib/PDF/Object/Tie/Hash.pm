@@ -5,38 +5,41 @@ use PDF::Object::Tie;
 role PDF::Object::Tie::Hash does PDF::Object::Tie {
 
     # preferred
-    multi method tie(Str $key!, $att is rw) {
-	my $v;
-        if self{$key}:exists {
-            $v := self{$key};
-            if $att !=== $v {
-                # bind
-                $att.set_value(self, $v);
-            }
-        }
-        else {
-	    $v = Nil;
-            $att.set_value(self, $v);
-        }
-        $v;
-    }    
+    sub tie-att-hash(Hash $hash, Str $key, Attribute $att) is rw {
 
-    # depreciated
-    multi method tie($att is rw) is default {
-        my Str $key = $att.VAR.name.subst(/^'$!'/, '');
-	warn :deprecated{ :$key }.perl;
-        if self{$key}:exists {
-            my $v := self{$key};
-            if $att !=== $v {
-                # bind
-                $att = $v;
-                self{$key} := $att;
-            }
-        }
-        else {
-            $att = Nil;
-        }
-        $att;
+	#| untyped attribute
+	multi sub type-check(Hash $h, $val, Mu $type) is rw {
+	    if !$val.defined {
+		die "missing required field: $key"
+		    if $att.is-required;
+		return Nil
+	    }
+	    $val
+	}
+	#| type attribute
+	multi sub type-check(Hash $h, $val is rw, $type) is rw is default {
+	  if !$val.defined {
+	      die "{$h.WHAT.^name}: missing required field: $key"
+		  if $att.is-required;
+	      return Nil
+	  }
+	  die "{$h.WHAT.^name}.$key: {$val.perl} - not of type: {$type.gist}"
+	      unless $val ~~ $type
+	      || $val ~~ Pair;	#| undereferenced - don't know it's type yet
+	  $val;
+	}
+
+	Proxy.new( 
+	    FETCH => method {
+		type-check($hash, $hash{$key}, $att.type);
+	    },
+	    STORE => method ($val is copy) {
+		$att.set_value($hash, $hash{$key} := type-check($hash, $val, $att.type));
+	    });
+    }
+
+    multi method tie-att(Str $key!, $att is copy) {
+	tie-att-hash(self, $key, $att);
     }
 
     #| for hash lookups, typically $foo<bar>
@@ -51,7 +54,14 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
     #| handle hash assignments: $foo<bar> = 42; $foo{$baz} := $x;
     method ASSIGN-KEY($key, $val) {
         my $lval = self.lvalue($val);
-        nextwith( $key, $lval );
+	if $.tied-atts{$key}:exists {
+	    # tied to an attribute
+	    self."$key"() = $lval
+	}
+	else {
+	    # undeclared, fallback to untied hash
+	    nextwith( $key, $lval );
+	}
     }
     
 }

@@ -7,24 +7,34 @@ role PDF::Object::Tie {
     has $.reader is rw;
     has Int $.obj-num is rw;
     has Int $.gen-num is rw;
+    has Hash $.tied-atts is rw;
 
-    multi trait_mod:<is>(Attribute $att, :$tied!) is export(:DEFAULT) {
-	$att does role {
-	    has $.tied = True;
-	}
+    role Tied {
+	    has Bool $.tied = True;
+	    has Bool $.is-required is rw;
+    }
+
+    multi trait_mod:<is>(Attribute $att, :$tied!, Bool :$required = False ) is export(:DEFAULT) {
+	$att does Tied;
+	#| I haven't worked out how to play well with the standard 'required' trait
+	$att.is-required = $required;
     }
 
     method compose($class) {
 	my $class-name = $class.^name;
+	my %tied-atts;
 
 	for $class.^attributes.grep({ .name ~~ /^'$!'<[A..Z]>/ && .can('tied') }) -> $att {
 	    my $key = $att.name.subst(/^'$!'/, '');
+	    %tied-atts{$key} = $att;
+
 	    unless $class.^declares_method($key) {
 		$att.set_rw;
 		$class.^add_method( $key, method {
-		    self.tie( $key, $att ) } );
+		    self.tie-att( $key, $att ) } );
 	    }
 	}
+	%tied-atts;
     }
 
     # coerce Hash & Array assignments to objects

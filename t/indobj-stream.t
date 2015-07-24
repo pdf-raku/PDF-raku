@@ -9,7 +9,7 @@ use PDF::Grammar::Test :is-json-equiv;
 my $stream-obj;
 
 my %dict = ( :Filter<ASCIIHexDecode>,
-             :DecodeParms( { :BitsPerComponent(4), :Predictor(10), :Colors(3) } ),
+             :DecodeParms{ :BitsPerComponent(4), :Predictor(10), :Colors(3) },
              :Length(58),
     );
 

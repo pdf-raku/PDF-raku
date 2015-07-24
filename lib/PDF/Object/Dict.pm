@@ -20,10 +20,11 @@ class PDF::Object::Dict
         my Str $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
+	    my %tied-atts = PDF::Object::Tie.compose(self.WHAT);
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
-	    PDF::Object::Tie.compose($obj.WHAT);
             # this may trigger cascading PDF::Object::Tie coercians
             # e.g. native Array to PDF::Object::Array
+	    $obj.tied-atts = %tied-atts;
             $obj{ .key } = from-ast(.value) for $dict.pairs;
             $obj.?cb-setup-type($obj);
         }
