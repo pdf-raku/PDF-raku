@@ -9,7 +9,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
     sub tie-att-array(Array $array, Int $idx, Attribute $att) is rw {
 
 	#| untyped attribute
-	multi sub type-check(Array $a, $val, Mu $type) is rw {
+	multi sub type-check($val, Mu $type) is rw {
 	    if !$val.defined {
 		die "missing required array entry: $idx"
 		    if $att.is-required;
@@ -18,13 +18,13 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	    $val
 	}
 	#| type attribute
-	multi sub type-check(Array $a, $val is rw, $type) is rw is default {
+	multi sub type-check($val is rw, $type) is rw is default {
 	  if !$val.defined {
-	      die "{$a.WHAT.^name}: missing required index: $idx"
+	      die "{$array.WHAT.^name}: missing required index: $idx"
 		  if $att.is-required;
 	      return Nil
 	  }
-	  die "{$a.WHAT.^name}.[$idx]: {$val.perl} - not of type: {$type.gist}"
+	  die "{$array.WHAT.^name}.[$idx]: {$val.perl} - not of type: {$type.gist}"
 	      unless $val ~~ $type
 	      || $val ~~ Pair;	#| undereferenced - don't know it's type yet
 	  $val;
@@ -32,10 +32,10 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 
 	Proxy.new( 
 	    FETCH => method {
-		type-check($array, $array[$idx], $att.type);
+		type-check($array[$idx], $att.type);
 	    },
 	    STORE => method ($val is copy) {
-		$att.set_value($array, $array[$idx] := type-check($array, $val, $att.type));
+		$att.set_value($array, $array[$idx] := type-check($val, $att.type));
 	    });
     }
 
@@ -79,7 +79,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	    self."$key"() = $lval
 	}
 	else {
-	    # undeclared, fallback to untied hash
+	    # undeclared, fallback to untied array
 	    nextwith( $pos, $lval );
 	}
 

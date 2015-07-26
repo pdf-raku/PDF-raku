@@ -9,7 +9,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
     sub tie-att-hash(Hash $hash, Str $key, Attribute $att) is rw {
 
 	#| untyped attribute
-	multi sub type-check(Hash $h, $val, Mu $type) is rw {
+	multi sub type-check($val, Mu $type) is rw {
 	    if !$val.defined {
 		die "missing required field: $key"
 		    if $att.is-required;
@@ -18,13 +18,13 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	    $val
 	}
 	#| type attribute
-	multi sub type-check(Hash $h, $val is rw, $type) is rw is default {
+	multi sub type-check($val is rw, $type) is rw is default {
 	  if !$val.defined {
-	      die "{$h.WHAT.^name}: missing required field: $key"
+	      die "{$hash.WHAT.^name}: missing required field: $key"
 		  if $att.is-required;
 	      return Nil
 	  }
-	  die "{$h.WHAT.^name}.$key: {$val.perl} - not of type: {$type.gist}"
+	  die "{$hash.WHAT.^name}.$key: {$val.perl} - not of type: {$type.gist}"
 	      unless $val ~~ $type
 	      || $val ~~ Pair;	#| undereferenced - don't know it's type yet
 	  $val;
@@ -32,10 +32,10 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 
 	Proxy.new( 
 	    FETCH => method {
-		type-check($hash, $hash{$key}, $att.type);
+		type-check($hash{$key}, $att.type);
 	    },
 	    STORE => method ($val is copy) {
-		$att.set_value($hash, $hash{$key} := type-check($hash, $val, $att.type));
+		$att.set_value($hash, $hash{$key} := type-check($val, $att.type));
 	    });
     }
 
