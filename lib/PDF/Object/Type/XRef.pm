@@ -5,17 +5,21 @@ use PDF::Object::Stream;
 
 # /Type /XRef - cross reference stream
 # introduced with PDF 1.5
+# see [PDF 1.7 Section 3.4.7 Cross-Reference Streams]
 our class PDF::Object::Type::XRef
     is PDF::Object::Stream {
 
     use PDF::Storage::Util :resample;
     use PDF::Object::Tie;
 
-    # See [PDF 1.7 Table 3.15]
-    has Int $!Size is entry(:required);
-    has Array $!Index is entry(:required);
-    has Int $!Prev is entry(:required);
-    has Array $!W is entry(:required);
+#| See [PDF 1.7 TABLE 3.15 Additional entries specific to a cross-reference stream dictionary]
+    has Int $!Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
+    has Array $!Index is entry;          #| (Optional) An array containing a pair of integers for each subsection in this section. The first integer is the first object number in the subsection; the second integer is the number of entries in the subsection
+    has Int $!Prev is entry;             #| (Present only if the file has more than one cross-reference stream; not meaningful in hybrid-reference files) The byte offset from the beginning of the file to the beginning of the previous cross-reference stream. This entry has the same function as the Prev entry in the trailer dictionary (
+    has Array $!W is entry(:required);   #| (Required) An array of integers, each representing the size of the fields in a single cross-reference entry.
+
+#| See [PDF 1.7 TABLE 3.17 Additional entries in a hybrid-reference file’s trailer dictionary]
+    has Int $!XRefStm is entry;          #| (Optional) The byte offset from the beginning of the file of a cross-reference stream.
 
     method first-obj-num is rw { self<Index>[0] }
     method next-obj-num is rw { self<Size> }

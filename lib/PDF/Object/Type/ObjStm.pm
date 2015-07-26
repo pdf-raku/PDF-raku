@@ -5,6 +5,7 @@ use PDF::Object::Stream;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
+# See [PDF 1.7 Section 3.4.6 Object Streams]
 class PDF::Object::Type::ObjStm
     is PDF::Object::Stream {
 
@@ -12,9 +13,10 @@ class PDF::Object::Type::ObjStm
     use PDF::Grammar::PDF::Actions;
     use PDF::Object::Tie;
 
-    has Int $!First is entry(:required);
-    has Int $!N is entry(:required);
-    has PDF::Object::Stream $!Extends is entry;
+    # see [PDF 1.7 TABLE 3.14 Additional entries specific to an object stream dictionary]
+    has Int $!N is entry(:required);             #| (Required) The number of compressed objects in the stream.
+    has Int $!First is entry(:required);         #| (Required) The byte offset (in the decoded stream) of the first compressed object.
+    has PDF::Object::Stream $!Extends is entry;  #| (Optional) A reference to an object stream, of which the current object stream is considered an extension
 
     method cb-setup-type( Hash $dict is rw ) {
         $dict.Type = PDF::Object.compose( :name<ObjStm> );
