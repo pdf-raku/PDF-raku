@@ -102,7 +102,7 @@ class PDF::Storage::Serializer {
         my Int $obj-num;
         my Int $gen-num;
 
-        if ! $.renumber && $object.isa(PDF::Object) && $object.obj-num {
+        if ! $.renumber && $object.isa(PDF::Object) && $object.obj-num && $object.obj-num > 0 {
             # keep original object number
             $obj-num = $object.obj-num;
             $gen-num = $object.gen-num;

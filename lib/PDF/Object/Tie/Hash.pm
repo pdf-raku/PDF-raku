@@ -74,6 +74,8 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
         my $lval = self.lvalue($val);
 	if $.entries{$key}:exists {
 	    # tied to an attribute
+	    $lval.obj-num //= -1
+		if $.entries{$key}.is-indirect && $lval ~~ PDF::Object;
 	    self."$key"() = $lval
 	}
 	else {

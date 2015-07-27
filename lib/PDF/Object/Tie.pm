@@ -11,22 +11,29 @@ role PDF::Object::Tie {
     role Entry {
 	has Bool $.entry = True;
 	has Bool $.is-required is rw;
+	has Bool $.is-indirect is rw;
     }
 
-    multi trait_mod:<is>(Attribute $att, :$entry!, Bool :$required = False ) is export(:DEFAULT) {
+    multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {
 	$att does Entry;
-	$att.is-required = $required;
+	$att.is-required = ?('required' ∈ $entry);
+	$att.is-indirect = ?('indirect' ∈ $entry);
     }
 
     role Index {
 	has Int $.index is rw;
 	has Bool $.is-required is rw;
+	has Bool $.is-indirect is rw;
     }
 
-    multi trait_mod:<is>(Attribute $att, Int :$index!, Bool :$required = False ) is export(:DEFAULT) {
+    multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
+	die "trait usage: index(Int n, :required, :indirect)"
+	    unless $index[0] ~~ Int
+	    && $index[0] >= 0;
 	$att does Index;
-	$att.index = $index;
-	$att.is-required = $required;
+	$att.index = $index[0];
+	$att.is-required = ?('required' ∈ $index);
+	$att.is-indirect = ?('indirect' ∈ $index);
     }
 
     # coerce Hash & Array assignments to objects
