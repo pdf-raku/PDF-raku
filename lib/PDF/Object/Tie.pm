@@ -23,7 +23,6 @@ role PDF::Object::Tie {
     role Index {
 	has Int $.index is rw;
 	has Bool $.is-required is rw;
-	has Bool $.is-indirect is rw;
     }
 
     multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
@@ -33,7 +32,6 @@ role PDF::Object::Tie {
 	$att does Index;
 	$att.index = $index[0];
 	$att.is-required = ?('required' ∈ $index);
-	$att.is-indirect = ?('indirect' ∈ $index);
     }
 
     # coerce Hash & Array assignments to objects

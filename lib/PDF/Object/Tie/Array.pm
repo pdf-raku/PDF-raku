@@ -82,7 +82,6 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	    # undeclared, fallback to untied array
 	    nextwith( $pos, $lval );
 	}
-
     }
 
     method push($val) {
