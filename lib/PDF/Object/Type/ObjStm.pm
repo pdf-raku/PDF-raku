@@ -18,8 +18,10 @@ class PDF::Object::Type::ObjStm
     has Int $!First is entry(:required);         #| (Required) The byte offset (in the decoded stream) of the first compressed object.
     has PDF::Object::Stream $!Extends is entry;  #| (Optional) A reference to an object stream, of which the current object stream is considered an extension
 
-    method cb-setup-type( Hash $dict is rw ) {
-        $dict.Type = PDF::Object.compose( :name<ObjStm> );
+    method cb-init {
+	self.N //= 0;
+	self.First //= 0;
+        self.Type //= PDF::Object.compose( :name<ObjStm> );
     }
 
     method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {

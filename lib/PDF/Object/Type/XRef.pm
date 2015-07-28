@@ -24,22 +24,22 @@ our class PDF::Object::Type::XRef
     method first-obj-num is rw { self<Index>[0] }
     method next-obj-num is rw { self<Size> }
 
-    method cb-setup-type( Hash $dict is rw ) {
-        $dict<Type> = PDF::Object.compose( :name<XRef> );
+    method cb-init {
+	self<Type> = PDF::Object.compose( :name<XRef> );
+        self<W> //= [ 1, 2, 1 ];
+        self<Size> //= 0;
     }
 
     method encode(Array $xref = $.decoded --> Str) {
+
+        self.Index[0] //= 0;
+        self.Index[1] //= $.Size;
 
         die 'mandatory /Index[0] entry is missing'
             unless $.first-obj-num.defined;
 
         die 'mandatory /Size entry is missing or zero'
             unless $.next-obj-num;
-
-        self<W> //= [ 1, 2, 1 ];
-        self<Size> //= 0;
-        self<Index>[0] //= 0;
-        self<Index>[1] //= $.Size;
 
         # /W resize to widest byte-widths, if needed
         for 0..2 -> $i {

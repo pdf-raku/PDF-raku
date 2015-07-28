@@ -34,7 +34,13 @@ class PDF::Object::Stream
             # e.g. native Array to PDF::Object::Array
 	    $obj.entries = %entries;
             $obj{.key} = from-ast(.value) for $dict.pairs;
-            $obj.?cb-setup-type($obj);
+            $obj.?cb-init;
+
+	    if my $required = set %entries.pairs.grep({.value.is-required}).map({.key}) {
+		my $missing = $required (-) $obj.keys;
+		die "{self.WHAT.^name}: missing required field(s): $missing"
+		    if $missing;
+	    }
         }
         $obj;
     }

@@ -22,7 +22,7 @@ class PDF::Object::Array
             # e.g. native Array to PDF::Object::Array
 	    $obj.index = @index;
             $obj[ .key ] = from-ast(.value) for $array.pairs;
-            $obj.?cb-setup-type($obj);
+            $obj.?cb-init;
         }
         $obj;
     }
