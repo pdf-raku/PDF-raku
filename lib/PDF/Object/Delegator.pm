@@ -4,7 +4,10 @@ role PDF::Object::Delegator {
 
     use PDF::Object::Util :from-ast;
 
+    method class-paths { <PDF::Object::Type> }
+
     our %handler;
+    method handler {%handler}
 
     multi method install-delegate( :$type!, :$subtype, :$handler-class! ) {
         my Str $subclass = $subtype
@@ -24,21 +27,22 @@ role PDF::Object::Delegator {
         self.find-delegate( :$subclass, :$fallback );
     }
 
-    multi method find-delegate( :$subclass! where { %handler{$_}:exists } ) {
-        %handler{$subclass}
+    multi method find-delegate( :$subclass! where { self.handler{$_}:exists } ) {
+        self.handler{$subclass}
     }
 
     multi method find-delegate( :$subclass!, :$fallback! ) is default {
 
-	my $handler-class = do given $subclass {
-	    when 'XRef' | 'ObjStm' {
-		require ::('PDF::Object::Type')::($subclass);
-		::('PDF::Object::Type')::($subclass);
-	    }
-	    default {
-		$fallback
-	    }
-	};
+	my $handler-class = $fallback;
+	my Bool $resolved;
+
+	for self.class-paths -> $class-path {
+	    try {
+		try { require ::($class-path)::($subclass) };
+		$handler-class = ::($class-path)::($subclass);
+		last;
+	    };
+	}
 
         self.install-delegate( :$subclass, :$handler-class );
     }
