@@ -1,6 +1,6 @@
 use v6;
 
-role PDF::Object::Delegator {
+class PDF::Object::Delegator {
 
     use PDF::Object::Util :from-ast;
 

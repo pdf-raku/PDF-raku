@@ -8,7 +8,7 @@ role PDF::Object::Tie {
     has Int $.obj-num is rw;
     has Int $.gen-num is rw;
 
-    role TiedEntry {
+    my role TiedEntry {
 	has Bool $.entry = True;
 	has Bool $.is-required is rw;
 	has Bool $.is-indirect is rw;
@@ -25,7 +25,7 @@ role PDF::Object::Tie {
 	$att.gen-accessor = $gen-accessor;
     }
 
-    role TiedIndex {
+    my role TiedIndex {
 	has Int $.index is rw;
 	has Bool $.is-required is rw;
 	has Bool $.gen-accessor is rw;
