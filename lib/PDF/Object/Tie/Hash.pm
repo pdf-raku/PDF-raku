@@ -51,7 +51,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	    my $key = $att.name.subst(/^'$!'/, '');
 	    %entries{$key} = $att;
 
-	    unless $class.^declares_method($key) {
+	    if $att.gen-accessor &&  ! $class.^declares_method($key) {
 		$att.set_rw;
 		$class.^add_method( $key, method {
 		    self.tie-att( $key, $att ) } );

@@ -38,8 +38,8 @@ class ColorSpaceArray
     is PDF::Object::Array {
 
     method type {'ColorSpace'}
-    has Str $!Subtype is index(0);
-    has Hash $!Dict is index(1);
+    has Str $.Subtype is index(0);
+    has Hash $.Dict is index(1);
 }
 
 my $cs = ColorSpaceArray.new;

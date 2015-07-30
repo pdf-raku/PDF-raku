@@ -8,30 +8,40 @@ role PDF::Object::Tie {
     has Int $.obj-num is rw;
     has Int $.gen-num is rw;
 
-    role Entry {
+    role TiedEntry {
 	has Bool $.entry = True;
 	has Bool $.is-required is rw;
 	has Bool $.is-indirect is rw;
+	has Bool $.gen-accessor is rw;
+	# turn off rakudo accessor generation
+	has method has_accessor { False }
     }
 
-    multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {
-	$att does Entry;
+    multi trait_mod:<is>(Attribute $att is rw, :$entry!) is export(:DEFAULT) {
+	my $gen-accessor = $att.has-accessor;
+	$att does TiedEntry;
 	$att.is-required = ?('required' ∈ $entry);
 	$att.is-indirect = ?('indirect' ∈ $entry);
+	$att.gen-accessor = $gen-accessor;
     }
 
-    role Index {
+    role TiedIndex {
 	has Int $.index is rw;
 	has Bool $.is-required is rw;
+	has Bool $.gen-accessor is rw;
+	# turn off rakudo accessor generation
+	has method has_accessor { False }
     }
 
     multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
+	my $gen-accessor = $att.has-accessor;
 	die "trait usage: index(Int n, :required, :indirect)"
 	    unless $index[0] ~~ Int
 	    && $index[0] >= 0;
-	$att does Index;
+	$att does TiedIndex;
 	$att.index = $index[0];
 	$att.is-required = ?('required' ∈ $index);
+	$att.gen-accessor = $gen-accessor;
     }
 
     # coerce Hash & Array assignments to objects

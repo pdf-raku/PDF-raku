@@ -18,9 +18,9 @@ class PDF::Object::Stream
     has $!encoded;
     has $!decoded;
 
-    has Str $!Filter is entry;
-    has Hash $!DecodeParms is entry;
-    has Int $!Length is entry;
+    has Str $.Filter is entry;
+    has Hash $.DecodeParms is entry;
+    has Int $.Length is entry;
 
     our %obj-cache = (); #= to catch circular references
 

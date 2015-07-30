@@ -54,7 +54,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 		if @index[$pos];
 	    @index[$pos] = $key;
 
-	    unless $class.^declares_method($key) {
+	    if $att.gen-accessor && ! $class.^declares_method($key) {
 		$att.set_rw;
 		$class.^add_method( $key, method {
 		    self.tie-att( $pos, $att ) } );
