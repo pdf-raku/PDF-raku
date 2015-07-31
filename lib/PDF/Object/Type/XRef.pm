@@ -99,8 +99,7 @@ our class PDF::Object::Type::XRef
         my $Size = $.Size
             // die "missing mandatory /XRef param: /Size";
 
-        if $.Index {
-            my $index = $.Index;
+        if my $index = self<Index> {
             my $n = [+] $index[1, 3 ... *];
             die "problem decoding /Type /XRef object. /Index specified $n objects, got {+$xref-array}"
                 unless +$xref-array == $n;
@@ -113,7 +112,7 @@ our class PDF::Object::Type::XRef
     multi method decode-to-stage2($encoded = $.encoded) {
 
         my Int $i = 0;
-        my Array $index = $.Index // [ 0, $.Size ];
+        my Array $index = self<Index> // [ 0, $.Size ];
         my Array $decoded-stage2 = [];
 
         my Array $decoded = $.decode( $encoded );

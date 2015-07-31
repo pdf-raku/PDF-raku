@@ -1,7 +1,6 @@
 perl6-PDF
 =========
-
-** Under Construction **  This module provides low-level tools for reading, writing and update of PDF content.
+This module provides low-level tools for reading, update and writing of PDF content.
 
 ```
 #!/usr/bin/env perl6
@@ -40,10 +39,6 @@ my $writer = PDF::Writer.new( :$root );
 
 ```
 
-## Status / Development Notes
-
-This module is under construction.  It is subject to change, refactoring or reorganization  at any time.
-
 # Classes
 
 ## PDF::Object
@@ -62,11 +57,11 @@ say $stream.obj.encoded;
 
 - PDF::Object::Stream - abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
 - PDF::Object::Dict - abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
-- PDF::Object::Array - array indirect objects (not subclassed)
+- PDF::Object::Array - array objects
 - PDF::Object::Bool, PDF::Object::Name, PDF::Object::Null, PDF::Object::Num, PDF::Object::ByteString - simple indirect objects
 - PDF 1.5+ Compressed object support (reader only). DOM objects:
-  - PDF::Object::DOM::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
-  - PDF::Object::DOM::XRef - PDF 1.5+ Cross Reference stream
+  - PDF::Object::Type::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
+  - PDF::Object::Type::XRef - PDF 1.5+ Cross Reference stream
 
 ## PDF::Reader
 
@@ -138,3 +133,10 @@ my $writer = PDF::Writer.new( :$root, :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 ```
 
+# DOM builder classess
+
+This module also provides the framework for `PDF::DOM`'s extensive library of document object classess. This
+includes classes and roles for object construction, validation and serialization.
+
+```
+```
