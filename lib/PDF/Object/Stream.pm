@@ -18,7 +18,8 @@ class PDF::Object::Stream
     has $!encoded;
     has $!decoded;
 
-    has Str $.Filter is entry;
+    my subset StrOrArray of Any where Str|Array;
+    has StrOrArray $.Filter is entry;
     has Hash $.DecodeParms is entry;
     has Int $.Length is entry;
 
