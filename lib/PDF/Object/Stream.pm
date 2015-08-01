@@ -82,8 +82,14 @@ class PDF::Object::Stream
         if $!decoded.defined {
             $!encoded //= $.encode( $!decoded );
         }
-        self<Length> = $!encoded.chars;
-        $!encoded;
+
+	if $!encoded.defined {
+	    self<Length> = $!encoded.chars;
+	}
+	else {
+	    self<Length>:delete
+	}
+	$!encoded;
     }
 
     multi method decoded(Str $stream!) {
@@ -125,7 +131,9 @@ class PDF::Object::Stream
     method content {
         my $encoded = $.encoded; # may update $.dict<Length>
         my $dict = to-ast-native self;
-        :stream( %( $dict, :$encoded ));
+	$encoded.defined
+	    ?? :stream( %( $dict, :$encoded ))
+	    !! $dict;   # no content - downgrade to dict
     }
 
     method uncompress {
