@@ -18,10 +18,22 @@ class PDF::Object::Stream
     has $!encoded;
     has $!decoded;
 
+    # see [PDF 1.7 TABLE 3.4 Entries common to all stream dictionaries]
+
+    has UInt $.Length is entry;                     #| (Required) The number of bytes from the beginning of the line following the keyword stream to the last byte just before the keyword endstream
+
     my subset StrOrArray of Any where Str|Array;
-    has StrOrArray $.Filter is entry;
-    has Hash $.DecodeParms is entry;
-    has Int $.Length is entry;
+
+    has StrOrArray $.Filter is entry;               #| (Optional) The name of a filter to be applied in processing the stream data found between the keywords stream and endstream, or an array of such names
+
+    my subset DictOrArray of Any where Hash|Array;
+    has DictOrArray $.DecodeParms is entry;         #| (Optional) A parameter dictionary or an array of such dictionaries, used by the filters specified by Filter
+
+    has Str $.F is entry;                           #| (Optional; PDF 1.2) The file containing the stream data. If this entry is present, the bytes between stream and endstream are ignored
+    has StrOrArray $.FFilter is entry;              #| (Optional; PDF 1.2) The name of a filter to be applied in processing the data found in the stream’s external file, or an array of such names
+    has DictOrArray $.FDecodeParms is entry;        #| (Optional; PDF 1.2) A parameter dictionary, or an array of such dictionaries, used by the filters specified by FFilter.
+
+    has UInt $.DL is entry;                         #| (Optional; PDF 1.5) A non-negative integer representing the number of bytes in the decoded (defiltered) stream.
 
     our %obj-cache = (); #= to catch circular references
 
