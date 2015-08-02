@@ -46,11 +46,11 @@ role PDF::Object::Tie {
 
     # coerce Hash & Array assignments to objects
     multi method coerce(PDF::Object $val!) { $val }
-    multi method coerce(Hash $val!) {
-        PDF::Object.compose( :dict($val), :$.reader )
+    multi method coerce(Hash $dict!) {
+        PDF::Object.compose( :$dict, :$.reader )
     }
-    multi method coerce(Array $val!) {
-        PDF::Object.compose( :array($val), :$.reader )
+    multi method coerce(Array $array!) {
+        PDF::Object.compose( :$array, :$.reader )
     }
     multi method coerce($val) is default { $val }
 

@@ -52,8 +52,7 @@ class PDF::Object {
     multi method compose( Hash :$dict!, *%etc) {
         require ::("PDF::Object::Dict");
 	my $class = ::("PDF::Object::Dict");
-	$class = $.delegate( :$dict, :fallback($class) )
-	    if self.is-typed($dict);
+	$class = $.delegate( :$dict, :fallback($class) );
 	$class.new( :$dict, |%etc );
     }
 
@@ -66,23 +65,22 @@ class PDF::Object {
         my Hash $dict = $stream<dict> // {};
         require ::("PDF::Object::Stream");
 	my $class = ::("PDF::Object::Stream");
-	$class = $.delegate( :$dict, :fallback($class) )
-	    if self.is-typed($dict);
+	$class = $.delegate( :$dict, :fallback($class) );
         $class.new( :$dict, |%params );
     }
 
-    proto method is-typed(|c --> Bool) {*}
+    proto method is-indirect-type(|c --> Bool) {*}
 
-    multi method is-typed(Hash $dict!) {
+    multi method is-indirect-type(Hash $dict!) {
 	? <Type FunctionType PatternType ShadingType>.first({$dict{$_}:exists});
     }
 
     #| tba
-    multi method is-typed(Array $array) {
+    multi method is-indirect-type(Array $array) {
 	Mu
     }
 
-    multi method is-typed($) {
+    multi method is-indirect-type($) {
 	False
     }				    
 
