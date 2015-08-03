@@ -14,7 +14,7 @@ use PDF::Writer;
 
 sub prefix:</>($name){ PDF::Object.compose(:$name) };
 
-my $root = PDF::Object.compose( :dict{ :Type(/'Catalog') });
+my $root = PDF::Object.coerce: { :Type(/'Catalog') };
 $root.Outlines = { :Type(/'Outlines'), :Count(0) };
 $root.Pages = { :Type(/'Pages') };
 
@@ -133,10 +133,40 @@ my $writer = PDF::Writer.new( :$root, :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 ```
 
-# DOM builder classess
+# DOM builder classes
 
-This module also provides the framework for `PDF::DOM`'s extensive library of document object classess. This
+## PDF::Object::Delegator
+
+This forms the basis for `PDF::DOM`'s extensive library of document object classess. This
 includes classes and roles for object construction, validation and serialization.
 
+- The `PDF::Object` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::Object::Delegator`.
+
+- The delegator may be subclassed. For example, the upstream module `PDF::DOM` subclasses `PDF::Object::Delegator` with
+`PDF::DOM::Delegator`.
+
+## PDF::Object::Tie
+
+This is a role used by PDF::Object. It makes the PDF object tree appear as a seamless
+structure comprised of nested hashs (PDF dictionarys) and arrays.
+
+PDF::Object::Tie::Hash and PDF::Object::Tie::Array encapsulate Hash and Array accces.
+
+- If the object has an associated  `reader` property, indirect references are resolved lazily and transparently
+as elements in the structure are dereferenced.
+- Hashs and arrays automaticaly coerced to objects on assignment to a parent object. For example:
+
+
 ```
+sub prefix:</>($name){ PDF::Object.compose(:$name) };
+my $catalog = PDF::Object.coerce({ :Type(/'Catalog') });
+$catalog<Outlines> = PDF::Object.coerce( { :Type(/'Outlines'), :Count(0) } );
+```
+
+is equivalent to:
+
+```
+sub prefix:</>($name){ PDF::Object.compose(:$name) };
+my $catalog = PDF::Object.coerce({ :Type(/'Catalog') });
+$catalog<Outlines> = { :Type(/'Outlines'), :Count(0) };
 ```
