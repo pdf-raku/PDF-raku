@@ -58,7 +58,7 @@ ET
 
 lives-ok {
     my $Resources = $Pages<Kids>[0]<Resources>;
-    my $new-page = PDF::Object.compose( :dict{ :Type(/'Page'), :MediaBox[0, 0, 420, 595], :$Resources } );
+    my $new-page = PDF::Object.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
     my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );
     $new-page<Contents> = $contents;
     $new-page<Parent> = $Pages;
@@ -71,7 +71,7 @@ is $contents.Length, 41, '$stream<Length> is tied to $stream.Length';
 $contents<Length>:delete;
 ok !$contents.Length.defined, '$stream<Length>:delete propagates to $stream.Length';
 
-my $new-root = PDF::Object.compose( :dict{ :Type(/'Catalog') });
+my $new-root = PDF::Object.coerce: { :Type(/'Catalog') };
 $new-root<Outlines> = $root-obj<Outlines>;
 $new-root<Pages> = $root-obj<Pages>;
 

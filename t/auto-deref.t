@@ -26,8 +26,7 @@ class t::DummyReader {
 
 my $reader = t::DummyReader.new;
 
-my $obj = PDF::Object.compose(
-    :dict{
+my $obj = PDF::Object.coerce( {
         :A(10),
         :B(:ind-ref[42,5]),
         :Kids[

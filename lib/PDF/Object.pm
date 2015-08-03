@@ -95,6 +95,16 @@ class PDF::Object {
 	$delegator.delegate(|%opt);
     }
 
+    # coerce Hash & Array assignments to objects
+    multi method coerce(PDF::Object $val!) { $val }
+    multi method coerce(Hash $dict!, :$reader) {
+        PDF::Object.compose( :$dict, :$reader )
+    }
+    multi method coerce(Array $array!, :$reader) {
+        PDF::Object.compose( :$array, :$reader )
+    }
+    multi method coerce($val) is default { $val }
+
     #| unique identifier for this object instance
     method id { ~ self.WHICH }
 

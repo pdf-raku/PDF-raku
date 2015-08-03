@@ -44,19 +44,9 @@ role PDF::Object::Tie {
 	$att.gen-accessor = $gen-accessor;
     }
 
-    # coerce Hash & Array assignments to objects
-    multi method coerce(PDF::Object $val!) { $val }
-    multi method coerce(Hash $dict!) {
-        PDF::Object.compose( :$dict, :$.reader )
-    }
-    multi method coerce(Array $array!) {
-        PDF::Object.compose( :$array, :$.reader )
-    }
-    multi method coerce($val) is default { $val }
-
     method lvalue($_) is rw {
         when PDF::Object  { $_ }
-        when Hash | Array { $.coerce($_) }
+        when Hash | Array { $.coerce($_, :$.reader) }
         default           { $_ }
     }
 

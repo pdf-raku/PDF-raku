@@ -17,7 +17,7 @@ my $dict2 = { :ID(2) };
 # create circular hash ref
 $dict2<SelfRef> := $dict2;
 
-my $root-obj = PDF::Object.compose( :array[ $dict1, $dict2 ] );
+my $root-obj = PDF::Object.coerce: [ $dict1, $dict2 ];
 # create circular array reference
 $root-obj[2] := $root-obj;
 
@@ -36,7 +36,7 @@ is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => 
 
 is-deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], ID => :int(2)}]), "circular hash ref resolution";
 
-my $doc = PDF::Object.compose( :dict{
+my $doc = PDF::Object.coerce: {
     :Type(/'Catalog'),
     :Pages{
             :Type(/'Pages'),
@@ -55,7 +55,7 @@ my $doc = PDF::Object.compose( :dict{
             :Count(1),
     },
     :Outlines{ :Type(/'Outlines'), :Count(0) },
-    });
+};
 
 $doc<Pages><Kids>[0]<Parent> = $doc<Pages>;
 
@@ -90,7 +90,7 @@ is-json-equiv $objects[3], (:ind-obj[4, 0, :dict{
                                                },
                                    ]), 'page object';
 
-my $obj-with-utf8 = PDF::Object.compose :dict{ :Name(/"Heydər Əliyev") };
+my $obj-with-utf8 = PDF::Object.coerce: { :Name(/"Heydər Əliyev") };
 
 my $writer = PDF::Writer.new;
 
@@ -104,7 +104,7 @@ is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'com
 is $stream<encoded>.chars, 54, 'compressed stream length';
 
 # just to define current behaviour. blows up during final write.
-my $obj-with-bad-byte-string = PDF::Object.compose :dict{ :Name("Heydər Əliyev") };
+my $obj-with-bad-byte-string = PDF::Object.coerce: { :Name("Heydər Əliyev") };
 $objects = PDF::Storage::Serializer.new.body($obj-with-bad-byte-string)<objects>;
 dies-ok {$writer.write( :ind-obj($objects[0].value) )}, 'out-of-range byte-string dies during write';
 

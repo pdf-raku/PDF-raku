@@ -7,25 +7,24 @@ use PDF::Writer;
 
 sub prefix:</>($name){ PDF::Object.compose(:$name) };
 
-my $root-object = PDF::Object.compose( :dict{ :Type(/'Catalog') });
-my $outlines = PDF::Object.compose( :dict{ :Type(/'Outlines'), :Count(0) } );
-$root-object<Outlines> = $outlines;
+my $doc-root = PDF::Object.coerce: { :Type(/'Catalog') };
+my $outlines = PDF::Object.coerce: { :Type(/'Outlines'), :Count(0) };
+$doc-root<Outlines> = $outlines;
 
-my $pages = PDF::Object.compose( :dict{ :Type(/'Pages') } );
-$root-object<Pages> = $pages;
+my $pages = PDF::Object.coerce: { :Type(/'Pages') };
+$doc-root<Pages> = $pages;
 
-my $page = PDF::Object.compose( :dict{ :Type(/'Page'), :MediaBox[0, 0, 420, 595] } );
+my $page = PDF::Object.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595] };
 $pages<Kids> = [ $page ];
 $pages<Count> = + $pages<Kids>;
 
-my $font = PDF::Object.compose(
-    :dict{
+my $font = PDF::Object.coerce: {
         :Type(/'Font'),
         :Subtype(/'Type1'),
         :Name(/'F1'),
         :BaseFont(/'Helvetica'),
         :Encoding(/'MacRomanEncoding'),
-    });
+    };
 
 $page<Resources> = { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
 
@@ -33,7 +32,7 @@ my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td 
 $page<Contents> = $contents;
 $page<Parent> = $pages;
 
-my $body = PDF::Storage::Serializer.new.body($root-object);
+my $body = PDF::Storage::Serializer.new.body($doc-root);
 my $root = $body<trailer><dict><Root>;
 
 my $ast = :pdf{ :version(1.2), :$body };
