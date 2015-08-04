@@ -54,7 +54,7 @@ module PDF::Object::Util {
 
     multi sub from-ast( Str :$encoded! ) { $encoded }
 
-    multi sub from-ast( Str :$hex-string! ) { PDF::Object.compose( :$hex-string ) }
+    multi sub from-ast( Str :$hex-string! ) { PDF::Object.coerce( :$hex-string ) }
 
     multi sub from-ast( Array :$ind-ref! ) {
         :$ind-ref;
@@ -66,17 +66,17 @@ module PDF::Object::Util {
     }
 
     multi sub from-ast( Numeric :$int! ) {
-        PDF::Object.compose :$int;
+        PDF::Object.coerce :$int;
     }
 
     multi sub from-ast( Str :$literal! ) { $literal }
 
     multi sub from-ast( Str :$name! ) {
-        PDF::Object.compose :$name;
+        PDF::Object.coerce :$name;
     }
 
     multi sub from-ast( Numeric :$real! ) {
-        PDF::Object.compose :$real;
+        PDF::Object.coerce :$real;
     }
 
     multi sub from-ast( Hash :$stream! ) {

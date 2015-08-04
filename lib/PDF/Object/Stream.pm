@@ -152,7 +152,7 @@ class PDF::Object::Stream
             $!decoded //= $!encoded;
             $!encoded = Nil;
             require PDF::Object;
-            self<Filter> = PDF::Object.compose( :name<FlateDecode> );
+            self<Filter> = PDF::Object.coerce( :name<FlateDecode> );
             self<Length>:delete;        # recompute this later
         }
     }
