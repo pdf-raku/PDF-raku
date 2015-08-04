@@ -6,7 +6,7 @@ use PDF::Writer;
 use PDF::Storage::Serializer;
 use PDF::Object;
 
-sub prefix:</>($name){ PDF::Object.compose(:$name) };
+sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 
 my $reader = PDF::Reader.new();
 
@@ -59,7 +59,7 @@ ET
 lives-ok {
     my $Resources = $Pages<Kids>[0]<Resources>;
     my $new-page = PDF::Object.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
-    my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );
+    my $contents = PDF::Object.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );
     $new-page<Contents> = $contents;
     $new-page<Parent> = $Pages;
     $Pages<Kids>.push: $new-page;

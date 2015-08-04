@@ -8,7 +8,7 @@ use PDF::Writer;
 
 sub prefix:</>($name){
     use PDF::Object;
-    PDF::Object.compose(:$name)
+    PDF::Object.coerce(:$name)
 };
 
 # construct a nasty cyclic structure
@@ -49,7 +49,7 @@ my $doc = PDF::Object.coerce: {
                                  },
                                  :Procset[ /'PDF',  /'Text' ],
                      },
-                     :Contents( PDF::Object.compose( :stream{ :encoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET") } ) ),
+                     :Contents( PDF::Object.coerce( :stream{ :encoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET") } ) ),
                    }
                 ],
             :Count(1),

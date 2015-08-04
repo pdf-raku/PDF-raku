@@ -21,7 +21,7 @@ $root.Pages = { :Type(/'Pages') };
 $root.Pages.Kids = [ { :Type(/'Page'), :MediaBox[0, 0, 420, 595] } ];
 my $page1 = $root.Pages.Kids[0];
 
-my $font = {
+my $font = PDF::Object.coerce: {
         :Type(/'Font'),
         :Subtype(/'Type1'),
         :BaseFont(/'Helvetica'),

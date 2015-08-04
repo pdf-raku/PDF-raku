@@ -7,7 +7,7 @@ use PDF::Object;
 use PDF::Storage::Serializer;
 use PDF::Grammar::Test :is-json-equiv;
 
-sub prefix:</>($name){ PDF::Object.compose(:$name) };
+sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 
 my $reader = PDF::Reader.new();
 
@@ -22,7 +22,7 @@ my $root-obj = $root.object;
     my $Resources = $Pages<Kids>[0]<Resources>;
     my $MediaBox = $Pages<Kids>[0]<MediaBox>;
     my $new-page = { :Type(/'Page'), :$MediaBox, :$Resources, :Parent($Pages) };
-    my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
+    my $contents = PDF::Object.coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
     $new-page<Contents> = $contents;
     $Pages<Kids>.push: $new-page;
     $Pages<Count>++;

@@ -15,7 +15,7 @@ my %dict = ( :Filter<ASCIIHexDecode>,
 
 my $decoded = '100 100 Td (Hello, world!) Tj';
 my $encoded = '31303020313030205464202848656c6c6f2c20776f726c64212920546a';
-lives-ok { $stream-obj = PDF::Object.compose( :$decoded, :stream{ :%dict } ) }, 'basic stream object construction';
+lives-ok { $stream-obj = PDF::Object.coerce( :$decoded, :stream{ :%dict } ) }, 'basic stream object construction';
 stream_tests( $stream-obj, 'stream object' );
 stream_tests( $stream-obj.clone, 'stream object cloned' );
 

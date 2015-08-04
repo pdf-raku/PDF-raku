@@ -103,6 +103,9 @@ class PDF::Object {
     multi method coerce(Array $array!, :$reader) {
         PDF::Object.compose( :$array, :$reader )
     }
+    multi method coerce(*%opts) {
+	PDF::Object.compose( |%opts);
+    }
     multi method coerce($val) is default { $val }
 
     #| unique identifier for this object instance

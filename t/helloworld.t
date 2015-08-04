@@ -5,7 +5,7 @@ use PDF::Object;
 use PDF::Storage::Serializer;
 use PDF::Writer;
 
-sub prefix:</>($name){ PDF::Object.compose(:$name) };
+sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 
 my $doc-root = PDF::Object.coerce: { :Type(/'Catalog') };
 my $outlines = PDF::Object.coerce: { :Type(/'Outlines'), :Count(0) };
@@ -28,7 +28,7 @@ my $font = PDF::Object.coerce: {
 
 $page<Resources> = { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
 
-my $contents = PDF::Object.compose( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
+my $contents = PDF::Object.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 $page<Contents> = $contents;
 $page<Parent> = $pages;
 

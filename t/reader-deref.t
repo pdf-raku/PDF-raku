@@ -5,7 +5,7 @@ use PDF::Reader;
 use PDF::Writer;
 use PDF::Object;
 
-sub prefix:</>($name){ PDF::Object.compose(:$name) };
+sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 
 my $reader = PDF::Reader.new(:debug);
 

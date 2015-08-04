@@ -25,7 +25,7 @@ is $object.Length, 167, '$.Length';
 is $object.Type, 'ObjStm', '$.Type';
 
 use PDF::Object::Real;
-my $num-obj = PDF::Object.compose( :real(4.2) );
+my $num-obj = PDF::Object.coerce( :real(4.2) );
 is-deeply $num-obj.content, (:real(4.2)), 'composed object $.content';
 is +$num-obj, 4.2, 'composed object Num coercement';
 is-deeply ~$num-obj, '4.2', 'composed object Str coercement';

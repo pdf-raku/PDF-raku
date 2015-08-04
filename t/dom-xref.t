@@ -59,7 +59,7 @@ is $xref-new.Size, 37, '$xref.new .Size';
 is-json-equiv $xref-new.Index, [ 42, 37], '$xref.new .Index';
 is-deeply $xref, $xref-roundtrip2, '$xref.new round-trip';
 
-my $xref-wide = PDF::Object.compose( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>) }, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]]} );
+my $xref-wide = PDF::Object.coerce( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>) }, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]]} );
 dies-ok {$xref-wide.encode}, 'encode incomplete setup';
 $xref-wide.first-obj-num = 42;
 $xref-wide<Size> = 2;
