@@ -21,7 +21,7 @@ class PDF::Object::Type::ObjStm
     method cb-init {
 	self.N //= 0;
 	self.First //= 0;
-        self.Type //= PDF::Object.compose( :name<ObjStm> );
+        self.Type //= PDF::Object.coerce( :name<ObjStm> );
     }
 
     method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {

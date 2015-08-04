@@ -62,7 +62,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my $dict = PDF::Object.compose( |%(.<trailer>) );
+                my $dict = PDF::Object.coerce( |%(.<trailer>) );
                 self!"get-trailer-dict"( $dict.content<dict> );
                 $root-ref //= .<trailer><dict><Root><ind-ref>
                     if .<trailer><dict><Root>:exists;
@@ -333,7 +333,7 @@ class PDF::Reader {
                               || &fallback() )
                     or die "unable to parse index: $xref";
                 my Hash $index = $parse.ast;
-                $dict = PDF::Object.compose( |%($index<trailer>) );
+                $dict = PDF::Object.coerce( |%($index<trailer>) );
 
                 my $prev-offset;
 
@@ -491,7 +491,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my $dict = PDF::Object.compose( |%(.<trailer>) );
+                my $dict = PDF::Object.coerce( |%(.<trailer>) );
                 self!"get-trailer-dict"( $dict.content<dict> )
                     if $dict.content<dict>:exists;
                 $root-ref //= $dict<Root>

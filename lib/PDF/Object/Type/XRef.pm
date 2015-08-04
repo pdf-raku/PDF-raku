@@ -27,7 +27,7 @@ our class PDF::Object::Type::XRef
     method next-obj-num is rw { self<Size> }
 
     method cb-init {
-	self<Type> = PDF::Object.compose( :name<XRef> );
+	self<Type> = PDF::Object.coerce( :name<XRef> );
         self<W> //= [ 1, 2, 1 ];
         self<Size> //= 0;
     }
