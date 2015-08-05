@@ -667,13 +667,17 @@ class PDF::Reader {
     }
 
     #| dump to json
-    multi method save-as( $output-path where m:i/'.json' $/, :$ast = $.ast ) {
+    multi method save-as( $output-path where m:i/'.json' $/,
+                          Bool :$rebuild = False,
+                          :$ast = $.ast(:$rebuild) ) {
         note "dumping {$output-path}...";
         $output-path.IO.spurt( to-json( $ast ) );
     }
 
     #| write to PDF/FDF
-    multi method save-as( $output-path, :$ast = $.ast ) is default {
+    multi method save-as( $output-path,
+                          Bool :$rebuild = False,
+                          :$ast = $.ast(:$rebuild) ) is default {
         note "saving {$output-path}...";
         my $pdf-writer = PDF::Writer.new( :$.root, :$.input );
         $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );

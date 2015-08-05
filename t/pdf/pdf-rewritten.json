@@ -11,7 +11,7 @@
               ]
             },
             "Size" : {
-              "int" : 9
+              "int" : 8
             }
           }
         },
@@ -66,6 +66,9 @@
                   "Count" : {
                     "int" : 1
                   },
+                  "Type" : {
+                    "name" : "Pages"
+                  },
                   "Kids" : {
                     "array" : [
                       {
@@ -75,9 +78,6 @@
                         ]
                       }
                     ]
-                  },
-                  "Type" : {
-                    "name" : "Pages"
                   }
                 }
               }
@@ -89,17 +89,11 @@
               0,
               {
                 "dict" : {
-                  "Contents" : {
-                    "ind-ref" : [
-                      5,
-                      0
-                    ]
-                  },
                   "Resources" : {
                     "dict" : {
                       "ProcSet" : {
                         "ind-ref" : [
-                          6,
+                          7,
                           0
                         ]
                       },
@@ -107,13 +101,19 @@
                         "dict" : {
                           "F1" : {
                             "ind-ref" : [
-                              7,
+                              6,
                               0
                             ]
                           }
                         }
                       }
                     }
+                  },
+                  "Contents" : {
+                    "ind-ref" : [
+                      5,
+                      0
+                    ]
                   },
                   "Parent" : {
                     "ind-ref" : [
@@ -165,14 +165,23 @@
               6,
               0,
               {
-                "array" : [
-                  {
-                    "name" : "PDF"
+                "dict" : {
+                  "Encoding" : {
+                    "name" : "MacRomanEncoding"
                   },
-                  {
-                    "name" : "Text"
+                  "Name" : {
+                    "name" : "F1"
+                  },
+                  "BaseFont" : {
+                    "name" : "Helvetica"
+                  },
+                  "Type" : {
+                    "name" : "Font"
+                  },
+                  "Subtype" : {
+                    "name" : "Type1"
                   }
-                ]
+                }
               }
             ]
           },
@@ -181,32 +190,14 @@
               7,
               0,
               {
-                "dict" : {
-                  "Encoding" : {
-                    "name" : "MacRomanEncoding"
+                "array" : [
+                  {
+                    "name" : "PDF"
                   },
-                  "BaseFont" : {
-                    "name" : "Helvetica"
-                  },
-                  "Name" : {
-                    "name" : "F1"
-                  },
-                  "Subtype" : {
-                    "name" : "Type1"
-                  },
-                  "Type" : {
-                    "name" : "Font"
+                  {
+                    "name" : "Text"
                   }
-                }
-              }
-            ]
-          },
-          {
-            "ind-obj" : [
-              8,
-              0,
-              {
-                "int" : 45
+                ]
               }
             ]
           }

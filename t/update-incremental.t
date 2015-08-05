@@ -21,7 +21,7 @@ my $root-obj = $root.object;
     my $Pages = $root-obj<Pages>;
     my $Resources = $Pages<Kids>[0]<Resources>;
     my $MediaBox = $Pages<Kids>[0]<MediaBox>;
-    my $new-page = { :Type(/'Page'), :$MediaBox, :$Resources, :Parent($Pages) };
+    my $new-page = PDF::Object.coerce: { :Type(/'Page'), :$MediaBox, :$Resources, :Parent($Pages) };
     my $contents = PDF::Object.coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
     $new-page<Contents> = $contents;
     $Pages<Kids>.push: $new-page;

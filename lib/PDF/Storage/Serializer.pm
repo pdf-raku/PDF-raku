@@ -7,6 +7,7 @@ class PDF::Storage::Serializer {
     use PDF::Object::Dict;
     use PDF::Object::Stream;
     use PDF::Object::Util :to-ast;
+    use PDF::Writer;
 
     has Int $.size is rw = 1;  # first free object number
     has @.ind-objs;
@@ -17,7 +18,7 @@ class PDF::Storage::Serializer {
     #| Reference count hashes. Could be derivate class of PDF::Object::Dict or PDF::Object::Stream.
     multi method analyse( Hash $dict! is rw) {
         return if %!ref-count{$dict.WHICH}++; # already encountered
-        $.analyse($dict{$_}) for $dict.keys;
+        $.analyse($dict{$_}) for $dict.keys.sort;
     }
 
     #| Reference count arrays. Could be derivate class of PDF::Object::Array
@@ -121,7 +122,7 @@ class PDF::Storage::Serializer {
     method !freeze-dict( Hash $dict is rw) {
         my %frozen;
         %frozen{$_} = $.freeze( $dict{$_} )
-            for $dict.keys;
+            for $dict.keys.sort;
         %frozen;
     }
 
@@ -222,4 +223,22 @@ class PDF::Storage::Serializer {
         to-ast $other;
     }
 
+    #| do a full save to the named file
+    multi method save-as(Str $file-name!,
+			 PDF::Object :$root-object!,
+                         Numeric :$version=1.3,
+                         Str :$type='PDF',     #| e.g. 'PDF', 'FDF;
+                         Bool :$compress,
+			 Hash :$trailer-dict,
+        ) {
+
+        my Hash $body = self.body($root-object, :$compress, :$trailer-dict);
+        my Pair $root = $body<trailer><dict><Root>;
+        my Pair $ast = :pdf{ :header{ :$type, :$version }, :$body };
+
+        my $writer = PDF::Writer.new( :$root );
+        $file-name ~~ m:i/'.json' $/
+            ?? $file-name.IO.spurt( to-json( $ast ))
+            !! $file-name.IO.spurt( $writer.write( $ast ), :enc<latin-1> );
+    }
 }

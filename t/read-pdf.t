@@ -28,10 +28,14 @@ my $pdf-repaired = PDF::Reader.new();
 $pdf-repaired.open( 't/pdf/pdf.in', :repair );
 is-deeply $pdf-repaired.ast( :rebuild ), $ast, '$reader.open( :repair )';
 
-my $pdf-json = PDF::Reader.new();
 $pdf-in.save-as( 't/pdf/pdf-rewritten.json', :rebuild );
+my $pdf-json = PDF::Reader.new();
 $pdf-json.open( 't/pdf/pdf-rewritten.json' );
-is-deeply $pdf-json.ast( :rebuild ), $ast, '$reader.open( "pdf.json" )';
+my $json-ast = $pdf-json.ast( :rebuild );
+is-json-equiv $json-ast, $ast, '$reader.open( "pdf.json" )';
+
+"/tmp/a1.json".IO.spurt: to-json($json-ast);
+"/tmp/a2.json".IO.spurt: to-json($ast);
 
 $pdf-json.recompress( :compress );
 $pdf-json.save-as('t/pdf/pdf-compressed.pdf');

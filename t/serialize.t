@@ -83,9 +83,9 @@ is-json-equiv $objects[0], (:ind-obj[1, 0, :dict{
 
 is-json-equiv $objects[3], (:ind-obj[4, 0, :dict{
                                               Resources => :dict{Procset => :array[ :name<PDF>, :name<Text>],
-                                              Font => :dict{F1 => :ind-ref[5, 0]}},
+                                              Font => :dict{F1 => :ind-ref[6, 0]}},
                                               Type => :name<Page>,
-                                              Contents => :ind-ref[6, 0],
+                                              Contents => :ind-ref[5, 0],
                                               Parent => :ind-ref[3, 0],
                                                },
                                    ]), 'page object';
@@ -99,7 +99,7 @@ is-deeply $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 
 is $writer.write( :ind-obj($objects[0].value)), "1 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj", 'name write';
 
 my $objects-compressed = PDF::Storage::Serializer.new.body($doc, :compress)<objects>;
-my $stream = $objects-compressed[*-1].value[2]<stream>;
+my $stream = $objects-compressed[*-2].value[2]<stream>;
 is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'compressed dict';
 is $stream<encoded>.chars, 54, 'compressed stream length';
 

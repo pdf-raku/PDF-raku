@@ -47,7 +47,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	my $class-name = $class.^name;
 	my %entries;
 
-	for $class.^attributes.grep({ .name ~~ /^'$!'<[A..Z]>/ && .can('entry') }) -> $att {
+	for $class.^attributes.grep({.name !~~ /descriptor/ && .can('entry') }) -> $att {
 	    my $key = $att.name.subst(/^'$!'/, '');
 	    %entries{$key} = $att;
 
