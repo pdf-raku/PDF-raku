@@ -65,8 +65,8 @@ say $stream.obj.encoded;
 
 ## PDF::Reader
 
-Loads a PDF index (cross reference table and/or stream), then allows random access via the `$.ind.obj(...)` method. The `$.ast()`
-method can be used to load the entire PDF into memory for reserialization, etc.
+Loads a PDF index (cross reference table and/or stream), then allows random access via the `$.ind.obj(...)` method.
+The `$.ast()` method can be used to load the entire PDF into memory for reserialization, etc.
 
 If PDF::DOM is loaded, the document can be traversed as a DOM object tree:
 
@@ -133,11 +133,47 @@ my $writer = PDF::Writer.new( :$root, :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 ```
 
+# Opening and saving PDF files.
+
+- `my $reader = PDF::Reader.open("mydoc.pdf" :repair)`
+ Opens an input `PDF` (or `FDF`) document.
+-- The `:repair` option will cause the reader to perform a full incremental
+scan, ignoring the cross reference index and stream lengths. This can be handy if the PDF document has been edited
+by hand.
+
+- `$reader.save-as("mydoc-2.pdf", :compress, :rebuild)`
+Saves a new document, including any updates. Options:
+-- `:compress` - compress objects for minimal size
+-- `:!compress` - uncompress objects for human redability
+-- `:rebuild` - discard any unreferenced objects. reunumber remaing objects
+
+- `$reader.save-as("mydoc.json", :compress, :rebuild)`
+- my $reader2 = `$reader.open("mydoc.json")`
+Documents can also be saved and restored from an intermediate `JSON` format. This can
+be handy for debugging, analysis and/or ad-hoc patching of PDF files. Beware that
+saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
+
+- `$reader.update`
+This performs an incremental update to an indexed `PDF` documents (not applicable to
+PDF's opened with `:repair`, unindexed FDF or JSON files). A new section is appended to the PDF that
+contains only updated and newly created objects. This method can be used as a fast and efficient way to make
+small updates to a large existing PDF document.
+
+- `my $serializer = PDF::Storage::Serializer.new;
+   $serializer.save-as("mynewdoc.pdf", $root-object, :$trailer-dict, :$type, :$version, :$compress)`
+This method is used to create a new PDF from scratch. $object is the document root object (e.g a Catalog object).
+-- `:trailer-dict` contains any additional entries to be included in the trailer dict, e.g. `ID` and `Info`. Note: `Root`,
+`Prev` and `First` are automatically generated.
+-- `:type` is `PDF` (default) or `FDF`
+-- `:version` is PDF version; Default: `1.3`
+-- `:compress` can be be True, False or Mu (leave as is)
+
+
 # DOM builder classes
 
 ## PDF::Object::Delegator
 
-This forms the basis for `PDF::DOM`'s extensive library of document object classess. This
+This forms the basis for `PDF::DOM`'s extensive library of document object classes. This
 includes classes and roles for object construction, validation and serialization.
 
 - The `PDF::Object` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::Object::Delegator`.
@@ -170,3 +206,38 @@ sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 my $catalog = PDF::Object.coerce({ :Type(/'Catalog') });
 $catalog<Outlines> = { :Type(/'Outlines'), :Count(0) };
 ```
+
+PDF::Object::Tie also provides the `entry` trait (hashes) and `index` (arrays) trait for declaring accessors.
+
+The following demonstrates setup of DOM namespace `My::DOM` and document root class `My::DOM::Catalog`.
+```
+use PDF::Object::Tie;
+use PDF::Object::Type;
+use PDF::Object::Dict;
+
+class My::Delegator is PDF::Object::Delegator {
+    method class-paths {<My::DOM PDF::DOM::Type>}
+}
+
+PDF::Object.delegator = My::Delegator;
+
+class My::DOM::Catalog
+    is PDF::Object::Dict
+    does PDF::Object::Type {
+
+    # see [PDF 1.7 TABLE 3.25 Entries in the catalog dictionary]
+    use PDF::Object::Name;
+    has PDF::Object::Name $.Version is entry;        #| (Optional; PDF 1.4) The version of the PDF specification to which the document conforms (for example, /1.4) 
+    has Hash $.Pages is entry(:required, :indirect); #| (Required; must be an indirect reference) The page tree node
+    has Array $.Kids is entry;
+    # ... etc
+}
+```
+if we then say
+```
+my $Catalog = PDF::Object.coerce: { :Type( :name<Catalog> ), :Version( :name<PDF>) , :Pages{ :Type{ :name<Pages> }, :Kids[], :Count(0) } };
+
+```
+- `$Catalog` is coerced to type `My::DOM::Catalog`.
+- `$Catalog.Pages` will autoload and Coerce to type `My::DOM::Pages`
+- If that should fail (and there's no `PDF::Object::Type::Pages` class), it falls-back to a plain `PDF::Object::Dict` object.
