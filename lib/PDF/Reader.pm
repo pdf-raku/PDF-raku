@@ -13,14 +13,14 @@ class PDF::Reader {
     has $.input is rw;  # raw PDF image (latin-1 encoding)
     has Str $.file-name;
     has Hash %!ind-obj-idx;
-    has PDF::Storage::IndObj $.root is rw;
+    has PDF::Storage::IndObj $!root;
     has $.ast is rw;
     has Bool $.auto-deref is rw = True;
     has Rat $.version is rw;
     has Str $.type is rw;
     has Int $.prev;
     has Int $.size is rw;   #= /Size entry in trailer dict ~ first free object number
-    has Hash $.trailer-dict;
+    has Hash $.trailer;
     has Bool $.defunct is rw = False;
 
     method actions {
@@ -28,11 +28,11 @@ class PDF::Reader {
     }
 
     #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
-    method !get-trailer-dict($dict) {
-        $!trailer-dict //= {};
+    method !set-trailer($dict) {
+        $!trailer //= {};
         
         for <Root Encrypt Info ID> {
-            $!trailer-dict{$_} //= to-ast $dict{$_}
+            $!trailer{$_} //= to-ast $dict{$_}
             if $dict{$_}:exists
         }
     }
@@ -44,8 +44,6 @@ class PDF::Reader {
             unless $ast.isa(Hash) && ($ast<pdf>:exists);
         $!type = $ast<pdf><header><type> // 'PDF';
         $!version = $ast<pdf><header><version> // 1.2;
-
-        my $root-ref;
 
         for $ast<pdf><body>.list {
 
@@ -63,15 +61,9 @@ class PDF::Reader {
 
             if .<trailer> {
                 my $dict = PDF::Object.coerce( |%(.<trailer>) );
-                self!"get-trailer-dict"( $dict.content<dict> );
-                $root-ref //= .<trailer><dict><Root><ind-ref>
-                    if .<trailer><dict><Root>:exists;
+                self!"set-trailer"( $dict.content<dict> );
             }
        }
-
-        $root-ref.defined
-            ?? ($!root = $.ind-obj( $root-ref[0], $root-ref[1]) )
-            !! die "unable to find root object";
 
         $ast;
     }
@@ -293,7 +285,6 @@ class PDF::Reader {
         my Int:_ $xref-offset = $!prev;
         my Int $input-bytes = $.input.chars;
 
-        my $root-ref;
         my @obj-idx;
 
         while $xref-offset.defined {
@@ -367,14 +358,11 @@ class PDF::Reader {
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;
             }
 
-            self!"get-trailer-dict"($dict);
+            self!"set-trailer"($dict);
 
             $xref-offset = $dict<Prev>:exists
                 ?? $dict<Prev>
                 !! Nil;
-
-            $root-ref //= $dict<Root>
-                if $dict<Root>:exists;
 
             $.size = $dict<Size>:exists
                 ?? $dict<Size>
@@ -411,10 +399,6 @@ class PDF::Reader {
         my Int $max-obj-num = max( %!ind-obj-idx.keys>>.Int );
         $.size = $max-obj-num + 1
             if $.size <= $max-obj-num;
-
-        $root-ref.defined
-            ?? ($!root = $.ind-obj( $root-ref.value[0], $root-ref.value[1]) )
-            !! die "unable to find root object";
     }
 
     #| bypass any indices. directly parse and reconstruct index fromn objects.
@@ -457,7 +441,7 @@ class PDF::Reader {
 
                 if $stream-type && $stream-type eq 'XRef' {
                     if $dict<Root>:exists {
-                        self!"get-trailer-dict"( $dict );
+                        self!"set-trailer"( $dict );
                         $root-ref //= $dict<Root>
                     }
                     # discard existing /Type /XRef stream objects. These are specific to the input PDF
@@ -492,16 +476,15 @@ class PDF::Reader {
 
             if .<trailer> {
                 my $dict = PDF::Object.coerce( |%(.<trailer>) );
-                self!"get-trailer-dict"( $dict.content<dict> )
+                self!"set-trailer"( $dict.content<dict> )
                     if $dict.content<dict>:exists;
                 $root-ref //= $dict<Root>
                     if $dict<Root>:exists;
             }
         }
 
-        $root-ref.defined
-            ?? ($!root = $.ind-obj( $root-ref.value[0], $root-ref.value[1]) )
-            !! die "unable to find root object";
+        die "unable to find root object"
+            unless $root-ref.defined;
 
         $ast;
     }
@@ -635,9 +618,18 @@ class PDF::Reader {
         }
     }
 
+    method root is rw {
+       $!root //= do {
+            my Pair $root-ref = $.trailer<Root>;
+	    die "unable to find root object"
+		unless $root-ref.defined;
+            $.ind-obj( $root-ref.value[0], $root-ref.value[1])
+       }
+    }
+
     multi method ast( Bool :$rebuild! where $rebuild ) {
 
-        my $body = PDF::Storage::Serializer.new.body( $.root.object, :$.trailer-dict );
+        my $body = PDF::Storage::Serializer.new.body( $.root.object, :$.trailer );
 
         :pdf{
             :header{ :$.type, :$.version },
@@ -649,8 +641,8 @@ class PDF::Reader {
     #| suitable as input to PDF::Writer
     multi method ast( ) {
         my List $objects = self.get-objects( );
-        my %dict = self.trailer-dict.list
-            if self.trailer-dict.defined;
+        my %dict = self.trailer.list
+            if self.trailer.defined;
 
         %dict<Prev>:delete;
         %dict<Root> = $.root.ind-ref;

@@ -32,14 +32,14 @@ class PDF::Storage::Serializer {
     }
 
     #| rebuilds the body
-    multi method body( PDF::Object $root-object!, Hash :$trailer-dict = {}, :$*compress) {
+    multi method body( PDF::Object $root-object!, Hash :$trailer = {}, :$*compress) {
         $root-object.?cb-finish;
         %!ref-count = ();
         $.analyse( $root-object );
         my $root = $.freeze( $root-object, :indirect);
         my $objects = $.ind-objs;
 
-        my %dict = $trailer-dict.list;
+        my %dict = $trailer.list;
         %dict<Prev>:delete;
         %dict<Root> = $root;
         %dict<Size> = :int($.size);
@@ -51,7 +51,7 @@ class PDF::Storage::Serializer {
     #| - that have been fetched and updated, or
     #| - have been newly inserted (no object-number)
     #| of course, 
-    multi method body( $reader, Bool :$updates! where $_, Hash :$trailer-dict = {}, :$*compress ) {
+    multi method body( $reader, Bool :$updates! where $_, Hash :$trailer = {}, :$*compress ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
         my $root-object = $reader.root.object;
         $root-object.?cb-finish;
@@ -80,7 +80,7 @@ class PDF::Storage::Serializer {
             $.freeze( $object, :indirect )
         }
 
-        my %dict = $trailer-dict.list;
+        my %dict = $trailer.list;
         %dict<Prev> = :int($prev);
         %dict<Root> = $root-ref;
         %dict<Size> = :int($.size);
@@ -229,10 +229,10 @@ class PDF::Storage::Serializer {
                          Numeric :$version=1.3,
                          Str :$type='PDF',     #| e.g. 'PDF', 'FDF;
                          Bool :$compress,
-			 Hash :$trailer-dict,
+			 Hash :$trailer,
         ) {
 
-        my Hash $body = self.body($root-object, :$compress, :$trailer-dict);
+        my Hash $body = self.body($root-object, :$compress, :$trailer);
         my Pair $root = $body<trailer><dict><Root>;
         my Pair $ast = :pdf{ :header{ :$type, :$version }, :$body };
 
