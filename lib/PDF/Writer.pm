@@ -182,6 +182,22 @@ class PDF::Writer {
 
     }
 
+    #| invertors for PDG::Grammar::Function expr term
+    #| an array is a sequence of sub-expressions
+    multi method write(Array :$expr!) {
+	[~] '{ ', $expr.map({ $.write($_) }).join(' '), ' }';
+    }
+
+    #| 'ifelse' functional expression
+    multi method write(Hash :$expr! where {.<else>:exists}) {
+	($.write( $expr<if>) , $.write( $expr<else> ), 'ifelse').join(' ');
+    }
+
+    #| 'if' functional expression
+    multi method write(Hash :$expr!) {
+	[~] $.write( $expr<if>) ,' if'
+    }
+
     multi method write( Str :$hex-char! ) {
         for $hex-char {
             die "multi or zero-byte hex character: {.perl}"
