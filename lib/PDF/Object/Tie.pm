@@ -8,6 +8,12 @@ role PDF::Object::Tie {
     has Int $.obj-num is rw;
     has Int $.gen-num is rw;
 
+    method ind-ref {
+	die "not an indirect obect"
+	    unless $.obj-num && $.obj-num > 0;
+	:ind-ref[ $.obj-num, $.gen-num ];
+    }
+
     my role TiedEntry {
 	has Bool $.entry = True;
 	has Bool $.is-required is rw;

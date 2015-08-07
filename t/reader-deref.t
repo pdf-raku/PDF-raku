@@ -15,8 +15,7 @@ sub deref($val is rw, *@ops) is rw {
 
 $reader.open( 't/pdf/pdf.in' );
 
-my $root-obj = $reader.root;
-my $catalog = $root-obj.object;
+my $catalog = $reader.root;
 
 my $type = $reader.deref($catalog,<Type>);
 is $type, 'Catalog', '$catalog<Type>';

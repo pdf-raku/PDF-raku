@@ -13,14 +13,12 @@ class PDF::Reader {
     has $.input is rw;  # raw PDF image (latin-1 encoding)
     has Str $.file-name;
     has Hash %!ind-obj-idx;
-    has PDF::Storage::IndObj $!root;
     has $.ast is rw;
     has Bool $.auto-deref is rw = True;
     has Rat $.version is rw;
     has Str $.type is rw;
     has Int $.prev;
     has Int $.size is rw;   #= /Size entry in trailer dict ~ first free object number
-    has Hash $.trailer;
     has Bool $.defunct is rw = False;
 
     method actions {
@@ -29,12 +27,24 @@ class PDF::Reader {
 
     #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
     method !set-trailer($dict) {
-        $!trailer //= {};
-        
+        my $object = PDF::Object.coerce({}, :reader(self) );
+	my $obj-num = 0;
+	my $gen-num = 0;
+	$object.obj-num = $obj-num;
+	$object.gen-num = $gen-num;
+
         for <Root Encrypt Info ID> {
-            $!trailer{$_} //= to-ast $dict{$_}
+            $object{$_} //= $dict{$_}
             if $dict{$_}:exists
         }
+
+	#| the trailer is indexed as 0, 0
+	my $ind-obj = PDF::Storage::IndObj.new( :$object, :$obj-num, :$gen-num );
+
+	%!ind-obj-idx{$obj-num}{$gen-num} = {
+	    :type(1),
+	    :$ind-obj,
+	};
     }
 
     #| derserialize a json dump
@@ -51,7 +61,7 @@ class PDF::Reader {
                 next unless .<ind-obj>:exists;
                 my $ind-obj = .<ind-obj>;
                 my ($obj-num, $gen-num, $object) = @( $ind-obj );
-                
+
                 %!ind-obj-idx{$obj-num}{$gen-num} //= {
                     :type(1),
                     :$ind-obj,
@@ -131,7 +141,7 @@ class PDF::Reader {
         my $ind-obj;
         my $actual-obj-num;
         my $actual-gen-num;
- 
+
         given $idx<type> {
             when 1 {
                 # type 1 reference to an external object
@@ -241,7 +251,7 @@ class PDF::Reader {
         use PDF::Grammar::Doc;
         # file should start with: %PDF-n.m, (where n, m are single
         # digits giving the major and minor version numbers).
-            
+
         my Str $preamble = $.input.substr(0, 8);
 
         PDF::Grammar::Doc.subparse($preamble, :$.actions, :rule<header>)
@@ -273,7 +283,6 @@ class PDF::Reader {
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
     #| via the $.ind-obj() method.
     multi method load('PDF') is default {
-
         my Int $tail-bytes = min(1024, $.input.chars);
         my Str $tail = $.input.substr(* - $tail-bytes);
 
@@ -286,13 +295,13 @@ class PDF::Reader {
         my Int $input-bytes = $.input.chars;
 
         my @obj-idx;
+        my $dict;
 
         while $xref-offset.defined {
             die "xref '/Prev' cycle detected \@$xref-offset"
                 if %offsets-seen{$xref-offset}++;
             # see if our cross reference table is already contained in the current tail
             my $xref;
-            my $dict;
             my &fallback = sub {};
             constant SIZE = 4096;       # big enough to usually contain xref
 
@@ -302,7 +311,7 @@ class PDF::Reader {
             elsif $input-bytes - $tail-bytes - $xref-offset <= SIZE {
                 # xref abuts currently read $tail
                 my $lumbar-bytes = min(SIZE, $input-bytes - $tail-bytes - $xref-offset);
-                $xref = $.input.substr( $xref-offset, $lumbar-bytes) ~ $tail;                
+                $xref = $.input.substr( $xref-offset, $lumbar-bytes) ~ $tail;
             }
             else {
                 my Int $xref-len = min(SIZE, $input-bytes - $xref-offset);
@@ -358,8 +367,6 @@ class PDF::Reader {
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;
             }
 
-            self!"set-trailer"($dict);
-
             $xref-offset = $dict<Prev>:exists
                 ?? $dict<Prev>
                 !! Nil;
@@ -395,6 +402,8 @@ class PDF::Reader {
             %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(2), :$index, :$ref-obj-num };
         }
 
+        self!"set-trailer"($dict);
+
         #| don't entirely trust /Size entry in trailer dictionary
         my Int $max-obj-num = max( %!ind-obj-idx.keys>>.Int );
         $.size = $max-obj-num + 1
@@ -415,7 +424,7 @@ class PDF::Reader {
                 next unless .key eq 'ind-obj';
                 my $ind-obj = .value;
                 my ($obj-num, $gen-num, $object, $offset) = @( $ind-obj );
-                
+
                 my $stream-type;
                 my $encoded;
                 my $dict;
@@ -513,6 +522,9 @@ class PDF::Reader {
         for %!ind-obj-idx.pairs {
             my Int $obj-num = .key.Int;
 
+            my subset IsTrailer of UInt where 0;
+            next if $obj-num ~~ IsTrailer;
+
             # discard objstm objects (/Type /ObjStm)
             next
                 if $unpack && %objstm-objects{$obj-num};
@@ -531,7 +543,7 @@ class PDF::Reader {
                     when 1 {
                         # type 1 regular top-level/inuse object
                         $offset = $entry<offset>
-                    } 
+                    }
                     when 2 {
                         # type 2 embedded object
                         next unless $unpack;
@@ -618,18 +630,21 @@ class PDF::Reader {
         }
     }
 
+    method trailer {
+        self.ind-obj(0, 0).object;
+    }
+
     method root is rw {
-       $!root //= do {
-            my Pair $root-ref = $.trailer<Root>;
-	    die "unable to find root object"
-		unless $root-ref.defined;
-            $.ind-obj( $root-ref.value[0], $root-ref.value[1])
-       }
+        my $trailer = $.trailer
+            // die "unable to find trailer";
+        die "unable to find root object"
+            unless $trailer<Root>:exists;
+        $.trailer<Root>;
     }
 
     multi method ast( Bool :$rebuild! where $rebuild ) {
 
-        my $body = PDF::Storage::Serializer.new.body( $.root.object, :$.trailer );
+        my $body = PDF::Storage::Serializer.new.body( $.trailer );
 
         :pdf{
             :header{ :$.type, :$.version },
@@ -645,7 +660,9 @@ class PDF::Reader {
             if self.trailer.defined;
 
         %dict<Prev>:delete;
-        %dict<Root> = $.root.ind-ref;
+        my $root-ref = $.root.ind-ref;
+
+        %dict<Root> = $root-ref;
         %dict<Size> = :int($.size)
             unless $.type eq 'FDF';
 
@@ -671,7 +688,8 @@ class PDF::Reader {
                           Bool :$rebuild = False,
                           :$ast = $.ast(:$rebuild) ) is default {
         note "saving {$output-path}...";
-        my $pdf-writer = PDF::Writer.new( :$.root, :$.input );
+        my $root = $.root.content;
+        my $pdf-writer = PDF::Writer.new( :$root, :$.input );
         $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
     }
 

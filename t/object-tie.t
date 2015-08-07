@@ -12,7 +12,7 @@ my $reader = PDF::Reader.new();
 
 $reader.open( 't/pdf/pdf.in' );
 
-my $root-obj = $reader.root.object;
+my $root-obj = $reader.root;
 is-deeply $root-obj.reader, $reader, 'root object .reader';
 is $root-obj.obj-num, 1, 'root object .obj-num';
 is $root-obj.gen-num, 0, 'root object .gen-num';
@@ -71,11 +71,11 @@ is $contents.Length, 41, '$stream<Length> is tied to $stream.Length';
 $contents<Length>:delete;
 ok !$contents.Length.defined, '$stream<Length>:delete propagates to $stream.Length';
 
-my $new-root = PDF::Object.coerce: { :Type(/'Catalog') };
-$new-root<Outlines> = $root-obj<Outlines>;
-$new-root<Pages> = $root-obj<Pages>;
+my $Root = PDF::Object.coerce: { :Type(/'Catalog') };
+$Root<Outlines> = $root-obj<Outlines>;
+$Root<Pages> = $root-obj<Pages>;
 
-my $result = PDF::Storage::Serializer.new.body($new-root);
+my $result = PDF::Storage::Serializer.new.body(:$Root);
 my $root = $result<trailer><dict><Root>;
 my $objects = $result<objects>;
 

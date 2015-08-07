@@ -14,8 +14,7 @@ my $reader = PDF::Reader.new();
 't/pdf/pdf.in'.IO.copy('t/pdf/pdf-updated.out');
 $reader.open( 't/pdf/pdf-updated.out', :a );
 
-my $root = $reader.root;
-my $root-obj = $root.object;
+my $root-obj = $reader.root;
 
 {
     my $Pages = $root-obj<Pages>;
@@ -58,6 +57,7 @@ is-json-equiv $updated-objects[2], (
 
 my $offset = $reader.input.chars + 1;
 my $prev = $body<trailer><dict><Prev>.value;
+my $root = $root-obj.content;
 my $writer = PDF::Writer.new( :$root, :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 

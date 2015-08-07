@@ -31,34 +31,19 @@ class PDF::Storage::Serializer {
     multi method analyse( $other! is rw ) is default {
     }
 
-    #| rebuilds the body
-    multi method body( PDF::Object $root-object!, Hash :$trailer = {}, :$*compress) {
-        $root-object.?cb-finish;
-        %!ref-count = ();
-        $.analyse( $root-object );
-        my $root = $.freeze( $root-object, :indirect);
-        my $objects = $.ind-objs;
-
-        my %dict = $trailer.list;
-        %dict<Prev>:delete;
-        %dict<Root> = $root;
-        %dict<Size> = :int($.size);
-
-        return %( :$objects, :trailer{ :%dict } );
-    }
-
     #| prepare a set of objects for an incremental update. Only return indirect objects:
     #| - that have been fetched and updated, or
     #| - have been newly inserted (no object-number)
     #| of course, 
-    multi method body( $reader, Bool :$updates! where $_, Hash :$trailer = {}, :$*compress ) {
+    multi method body( $reader, Bool :$updates! where $_, :$*compress ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
-        my $root-object = $reader.root.object;
-        $root-object.?cb-finish;
+	my $trailer = $reader.trailer;
+	$trailer<Root>:exists
+	    ?? $trailer<Root>.?cb-finish
+	    !! warn "no Root entry in trailer";
 
         $.size = $reader.size;
         my $prev = $reader.prev;
-        my $root-ref = $reader.root.ind-ref;
 
         # disable auto-deref to keep all analysis and freeze stages lazy. We don't
         # need to consider or load anything that has not been already.
@@ -69,27 +54,62 @@ class PDF::Storage::Serializer {
         temp $.renumber = False;
         %!ref-count = ();
 
-        my $updated-objects = $reader.get-updates;
+        my @updated-objects = $reader.get-updates.list;
+	@updated-objects.unshift: $trailer;
 
-        for $updated-objects.list -> $object {
+        for @updated-objects -> $object {
             # reference count new objects
             $.analyse( $object );
         }
 
-        for $updated-objects.list -> $object {
-            $.freeze( $object, :indirect )
-        }
+	for @updated-objects -> $object {
+	    $.freeze( $object, :indirect )
+	}
 
-        my %dict = $trailer.list;
+        my @objects = $.ind-objs.list;
+	my subset TrailerIndObj of Pair where {.key eq 'ind-obj'
+					       && .value[2] ~~ Pair
+					       && .value[2].key eq 'dict'}
+
+	my TrailerIndObj $trailer-ind-obj = @objects.shift; # first object is trailer dict
+	my %dict = $trailer-ind-obj.value[2]<dict>.list;
+
         %dict<Prev> = :int($prev);
-        %dict<Root> = $root-ref;
         %dict<Size> = :int($.size);
 
-        my $objects = $.ind-objs;
         return {
-            :$objects,
+            :@objects,
             :trailer{ :%dict },
         }
+    }
+
+    #| rebuilds the body
+    multi method body( PDF::Object :$Root!, :$*compress) {
+	$.body( PDF::Object.coerce({ :$Root }) );
+    }
+    multi method body( PDF::Object $trailer!) {
+
+	temp $trailer.obj-num = 0;
+	temp $trailer.gen-num = 0;
+
+	$trailer<Root>:exists
+	    ?? $trailer<Root>.?cb-finish
+	    !! warn "no Root entry in trailer";
+
+        %!ref-count = ();
+        $.analyse( $trailer );
+        my $root = $.freeze( $trailer, :indirect);
+        my @objects = $.ind-objs.list;
+
+	my subset TrailerIndObj of Pair where {.key eq 'ind-obj'
+					       && .value[2] ~~ Pair
+					       && .value[2].key eq 'dict'}
+
+	my TrailerIndObj $trailer-ind-obj = @objects.shift; # first object is trailer dict
+	my %dict = $trailer-ind-obj.value[2]<dict>.list;
+        %dict<Size> = :int($.size);
+
+        return %( :@objects, :trailer{ :%dict } );
     }
 
     method !get-ind-ref( Str :$id!) {
@@ -100,15 +120,17 @@ class PDF::Storage::Serializer {
     #| construct a reverse index that unique maps unique $objects, identfied by .WHICH,
     #| to an object-number and generation-number. 
     method !index-object( Pair $ind-obj! is rw, Str :$id!, :$object) {
-        my Int $obj-num;
+        my Int $obj-num = $object.obj-num 
+	    if $object.can('obj-num');
         my Int $gen-num;
+	my subset IsTrailer of UInt where 0;
 
-        if ! $.renumber && $object.isa(PDF::Object) && $object.obj-num && $object.obj-num > 0 {
+        if $obj-num.defined && (($obj-num > 0 && ! $.renumber) || $obj-num ~~ IsTrailer) {
             # keep original object number
-            $obj-num = $object.obj-num;
             $gen-num = $object.gen-num;
         }
         else {
+            # renumber
             $obj-num = $!size++;
             $gen-num = 0;
         }
@@ -225,14 +247,13 @@ class PDF::Storage::Serializer {
 
     #| do a full save to the named file
     multi method save-as(Str $file-name!,
-			 PDF::Object :$root-object!,
+			 PDF::Object  $trailer-dict!,
                          Numeric :$version=1.3,
                          Str :$type='PDF',     #| e.g. 'PDF', 'FDF;
                          Bool :$compress,
-			 Hash :$trailer,
         ) {
 
-        my Hash $body = self.body($root-object, :$compress, :$trailer);
+        my Hash $body = self.body($trailer-dict, :$compress );
         my Pair $root = $body<trailer><dict><Root>;
         my Pair $ast = :pdf{ :header{ :$type, :$version }, :$body };
 

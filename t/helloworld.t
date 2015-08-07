@@ -7,12 +7,12 @@ use PDF::Writer;
 
 sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 
-my $doc-root = PDF::Object.coerce: { :Type(/'Catalog') };
+my $Root = PDF::Object.coerce: { :Type(/'Catalog') };
 my $outlines = PDF::Object.coerce: { :Type(/'Outlines'), :Count(0) };
-$doc-root<Outlines> = $outlines;
+$Root<Outlines> = $outlines;
 
 my $pages = PDF::Object.coerce: { :Type(/'Pages') };
-$doc-root<Pages> = $pages;
+$Root<Pages> = $pages;
 
 my $page = PDF::Object.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595] };
 $pages<Kids> = [ $page ];
@@ -32,7 +32,7 @@ my $contents = PDF::Object.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (
 $page<Contents> = $contents;
 $page<Parent> = $pages;
 
-my $body = PDF::Storage::Serializer.new.body($doc-root);
+my $body = PDF::Storage::Serializer.new.body( :$Root );
 my $root = $body<trailer><dict><Root>;
 
 my $ast = :pdf{ :version(1.2), :$body };
