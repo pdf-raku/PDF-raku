@@ -79,10 +79,10 @@ class PDF::Storage::Serializer {
     }
 
     #| rebuilds the body
-    multi method body( PDF::Object :$Root!, :$*compress) {
-	$.body( PDF::Object.coerce({ :$Root }) );
+    multi method body( PDF::Object :$Root!, :$compress) {
+	$.body( PDF::Object.coerce({ :$Root }), :$compress );
     }
-    multi method body( PDF::Object $trailer!) {
+    multi method body( PDF::Object $trailer!, :$*compress) {
 
 	temp $trailer.obj-num = 0;
 	temp $trailer.gen-num = 0;
@@ -238,12 +238,11 @@ class PDF::Storage::Serializer {
 
     #| do a full save to the named file
     multi method save-as(Str $file-name!,
-			 PDF::Object  $trailer-dict!,
+			 PDF::Object $trailer-dict!,
                          Numeric :$version=1.3,
                          Str :$type='PDF',     #| e.g. 'PDF', 'FDF;
                          Bool :$compress,
         ) {
-
         my Hash $body = self.body($trailer-dict, :$compress );
         my Pair $ast = :pdf{ :header{ :$type, :$version }, :$body };
         my $writer = PDF::Writer.new( );
