@@ -11,8 +11,9 @@ $pdf-in.open( 't/pdf/pdf-fdf.in' );
 
 is $pdf-in.version, 1.2, 'loaded version';
 is $pdf-in.type, 'FDF', 'loaded type';
-isa-ok $pdf-in.root, PDF::Object , 'root-obj';
-is $pdf-in.root.obj-num, 1, 'root-obj.obj-num';
+my $doc-root = $pdf-in.trailer<Root>;
+isa-ok $doc-root, PDF::Object , 'root-obj';
+is $doc-root.obj-num, 1, 'root-obj.obj-num';
 isa-ok $pdf-in.ind-obj(1, 0).object, PDF::Object::Dict, 'fetch via index';
 
 done;

@@ -37,11 +37,6 @@ class PDF::Storage::Serializer {
     #| of course, 
     multi method body( $reader, Bool :$updates! where $_, :$*compress ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
-	my $trailer = $reader.trailer;
-	$trailer<Root>:exists
-	    ?? $trailer<Root>.?cb-finish
-	    !! warn "no Root entry in trailer";
-
         $.size = $reader.size;
         my $prev = $reader.prev;
 
@@ -55,7 +50,7 @@ class PDF::Storage::Serializer {
         %!ref-count = ();
 
         my @updated-objects = $reader.get-updates.list;
-	@updated-objects.unshift: $trailer;
+	@updated-objects.unshift: $reader.trailer;
 
         for @updated-objects -> $object {
             # reference count new objects
@@ -92,13 +87,9 @@ class PDF::Storage::Serializer {
 	temp $trailer.obj-num = 0;
 	temp $trailer.gen-num = 0;
 
-	$trailer<Root>:exists
-	    ?? $trailer<Root>.?cb-finish
-	    !! warn "no Root entry in trailer";
-
         %!ref-count = ();
         $.analyse( $trailer );
-        my $root = $.freeze( $trailer, :indirect);
+        $.freeze( $trailer, :indirect);
         my @objects = $.ind-objs.list;
 
 	my subset TrailerIndObj of Pair where {.key eq 'ind-obj'
@@ -254,10 +245,8 @@ class PDF::Storage::Serializer {
         ) {
 
         my Hash $body = self.body($trailer-dict, :$compress );
-        my Pair $root = $body<trailer><dict><Root>;
         my Pair $ast = :pdf{ :header{ :$type, :$version }, :$body };
-
-        my $writer = PDF::Writer.new( :$root );
+        my $writer = PDF::Writer.new( );
         $file-name ~~ m:i/'.json' $/
             ?? $file-name.IO.spurt( to-json( $ast ))
             !! $file-name.IO.spurt( $writer.write( $ast ), :enc<latin-1> );

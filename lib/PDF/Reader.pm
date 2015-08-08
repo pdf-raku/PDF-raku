@@ -26,16 +26,16 @@ class PDF::Reader {
     }
 
     #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
-    method !set-trailer($dict) {
+    method !set-trailer(Hash $dict, Array :$keys = [ $dict.keys.grep({ $_ ne 'Prev' | 'Size'}) ] ) {
         my $object = PDF::Object.coerce({}, :reader(self) );
 	my $obj-num = 0;
 	my $gen-num = 0;
 	$object.obj-num = $obj-num;
 	$object.gen-num = $gen-num;
 
-        for <Root Encrypt Info ID> {
-            $object{$_} //= $dict{$_}
-            if $dict{$_}:exists
+        for $keys.sort {
+            $object{$_} = $dict{$_}
+                if $dict{$_}:exists;
         }
 
 	#| the trailer is indexed as 0, 0
@@ -417,7 +417,6 @@ class PDF::Reader {
             or die "unable to parse document";
         my $ast = $/.ast;
         my Array $body = $ast<body>;
-        my $root-ref;
 
         for $body.list.reverse {
             for .<objects>.list.reverse {
@@ -449,10 +448,7 @@ class PDF::Reader {
                 }
 
                 if $stream-type && $stream-type eq 'XRef' {
-                    if $dict<Root>:exists {
-                        self!"set-trailer"( $dict );
-                        $root-ref //= $dict<Root>
-                    }
+                    self!"set-trailer"( $dict, :keys<Root Encrypt Info ID> );
                     # discard existing /Type /XRef stream objects. These are specific to the input PDF
                     next;
                 }
@@ -487,13 +483,8 @@ class PDF::Reader {
                 my $dict = PDF::Object.coerce( |%(.<trailer>) );
                 self!"set-trailer"( $dict.content<dict> )
                     if $dict.content<dict>:exists;
-                $root-ref //= $dict<Root>
-                    if $dict<Root>:exists;
             }
         }
-
-        die "unable to find root object"
-            unless $root-ref.defined;
 
         $ast;
     }
@@ -634,14 +625,6 @@ class PDF::Reader {
         self.ind-obj(0, 0).object;
     }
 
-    method root is rw {
-        my $trailer = $.trailer
-            // die "unable to find trailer";
-        die "unable to find root object"
-            unless $trailer<Root>:exists;
-        $.trailer<Root>;
-    }
-
     multi method ast( Bool :$rebuild! where $rebuild ) {
 
         my $body = PDF::Storage::Serializer.new.body( $.trailer );
@@ -660,9 +643,6 @@ class PDF::Reader {
             if self.trailer.defined;
 
         %dict<Prev>:delete;
-        my $root-ref = $.root.ind-ref;
-
-        %dict<Root> = $root-ref;
         %dict<Size> = :int($.size)
             unless $.type eq 'FDF';
 
@@ -688,8 +668,7 @@ class PDF::Reader {
                           Bool :$rebuild = False,
                           :$ast = $.ast(:$rebuild) ) is default {
         note "saving {$output-path}...";
-        my $root = $.root.content;
-        my $pdf-writer = PDF::Writer.new( :$root, :$.input );
+        my $pdf-writer = PDF::Writer.new( :$.input );
         $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
     }
 

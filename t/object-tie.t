@@ -11,8 +11,8 @@ sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 my $reader = PDF::Reader.new();
 
 $reader.open( 't/pdf/pdf.in' );
-
-my $root-obj = $reader.root;
+warn $reader.trailer.perl;
+my $root-obj = $reader.trailer<Root>;
 is-deeply $root-obj.reader, $reader, 'root object .reader';
 is $root-obj.obj-num, 1, 'root object .obj-num';
 is $root-obj.gen-num, 0, 'root object .gen-num';
@@ -75,13 +75,11 @@ my $Root = PDF::Object.coerce: { :Type(/'Catalog') };
 $Root<Outlines> = $root-obj<Outlines>;
 $Root<Pages> = $root-obj<Pages>;
 
-my $result = PDF::Storage::Serializer.new.body(:$Root);
-my $root = $result<trailer><dict><Root>;
-my $objects = $result<objects>;
+my $body = PDF::Storage::Serializer.new.body(:$Root);
 
 # write the two page pdf
-my $ast = :pdf{ :version(1.2), :body{ :$objects } };
-my $writer = PDF::Writer.new( :$root );
+my $ast = :pdf{ :version(1.2), :$body };
+my $writer = PDF::Writer.new( );
 ok 't/hello-and-bye.pdf'.IO.spurt( $writer.write($ast), :enc<latin-1> ), 'output 2 page pdf';
 
 done;

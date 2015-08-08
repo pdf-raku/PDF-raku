@@ -14,7 +14,7 @@ my $reader = PDF::Reader.new();
 't/pdf/pdf.in'.IO.copy('t/pdf/pdf-updated.out');
 $reader.open( 't/pdf/pdf-updated.out', :a );
 
-my $root-obj = $reader.root;
+my $root-obj = $reader.trailer<Root>;
 
 {
     my $Pages = $root-obj<Pages>;

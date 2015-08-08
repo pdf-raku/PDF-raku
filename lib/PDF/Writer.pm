@@ -7,18 +7,11 @@ class PDF::Writer {
 
     has PDF::Storage::Input $.input;
     has $.ast is rw;
-    has Pair:_ $.root;
     has Int:_ $.offset;
     has Int:_ $!prev;
     has %!init;
 
-    submethod BUILD(:$input, :$!ast, :$root, :$!offset = Nil, :$!prev = Nil) {
-
-        $!root = $root.can('ind-ref')
-            ?? $root.ind-ref
-            !! $root
-            if $root.defined;
-
+    submethod BUILD(:$input, :$!ast, :$!offset = Nil, :$!prev = Nil) {
         $!input = PDF::Storage::Input.compose( :value($input) )
             if $input.defined;
     }
@@ -312,12 +305,6 @@ class PDF::Writer {
 
         %dict<Size> = :int($size)
             if $size.defined;
-
-        %dict<Root> //= $.root
-            if $.root.defined;
-
-        die "unable to locate document root"
-            unless %dict<Root>.defined;
 
         ( "trailer", $.write( :%dict ), '' ).join: "\n";
     }
