@@ -10,16 +10,16 @@ use Test;
 
 use PDF::Object;
 use PDF::Storage::Serializer;
-use PDF::Writer;
 
 sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 
-my $root = PDF::Object.coerce: { :Type(/'Catalog') };
-$root.Outlines = { :Type(/'Outlines'), :Count(0) };
-$root.Pages = { :Type(/'Pages') };
+my $Root =  PDF::Object.coerce: { :Type(/'Catalog') };
+$Root<Outlines> = { :Type(/'Outlines'), :Count(0) };
+$Root<Pages> = { :Type(/'Pages') };
 
-$root.Pages.Kids = [ { :Type(/'Page'), :MediaBox[0, 0, 420, 595] } ];
-my $page1 = $root.Pages.Kids[0];
+my $page1 = PDF::Object.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595] };
+$Root<Pages><Kids> = [ $page1 ];
+$Root<Pages><Count> = 0;
 
 my $font = PDF::Object.coerce: {
         :Type(/'Font'),
@@ -28,15 +28,11 @@ my $font = PDF::Object.coerce: {
         :Encoding(/'MacRomanEncoding'),
     };
 
-$page1.Resources = { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
-$page1.Contents = PDF::Object.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
+$page1<Resources> = PDF::Object.coerce: { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
+$page1<Contents> = PDF::Object.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 
-my $body = PDF::Storage::Serializer.new.body($root);
-
-my $ast = :pdf{ :header{ :version(1.2) }, :$body };
-my $writer = PDF::Writer.new( :$root );
-'/tmp/helloworld.pdf'.IO.spurt( $writer.write( $ast ), :enc<latin1> );
-
+my $trailer = PDF::Object.coerce: { :$Root };
+PDF::Storage::Serializer.new.save-as('/tmp/helloworld.pdf', $trailer);
 ```
 
 # Classes
@@ -75,21 +71,23 @@ use PDF::Reader;
 use PDF::DOM;
 my $reader = PDF::Reader.new();
 $reader.open( 't/helloworld.pdf' );
-my $pdf = $reader.root.object;
-my $page1 = $pdf<Pages><Kids>[0];
+my $pdf = $reader.trailer;
+my $doc = $pdf<Root>;
+my $page1 = $doc<Pages><Kids>[0];
 
 # or, using the DOM::Pages.page method
-$page1 = $pdf.page(1);
+$page1 = $doc.page(1);
 
 # objects can be directly fetched by object-number and generation-number:
 $page1 = $reader.ind-obj(4, 0).object;
 
 # the PDF can be edited using DOM functions
-my $end-page = $pdf.add-page();
+my $end-page = $doc.add-page();
 
 my $font = $end-page.core-font('Times-Bold');
 my $font-size = 24;
 $end-page.gfx.text('The End!', 300, 50, :$font, :$font-size );
+$pdf.save-as('/tmp/example.pdf');
 
 ```
 
@@ -129,7 +127,7 @@ Reserializes an AST back to a PDF image with a rebuilt cross reference table.
 ```
 my $offset = $reader.input.chars + 1;
 my $prev = $body<trailer><dict><Prev>.value;
-my $writer = PDF::Writer.new( :$root, :$offset, :$prev );
+my $writer = PDF::Writer.new( :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 ```
 
@@ -137,7 +135,7 @@ my $new-body = "\n" ~ $writer.write( :$body );
 
 - `my $reader = PDF::Reader.open("mydoc.pdf" :repair)`
  Opens an input `PDF` (or `FDF`) document.
--- The `:repair` option will cause the reader to perform a full incremental
+-- The `:repair` option causes the reader to perform a full
 scan, ignoring the cross reference index and stream lengths. This can be handy if the PDF document has been edited
 by hand.
 
@@ -160,9 +158,9 @@ contains only updated and newly created objects. This method can be used as a fa
 small updates to a large existing PDF document.
 
 - `my $serializer = PDF::Storage::Serializer.new;
-   $serializer.save-as("mynewdoc.pdf", $root-object, :$trailer-dict, :$type, :$version, :$compress)`
+   $serializer.save-as("mynewdoc.pdf", $trailer-dict, :$type, :$version, :$compress)`
 This method is used to create a new PDF from scratch. $object is the document root object (e.g a Catalog object).
--- `:trailer-dict` contains any additional entries to be included in the trailer dict, e.g. `ID` and `Info`. Note: `Root`,
+-- `:trailer-dict` contains `Root` plus any additional entries to be included in the trailer dict, e.g. `ID` and `Info`. Note:
 `Prev` and `First` are automatically generated.
 -- `:type` is `PDF` (default) or `FDF`
 -- `:version` is PDF version; Default: `1.3`
