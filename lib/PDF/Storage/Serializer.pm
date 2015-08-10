@@ -48,9 +48,12 @@ class PDF::Storage::Serializer {
         # object and generation numbers
         temp $.renumber = False;
         %!ref-count = ();
+	my $trailer = $reader.trailer;
+        temp $trailer.obj-num = 0;
+        temp $trailer.gen-num = 0;
 
         my @updated-objects = $reader.get-updates.list;
-	@updated-objects.unshift: $reader.trailer;
+        @updated-objects.unshift: $trailer;
 
         for @updated-objects -> $object {
             # reference count new objects

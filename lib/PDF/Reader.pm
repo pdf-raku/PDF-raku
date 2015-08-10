@@ -25,26 +25,38 @@ class PDF::Reader {
         state $actions //= PDF::Grammar::PDF::Actions.new
     }
 
-    #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
-    method !set-trailer(Hash $dict, Array :$keys = [ $dict.keys.grep({ $_ ne 'Prev' | 'Size'}) ] ) {
-        my $object = PDF::Object.coerce({}, :reader(self) );
-	my $obj-num = 0;
-	my $gen-num = 0;
-	$object.obj-num = $obj-num;
-	$object.gen-num = $gen-num;
+   method trailer {
+        self.install-trailer
+           unless %!ind-obj-idx{0}{0}:exists;
+        self.ind-obj(0, 0).object;
+    }
 
+    method install-trailer(PDF::Object::Dict $object = PDF::Object.coerce({}),
+        ) {
+        my $obj-num = 0;
+        my $gen-num = 0;
+
+        #| install the trailer at index (0,0)
+        %!ind-obj-idx{$obj-num}{$gen-num} = do {
+            $object.reader = self;
+            my $ind-obj = PDF::Storage::IndObj.new( :$object, :$obj-num, :$gen-num );
+            { :type(1), :$ind-obj }
+        }
+    }
+
+    #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
+    method !set-trailer (
+        Hash $dict,
+        Array :$keys = [ $dict.keys.grep({ $_ ne 'Prev' | 'Size'}) ],
+        ) {
+
+        my $trailer = self.trailer;
         for $keys.sort {
-            $object{$_} = $dict{$_}
-                if $dict{$_}:exists;
+            $trailer{$_} = $dict{$_}
+                 if $dict{$_}:exists;
         }
 
-	#| the trailer is indexed as 0, 0
-	my $ind-obj = PDF::Storage::IndObj.new( :$object, :$obj-num, :$gen-num );
-
-	%!ind-obj-idx{$obj-num}{$gen-num} = {
-	    :type(1),
-	    :$ind-obj,
-	};
+        $trailer;
     }
 
     #| derserialize a json dump
@@ -619,10 +631,6 @@ class PDF::Reader {
                 $compress ?? $object.compress !! $object.uncompress;
             }
         }
-    }
-
-    method trailer {
-        self.ind-obj(0, 0).object;
     }
 
     multi method ast( Bool :$rebuild! where $rebuild ) {
