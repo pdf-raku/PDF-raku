@@ -31,11 +31,45 @@ class PDF::Storage::Serializer {
     multi method analyse( $other! is rw ) is default {
     }
 
+    method !get-trailer(@objects is rw) {
+	my subset TrailerIndObj of Pair where {.key eq 'ind-obj'
+					       && .value[2] ~~ Pair
+					       && .value[2].key eq 'dict'}
+
+	my TrailerIndObj $trailer-ind-obj = @objects.shift; # first object is trailer dict
+	$trailer-ind-obj.value[2]<dict>.list;
+    }
+
+    #| rebuilds the body
+    multi method body( PDF::Object :$Root!, Bool:_ :$compress) {
+	$.body( PDF::Object.coerce({ :$Root }), :$compress, :rebuild );
+    }
+
+    multi method body( PDF::Object $trailer, Bool :$rebuild where {!$rebuild && $trailer.reader}, *%opt ) {
+	self.body( $trailer.reader, |%opt);
+    }
+
+    #| rebuild document body from root
+    multi method body( PDF::Object $trailer!, Bool:_ :$*compress) {
+
+	temp $trailer.obj-num = 0;
+	temp $trailer.gen-num = 0;
+
+        %!ref-count = ();
+        $.analyse( $trailer );
+        $.freeze( $trailer, :indirect);
+        my @objects = $.ind-objs.list;
+	my %dict = self!"get-trailer"(@objects);
+
+        %dict<Size> = :int($.size);
+
+        %( :@objects, :trailer{ :%dict } );
+    }
+
     #| prepare a set of objects for an incremental update. Only return indirect objects:
-    #| - that have been fetched and updated, or
-    #| - have been newly inserted (no object-number)
-    #| of course, 
-    multi method body( $reader, Bool :$updates! where $_, :$*compress ) {
+    #| - objects that have been fetched and updated, and
+    #| - the trailer dictionary (returned as firt object
+    multi method body( $reader, Bool :$updates! where $updates, :$*compress ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
         $.size = $reader.size;
         my $prev = $reader.prev;
@@ -53,7 +87,6 @@ class PDF::Storage::Serializer {
         temp $trailer.gen-num = 0;
 
         my @updated-objects = $reader.get-updates.list;
-        @updated-objects.unshift: $trailer;
 
         for @updated-objects -> $object {
             # reference count new objects
@@ -65,12 +98,7 @@ class PDF::Storage::Serializer {
 	}
 
         my @objects = $.ind-objs.list;
-	my subset TrailerIndObj of Pair where {.key eq 'ind-obj'
-					       && .value[2] ~~ Pair
-					       && .value[2].key eq 'dict'}
-
-	my TrailerIndObj $trailer-ind-obj = @objects.shift; # first object is trailer dict
-	my %dict = $trailer-ind-obj.value[2]<dict>.list;
+	my %dict = self!"get-trailer"(@objects);
 
         %dict<Prev> = :int($prev);
         %dict<Size> = :int($.size);
@@ -81,29 +109,15 @@ class PDF::Storage::Serializer {
         }
     }
 
-    #| rebuilds the body
-    multi method body( PDF::Object :$Root!, :$compress) {
-	$.body( PDF::Object.coerce({ :$Root }), :$compress );
-    }
-    multi method body( PDF::Object $trailer!, :$*compress) {
+    #| return objects without renumbering existing objects. requires a PDF reader
+    multi method body( $reader!, Bool:_ :$*compress ) is default {
+        my @objects = @( $reader.get-objects );
+	my %dict = self!"get-trailer"(@objects);
+        %dict<Prev>:delete;
+        %dict<Size> = :int($reader.size)
+            unless $reader.type eq 'FDF';
 
-	temp $trailer.obj-num = 0;
-	temp $trailer.gen-num = 0;
-
-        %!ref-count = ();
-        $.analyse( $trailer );
-        $.freeze( $trailer, :indirect);
-        my @objects = $.ind-objs.list;
-
-	my subset TrailerIndObj of Pair where {.key eq 'ind-obj'
-					       && .value[2] ~~ Pair
-					       && .value[2].key eq 'dict'}
-
-	my TrailerIndObj $trailer-ind-obj = @objects.shift; # first object is trailer dict
-	my %dict = $trailer-ind-obj.value[2]<dict>.list;
-        %dict<Size> = :int($.size);
-
-        return %( :@objects, :trailer{ :%dict } );
+        %( :@objects, :trailer{ :%dict } );
     }
 
     method !get-ind-ref( Str :$id!) {

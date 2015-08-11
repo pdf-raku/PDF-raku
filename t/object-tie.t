@@ -11,7 +11,6 @@ sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 my $reader = PDF::Reader.new();
 
 $reader.open( 't/pdf/pdf.in' );
-warn $reader.trailer.perl;
 my $root-obj = $reader.trailer<Root>;
 is-deeply $root-obj.reader, $reader, 'root object .reader';
 is $root-obj.obj-num, 1, 'root object .obj-num';

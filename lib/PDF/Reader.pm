@@ -7,6 +7,7 @@ class PDF::Reader {
     use PDF::Storage::IndObj;
     use PDF::Storage::Serializer;
     use PDF::Object;
+    use PDF::Object::Doc;
     use PDF::Object::Util :to-ast;
     use PDF::Writer;
 
@@ -31,8 +32,7 @@ class PDF::Reader {
         self.ind-obj(0, 0).object;
     }
 
-    method install-trailer(PDF::Object::Dict $object = PDF::Object.coerce({}),
-        ) {
+    method install-trailer(PDF::Object::Dict $object = PDF::Object::Doc.new) {
         my $obj-num = 0;
         my $gen-num = 0;
 
@@ -522,17 +522,14 @@ class PDF::Reader {
                 if .<type> == 2;
         }
 
-        for %!ind-obj-idx.pairs {
+        for %!ind-obj-idx.pairs.sort {
             my Int $obj-num = .key.Int;
-
-            my subset IsTrailer of UInt where 0;
-            next if $obj-num ~~ IsTrailer;
 
             # discard objstm objects (/Type /ObjStm)
             next
                 if $unpack && %objstm-objects{$obj-num};
 
-            for .value.pairs {
+            for .value.pairs.sort {
                 my Int $gen-num = .key.Int;
                 my Hash $entry = .value;
                 my Int $seq = 0;
@@ -560,16 +557,19 @@ class PDF::Reader {
 
                 my $final-ast;
                 if $incremental {
-                    # preparing incremental updates. only need to consider fetched objects
-                    $final-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :!eager);
 
-                    # the object hasn't been fetched. It cannot have been updated!
-                    next unless $final-ast;
+		    # preparing incremental updates. only need to consider fetched objects
+		    $final-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :!eager);
 
-                    # check updated vs original PDF value.
-                    my $original-ast = self!"fetch-ind-obj"(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
-                    # discard, if not updated
-                    next if $original-ast eqv $final-ast.value;
+		    # the object hasn't been fetched. It cannot have been updated!
+		    next unless $final-ast;
+
+		    if $offset && $obj-num {
+			# check updated vs original PDF value.
+			my $original-ast = self!"fetch-ind-obj"(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
+			# discard, if not updated
+			next if $original-ast eqv $final-ast.value;
+		    }
                 }
                 else {
                     # renegerating PDF. need to eagerly copy updates + unaltered entries
@@ -633,9 +633,8 @@ class PDF::Reader {
         }
     }
 
-    multi method ast( Bool :$rebuild! where $rebuild ) {
-
-        my $body = PDF::Storage::Serializer.new.body( $.trailer );
+    method ast( Bool :$rebuild = False ) {
+        my $body = PDF::Storage::Serializer.new.body( self.trailer, :$rebuild );
 
         :pdf{
             :header{ :$.type, :$.version },
@@ -645,23 +644,6 @@ class PDF::Reader {
 
     #| return an AST for the fully serialized PDF/FDF etc.
     #| suitable as input to PDF::Writer
-    multi method ast( ) {
-        my List $objects = self.get-objects( );
-        my %dict = self.trailer.list
-            if self.trailer.defined;
-
-        %dict<Prev>:delete;
-        %dict<Size> = :int($.size)
-            unless $.type eq 'FDF';
-
-        :pdf{
-            :header{ :$.type, :$.version },
-            :body[{
-                :$objects,
-                :trailer{ :%dict },
-            }],
-        };
-    }
 
     #| dump to json
     multi method save-as( $output-path where m:i/'.json' $/,

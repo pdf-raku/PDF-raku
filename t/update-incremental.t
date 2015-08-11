@@ -4,17 +4,17 @@ use Test;
 use PDF::Reader;
 use PDF::Writer;
 use PDF::Object;
+use PDF::Object::Doc;
 use PDF::Storage::Serializer;
 use PDF::Grammar::Test :is-json-equiv;
 
 sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 
-my $reader = PDF::Reader.new();
-
 't/pdf/pdf.in'.IO.copy('t/pdf/pdf-updated.out');
-$reader.open( 't/pdf/pdf-updated.out', :a );
 
-my $root-obj = $reader.trailer<Root>;
+my $doc = PDF::Object::Doc.open( 't/pdf/pdf-updated.out', :a );
+my $reader = $doc.reader;
+my $root-obj = $doc<Root>;
 
 {
     my $Pages = $root-obj<Pages>;
@@ -28,8 +28,8 @@ my $root-obj = $reader.trailer<Root>;
 }
 
 my $serializer = PDF::Storage::Serializer.new;
-
 my $body = $serializer.body( $reader, :updates );
+
 is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
 is-deeply $body<trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';
 is-deeply $body<trailer><dict><Prev>, (:int(578)), 'body trailer dict - Prev';
@@ -55,28 +55,15 @@ is-json-equiv $updated-objects[2], (
                              :dict{Length => :int(70) },
                             }]), 'inserted content';
 
-my $offset = $reader.input.chars + 1;
-my $prev = $body<trailer><dict><Prev>.value;
-my $root = $root-obj.content;
-my $writer = PDF::Writer.new( :$root, :$offset, :$prev );
-my $new-body = "\n" ~ $writer.write( :$body );
-
-# todo append to reader input
-##$reader.input.append( $new-body );
-'t/pdf/pdf-updated.out'.IO.open(:a).write( $new-body.encode('latin-1') );
-
-# ensure that reader has remained lazy. should not have loaded unreferenced objects
-ok $reader.ind-obj( 3, 0, :!eager ), 'referenced object loaded (Pages)';
-nok $reader.ind-obj( 5, 0, :!eager ), 'unreferenced object not loaded (Page 1 content)';
+$doc.update;
+is-deeply $reader.defunct, True, 'reader is now defunct';
+dies-ok {$reader.ind-obj( 5, 0, :!eager ),}, "defunct reader access - dies";
 
 # now re-read the pdf. Will also test our ability to read a PDF
 # with multiple segments
 
-$reader.defunct = True;
-dies-ok {$reader.ind-obj( 5, 0, :!eager ),}, "defunct reader access - dies";
-
-$reader = PDF::Reader.new();
-$reader.open( 't/pdf/pdf-updated.out', :a );
+my $doc2 = PDF::Object::Doc.open: 't/pdf/pdf-updated.out';
+$reader = $doc2.reader;
 
 my $ast = $reader.ast( :rebuild );
 is +$ast<pdf><body>, 1, 'single body';
@@ -87,7 +74,6 @@ is $ast<pdf><body>[0]<objects>[8], ( :ind-obj[9, 0, :stream{ :dict{ Length => :i
 
 # do a full rewrite of the updated PDF. Output should be cleaned up, with a single body and
 # cleansed of old object versions.
-$writer = PDF::Writer.new( :$root );
-ok 't/pdf/pdf-updated-and-rewritten.out'.IO.spurt( $writer.write( $ast ), :enc<latin-1> ), 're-read + rewrite of updated PDF';
+ok $doc2.save-as('t/pdf/pdf-updated-and-rewritten.out', :rebuild);
 
 done;

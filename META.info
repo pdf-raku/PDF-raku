@@ -7,6 +7,7 @@
     "provides"    : {
 
         "PDF::Object" : "lib/PDF/Object.pm",
+        "PDF::Object::Doc" : "lib/PDF/Object/Doc.pm",
         "PDF::Object::Array" : "lib/PDF/Object/Array.pm",
         "PDF::Object::Bool" : "lib/PDF/Object/Bool.pm",
         "PDF::Object::ByteString" : "lib/PDF/Object/ByteString.pm",

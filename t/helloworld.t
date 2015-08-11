@@ -6,7 +6,6 @@ use PDF::Storage::Serializer;
 use PDF::Writer;
 
 sub prefix:</>($name){ PDF::Object.coerce(:$name) };
-
 my $Root = PDF::Object.coerce: { :Type(/'Catalog') };
 my $outlines = PDF::Object.coerce: { :Type(/'Outlines'), :Count(0) };
 $Root<Outlines> = $outlines;

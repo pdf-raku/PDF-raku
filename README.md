@@ -6,20 +6,19 @@ This module provides low-level tools for reading, update and writing of PDF cont
 #!/usr/bin/env perl6
 # creates /tmp/helloworld.pdf
 use v6;
-use Test;
-
 use PDF::Object;
-use PDF::Storage::Serializer;
+use PDF::Object::Doc;
 
 sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 
-my $Root =  PDF::Object.coerce: { :Type(/'Catalog') };
-$Root<Outlines> = { :Type(/'Outlines'), :Count(0) };
-$Root<Pages> = { :Type(/'Pages') };
+my $pdf = PDF::Object::Doc.new;
+$pdf<Root> = { :Type(/'Catalog') };
+$pdf<Root><Outlines> = { :Type(/'Outlines'), :Count(0) };
+$pdf<Root><Pages> = { :Type(/'Pages') };
 
 my $page1 = PDF::Object.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595] };
-$Root<Pages><Kids> = [ $page1 ];
-$Root<Pages><Count> = 0;
+$pdf<Root><Pages><Kids> = [ $page1 ];
+$pdf<Root><Pages><Count> = 0;
 
 my $font = PDF::Object.coerce: {
         :Type(/'Font'),
@@ -31,8 +30,7 @@ my $font = PDF::Object.coerce: {
 $page1<Resources> = PDF::Object.coerce: { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
 $page1<Contents> = PDF::Object.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 
-my $trailer = PDF::Object.coerce: { :$Root };
-PDF::Storage::Serializer.new.save-as('/tmp/helloworld.pdf', $trailer);
+$pdf.save-as('/tmp/helloworld.pdf');
 ```
 
 # Classes
@@ -55,6 +53,7 @@ say $stream.obj.encoded;
 - PDF::Object::Dict - abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
 - PDF::Object::Array - array objects
 - PDF::Object::Bool, PDF::Object::Name, PDF::Object::Null, PDF::Object::Num, PDF::Object::ByteString - simple indirect objects
+- PDF::Object::Doc - the absolute root of the document- the trailer dictionary
 - PDF 1.5+ Compressed object support (reader only). DOM objects:
   - PDF::Object::Type::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
   - PDF::Object::Type::XRef - PDF 1.5+ Cross Reference stream
@@ -67,26 +66,30 @@ The `$.ast()` method can be used to load the entire PDF into memory for reserial
 If PDF::DOM is loaded, the document can be traversed as a DOM object tree:
 
 ```
-use PDF::Reader;
-use PDF::DOM;
-my $reader = PDF::Reader.new();
+use PDF
 $reader.open( 't/helloworld.pdf' );
-my $pdf = $reader.trailer;
-my $doc = $pdf<Root>;
-my $page1 = $doc<Pages><Kids>[0];
-
-# or, using the DOM::Pages.page method
-$page1 = $doc.page(1);
 
 # objects can be directly fetched by object-number and generation-number:
 $page1 = $reader.ind-obj(4, 0).object;
 
-# the PDF can be edited using DOM functions
-my $end-page = $doc.add-page();
+# Hashs and arrays are tied. This is usually more conveniant for navigating
+my $doc = $reader.trailer<Root>;
+my $page1 = $doc<Pages><Kids>[0];
 
-my $font = $end-page.core-font('Times-Bold');
-my $font-size = 24;
-$end-page.gfx.text('The End!', 300, 50, :$font, :$font-size );
+# Tied objects can also be updated directly.
+$pdf<Info><Creator> = PDF::Object.coerce( :name<t/helloworld.t> );
+
+# the PDF DOM provides additional functions for navigation and composition
+{
+    use PDF::DOM;
+    my $page = $doc.add-page();
+    my $gfx = $page.gfx;
+
+    my $bold = $page.core-font('Times-Bold');
+    $gfx.set-font($bold, 24);
+    $gfx.text-move(300, 50);
+    $gfx.print('The End!');
+}
 $pdf.save-as('/tmp/example.pdf');
 
 ```
@@ -103,7 +106,7 @@ is recommended to enforce this.
 `encode` and `decode` both return latin-1 encoded strings.
 
  ```
- my $encoded = PDF::Storage::Filter.encode( :dict{ :Filter<RunLengthEncode> }, "This    is waaay toooooo loooong!", :eod);
+ my $encoded = PDF::Storage::Filter.encode( :dict{ :Filter<RunLengthEncode> }, "This    is waaay toooooo loooong!");
  say $encoded.chars;
  ```
 
@@ -139,11 +142,19 @@ my $new-body = "\n" ~ $writer.write( :$body );
 scan, ignoring the cross reference index and stream lengths. This can be handy if the PDF document has been edited
 by hand.
 
+- `$reader.update`
+This performs an incremental update to an indexed `PDF` documents (not applicable to
+PDF's opened with `:repair`, unindexed FDF or JSON files). A new section is appended to the PDF that
+contains only updated and newly created objects. This method can be used as a fast and efficient way to make
+small updates to a large existing PDF document.
+
 - `$reader.save-as("mydoc-2.pdf", :compress, :rebuild)`
 Saves a new document, including any updates. Options:
 -- `:compress` - compress objects for minimal size
 -- `:!compress` - uncompress objects for human redability
 -- `:rebuild` - discard any unreferenced objects. reunumber remaing objects
+
+It may be a good idea to rebuild a PDF, if it's been incrementally updated a number of times.
 
 - `$reader.save-as("mydoc.json", :compress, :rebuild)`
 - my $reader2 = `$reader.open("mydoc.json")`
@@ -151,27 +162,21 @@ Documents can also be saved and restored from an intermediate `JSON` format. Thi
 be handy for debugging, analysis and/or ad-hoc patching of PDF files. Beware that
 saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
 
-- `$reader.update`
-This performs an incremental update to an indexed `PDF` documents (not applicable to
-PDF's opened with `:repair`, unindexed FDF or JSON files). A new section is appended to the PDF that
-contains only updated and newly created objects. This method can be used as a fast and efficient way to make
-small updates to a large existing PDF document.
-
 - `my $serializer = PDF::Storage::Serializer.new;
-   $serializer.save-as("mynewdoc.pdf", $trailer-dict, :$type, :$version, :$compress)`
-This method is used to create a new PDF from scratch. $object is the document root object (e.g a Catalog object).
+   $serializer.save-as("mynewdoc.pdf", $doc, :$type, :$version, :$compress)`
+This method is used to create a new PDF from scratch. $doc is the document root object, usually subclassed from `PDF::Object::Doc`.
 -- `:trailer-dict` contains `Root` plus any additional entries to be included in the trailer dict, e.g. `ID` and `Info`. Note:
-`Prev` and `First` are automatically generated.
+`Prev` and `First` are automatically generated during serialization.
 -- `:type` is `PDF` (default) or `FDF`
 -- `:version` is PDF version; Default: `1.3`
--- `:compress` can be be True, False or Mu (leave as is)
+-- `:compress` can be be True, False or Mu (discretionary)
 
 
 # DOM builder classes
 
 ## PDF::Object::Delegator
 
-This forms the basis for `PDF::DOM`'s extensive library of document object classes. This
+This forms the basis for `PDF::DOM`'s extensive library of document object classes. It
 includes classes and roles for object construction, validation and serialization.
 
 - The `PDF::Object` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::Object::Delegator`.
