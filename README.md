@@ -32,7 +32,42 @@ $page1<Contents> = PDF::Object.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 
 
 $pdf.save-as('/tmp/helloworld.pdf');
 ```
+# Reading and Writing of PDF files:
 
+`PDF::Object::Doc` is a base class for loading, editing and saving documents in PDF, FDF and other related formats.
+
+- `my $doc = PDF::Object::Doc.open("mydoc.pdf" :repair)`
+ Opens an input `PDF` (or `FDF`) document.
+  - `:repair` causes the reader to perform a full scan, ignoring the cross reference index and stream lengths. This can be handy if the PDF document has been hand-edited.
+
+- `$doc.update`
+This performs an incremental update to the input pdf, which must be indexed `PDF` (not applicable to
+PDF's opened with `:repair`, FDF or JSON files). A new section is appended to the PDF that
+contains only updated and newly created objects. This method can be used as a fast and efficient way to make
+small updates to a large existing PDF document.
+
+- `$doc.save-as("mydoc-2.pdf", :compress, :rebuild)`
+Saves a new document, including any updates. Options:
+  - `:compress` - compress objects for minimal size
+  - `:!compress` - uncompress objects for human redability
+  - `:rebuild` - discard any unreferenced objects. reunumber remaing objects. It may be a good idea to rebuild a PDF Document, that's been incrementally updated a number of times.
+
+- `$doc.save-as("mydoc.json", :compress, :rebuild); my $doc2 = $doc.open("mydoc.json")`
+Documents can also be saved and restored from an intermediate `JSON` representation. This can
+be handy for debugging, analysis and/or ad-hoc patching of PDF files. Beware that
+saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
+
+# DOM builder classes
+
+## PDF::Object::Delegator
+
+This forms the basis for `PDF::DOM`'s extensive library of document object classes. It
+includes classes and roles for object construction, validation and serialization.
+
+- The `PDF::Object` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::Object::Delegator`.
+
+- The delegator may be subclassed. For example, the upstream module `PDF::DOM` subclasses `PDF::Object::Delegator` with
+`PDF::DOM::Delegator`.
 # Classes
 
 ## PDF::Object
@@ -135,41 +170,6 @@ my $prev = $body<trailer><dict><Prev>.value;
 my $writer = PDF::Writer.new( :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 ```
-
-# Opening and saving PDF files via PDF::Object::Doc
-
-- `my $doc = PDF::Object::Doc.open("mydoc.pdf" :repair)`
- Opens an input `PDF` (or `FDF`) document.
-  - `:repair` causes the reader to perform a full scan, ignoring the cross reference index and stream lengths. This can be handy if the PDF document has been hand-edited.
-
-- `$doc.update`
-This performs an incremental update to the input pdf, which must be indexed `PDF` (not applicable to
-PDF's opened with `:repair`, FDF or JSON files). A new section is appended to the PDF that
-contains only updated and newly created objects. This method can be used as a fast and efficient way to make
-small updates to a large existing PDF document.
-
-- `$doc.save-as("mydoc-2.pdf", :compress, :rebuild)`
-Saves a new document, including any updates. Options:
-  - `:compress` - compress objects for minimal size
-  - `:!compress` - uncompress objects for human redability
-  - `:rebuild` - discard any unreferenced objects. reunumber remaing objects. It may be a good idea to rebuild a PDF Document, that's been incrementally updated a number of times.
-
-- `my $doc2 = $doc.open("mydoc.json")`
-Documents can also be saved and restored from an intermediate `JSON` format. This can
-be handy for debugging, analysis and/or ad-hoc patching of PDF files. Beware that
-saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
-
-# DOM builder classes
-
-## PDF::Object::Delegator
-
-This forms the basis for `PDF::DOM`'s extensive library of document object classes. It
-includes classes and roles for object construction, validation and serialization.
-
-- The `PDF::Object` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::Object::Delegator`.
-
-- The delegator may be subclassed. For example, the upstream module `PDF::DOM` subclasses `PDF::Object::Delegator` with
-`PDF::DOM::Delegator`.
 
 ## PDF::Object::Tie
 
