@@ -38,7 +38,8 @@ $pdf.save-as('/tmp/helloworld.pdf');
 
 - `my $doc = PDF::Object::Doc.open("mydoc.pdf" :repair)`
  Opens an input `PDF` (or `FDF`) document.
-  - `:repair` causes the reader to perform a full scan, ignoring the cross reference index and stream lengths. This can be handy if the PDF document has been hand-edited.
+  - `:!repair` causes the read to load only the trailer dictionary and cross reference tables from the tail of the PDF (Cross Reference Table or a PDF 1.5+ Stream). Remaining objects will be lazily loaded on demand.
+  - `:repair` causes the reader to perform a full scan, ignoring the cross reference stream/index and stream lengths. This can be handy if the PDF document has been hand-edited.
 
 - `$doc.update`
 This performs an incremental update to the input pdf, which must be indexed `PDF` (not applicable to
