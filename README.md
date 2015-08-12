@@ -50,12 +50,16 @@ small updates to a large existing PDF document.
 Saves a new document, including any updates. Options:
   - `:compress` - compress objects for minimal size
   - `:!compress` - uncompress objects for human redability
-  - `:rebuild` - discard any unreferenced objects. reunumber remaing objects. It may be a good idea to rebuild a PDF Document, that's been incrementally updated a number of times.
+  - `:rebuild` - discard any unreferenced objects. reunumber remaining objects. It may be a good idea to rebuild a PDF Document, that's been incrementally updated a number of times. Note that the `:compress` and `:rebuild` options may have some impact on performance.
 
 - `$doc.save-as("mydoc.json", :compress, :rebuild); my $doc2 = $doc.open("mydoc.json")`
 Documents can also be saved and restored from an intermediate `JSON` representation. This can
 be handy for debugging, analysis and/or ad-hoc patching of PDF files. Beware that
 saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
+
+## See also:
+- `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] <pdf-or-json-file-in> <pdf-or-json-file-out>`
+This script is a thin wrapper script to the `PDF::Object::Doc` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
 
 # DOM builder classes
 

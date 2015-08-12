@@ -30,7 +30,7 @@ sub MAIN (
     $reader.open( $pdf-or-json-file-in, :$repair );
 
     note "Document is encrypted."
-        if $reader.trailer-dict<Encrypt>:exists;
+        if $reader.trailer<Encrypt>:exists;
 
     
     if $uncompress || $compress {
