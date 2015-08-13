@@ -47,19 +47,25 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	my $class-name = $class.^name;
 	my @index;
 
-	for $class.^attributes.grep({ .name ~~ /^'$!'<[A..Z]>/ && .can('index') }) -> $att {
-	    my $key = $att.name.subst(/^'$!'/, '');
+	for $class.^attributes.grep({.name !~~ /descriptor/ && .can('index') }) -> $att {
 	    my $pos = $att.index;
 	    die "redefinition of trait index($pos)"
 		if @index[$pos];
-	    @index[$pos] = $key;
+	    @index[$pos] = $att;
 
+	    my &meth = method { self.tie-att( $pos, $att ) };
+
+	    my $key = $att.accessor-name;
 	    if $att.gen-accessor && ! $class.^declares_method($key) {
 		$att.set_rw;
-		$class.^add_method( $key, method {
-		    self.tie-att( $pos, $att ) } );
+		$class.^add_method( $key, &meth );
 	    }
+
+	    $class.^add_method( $_ , &meth )
+		unless $class.^declares_method($_)
+		for $att.aliases;
 	}
+
 	@index;
     }
 
@@ -74,8 +80,11 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
     #| handle array assignments: $foo[42] = 'bar'; $foo[99] := $baz;
     method ASSIGN-POS($pos, $val) {
         my $lval = self.lvalue($val);
-	if my $key = $.index[$pos] {
+	if $.index[$pos]:exists {
 	    # tied to an attribute
+	    my $key = $.index[$pos].accessor-name;
+	    $lval.obj-num //= -1
+		if $.index[$pos].is-indirect && $lval ~~ PDF::Object;
 	    self."$key"() = $lval
 	}
 	else {

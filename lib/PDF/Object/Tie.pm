@@ -14,40 +14,57 @@ role PDF::Object::Tie {
 	:ind-ref[ $.obj-num, $.gen-num ];
     }
 
-    my role TiedEntry {
-	has Bool $.entry = True;
+    my role Tied {
 	has Bool $.is-required is rw;
 	has Bool $.is-indirect is rw;
+	has Str $.accessor-name is rw;
 	has Bool $.gen-accessor is rw;
+        has Str @.aliases is rw;
 	# turn off rakudo accessor generation
 	has method has_accessor { False }
+    }
+
+    my role TiedEntry does Tied {
+	has Bool $.entry = True;
+    }
+
+    multi sub process-args(True, Attribute $att) {}
+    multi sub process-args($entry, Attribute $att) {
+	for $entry.list -> $arg {
+	    unless $arg ~~ Pair {
+		warn "ignoring entry trait  argument: {$arg.perl}";
+		next;
+	    }
+	    given $arg.key {
+		when 'alias'    { $att.aliases     = $arg.value.list }
+		when 'required' { $att.is-required = $arg.value }
+		when 'indirect' { $att.is-indirect = $arg.value }
+		default    { warn "ignoring entry attribute: $_" }
+	    }
+	}
     }
 
     multi trait_mod:<is>(Attribute $att is rw, :$entry!) is export(:DEFAULT) {
-	my $gen-accessor = $att.has-accessor;
 	$att does TiedEntry;
-	$att.is-required = ?('required' ∈ $entry);
-	$att.is-indirect = ?('indirect' ∈ $entry);
-	$att.gen-accessor = $gen-accessor;
+	$att.accessor-name = $att.name.subst(/^'$!'/, '');
+	$att.gen-accessor = $att.has-accessor;
+	process-args($entry, $att);
     }
 
-    my role TiedIndex {
+    my role TiedIndex does Tied {
 	has Int $.index is rw;
-	has Bool $.is-required is rw;
-	has Bool $.gen-accessor is rw;
-	# turn off rakudo accessor generation
-	has method has_accessor { False }
     }
 
     multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
-	my $gen-accessor = $att.has-accessor;
-	die "trait usage: index(Int n, :required, :indirect)"
-	    unless $index[0] ~~ Int
-	    && $index[0] >= 0;
 	$att does TiedIndex;
-	$att.index = $index[0];
-	$att.is-required = ?('required' ∈ $index);
-	$att.gen-accessor = $gen-accessor;
+	$att.accessor-name = $att.name.subst(/^'$!'/, '');
+	$att.gen-accessor = $att.has-accessor;
+	my @args = $index.list;
+	die "index trait requires a UInt argument, e.g. 'is index(1)'"
+	    unless @args && @args[0] ~~ UInt;
+	$att.index = @args.shift;
+
+	process-args(@args, $att);
     }
 
     method lvalue($_) is rw {

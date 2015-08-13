@@ -48,14 +48,19 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	my %entries;
 
 	for $class.^attributes.grep({.name !~~ /descriptor/ && .can('entry') }) -> $att {
-	    my $key = $att.name.subst(/^'$!'/, '');
+	    my $key = $att.accessor-name;
 	    %entries{$key} = $att;
+
+	    my &meth = method { self.tie-att( $key, $att ) };
 
 	    if $att.gen-accessor &&  ! $class.^declares_method($key) {
 		$att.set_rw;
-		$class.^add_method( $key, method {
-		    self.tie-att( $key, $att ) } );
+		$class.^add_method( $key, &meth );
 	    }
+
+	    $class.^add_method( $_ , &meth )
+		unless $class.^declares_method($_)
+		for $att.aliases;
 	}
 	%entries;
     }
