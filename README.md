@@ -62,17 +62,6 @@ saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
 - `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] <pdf-or-json-file-in> <pdf-or-json-file-out>`
 This script is a thin wrapper script to the `PDF::Object::Doc` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
 
-# DOM builder classes
-
-## PDF::Object::Delegator
-
-This forms the basis for `PDF::DOM`'s extensive library of document object classes. It
-includes classes and roles for object construction, validation and serialization.
-
-- The `PDF::Object` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::Object::Delegator`.
-
-- The delegator may be subclassed. For example, the upstream module `PDF::DOM` subclasses `PDF::Object::Delegator` with
-`PDF::DOM::Delegator`.
 # Classes
 
 ## PDF::Object
@@ -176,6 +165,18 @@ my $writer = PDF::Writer.new( :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 ```
 
+# DOM classes
+
+## PDF::Object::Delegator
+
+This forms the basis for `PDF::DOM`'s extensive library of document object classes. It
+includes classes and roles for object construction, validation and serialization.
+
+- The `PDF::Object` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::Object::Delegator`.
+
+- The delegator may be subclassed. For example, the upstream module `PDF::DOM` subclasses `PDF::Object::Delegator` with
+`PDF::DOM::Delegator`.
+
 ## PDF::Object::Tie
 
 This is a role used by PDF::Object. It makes the PDF object tree appear as a seamless
@@ -186,7 +187,6 @@ PDF::Object::Tie::Hash and PDF::Object::Tie::Array encapsulate Hash and Array ac
 - If the object has an associated  `reader` property, indirect references are resolved lazily and transparently
 as elements in the structure are dereferenced.
 - Hashs and arrays automaticaly coerced to objects on assignment to a parent object. For example:
-
 
 ```
 sub prefix:</>($name){ PDF::Object.coerce(:$name) };
@@ -238,3 +238,4 @@ my $Catalog = PDF::Object.coerce: { :Type( :name<Catalog> ),
 `$Catalog` is coerced to type `My::DOM::Catalog`.
 - `$Catalog.Pages` will autoload and Coerce to type `My::DOM::Pages`
 - If that should fail (and there's no `PDF::Object::Type::Pages` class), it falls-back to a plain `PDF::Object::Dict` object.
+
