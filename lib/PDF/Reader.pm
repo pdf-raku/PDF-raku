@@ -173,7 +173,7 @@ class PDF::Reader {
             }
             when 2 {
                 # type 2 embedded object
-                my $container-obj = $.ind-obj( $idx<ref-obj-num>, 0, :type<ObjStm> ).object;
+                my $container-obj = $.ind-obj( $idx<ref-obj-num>, 0 ).object;
                 my $type2-objects = $container-obj.decoded;
 
                 my $index = $idx<index>;
@@ -197,7 +197,6 @@ class PDF::Reader {
 
     #| fetch and stantiate indirect objects. cache against the index
     method ind-obj( Int $obj-num!, Int $gen-num!,
-                    :$type,             #| type assertion
                     :$get-ast = False,  #| get ast data, not formulated objects
                     :$eager = True,     #| fetch object, if not already loaded
         ) {
@@ -212,7 +211,7 @@ class PDF::Reader {
             return unless $eager;
             my $ind-obj = self!"fetch-ind-obj"($idx, :$obj-num, :$gen-num);
             # only fully stantiate object when needed
-            $get-ast ?? $ind-obj !! PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) )
+            $get-ast ?? $ind-obj !! PDF::Storage::IndObj.new( :$ind-obj, :reader(self) )
         };
 
         my Bool $is-ind-obj = $ind-obj.isa(PDF::Storage::IndObj);
@@ -225,7 +224,7 @@ class PDF::Reader {
         }
         elsif $to-obj && ! $is-ind-obj {
             # upgrade storage to object, if object requested
-            $ind-obj = PDF::Storage::IndObj.new( :$ind-obj, :$type, :reader(self) );
+            $ind-obj = PDF::Storage::IndObj.new( :$ind-obj, :reader(self) );
             $idx<ind-obj> = $ind-obj;
         }
         elsif ! $is-ind-obj  {

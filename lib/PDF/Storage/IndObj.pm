@@ -14,7 +14,7 @@ class PDF::Storage::IndObj {
 
     #| construct an object instance from a PDF::Grammar::PDF ast representation of
     #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
-    multi submethod BUILD( Array :$ind-obj!, :$input, :$type, :$reader, *%etc ) {
+    multi submethod BUILD( Array :$ind-obj!, :$input, :$reader, *%etc ) {
         $!obj-num = $ind-obj[0];
         $!gen-num = $ind-obj[1];
         my %params = $ind-obj[2].kv, %etc;
