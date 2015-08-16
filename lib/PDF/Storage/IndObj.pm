@@ -21,7 +21,7 @@ class PDF::Storage::IndObj {
         %params<input> = $input
             if $input.defined;
 
-        $!object = PDF::Object.coerce( :$reader, :$!obj-num, :$!gen-num, |%params);
+        $!object = ($reader // PDF::Object).coerce( :$!obj-num, :$!gen-num, :$reader, |%params);
     }
 
     #| recreate a PDF::Grammar::PDF / PDF::Writer compatibile ast from the object

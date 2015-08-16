@@ -11,6 +11,7 @@ our $dummy-reader;
 
 class t::DummyReader {
     has %.object-cache;
+    has $.coercer handles <coerce> = PDF::Object;
     has Bool $.auto-deref is rw = True;
     method ind-obj($obj-num, $gen-num) {
         %ties{$obj-num}{$gen-num} //= do {

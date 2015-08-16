@@ -21,12 +21,13 @@ class PDF::Reader {
     has Int $.prev;
     has Int $.size is rw;   #= /Size entry in trailer dict ~ first free object number
     has Bool $.defunct is rw = False;
+    has PDF::Object:U $.coercer handles <coerce> = PDF::Object;
 
     method actions {
         state $actions //= PDF::Grammar::PDF::Actions.new
     }
 
-   method trailer {
+    method trailer {
         self.install-trailer
            unless %!ind-obj-idx{0}{0}:exists;
         self.ind-obj(0, 0).object;
@@ -82,7 +83,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my $dict = PDF::Object.coerce( |%(.<trailer>) );
+                my $dict = $.coerce( |%(.<trailer>) );
                 self!"set-trailer"( $dict.content<dict> );
             }
        }
@@ -344,7 +345,7 @@ class PDF::Reader {
                               || &fallback() )
                     or die "unable to parse index: $xref";
                 my Hash $index = $parse.ast;
-                $dict = PDF::Object.coerce( |%($index<trailer>) );
+                $dict = $.coerce( |%($index<trailer>) );
 
                 my $prev-offset;
 
@@ -372,7 +373,7 @@ class PDF::Reader {
                     or die "ind-obj parse failed \@$xref-offset {synopsis($xref)}";
 
                 my %ast = %( $/.ast );
-                my $ind-obj = PDF::Storage::IndObj.new( |%ast, :input($xref), :type<XRef>, :reader(self) );
+                my $ind-obj = PDF::Storage::IndObj.new( |%ast, :input($xref), :reader(self) );
                 my $xref-obj = $ind-obj.object;
                 $dict = $xref-obj;
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;
@@ -491,7 +492,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my $dict = PDF::Object.coerce( |%(.<trailer>) );
+                my $dict = $.coerce( |%(.<trailer>) );
                 self!"set-trailer"( $dict.content<dict> )
                     if $dict.content<dict>:exists;
             }
@@ -568,6 +569,7 @@ class PDF::Reader {
 			my $original-ast = self!"fetch-ind-obj"(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
 			# discard, if not updated
 			next if $original-ast eqv $final-ast.value;
+                        warn "updated: $obj-num";
 		    }
                 }
                 else {
