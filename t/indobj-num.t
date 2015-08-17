@@ -7,6 +7,7 @@ use PDF::Storage::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
+use PDF::Grammar::Test :is-json-equiv;
 use lib '.';
 use t::Object :to-obj;
 
@@ -24,9 +25,9 @@ my $content = $ind-obj.content;
 isa-ok $content, Pair;
 isa-ok to-obj( $content ), Int, '$.content to-obj';
 is to-obj( $content ), 42, '$.content to-obj';
-is-deeply $content, (:int(42)), '$.content';
+is-json-equiv $content, (:int(42)), '$.content';
 
-is-deeply $ind-obj.ast, $ast, 'ast regeneration';
+is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';
 
 $input = '5 6 obj 4.2 endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
@@ -40,7 +41,7 @@ $content = $ind-obj.content;
 isa-ok $content, Pair;
 isa-ok to-obj( $content ), Rat, '$.content to-obj';
 is to-obj( $content ), 4.2, '$.content to-obj';
-is-deeply $content, (:real(4.2)), '$.content';
+is-json-equiv $content, (:real(4.2)), '$.content';
 
-is-deeply $ind-obj.ast, $ast, 'ast regeneration';
+is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';
 

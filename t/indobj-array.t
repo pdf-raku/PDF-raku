@@ -29,7 +29,7 @@ is-json-equiv $content, ( :array[:real(0.9505e0), :real(1e0), :real(1.089e0),
                      ]), '$.content';
 is-json-equiv to-obj( $content ), [0.9505e0, 1e0, 1.089e0, [1, 2, "abc"]], '$.content to-obj';
 
-is-deeply $ind-obj.ast, $ast, 'ast regeneration';
+is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';
 
 use PDF::Object::Array;
 use PDF::Object::Tie;

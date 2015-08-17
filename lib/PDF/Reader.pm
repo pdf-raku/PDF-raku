@@ -569,7 +569,6 @@ class PDF::Reader {
 			my $original-ast = self!"fetch-ind-obj"(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
 			# discard, if not updated
 			next if $original-ast eqv $final-ast.value;
-                        warn "updated: $obj-num";
 		    }
                 }
                 else {

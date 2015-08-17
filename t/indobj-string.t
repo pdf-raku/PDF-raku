@@ -7,6 +7,7 @@ use PDF::Storage::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
+use PDF::Grammar::Test :is-json-equiv;
 use lib '.';
 use t::Object :to-obj;
 
@@ -36,6 +37,6 @@ is $ind-obj.gen-num, 4, '$.gen-num';
 $content = $ind-obj.content;
 isa-ok $content, Pair;
 is to-obj( $content ), 'snoopy', '$.content to-obj';
-is-deeply $content, (:hex-string<snoopy>), '$.content';
+is-json-equiv $content, (:hex-string<snoopy>), '$.content';
 
-is-deeply $ind-obj.ast, $ast, 'ast regeneration';
+is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';

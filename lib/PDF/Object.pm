@@ -34,23 +34,23 @@ class PDF::Object {
 
     multi method coerce( Bool :$bool!) {
         require ::("PDF::Object::Bool");
-        $bool but ::("PDF::Object::Bool");
+        $bool does ::("PDF::Object::Bool");
     }
 
     multi method coerce( Int :$int!) {
         require ::("PDF::Object::Int");
-        $int but ::("PDF::Object::Int");
+        $int does ::("PDF::Object::Int");
     }
 
     multi method coerce( Numeric :$real!) {
         require ::("PDF::Object::Real");
-        $real but ::("PDF::Object::Real");
+        $real does ::("PDF::Object::Real");
     }
 
     multi method coerce( Str :$hex-string!) {
         require ::("PDF::Object::ByteString");
 
-        my Str $str = $hex-string but ::("PDF::Object::ByteString");
+        my Str $str = $hex-string does ::("PDF::Object::ByteString");
         $str.type = 'hex-string';
         $str;
     }
@@ -58,7 +58,7 @@ class PDF::Object {
     multi method coerce( Str :$literal!) {
         require ::("PDF::Object::ByteString");
 
-        my Str $str = $literal but ::("PDF::Object::ByteString");
+        my Str $str = $literal does ::("PDF::Object::ByteString");
         $str.type = 'literal';
         $str;
     }
