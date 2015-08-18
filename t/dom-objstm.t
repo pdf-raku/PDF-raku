@@ -37,8 +37,7 @@ my $ind-obj2 = PDF::Storage::IndObj.new( |%$ast2 );
 my $objstm-roundtrip = $ind-obj2.object.decode( $objstm-recompressed );
 
 is-deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';
-todo ".cb-init not getting called?";
-lives-ok {::('PDF::Object::Type')::('ObjStm').new(:dict{ }, :decoded[[10, '<< /Foo (bar) >>']])};
+lives-ok {::('PDF::Object::Type')::('ObjStm').new(:dict{ :N(1), :First(1) }, :decoded[[10, '<< /Foo (bar) >>']])};
 my $objstm-new = ::('PDF::Object::Type')::('ObjStm').new(:dict{ :N(1), :First(1) }, :decoded[[10, '<< /Foo (bar) >>'], [11, '[ 42 true ]']] );
 lives-ok {$objstm-new.encode( :check )}, '$.encode( :check ) - with valid data lives';
 is $objstm-new.Type, 'ObjStm', '$objstm.new .Name auto-setup';
