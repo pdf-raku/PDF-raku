@@ -95,7 +95,7 @@ $obj-with-utf8.obj-num = -1;
 my $writer = PDF::Writer.new;
 
 $objects = PDF::Storage::Serializer.new.body(:Root($obj-with-utf8))<objects>;
-is-deeply $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
+is-json-equiv $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
 is $writer.write( :ind-obj($objects[0].value)), "1 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj", 'name write';
 
 my $objects-compressed = PDF::Storage::Serializer.new.body(:$Root, :compress)<objects>;

@@ -7,6 +7,7 @@ use PDF::Storage::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
+use PDF::Grammar::Test :is-json-equiv;
 use lib '.';
 use t::Object :to-obj;
 
@@ -26,4 +27,4 @@ isa-ok $content, Pair;
 is-deeply $content, (:name<HiThere>), '$.content';
 isa-ok to-obj( $content ), Str, '$.content to-obj';
 is to-obj( $content ), 'HiThere', '$.content to-obj';
-is-deeply $ind-obj.ast, $ast, 'ast regeneration';
+is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';

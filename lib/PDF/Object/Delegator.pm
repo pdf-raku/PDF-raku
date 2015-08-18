@@ -9,32 +9,17 @@ class PDF::Object::Delegator {
     our %handler;
     method handler {%handler}
 
-    multi method install-delegate( :$type!, :$subtype, :$handler-class! ) {
-        my Str $subclass = $subtype
-            ?? [~] $type, '::', $subtype
-            !! $type;
-        self.install-delegate( :$subclass, :$handler-class );
+    method install-delegate( Str $subclass, $class-def ) is rw {
+        %handler{$subclass} = $class-def;
     }
 
-    multi method install-delegate( :$subclass!, :$handler-class ) {
-        %handler{$subclass} = $handler-class;
+    multi method find-delegate( Str $subclass! where { %handler{$_}:exists } ) {
+        %handler{$subclass}
     }
 
-    multi method find-delegate( :$type!, :$subtype!, :$fallback!) {
-        my Str $subclass = $subtype
-            ?? [~] $type, '::', $subtype
-            !! $type;
-        self.find-delegate( :$subclass, :$fallback );
-    }
-
-    multi method find-delegate( :$subclass! where { self.handler{$_}:exists } ) {
-        self.handler{$subclass}
-    }
-
-    multi method find-delegate( :$subclass!, :$fallback! ) is default {
+    multi method find-delegate( Str $subclass!, :$fallback! ) is default {
 
 	my $handler-class = $fallback;
-	my Bool $resolved;
 
 	for self.class-paths -> $class-path {
 	    try {
@@ -44,13 +29,14 @@ class PDF::Object::Delegator {
 	    };
 	}
 
-        self.install-delegate( :$subclass, :$handler-class );
+        self.install-delegate( $subclass, $handler-class );
     }
 
     multi method delegate( Hash :$dict! where {$dict<Type>:exists}, :$fallback) {
-	my $type = from-ast($dict<Type>);
+	my $subclass = from-ast($dict<Type>);
 	my $subtype = from-ast($dict<Subtype> // $dict<S>);
-	my $delegate = $.find-delegate( :$type, :$subtype, :$fallback );
+	$subclass ~= '::' ~ $subtype if $subtype.defined;
+	my $delegate = $.find-delegate( $subclass, :$fallback );
 	$delegate;
     }
 

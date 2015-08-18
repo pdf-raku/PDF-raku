@@ -65,7 +65,7 @@ class PDF::Object {
 
     multi method coerce( Str :$name!) {
         require ::("PDF::Object::Name");
-        $name but ::("PDF::Object::Name");
+        $name does ::("PDF::Object::Name");
     }
 
     multi method coerce( Any :$null!) {
