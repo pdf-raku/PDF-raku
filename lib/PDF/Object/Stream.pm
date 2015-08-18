@@ -41,15 +41,13 @@ class PDF::Object::Stream
         my Str $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
-	    my %entries = PDF::Object::Tie::Hash.compose(self.WHAT);
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
+	    $obj.tie-init;
             # this may trigger cascading PDF::Object::Tie coercians
-            # e.g. native Array to PDF::Object::Array
-	    $obj.entries = %entries;
             $obj{.key} = from-ast(.value) for $dict.pairs;
             $obj.?cb-init;
 
-	    if my $required = set %entries.pairs.grep({.value.is-required}).map({.key}) {
+	    if my $required = set $obj.entries.pairs.grep({.value.is-required}).map({.key}) {
 		my $missing = $required (-) $obj.keys;
 		die "{self.WHAT.^name}: missing required field(s): $missing"
 		    if $missing;

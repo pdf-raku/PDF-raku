@@ -20,6 +20,7 @@ role PDF::Object::Tie {
 	has Str $.accessor-name is rw;
 	has Bool $.gen-accessor is rw;
         has Str @.aliases is rw;
+	has @.does is rw;
 	# turn off rakudo accessor generation
 	has method has_accessor { False }
     }
@@ -37,6 +38,7 @@ role PDF::Object::Tie {
 	    }
 	    given $arg.key {
 		when 'alias'    { $att.aliases     = $arg.value.list }
+		when 'does'     { $att.does        = ( $arg.value ) }
 		when 'required' { $att.is-required = $arg.value }
 		when 'indirect' { $att.is-indirect = $arg.value }
 		default    { warn "ignoring entry attribute: $_" }

@@ -35,6 +35,10 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 		type-check($array[$idx], $att.type);
 	    },
 	    STORE => method ($val is copy) {
+		for $att.does.grep({ $val !~~ $_}) {
+		    $val does $_;
+		    $val.?tie-init;
+		}
 		$att.set_value($array, $array[$idx] := type-check($val, $att.type));
 	    });
     }
@@ -67,6 +71,12 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	}
 
 	@index;
+    }
+
+    method tie-init {
+	self.index //= do {
+	    PDF::Object::Tie::Array.compose(self.WHAT);
+	}
     }
 
     #| for array lookups, typically $foo[42]

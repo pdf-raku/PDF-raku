@@ -35,6 +35,10 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 		type-check($hash{$key}, $att.type);
 	    },
 	    STORE => method ($val is copy) {
+		for $att.does.grep({ $val !~~ $_}) {
+		    $val does $_;
+		    $val.?tie-init;
+		}
 		$att.set_value($hash, $hash{$key} := type-check($val, $att.type));
 	    });
     }
@@ -63,6 +67,12 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 		for $att.aliases;
 	}
 	%entries;
+    }
+
+    method tie-init {
+	self.entries //= do {
+	    PDF::Object::Tie::Hash.compose(self.WHAT);
+	}
     }
 
     #| for hash lookups, typically $foo<bar>
