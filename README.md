@@ -39,7 +39,7 @@ $pdf.save-as('/tmp/helloworld.pdf');
 - `my $doc = PDF::Object::Doc.open("mydoc.pdf" :repair)`
  Opens an input `PDF` (or `FDF`) document.
   - `:!repair` causes the read to load only the trailer dictionary and cross reference tables from the tail of the PDF (Cross Reference Table or a PDF 1.5+ Stream). Remaining objects will be lazily loaded on demand.
-  - `:repair` causes the reader to perform a full scan, ignoring the cross reference stream/index and stream lengths. This can be handy if the PDF document has been hand-edited.
+  - `:repair` causes the reader to perform a full scan, ignoring and recalculating the cross reference stream/index and stream lengths. This can be handy if the PDF document has been hand-edited.
 
 - `$doc.update`
 This performs an incremental update to the input pdf, which must be indexed `PDF` (not applicable to
@@ -51,7 +51,9 @@ small updates to a large existing PDF document.
 Saves a new document, including any updates. Options:
   - `:compress` - compress objects for minimal size
   - `:!compress` - uncompress objects for human redability
-  - `:rebuild` - discard any unreferenced objects. reunumber remaining objects. It may be a good idea to rebuild a PDF Document, that's been incrementally updated a number of times. Note that the `:compress` and `:rebuild` options may have some impact on performance.
+  - `:rebuild` - discard any unreferenced objects. reunumber remaining objects. It may be a good idea to rebuild a PDF Document, that's been incrementally updated a number of times.
+
+Note that the `:compress` and `:rebuild` options are a trade-off. The document may take longer to save, however file-sizes and the time needed to reopen the document may improve.
 
 - `$doc.save-as("mydoc.json", :compress, :rebuild); my $doc2 = $doc.open("mydoc.json")`
 Documents can also be saved and restored from an intermediate `JSON` representation. This can
