@@ -15,8 +15,9 @@ role PDF::Object::Tie {
     }
 
     my role Tied {
-	has Bool $.is-required is rw;
-	has Bool $.is-indirect is rw;
+	has Bool $.is-required is rw = False;
+	has Bool $.is-indirect is rw = False;
+	has Bool $.is-inherited is rw = False;
 	has Str $.accessor-name is rw;
 	has Bool $.gen-accessor is rw;
         has Str @.aliases is rw;
@@ -37,10 +38,11 @@ role PDF::Object::Tie {
 		next;
 	    }
 	    given $arg.key {
-		when 'alias'    { $att.aliases     = $arg.value.list }
-		when 'does'     { $att.does        = ( $arg.value ) }
-		when 'required' { $att.is-required = $arg.value }
-		when 'indirect' { $att.is-indirect = $arg.value }
+		when 'alias'    { $att.aliases      = $arg.value.list }
+		when 'does'     { $att.does         = ( $arg.value ) }
+		when 'required' { $att.is-required  = $arg.value }
+		when 'indirect' { $att.is-indirect  = $arg.value }
+		when 'inherit'  { $att.is-inherited = $arg.value }
 		default    { warn "ignoring entry attribute: $_" }
 	    }
 	}

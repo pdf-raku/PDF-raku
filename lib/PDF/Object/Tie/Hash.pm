@@ -6,7 +6,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 
     has Hash $.entries is rw;
 
-    sub tie-att-hash(Hash $hash, Str $key, Attribute $att) is rw {
+    sub tie-att-hash(Hash $object, Str $key, Attribute $att) is rw {
 
 	#| untyped attribute
 	multi sub type-check($val, Mu $type) is rw {
@@ -20,26 +20,42 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	#| type attribute
 	multi sub type-check($val is rw, $type) is rw is default {
 	  if !$val.defined {
-	      die "{$hash.WHAT.^name}: missing required field: $key"
+	      die "{$object.WHAT.^name}: missing required field: $key"
 		  if $att.is-required;
 	      return Nil
 	  }
-	  die "{$hash.WHAT.^name}.$key: {$val.perl} - not of type: {$type.gist}"
+	  die "{$object.WHAT.^name}.$key: {$val.perl} - not of type: {$type.gist}"
 	      unless $val ~~ $type
 	      || $val ~~ Pair;	#| undereferenced - don't know it's type yet
 	  $val;
 	}
 
+	#| find an heritable property
+	proto sub inehrit(Hash $, Str $, Int :$hops) {*}
+        multi sub inherit(Hash $object, Str $key where { $object{$key}:exists }, :$hops) {
+	    $object{$key};
+	}
+	multi sub inherit(Hash $, Str $, Int :$hops! where {$hops > 100}) {
+	    die "cyclical inheritance hierarchy"
+	}
+	multi sub inherit(Hash $object, Str $key where { $object<Parent>:exists }, Int :$hops = 1) {
+	    inherit($object<Parent>, $key, :hops($hops + 1));
+	}
+	multi sub inherit(Hash $, Str $, :$hops) is default { Nil }
+
 	Proxy.new( 
 	    FETCH => method {
-		type-check($hash{$key}, $att.type);
+		my $val = $object{$key};
+		$val //= inherit($object, $key)
+		    if $att.is-inherited;
+		type-check($val, $att.type);
 	    },
 	    STORE => method ($val is copy) {
 		for $att.does.grep({ $val !~~ $_}) {
 		    $val does $_;
 		    $val.?tie-init;
 		}
-		$att.set_value($hash, $hash{$key} := type-check($val, $att.type));
+		$att.set_value($object, $object{$key} := type-check($val, $att.type));
 	    });
     }
 

@@ -12,7 +12,6 @@
         "PDF::Object::Bool" : "lib/PDF/Object/Bool.pm",
         "PDF::Object::ByteString" : "lib/PDF/Object/ByteString.pm",
         "PDF::Object::Dict" : "lib/PDF/Object/Dict.pm",
-        "PDF::Object::Inheritance" : "lib/PDF/Object/Inheritance.pm",
         "PDF::Object::Int" : "lib/PDF/Object/Int.pm",
         "PDF::Object::Name" : "lib/PDF/Object/Name.pm",
         "PDF::Object::Null" : "lib/PDF/Object/Null.pm",
