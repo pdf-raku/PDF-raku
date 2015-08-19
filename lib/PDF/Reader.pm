@@ -210,9 +210,9 @@ class PDF::Reader {
 
         my $ind-obj = $idx<ind-obj> //= do {
             return unless $eager;
-            my $ind-obj = self!"fetch-ind-obj"($idx, :$obj-num, :$gen-num);
+            my $_ind-obj = self!"fetch-ind-obj"($idx, :$obj-num, :$gen-num);
             # only fully stantiate object when needed
-            $get-ast ?? $ind-obj !! PDF::Storage::IndObj.new( :$ind-obj, :reader(self) )
+            $get-ast ?? $_ind-obj !! PDF::Storage::IndObj.new( :ind-obj($_ind-obj), :reader(self) )
         };
 
         my Bool $is-ind-obj = $ind-obj.isa(PDF::Storage::IndObj);
