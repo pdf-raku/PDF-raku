@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 14;
+plan 23;
 
 use PDF::Storage::IndObj;
 use PDF::Object::Util :to-ast;
@@ -49,3 +49,30 @@ ind-obj-tests(
                   }
                   ] },
     );
+
+use PDF::Object::Tie;
+use PDF::Object::Tie::Hash;
+use PDF::Object::Tie::Array;
+role KidRole does PDF::Object::Tie::Hash {method bar {42}}
+role MyPages does PDF::Object::Tie::Hash {
+    has Hash @.Kids is entry(:required, :indirect, :does(KidRole) );
+}
+
+class MyCat
+    is PDF::Object::Dict {
+    has Hash $.Pages is entry(:required, :indirect, :does(MyPages) );
+    has Bool $.NeedsRendering is entry;
+}
+
+my $cat = MyCat.new: { :Pages{ :Kids[ { :Type( :name<Page> ) } ] } };
+
+isa-ok $cat, MyCat, 'root object';
+ok $cat.Pages ~~ MyPages, '.Pages role';
+isa-ok $cat.Pages.Kids, Array, '.Pages.Kids';
+lives-ok { $cat.NeedsRendering = True }, 'valid assignment';
+dies-ok { $cat.NeedsRendering = 42 }, 'typechecking';
+is-deeply $cat.NeedsRendering, True, 'typechecking';
+is $cat.Pages.Kids[0]<Type>, 'Page', '.Pages.Kids[0]<Type>';
+todo ':does and @ sigil on entry traits', 2;
+ok $cat.Pages.Kids[0] ~~ KidRole, 'Array Instance role';
+dies-ok {$cat.Pages.Kids[1] = 42}, 'typechecking - array elems';

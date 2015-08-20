@@ -19,7 +19,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	}
 	#| type attribute
 	multi sub type-check($val is rw, $type) is rw is default {
-	  if !$val.defined {
+	    if !$val.defined {
 	      die "{$object.WHAT.^name}: missing required field: $key"
 		  if $att.is-required;
 	      return Nil
@@ -48,18 +48,17 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 		my $val = $object{$key};
 		$val //= inherit($object, $key)
 		    if $att.is-inherited;
+		$object.apply-att($val, $att);
 		type-check($val, $att.type);
 	    },
 	    STORE => method ($val is copy) {
-		for $att.does.grep({ $val !~~ $_}) {
-		    $val does $_;
-		    $val.?tie-init;
-		}
-		$att.set_value($object, $object{$key} := type-check($val, $att.type));
+		my $lval = $object.lvalue($val);
+		$object.apply-att($lval, $att);
+		$att.set_value($object, $object{$key} := type-check($lval, $att.type));
 	    });
     }
 
-    multi method tie-att(Str $key!, $att is copy) {
+    method rw-accessor(Str $key!, $att) {
 	tie-att-hash(self, $key, $att);
     }
 
@@ -71,7 +70,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	    my $key = $att.accessor-name;
 	    %entries{$key} = $att;
 
-	    my &meth = method { self.tie-att( $key, $att ) };
+	    my &meth = method { self.rw-accessor( $key, $att ) };
 
 	    if $att.gen-accessor &&  ! $class.^declares_method($key) {
 		$att.set_rw;
@@ -102,17 +101,10 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 
     #| handle hash assignments: $foo<bar> = 42; $foo{$baz} := $x;
     method ASSIGN-KEY($key, $val) {
-        my $lval = self.lvalue($val);
-	if $.entries{$key}:exists {
-	    # tied to an attribute
-	    $lval.obj-num //= -1
-		if $.entries{$key}.is-indirect && $lval ~~ PDF::Object;
-	    self."$key"() = $lval
-	}
-	else {
-	    # undeclared, fallback to untied hash
-	    nextwith( $key, $lval );
-	}
+	nextwith($key, $.lvalue($val) )
+	    unless $.entries{$key}:exists;
+
+	self."$key"() = $val
     }
     
 }

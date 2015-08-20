@@ -6,7 +6,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 
     has Array $.index is rw;
 
-    sub tie-att-array(Array $array, Int $idx, Attribute $att) is rw {
+    sub tie-att-array($object, Int $idx, Attribute $att) is rw {
 
 	#| untyped attribute
 	multi sub type-check($val, Mu $type) is rw {
@@ -20,30 +20,33 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	#| type attribute
 	multi sub type-check($val is rw, $type) is rw is default {
 	  if !$val.defined {
-	      die "{$array.WHAT.^name}: missing required index: $idx"
+	      die "{$object.WHAT.^name}: missing required index: $idx"
 		  if $att.is-required;
 	      return Nil
 	  }
-	  die "{$array.WHAT.^name}.[$idx]: {$val.perl} - not of type: {$type.gist}"
+	  die "{$object.WHAT.^name}.[$idx]: {$val.perl} - not of type: {$type.gist}"
 	      unless $val ~~ $type
 	      || $val ~~ Pair;	#| undereferenced - don't know it's type yet
 	  $val;
 	}
 
-	Proxy.new( 
+	Proxy.new(
 	    FETCH => method {
-		type-check($array[$idx], $att.type);
+		my $val = $object[$idx];
+		$object.apply-att($val, $att);
+		type-check($val, $att.type);
 	    },
 	    STORE => method ($val is copy) {
-		for $att.does.grep({ $val !~~ $_}) {
-		    $val does $_;
-		    $val.?tie-init;
-		}
-		$att.set_value($array, $array[$idx] := type-check($val, $att.type));
+		my $lval = $object.lvalue($val);
+		$object.apply-att($lval, $att);
+		my $sval = ($object[$idx] := type-check($lval, $att.type));
+	        $att.name eq 'elems-att'
+	             ?? $sval
+                     !! $att.set_value($object, $sval);
 	    });
     }
 
-    multi method tie-att(Int $idx!, $att is copy) {
+    multi method rw-accessor(Int $idx!, Attribute $att) {
 	tie-att-array(self, $idx, $att);
     }
 
@@ -57,7 +60,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 		if @index[$pos];
 	    @index[$pos] = $att;
 
-	    my &meth = method { self.tie-att( $pos, $att ) };
+	    my &meth = method { self.rw-accessor( $pos, $att ) };
 
 	    my $key = $att.accessor-name;
 	    if $att.gen-accessor && ! $class.^declares_method($key) {
@@ -89,17 +92,14 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 
     #| handle array assignments: $foo[42] = 'bar'; $foo[99] := $baz;
     method ASSIGN-POS($pos, $val) {
-        my $lval = self.lvalue($val);
 	if $.index[$pos]:exists {
 	    # tied to an attribute
 	    my $key = $.index[$pos].accessor-name;
-	    $lval.obj-num //= -1
-		if $.index[$pos].is-indirect && $lval ~~ PDF::Object;
-	    self."$key"() = $lval
+	    self."$key"() = $val
 	}
 	else {
 	    # undeclared, fallback to untied array
-	    nextwith( $pos, $lval );
+	    nextwith($pos, $.lvalue($val));
 	}
     }
 
