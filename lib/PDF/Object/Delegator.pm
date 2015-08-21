@@ -4,6 +4,29 @@ class PDF::Object::Delegator {
 
     use PDF::Object::Util :from-ast;
 
+    use PDF::Object::Array;
+    use PDF::Object::Tie::Array;
+
+    use PDF::Object::Dict;
+    use PDF::Object::Tie::Hash;
+
+    multi method coerce( $obj, $role where {$obj ~~ $role}) {
+	# already does it
+	$obj
+    }
+
+    multi method coerce( PDF::Object::Dict $obj, $role where {$role ~~ PDF::Object::Tie::Hash}) {
+	$obj does $role; $obj.?tie-init;
+    }
+
+    multi method coerce( PDF::Object::Array $obj, $role where {$role ~~ PDF::Object::Tie::Array}) {
+	$obj does $role; $obj.?tie-init;
+    }
+
+    multi method coerce( $obj, $role) is default {
+	die "unable to coerce object of type {$obj.WHAT.gist} to role {$role.WHAT.gist}";
+    }
+
     method class-paths { <PDF::Object::Type> }
 
     our %handler;

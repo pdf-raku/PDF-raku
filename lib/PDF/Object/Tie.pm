@@ -18,10 +18,10 @@ role PDF::Object::Tie {
 	has Bool $.is-required is rw = False;
 	has Bool $.is-indirect is rw = False;
 	has Bool $.is-inherited is rw = False;
+	has Bool $.is-coerced is rw = False;
 	has Str $.accessor-name is rw;
 	has Bool $.gen-accessor is rw;
         has Str @.aliases is rw;
-	has @.does is rw;
 	has $.type is rw;
 	has Attribute $.elems-att is rw;  #| used if the attribute has been declared with a '@' sigil, e.g.:
 	                                  #| has Hash @.Kids is entry(:indirect)
@@ -47,10 +47,7 @@ role PDF::Object::Tie {
 		when 'alias'    { $att.aliases      = $arg.value.list }
 		when 'inherit'  { $att.is-inherited = $arg.value }
 		when 'required' { $att.is-required  = $arg.value }
-		when 'does'     {
-		    warn ":does is experimental";
-		    ($elems // $att).does        = ( $arg.value )
-		}
+		when 'coerce' { ($elems // $att).is-coerced = $arg.value }
 		when 'indirect' { ($elems // $att).is-indirect = $arg.value }
 		default    { warn "ignoring entry attribute: $_" }
 	    }
@@ -88,7 +85,7 @@ role PDF::Object::Tie {
 	die "index trait requires a UInt argument, e.g. 'is index(1)'"
 	    unless @args && @args[0] ~~ UInt;
 	$att.index = @args.shift;
-
+	$att.type = $type;
 	$att.gen-accessor = $att.has-accessor;
 	process-args(@args, $att);
     }
@@ -100,12 +97,10 @@ role PDF::Object::Tie {
     }
 
     method apply-att($lval, Attribute $att) {
+	$lval.delegator.coerce($lval, $att.type)
+	    if $att.is-coerced && ! ($lval ~~ $att.type);
 	$lval.obj-num //= -1
 	    if $att.is-indirect && $lval ~~ PDF::Object;
-	for $att.does.grep({ $lval !~~ $_}) {
-	    $lval does $_;
-	    $lval.?tie-init;
-	}
     }
 
     #| indirect reference

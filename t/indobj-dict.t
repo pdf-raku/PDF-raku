@@ -55,12 +55,12 @@ use PDF::Object::Tie::Hash;
 use PDF::Object::Tie::Array;
 role KidRole does PDF::Object::Tie::Hash {method bar {42}}
 role MyPages does PDF::Object::Tie::Hash {
-    has Hash @.Kids is entry(:required, :indirect, :does(KidRole) );
+    has Hash @.Kids is entry(:required, :indirect );
 }
 
 class MyCat
     is PDF::Object::Dict {
-    has Hash $.Pages is entry(:required, :indirect, :does(MyPages) );
+    has MyPages $.Pages is entry(:required, :indirect, :coerce);
     has Bool $.NeedsRendering is entry;
 }
 

@@ -33,8 +33,9 @@ is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';
 
 use PDF::Object::Array;
 use PDF::Object::Tie;
+use PDF::Object::Tie::Hash;
 
-role Yippie {
+role ColorSpaceDict does PDF::Object::Tie::Hash {
      method yay{42}
 }
 
@@ -43,7 +44,7 @@ class ColorSpaceArray
 
     method type {'ColorSpace'}
     has Str $.Subtype is index(0, :alias<sub-type>);
-    has Hash $.Dict is index(1, :does(Yippie));
+    has ColorSpaceDict $.Dict is index(1, :coerce);
 }
 
 my $cs = ColorSpaceArray.new;
@@ -53,7 +54,7 @@ $cs[1] = { :WhitePoint[1.0, 1.0, 1.0] };
 is $cs.Subtype, 'Lab', 'tied index [0]';
 is $cs.sub-type, 'Lab', 'tied by alias';
 is-json-equiv $cs.Dict, { :WhitePoint[1.0, 1.0, 1.0] }, 'tied index [1]';
-ok $cs.Dict ~~ Yippie, 'tied index "does" attribute';
+ok $cs.Dict ~~ ColorSpaceDict, 'tied index "does" attribute';
 is $cs.Dict.yay, 42, 'tied index "does" attribute';
 lives-ok {$cs.Subtype = 'CalRGB'}, 'tied index assignment';
 is $cs.Subtype, 'CalRGB', 'tied index fetch';
