@@ -41,12 +41,8 @@ class PDF::Storage::Serializer {
     }
 
     #| rebuilds the body
-    multi method body( PDF::Object :$Root!, Bool:_ :$compress) {
-	$.body( PDF::Object.coerce({ :$Root }), :$compress, :rebuild );
-    }
-
-    multi method body( PDF::Object $trailer, Bool :$rebuild where {!$rebuild && $trailer.reader}, *%opt ) {
-	self.body( $trailer.reader, |%opt);
+    multi method body( PDF::Object :$Root!, |c) {
+	$.body( PDF::Object.coerce({ :$Root }), |c);
     }
 
     #| rebuild document body from root

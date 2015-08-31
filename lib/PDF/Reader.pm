@@ -634,7 +634,11 @@ class PDF::Reader {
     }
 
     method ast( Bool :$rebuild = False ) {
-        my $body = PDF::Storage::Serializer.new.body( self.trailer, :$rebuild );
+        my $serializer = PDF::Storage::Serializer.new;
+
+        my $body = $rebuild
+            ?? $serializer.body( self.trailer )
+            !! $serializer.body( self, :$rebuild );
 
         :pdf{
             :header{ :$.type, :$.version },
