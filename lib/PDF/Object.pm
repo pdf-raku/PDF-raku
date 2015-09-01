@@ -30,6 +30,15 @@ class PDF::Object {
     multi method coerce(Array $array!, |c) {
         $.coerce( :$array, |c )
     }
+    multi method coerce(Pair $_!, |c) {
+	$.coerce( |%$_, |c)
+    }
+    method add-role($obj, Str $role) {
+	require ::($role);
+        $obj does ::($role)
+	    unless $obj.does(::($role));
+	$obj;
+    }
 
     multi method coerce( Array :$array!, |c ) {
         require ::("PDF::Object::Array");
@@ -38,8 +47,7 @@ class PDF::Object {
     }
 
     multi method coerce( Bool :$bool!) {
-        require ::("PDF::Object::Bool");
-        $bool does ::("PDF::Object::Bool");
+        $.add-role($bool, "PDF::Object::Bool");
     }
 
     multi method coerce( Array :$ind-ref!) {
@@ -47,34 +55,27 @@ class PDF::Object {
     }
 
     multi method coerce( Int :$int!) {
-        require ::("PDF::Object::Int");
-        $int does ::("PDF::Object::Int");
+        $.add-role($int, "PDF::Object::Int");
     }
 
     multi method coerce( Numeric :$real!) {
-        require ::("PDF::Object::Real");
-        $real does ::("PDF::Object::Real");
+        $.add-role($real, "PDF::Object::Real");
     }
 
     multi method coerce( Str :$hex-string!) {
-        require ::("PDF::Object::ByteString");
-
-        my Str $str = $hex-string does ::("PDF::Object::ByteString");
-        $str.type = 'hex-string';
-        $str;
+        $.add-role($hex-string, "PDF::Object::ByteString");
+        $hex-string.type = 'hex-string';
+        $hex-string;
     }
 
     multi method coerce( Str :$literal!) {
-        require ::("PDF::Object::ByteString");
-
-        my Str $str = $literal does ::("PDF::Object::ByteString");
-        $str.type = 'literal';
-        $str;
+        $.add-role( $literal, "PDF::Object::ByteString");
+        $literal.type = 'literal';
+        $literal;
     }
 
     multi method coerce( Str :$name!) {
-        require ::("PDF::Object::Name");
-        $name does ::("PDF::Object::Name");
+        $.add-role($name, "PDF::Object::Name");
     }
 
     multi method coerce( Any :$null!) {
