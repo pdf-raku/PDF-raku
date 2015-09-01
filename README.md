@@ -80,14 +80,72 @@ my $stream-obj = PDF::Object::Stream.new( :$obj-num, :$gen-num, :$dict, :$decode
 say $stream.obj.encoded;
 ```
 
-- PDF::Object::Stream - abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
-- PDF::Object::Dict - abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
-- PDF::Object::Array - array objects
-- PDF::Object::Bool, PDF::Object::Name, PDF::Object::Null, PDF::Object::Num, PDF::Object::ByteString - simple indirect objects
-- PDF::Object::Doc - the absolute root of the document- the trailer dictionary
-- PDF 1.5+ Compressed object support (reader only). DOM objects:
-  - PDF::Object::Type::ObjStm - PDF 1.5+ Object stream (holds compressed objects)
-  - PDF::Object::Type::XRef - PDF 1.5+ Cross Reference stream
+The `PDF::Object.coerce` is a method for the construction of objects.
+
+It is used internally to build objects from parsed objects, e.g.:
+
+```
+use v6;
+use PDF::Grammar::Doc;
+use PDF::Grammar::Doc::Actions;
+use PDF::Object;
+my $actions = PDF::Grammar::Doc::Actions.new;
+PDF::Grammar::Doc.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :rule<object>, :$actions)
+    or die "parse failed";
+my $ast = $/.ast;
+
+say '#'~$ast.perl;
+#:dict({:Count(:int(1)), :Kids(:array([:ind-ref([4, 0])])), :Type(:name("Pages"))})
+
+my $object = PDF::Object.coerce( %$ast );
+
+say '#'~$object.WHAT.gist;
+#(PDF::Object::Dict)
+
+say '#'~$object.perl;
+#{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
+
+say '#'~$object<Type>;
+#(Str+{PDF::Object::Name})
+
+say '#'~$object<Type>.WHAT.gist;
+#{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
+```
+The coerce method is also used to construct new objects.
+
+In some cases, we can omit the AST tags. E.g. we can use `1`, instead of `:int(1)`:
+```
+# using explicit AST tags
+my $object2 = PDF::Object.coerce({ :Type( :name<Pages> ), :Count(:int(1)), :Kids( :array[ :ind-ref[4, 0] ) ] });
+
+# same but with a casting from native typs
+my $object3 = PDF::Object.coerce({ :Type( :name<Pages> ), :Count(1), :Kids[ :ind-ref[4, 0] ] });
+say '#'~$object2.perl;
+
+```
+
+A table of Object types follows:
+
+--- | --- | ---
+*AST Tag* | Object Role/Class | *Perl 6 Type | PDF Example | Description
+ `array` | PDF::Object::Array | Array | `[ 1 (foo) /Bar ]` | array objects
+`bool` | PDF::Object::Bool | Bool | `true`
+`int` | PDF::Object::Int | Int | `42`
+`literal` | PDF::Object::ByteString (literal) | Str | `(hello world)`
+`hex-string` | PDF::Object::ByteString (hex-string) | | `<736E6F6f7079>`
+`dict` | PDF::Object::Dict | Hash | `<< /Length 42 /Apples(oranges) >>` | abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
+`name` | PDF::Object::Name | | `/Catalog`
+`null` | PDF::Object::Null | Any | `null`
+`real` | PDF::Object::Real | Numeric | `3.14159`
+`stream`| PDF::Object::Stream | | | abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
+
+Derived objects provided by PDF::Tools:
+
+--- | --- | ---
+*Class* | *Base Class* | *Description*
+PDF::Object::Doc | PDF::Object::Dict | the absolute root of the document- the trailer dictionary
+PDF::Object::Type::ObjStm | PDF::Object::Stream | PDF 1.5+ Object stream (holds compressed objects)
+PDF::Object::Type::XRef | PDF::Object::Stream | PDF 1.5+ Cross Reference stream
 
 ## PDF::Reader
 
