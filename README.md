@@ -116,10 +116,14 @@ The coerce method is also used to construct new objects.
 In some cases, we can omit the AST tags. E.g. we can use `1`, instead of `:int(1)`:
 ```
 # using explicit AST tags
-my $object2 = PDF::Object.coerce({ :Type( :name<Pages> ), :Count(:int(1)), :Kids( :array[ :ind-ref[4, 0] ) ] });
+my $object2 = PDF::Object.coerce({ :Type( :name<Pages> ),
+                                   :Count(:int(1)),
+                                   :Kids( :array[ :ind-ref[4, 0] ) ] });
 
 # same but with a casting from native typs
-my $object3 = PDF::Object.coerce({ :Type( :name<Pages> ), :Count(1), :Kids[ :ind-ref[4, 0] ] });
+my $object3 = PDF::Object.coerce({ :Type( :name<Pages> ),
+                                   :Count(1),
+                                   :Kids[ :ind-ref[4, 0] ] });
 say '#'~$object2.perl;
 
 ```
@@ -186,14 +190,24 @@ $pdf.save-as('/tmp/example.pdf');
 
 ## PDF::Storage::Filter
 
-Filter methods, based on PDF::API2::Core::PDF::Filter / Text::PDF::Filter
+Filters are used to compress or decompress stream data in objects of type `PDF::Object::Stream`. These are implemented as follows:
 
-PDF::Storage::Filter::RunLength, PDF::Storage::Filter::ASCII85, PDF::Storage::Filter::Flate, ...
+*Filter Name* | *Short Name* | Filter Class
+--- | --- | ---
+ASCIIHexDecode  | AHx | PDF::Storage::Filter::ASCIIHex
+ASCII85Decode   | A85 | PDF::Storage::Filter::ASCII85
+CCITTFaxDecode  | CCF | _NYI_
+Crypt           |     | _NYI_
+DCTDecode       | DCT | _NYI_
+FlateDecode     | Fl  | PDF::Storage::Filter::Flate
+LZWDecode       | LZW | PDF::Storage::Filter::LZW
+JBIG2Decode     |     | _NYI_
+JPXDecode       |     | _NYI_
+RunLengthDecode | RL  | PDF::Storage::Filter::RunLength
 
-Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding
-is recommended to enforce this.
+Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding is recommended to enforce this.
 
-`encode` and `decode` both return latin-1 encoded strings.
+Each file has `encode` and `decode` methods. Both return latin-1 encoded strings.
 
  ```
  my $encoded = PDF::Storage::Filter.encode( :dict{ :Filter<RunLengthEncode> },
@@ -203,11 +217,9 @@ is recommended to enforce this.
 
 ## PDF::Storage::Serializer
 
-Constructs AST for output by PDF::Writer. It can create full PDF bodies, or just changes
-for in-place incremental update to a PDF.
+Constructs AST for output by PDF::Writer. It can create full PDF bodies, or just changes for in-place incremental update to a PDF.
 
-In place edits are particularly effective for making small changes to large PDF's, when we can avoid
-loading large unmodified portions of the PDF.
+In place edits are particularly effective for making small changes to large PDF's, when we can avoid loading large unmodified portions of the PDF.
 
 ````
 my $serializer = PDF::Storage::Serializer.new;
