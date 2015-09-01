@@ -126,8 +126,8 @@ say '#'~$object2.perl;
 
 A table of Object types follows:
 
---- | --- | ---
-*AST Tag* | Object Role/Class | *Perl 6 Type | PDF Example | Description
+*AST Tag* | Object Role/Class | *Perl 6 Type | PDF Example | Description |
+--- | --- | --- | --- | --- |
  `array` | PDF::Object::Array | Array | `[ 1 (foo) /Bar ]` | array objects
 `bool` | PDF::Object::Bool | Bool | `true`
 `int` | PDF::Object::Int | Int | `42`
@@ -141,8 +141,8 @@ A table of Object types follows:
 
 Derived objects provided by PDF::Tools:
 
---- | --- | ---
 *Class* | *Base Class* | *Description*
+--- | --- | --- |
 PDF::Object::Doc | PDF::Object::Dict | the absolute root of the document- the trailer dictionary
 PDF::Object::Type::ObjStm | PDF::Object::Stream | PDF 1.5+ Object stream (holds compressed objects)
 PDF::Object::Type::XRef | PDF::Object::Stream | PDF 1.5+ Cross Reference stream
