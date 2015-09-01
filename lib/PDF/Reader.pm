@@ -21,7 +21,6 @@ class PDF::Reader {
     has Int $.prev;
     has Int $.size is rw;   #= /Size entry in trailer dict ~ first free object number
     has Bool $.defunct is rw = False;
-    has PDF::Object:U $.coercer handles <coerce> = PDF::Object;
 
     method actions {
         state $actions //= PDF::Grammar::PDF::Actions.new
@@ -83,7 +82,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my $dict = $.coerce( |%(.<trailer>) );
+                my $dict = PDF::Object.coerce( |%(.<trailer>) );
                 self!"set-trailer"( $dict.content<dict> );
             }
        }
@@ -345,7 +344,7 @@ class PDF::Reader {
                               || &fallback() )
                     or die "unable to parse index: $xref";
                 my Hash $index = $parse.ast;
-                $dict = $.coerce( |%($index<trailer>) );
+                $dict = PDF::Object.coerce( |%($index<trailer>) );
 
                 my $prev-offset;
 
@@ -492,7 +491,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my $dict = $.coerce( |%(.<trailer>) );
+                my $dict = PDF::Object.coerce( |%(.<trailer>) );
                 self!"set-trailer"( $dict.content<dict> )
                     if $dict.content<dict>:exists;
             }

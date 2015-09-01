@@ -14,14 +14,12 @@ class PDF::Storage::IndObj {
 
     #| construct an object instance from a PDF::Grammar::PDF ast representation of
     #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
-    multi submethod BUILD( Array :$ind-obj!, :$input, :$reader, *%etc ) {
+    multi submethod BUILD( Array :$ind-obj!, |c ) {
         $!obj-num = $ind-obj[0];
         $!gen-num = $ind-obj[1];
-        my %params = $ind-obj[2].kv, %etc;
-        %params<input> = $input
-            if $input.defined;
+        my $ast = $ind-obj[2];
 
-        $!object = ($reader // PDF::Object).coerce( :$!obj-num, :$!gen-num, :$reader, |%params);
+        $!object = PDF::Object.coerce( :$!obj-num, :$!gen-num, |%$ast, |c );
     }
 
     #| recreate a PDF::Grammar::PDF / PDF::Writer compatibile ast from the object

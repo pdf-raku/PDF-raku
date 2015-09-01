@@ -9,8 +9,9 @@ use PDF::Object;
 sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 
 my $reader = PDF::Reader.new();
-
+isa-ok $reader, PDF::Reader;
 $reader.open( 't/pdf/pdf.in' );
+is-deeply $reader.trailer.reader, $reader, 'trailer reader';
 my $root-obj = $reader.trailer<Root>;
 is-deeply $root-obj.reader, $reader, 'root object .reader';
 is $root-obj.obj-num, 1, 'root object .obj-num';
@@ -36,6 +37,8 @@ is $Pages<Type>, 'Pages', 'Pages<Type>';
 is-deeply $Pages.reader, $reader, 'root has deref - stickyness';
 
 my $Kids = $Pages<Kids>;
+isa-ok $Kids, Array;
+isa-ok $Kids, PDF::Object::Array;
 is-deeply $Kids.reader, $reader, 'hash -> array deref - reader stickyness';
 my $kid := $Kids[0];
 is-deeply $kid.reader, $reader, 'array -> hash deref - reader stickyness';

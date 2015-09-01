@@ -8,8 +8,6 @@ use PDF::Storage::IndObj;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
-use lib '.';
-use t::Object :to-obj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -21,10 +19,10 @@ my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
 isa-ok $ind-obj.object, Int;
 is $ind-obj.obj-num, 37, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
+isa-ok $ind-obj.object, Int, '$.object';
+is $ind-obj.object, 42, '$.object';
 my $content = $ind-obj.content;
 isa-ok $content, Pair;
-isa-ok to-obj( $content ), Int, '$.content to-obj';
-is to-obj( $content ), 42, '$.content to-obj';
 is-json-equiv $content, (:int(42)), '$.content';
 
 is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';
@@ -37,11 +35,10 @@ $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
 isa-ok $ind-obj.object, Rat;
 is $ind-obj.obj-num, 5, '$.obj-num';
 is $ind-obj.gen-num, 6, '$.gen-num';
+isa-ok $ind-obj.object, Rat, '$.object';
+is $ind-obj.object, 4.2, '$.object';
 $content = $ind-obj.content;
 isa-ok $content, Pair;
-isa-ok to-obj( $content ), Rat, '$.content to-obj';
-is to-obj( $content ), 4.2, '$.content to-obj';
 is-json-equiv $content, (:real(4.2)), '$.content';
-
 is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';
 

@@ -48,7 +48,7 @@ module PDF::Object::Util {
         $bool;
     }
 
-    multi sub from-ast( Hash :$dict!, :$keys ) {
+    multi sub from-ast( Hash :$dict! ) {
         $dict;
     }
 

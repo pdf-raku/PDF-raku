@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 9;
+plan 8;
 
 use PDF::Storage::IndObj;
 
@@ -9,7 +9,6 @@ use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 use lib '.';
-use t::Object :to-obj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -22,9 +21,8 @@ isa-ok $ind-obj.object, Str;
 is $ind-obj.object, 'HiThere';
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
+is-json-equiv $ind-obj.object, 'HiThere', '$.object';
 my $content = $ind-obj.content;
 isa-ok $content, Pair;
 is-deeply $content, (:name<HiThere>), '$.content';
-isa-ok to-obj( $content ), Str, '$.content to-obj';
-is to-obj( $content ), 'HiThere', '$.content to-obj';
 is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';

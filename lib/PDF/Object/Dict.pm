@@ -16,11 +16,11 @@ class PDF::Object::Dict
 
     our %obj-cache = (); #= to catch circular references
 
-    multi method new(Hash $dict!, *%etc) {
-	self.new( :$dict, |%etc );
+    multi method new(Hash $dict!, |c) {
+	self.new( :$dict, |c );
     }
 
-    multi method new(Hash :$dict = {}, *%etc) {
+    multi method new(Hash :$dict = {}, *%etc) is default {
         my Str $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {

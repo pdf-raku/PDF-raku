@@ -7,8 +7,6 @@ use PDF::Storage::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use lib '.';
-use t::Object :to-obj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -20,9 +18,9 @@ my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 isa-ok $ind-obj.object, Bool;
+is-deeply $ind-obj.object, True, '$.object';
 my $content = $ind-obj.content;
 isa-ok $content, Pair;
-is-deeply to-obj( $content ), True, '$.content to-obj';
 is-deeply $content, (:bool), '$.content';
 
 is-deeply $ind-obj.ast, $ast, 'ast regeneration';

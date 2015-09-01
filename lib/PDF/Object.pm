@@ -19,22 +19,31 @@ class PDF::Object {
 
     # coerce Hash & Array assignments to objects
     multi method coerce(PDF::Object $val!) { $val }
-    multi method coerce(Hash $dict!, :$reader) {
-	$.coerce( :$dict, :$reader )
+    #| to allow round-tripping from JSON
+
+    multi method coerce(Hash $dict!, |c) {
+	use PDF::Grammar :AST-Types;
+	+$dict == 1 && $dict.keys[0] ∈ AST-Types
+	    ?? $.coerce( |%$dict, |c )    #| JSON munged pair
+	    !! $.coerce( :$dict,  |c );
     }
-    multi method coerce(Array $array!, :$reader) {
-        $.coerce( :$array, :$reader )
+    multi method coerce(Array $array!, |c) {
+        $.coerce( :$array, |c )
     }
 
-    multi method coerce( Array :$array!, *%etc) {
+    multi method coerce( Array :$array!, |c ) {
         require ::("PDF::Object::Array");
         my $fallback = ::("PDF::Object::Array");
-        $.delegate( :$array, :$fallback ).new( :$array, |%etc );
+        $.delegate( :$array, :$fallback ).new( :$array, |c );
     }
 
     multi method coerce( Bool :$bool!) {
         require ::("PDF::Object::Bool");
         $bool does ::("PDF::Object::Bool");
+    }
+
+    multi method coerce( Array :$ind-ref!) {
+	:$ind-ref
     }
 
     multi method coerce( Int :$int!) {
@@ -73,15 +82,15 @@ class PDF::Object {
         ::("PDF::Object::Null").new;
     }
 
-    multi method coerce( Hash :$dict!, *%etc) {
+    multi method coerce( Hash :$dict!, |c ) {
         require ::("PDF::Object::Dict");
 	my $class = ::("PDF::Object::Dict");
 	$class = $.delegate( :$dict, :fallback($class) );
-	$class.new( :$dict, |%etc );
+	$class.new( :$dict, |c );
     }
 
-    multi method coerce( Hash :$stream!, *%etc) {
-        my %params = %etc;
+    multi method coerce( Hash :$stream!, |c ) {
+        my %params;
         for <start end encoded decoded> {
             %params{$_} = $stream{$_}
             if $stream{$_}:exists;
@@ -90,19 +99,21 @@ class PDF::Object {
         require ::("PDF::Object::Stream");
 	my $class = ::("PDF::Object::Stream");
 	$class = $.delegate( :$dict, :fallback($class) );
-        $class.new( :$dict, |%params );
+        $class.new( :$dict, |%params, |c );
     }
 
     multi method coerce($val) is default { $val }
 
     our $delegator;
-    method delegator is rw { $delegator }
-    method delegate(*%opt) {
+    method delegator is rw {
 	unless $delegator.can('delegate') {
 	    require ::('PDF::Object::Delegator');
 	    $delegator = ::('PDF::Object::Delegator');
 	}
-	$delegator.delegate(|%opt);
+	$delegator
+    }
+    method delegate(|c) {
+	$.delegator.delegate(|c);
     }
 
     #| unique identifier for this object instance

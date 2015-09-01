@@ -46,7 +46,7 @@ sub stream_tests( $stream-obj, $subject) {
     is-deeply $stream-obj.encoded, $encoded, $subject~' encoded';
 }
 
-my $stream2 = PDF::Object::Stream.new( :dict{ :Foo( :name<Bar> ) } );
+my $stream2 = PDF::Object.coerce( :stream{  :dict{ :Foo( :name<Bar> ) } } );
 is-json-equiv $stream2.content, (:dict{:Foo(:name<Bar>)}), 'stream without content';
 $stream2.decoded('ABC12345678');
 is-json-equiv $stream2.content, (:stream{ :dict{:Foo(:name<Bar>), :Length{ :int(11) } }, :encoded<ABC12345678> }), 'stream with content'

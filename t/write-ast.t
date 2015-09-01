@@ -4,8 +4,6 @@ use Test;
 use JSON::Tiny;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Writer;
-use lib '.';
-use t::Object :to-obj;
 
 is PDF::Writer.new.write(:array[ :real(0.31415926e0), :real(1.3e-17), :real(0.00000000), :real(0e0), :real(1) ]), '[ 0.31416 0 0 0 1 ]';
 
@@ -26,12 +24,6 @@ for 't/write-ast.json'.IO.lines {
     my $pdf-data = PDF::Writer.new( :%ast );
     is-json-equiv ~$pdf-data, $expected-pdf, "write {%ast.keys.sort}"
         or diag :%ast.perl;
-
-    if my $to-obj = $test<to-obj> {
-        my $perl = to-obj( |%ast );
-        is-json-equiv $perl, $to-obj, "to-obj {%ast.keys.sort}"
-            or diag :%ast.perl;
-    }
 }
 
 done;

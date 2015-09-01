@@ -34,9 +34,6 @@ $pdf-json.open( 't/pdf/pdf-rewritten.json' );
 my $json-ast = $pdf-json.ast( :rebuild );
 is-json-equiv $json-ast, $ast, '$reader.open( "pdf.json" )';
 
-"/tmp/a1.json".IO.spurt: to-json($json-ast);
-"/tmp/a2.json".IO.spurt: to-json($ast);
-
 $pdf-json.recompress( :compress );
 $pdf-json.save-as('t/pdf/pdf-compressed.pdf');
 my $pdf-compressed = PDF::Reader.new();

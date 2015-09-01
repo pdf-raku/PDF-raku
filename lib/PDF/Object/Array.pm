@@ -12,8 +12,8 @@ class PDF::Object::Array
 
     our %obj-cache = (); #= to catch circular references
 
-    multi method new(Array $array!, *%etc) {
-	self.new( :$array, |%etc );
+    multi method new(Array $array!, |c) {
+	self.new( :$array, |c );
     }
 
     multi method new(Array :$array = [], *%etc) {

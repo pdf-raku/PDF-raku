@@ -37,8 +37,8 @@ class PDF::Object::Stream
 
     our %obj-cache = (); #= to catch circular references
 
-    multi method new(Hash $dict!, *%etc) {
-	self.new( :$dict, |%etc );
+    multi method new(Hash $dict!, |c) {
+	self.new( :$dict, |c );
     }
 
     multi method new(Hash :$dict = {}, *%etc) {

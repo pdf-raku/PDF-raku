@@ -1,25 +1,22 @@
 use v6;
 use Test;
 
-plan 23;
+plan 19;
 
 use PDF::Storage::IndObj;
 use PDF::Object::Util :to-ast;
 use PDF::Object::Dict;
 use PDF::Grammar::Test :is-json-equiv;
 use lib '.';
-use t::Object :to-obj;
 
-sub ind-obj-tests( :$ind-obj!, :$class!, :$to-obj!) {
+sub ind-obj-tests( :$ind-obj!, :$class!, :$to-json) {
     my $dict-obj = PDF::Storage::IndObj.new( :$ind-obj );
     my $object = $dict-obj.object;
     isa-ok $object, $class;
     is $dict-obj.obj-num, $ind-obj[0], '$.obj-num';
     is $dict-obj.gen-num, $ind-obj[1], '$.gen-num';
+    is-json-equiv $dict-obj.object, $to-json, 'object to json';
     my $content = $dict-obj.content;
-    isa-ok $content, Pair;
-    isa-ok to-obj( $content ), Hash, '$.content to-obj';
-    is-json-equiv to-obj( $content ), $to-obj, '$.content to-obj';
     is-json-equiv $dict-obj.ast, (:$ind-obj), 'ast regeneration';
 }
 
@@ -27,7 +24,7 @@ ind-obj-tests(
     :ind-obj[ 21, 0, :dict{ D => :array[ :ind-ref[216, 0], :name<XYZ>, :int(0), :int(441), :null(Any)],
                             S => :name<GoTo>}],
     :class(PDF::Object::Dict),
-    :to-obj{ :D[ :ind-ref[216, 0], "XYZ", 0, 441, Any], :S<GoTo> },
+    :to-json{ :D[ :ind-ref[216, 0], "XYZ", 0, 441, Any], :S<GoTo> },
     );
 
 ind-obj-tests(
@@ -40,7 +37,7 @@ ind-obj-tests(
                                ]},
     ],
     :class(PDF::Object::Dict),
-    :to-obj{ :P{ :ind-ref[ 142, 0 ] },
+    :to-json{ :P{ :ind-ref[ 142, 0 ] },
               :S<Link>,
               :K[ :ind-ref[ 207, 0 ],
                   { :Type<OBJR>,
@@ -52,7 +49,7 @@ ind-obj-tests(
 
 use PDF::Object::Tie;
 use PDF::Object::Tie::Hash;
-use PDF::Object::Tie::Array;
+use PDF::Object::Dict;
 role KidRole does PDF::Object::Tie::Hash {method bar {42}}
 role MyPages does PDF::Object::Tie::Hash {
     has Hash @.Kids is entry(:required, :indirect );
@@ -64,10 +61,10 @@ class MyCat
     has Bool $.NeedsRendering is entry;
 }
 
-my $cat = MyCat.new: { :Pages{ :Kids[ { :Type( :name<Page> ) } ] } };
+my $cat = MyCat.new( :dict{ :Pages{ :Kids[ { :Type( :name<Page> ) } ] } } );
 
 isa-ok $cat, MyCat, 'root object';
-ok $cat.Pages ~~ MyPages, '.Pages role';
+does-ok $cat.Pages, MyPages, '.Pages role';
 isa-ok $cat.Pages.Kids, Array, '.Pages.Kids';
 lives-ok { $cat.NeedsRendering = True }, 'valid assignment';
 dies-ok { $cat.NeedsRendering = 42 }, 'typechecking';

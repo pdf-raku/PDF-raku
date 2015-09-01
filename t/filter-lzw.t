@@ -8,8 +8,7 @@ use PDF::Storage::Filter::LZW;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Storage::Input;
-use lib '.';
-use t::Object :to-obj;
+use PDF::Storage::IndObj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -19,8 +18,8 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
 my $ast = $/.ast;
 
 my $pdf-input = PDF::Storage::Input.compose( :value($input) );
-
-my $dict = to-obj( |%$ast )<dict>;
+my $ind-obj = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
+my $dict = $ind-obj.object;
 my $raw-content = $pdf-input.stream-data( |%$ast )[0];
 my $content;
 

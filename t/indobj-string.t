@@ -8,8 +8,6 @@ use PDF::Storage::IndObj;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
-use lib '.';
-use t::Object :to-obj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -21,9 +19,9 @@ my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
 isa-ok $ind-obj.object, Str;
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
+is $ind-obj.object, 'a literal string', '$.object';
 my $content = $ind-obj.content;
 isa-ok $content, Pair;
-is-deeply to-obj( $content ), 'a literal string', '$.content to-obj';
 is-deeply $content, (:literal("a literal string")), '$.content';
 
 $input = '123 4 obj <736E6F6f7079> endobj';
@@ -34,9 +32,9 @@ $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
 isa-ok $ind-obj.object, Str;
 is $ind-obj.obj-num, 123, '$.obj-num';
 is $ind-obj.gen-num, 4, '$.gen-num';
+is $ind-obj.object, 'snoopy', '$.object';
 $content = $ind-obj.content;
 isa-ok $content, Pair;
-is to-obj( $content ), 'snoopy', '$.content to-obj';
 is-json-equiv $content, (:hex-string<snoopy>), '$.content';
 
 is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';
