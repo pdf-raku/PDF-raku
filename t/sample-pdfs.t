@@ -15,8 +15,6 @@ for 'sample-pdfs'.IO.dir.list {
 
 	isa-ok $doc, PDF::Object::Doc, "$desc - trailer";
 
-        todo "linearized PDF - trailer /Root entry", 3
-            if $pdf-filename eq 'sample-pdfs/linearized.pdf';
 	ok $doc<Root>, 'document has a root';
 	isa-ok $doc<Root>, ::('PDF::Object::Dict'), "$desc document root";
 	ok $doc<Root> && $doc<Root><Pages>, "$desc <Root><Pages> entry";

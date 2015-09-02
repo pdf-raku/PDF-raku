@@ -345,6 +345,7 @@ class PDF::Reader {
                     or die "unable to parse index: $xref";
                 my Hash $index = $parse.ast;
                 $dict = PDF::Object.coerce( |%($index<trailer>) );
+                self!"set-trailer"($dict);
 
                 my $prev-offset;
 
@@ -375,6 +376,7 @@ class PDF::Reader {
                 my $ind-obj = PDF::Storage::IndObj.new( |%ast, :input($xref), :reader(self) );
                 my $xref-obj = $ind-obj.object;
                 $dict = $xref-obj;
+                self!"set-trailer"($dict);
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;
             }
 
@@ -412,8 +414,6 @@ class PDF::Reader {
 
             %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(2), :$index, :$ref-obj-num };
         }
-
-        self!"set-trailer"($dict);
 
         #| don't entirely trust /Size entry in trailer dictionary
         my Int $max-obj-num = max( %!ind-obj-idx.keys>>.Int );
@@ -453,15 +453,15 @@ class PDF::Reader {
                         if $repair;
 
                     self!"fetch-stream-data"($ind-obj, $.input, :$offset, :$max-end);
+		    if $stream-type && $stream-type eq 'XRef' {
+			self!"set-trailer"( $dict, :keys<Root Encrypt Info ID> );
+			# discard existing /Type /XRef stream objects. These are specific to the input PDF
+			next;
+		    }
+
                 }
                 else {
                     $dict = $value;
-                }
-
-                if $stream-type && $stream-type eq 'XRef' {
-                    self!"set-trailer"( $dict, :keys<Root Encrypt Info ID> );
-                    # discard existing /Type /XRef stream objects. These are specific to the input PDF
-                    next;
                 }
 
                 %!ind-obj-idx{$obj-num}{$gen-num} //= {
