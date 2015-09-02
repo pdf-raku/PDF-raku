@@ -20,12 +20,16 @@ class PDF::Object::Doc
     has Array $.ID is entry;              #| (Optional, but strongly recommended; PDF 1.1) An array of two byte-strings constituting a file identifier
 
     #| open an input file
-    method open(Str $file-name) {
+    use PDF::Storage::Input;
+    multi method open(Str $file-name where { !.isa(PDF::Storage::Input) }) { self!"open"($file-name) }
+    multi method open(PDF::Storage::Input $input) { self!"open"($input) }
+
+    method !open($spec) {
 	require ::('PDF::Reader');
         my $reader = ::('PDF::Reader').new;
         my $doc = self.new;
         $reader.install-trailer( $doc );
-        $reader.open($file-name);
+        $reader.open($spec);
         $doc;
     }
 

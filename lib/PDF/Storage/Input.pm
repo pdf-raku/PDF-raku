@@ -9,6 +9,10 @@ class PDF::Storage::Input {
         $value;
     }
 
+    multi method compose( IO::Path :$value ) {
+	self.compose( :value($value.open( :enc<latin-1> ) ) );
+    }
+
     multi method compose( IO::Handle :$value! ) {
         require ::('PDF::Storage::Input::IOH');
         return ::('PDF::Storage::Input::IOH').new( :$value );

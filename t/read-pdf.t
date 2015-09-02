@@ -43,4 +43,15 @@ my $stream = $ast<pdf><body>[0]<objects>.first({ .key eq 'ind-obj' && .value[2].
 ok $stream.defined, 'got stream';
 is-deeply $stream.value[2]<stream><dict><Filter><name>, 'FlateDecode', 'stream is compressed';
 
+# load from a String
+use PDF::Storage::Input::Str;
+my Str $value = 't/pdf/pdf.in'.IO.open( :enc<latin-1> ).slurp-rest;
+my $input-str = PDF::Storage::Input::Str.new( :$value );
+my $pdf-str = PDF::Reader.new;
+$pdf-str.open( $input-str );
+is $pdf-str.version, 1.2, 'str - loaded version';
+is $pdf-str.type, 'PDF', 'str - loaded type';
+is $pdf-str.size, 9, 'str - loaded size';
+is $pdf-str.trailer<Root>.obj-num, 1, 'root-obj.obj-num';
+
 done;
