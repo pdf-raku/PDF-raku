@@ -91,4 +91,4 @@ is-deeply $obj<Kids>[4].reader, $reader, 'reader bind-array/pos stickyness';
 
 is-json-equiv $obj<Kids>.raw, [[99], 42, {:Foo<bar>}, [1, 2, 3], { :Bound<after> } ], 'final';
 
-done;
+done-testing;

@@ -108,4 +108,4 @@ my $obj-with-bad-byte-string = PDF::Object.coerce: { :Name("Heydər Əliyev") };
 $objects = PDF::Storage::Serializer.new.body(:Root($obj-with-bad-byte-string))<objects>;
 dies-ok {$writer.write( :ind-obj($objects[0].value) )}, 'out-of-range byte-string dies during write';
 
-done;
+done-testing;

@@ -38,4 +38,4 @@ my $ast = :pdf{ :version(1.2), :$body };
 
 my $writer = PDF::Writer.new( :$root );
 ok 't/helloworld.pdf'.IO.spurt( $writer.write( $ast ), :enc<latin-1> ), 'hello world';
-done;
+done-testing;

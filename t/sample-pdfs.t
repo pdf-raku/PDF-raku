@@ -22,4 +22,4 @@ for 'sample-pdfs'.IO.dir.list {
 
 }
 
-done;
+done-testing;

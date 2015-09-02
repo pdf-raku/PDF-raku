@@ -5,4 +5,4 @@ use PDF::Storage::Filter::RunLength;
 
 pass('compiles');
 
-done;
+done-testing;

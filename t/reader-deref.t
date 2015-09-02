@@ -30,4 +30,4 @@ is $kid<Type>, 'Page', 'Kids[0]<Type>';
 
 is $reader.deref($Pages,<Kids>,[0],<Parent>).WHERE, $Pages.WHERE, '$Pages<Kids>[0]<Parent>.WHERE == $Pages.WHERE';
 
-done;
+done-testing;

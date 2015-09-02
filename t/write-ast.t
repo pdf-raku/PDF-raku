@@ -26,4 +26,4 @@ for 't/write-ast.json'.IO.lines {
         or diag :%ast.perl;
 }
 
-done;
+done-testing;

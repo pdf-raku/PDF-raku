@@ -32,4 +32,4 @@ for 't/pdf'.IO.dir.list {
     PDF::Grammar::Test::parse-tests($class, ~$pdf-output, :$rule, :$actions, :suite("[$pdf-output-file]"), :%expected );
 }
 
-done;
+done-testing;

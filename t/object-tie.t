@@ -84,4 +84,4 @@ my $ast = :pdf{ :version(1.2), :$body };
 my $writer = PDF::Writer.new( );
 ok 't/hello-and-bye.pdf'.IO.spurt( $writer.write($ast), :enc<latin-1> ), 'output 2 page pdf';
 
-done;
+done-testing;

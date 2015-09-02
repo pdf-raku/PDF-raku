@@ -76,4 +76,4 @@ is $ast<pdf><body>[0]<objects>[8], ( :ind-obj[9, 0, :stream{ :dict{ Length => :i
 # cleansed of old object versions.
 ok $doc2.save-as('t/pdf/pdf-updated-and-rewritten.out', :rebuild);
 
-done;
+done-testing;

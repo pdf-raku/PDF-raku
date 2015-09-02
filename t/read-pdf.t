@@ -54,4 +54,4 @@ is $pdf-str.type, 'PDF', 'str - loaded type';
 is $pdf-str.size, 9, 'str - loaded size';
 is $pdf-str.trailer<Root>.obj-num, 1, 'root-obj.obj-num';
 
-done;
+done-testing;
