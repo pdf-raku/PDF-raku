@@ -12,7 +12,7 @@ class PDF::Writer {
     has %!init;
 
     submethod BUILD(:$input, :$!ast, :$!offset = Nil, :$!prev = Nil) {
-        $!input = PDF::Storage::Input.compose( :value($input) )
+        $!input = PDF::Storage::Input.coerce( $input )
             if $input.defined;
     }
 
@@ -29,12 +29,12 @@ class PDF::Writer {
         ('[', $array.map({ $.write($_) }), ']').join: ' ';
     }
 
-    multi method write( Array :$body!, :$type='PDF' ) {
+    multi method write( Array :$body!, Str :$type='PDF' ) {
         temp $!prev = Nil;
         $body.map({ $.write( :body($_), :$type )}).join: "\n";
     }
 
-    multi method write( Hash :$body!, :$type = 'PDF' ) {
+    multi method write( Hash :$body!, Str :$type = 'PDF' ) {
         my @entries = %( :type(0), :offset(0), :gen-num(65535), :obj-num(0) ).item;
         my @out;
 
@@ -61,7 +61,7 @@ class PDF::Writer {
         my Hash $trailer = $body<trailer>
             // {};
 
-        if $type && $type eq 'FDF' {
+        if $type eq 'FDF' {
             # don't write an index
             @out.push: [~] (
                 $.write( :$trailer ),
@@ -71,8 +71,8 @@ class PDF::Writer {
 
             @entries = @entries.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
-            my @xref;
-            my Int $size = 1;
+            my Hash @xref;
+            my UInt $size = 1;
 
             for @entries {
                 # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:

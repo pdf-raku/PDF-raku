@@ -17,7 +17,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my $ast = $/.ast;
 
-my $pdf-input = PDF::Storage::Input.compose( :value($input) );
+my $pdf-input = PDF::Storage::Input.coerce( $input );
 my $ind-obj = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
 my $dict = $ind-obj.object;
 my $raw-content = $pdf-input.stream-data( |%$ast )[0];

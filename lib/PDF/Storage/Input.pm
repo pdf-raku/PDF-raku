@@ -4,21 +4,23 @@ class PDF::Storage::Input {
     # a poor mans polymorphism: allow pdf input from IO handles or strings
     # could be obseleted by cat-strings, when available
 
-    multi method compose( PDF::Storage::Input :$value! ) {
-        # don't recompose
+    proto method coerce( $value ) returns PDF::Storage::Input {*}
+
+    multi method coerce( PDF::Storage::Input $value! ) {
+        # don't recoerce
         $value;
     }
 
-    multi method compose( IO::Path :$value ) {
-	self.compose( :value($value.open( :enc<latin-1> ) ) );
+    multi method coerce( IO::Path $value ) {
+	self.coerce( $value.open( :enc<latin-1> ) );
     }
 
-    multi method compose( IO::Handle :$value! ) {
+    multi method coerce( IO::Handle $value! ) {
         require ::('PDF::Storage::Input::IOH');
         return ::('PDF::Storage::Input::IOH').new( :$value );
     }
 
-    multi method compose( Str :$value! ) {
+    multi method coerce( Str $value! where { !.isa(PDF::Storage::Input) }) {
         require ::('PDF::Storage::Input::Str');
         return ::('PDF::Storage::Input::Str').new( :$value );
     }

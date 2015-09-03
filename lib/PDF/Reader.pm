@@ -96,13 +96,13 @@ class PDF::Reader {
         $.open( $!file-name.IO.open( :enc<latin-1> ), |c );
     }
 
-    multi method open($input-file!, Bool :$repair = False) {
+    multi method open($input!, |c) {
         use PDF::Storage::Input;
 
-        $!input = PDF::Storage::Input.compose( :value($input-file) );
+        $!input = PDF::Storage::Input.coerce( $input );
 
         $.load-header( );
-        $.load( $.type, :$repair );
+        $.load( $.type, |c );
     }
 
     sub synopsis($input) {
