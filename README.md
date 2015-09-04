@@ -136,6 +136,7 @@ A table of Object types follows:
 `bool` | PDF::Object::Bool | Bool | `true`
 `int` | PDF::Object::Int | Int | `42`
 `literal` | PDF::Object::ByteString (literal) | Str | `(hello world)`
+`literal` | PDF::Object::DateString | Str | `(D:199812231952-08'00')`
 `hex-string` | PDF::Object::ByteString (hex-string) | | `<736E6F6f7079>`
 `dict` | PDF::Object::Dict | Hash | `<< /Length 42 /Apples(oranges) >>` | abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
 `name` | PDF::Object::Name | | `/Catalog`

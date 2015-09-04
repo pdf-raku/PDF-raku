@@ -15,12 +15,17 @@ class PDF::Object::Delegator {
 	$obj
     }
 
-    multi method coerce( PDF::Object::Dict $obj, $role where {$role ~~ PDF::Object::Tie::Hash}) {
+    multi method coerce( PDF::Object::Dict $obj, PDF::Object::Tie::Hash $role) {
 	$obj does $role; $obj.?tie-init;
     }
 
-    multi method coerce( PDF::Object::Array $obj, $role where {$role ~~ PDF::Object::Tie::Array}) {
+    multi method coerce( PDF::Object::Array $obj, PDF::Object::Tie::Array $role) {
 	$obj does $role; $obj.?tie-init;
+    }
+
+    # adds the DateTime 'object' rw accessor
+    multi method coerce( Str $obj is rw, DateTime $class) {
+	$obj = $class.new( $obj );
     }
 
     multi method coerce( $obj, $role) is default {

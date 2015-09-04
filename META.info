@@ -11,6 +11,7 @@
         "PDF::Object::Array" : "lib/PDF/Object/Array.pm",
         "PDF::Object::Bool" : "lib/PDF/Object/Bool.pm",
         "PDF::Object::ByteString" : "lib/PDF/Object/ByteString.pm",
+        "PDF::Object::DateString" : "lib/PDF/Object/DateString.pm",
         "PDF::Object::Dict" : "lib/PDF/Object/Dict.pm",
         "PDF::Object::Int" : "lib/PDF/Object/Int.pm",
         "PDF::Object::Name" : "lib/PDF/Object/Name.pm",

@@ -96,8 +96,8 @@ role PDF::Object::Tie {
         default           { $_ }
     }
 
-    method apply-att($lval, Attribute $att) {
-	$lval.delegator.coerce($lval, $att.type)
+    method apply-att($lval is rw, Attribute $att) {
+	PDF::Object.delegator.coerce($lval, $att.type)
 	    if $att.is-coerced && ! ($lval ~~ $att.type);
 	$lval.obj-num //= -1
 	    if $att.is-indirect && $lval ~~ PDF::Object;
