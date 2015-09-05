@@ -92,11 +92,11 @@ role PDF::Object::Tie {
 
     method lvalue($_) is rw {
         when PDF::Object  { $_ }
-        when Hash | Array { $.coerce($_, :$.reader) }
+        when Hash | Array | DateTime { $.coerce($_, :$.reader) }
         default           { $_ }
     }
 
-    method apply-att($lval is rw, Attribute $att) {
+    method apply-att($lval is rw, Attribute $att) is default {
 	PDF::Object.delegator.coerce($lval, $att.type)
 	    if $att.is-coerced && ! ($lval ~~ $att.type);
 	$lval.obj-num //= -1

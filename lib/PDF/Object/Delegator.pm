@@ -24,12 +24,16 @@ class PDF::Object::Delegator {
     }
 
     # adds the DateTime 'object' rw accessor
-    multi method coerce( Str $obj is rw, DateTime $class) {
-	$obj = $class.new( $obj );
+    use PDF::Object::DateString;
+    multi method coerce( Str $obj is rw, PDF::Object::DateString $class, |c) {
+	$obj = $class.new( $obj, |c );
+    }
+    multi method coerce( DateTime $obj is rw, PDF::Object::DateString $class, |c) {
+	$obj = $class.new( $obj, |c );
     }
 
     multi method coerce( $obj, $role) is default {
-	die "unable to coerce object of type {$obj.WHAT.gist} to role {$role.WHAT.gist}";
+	die "unable to coerce object $obj of type {$obj.WHAT.gist} to role {$role.WHAT.gist}"
     }
 
     method class-paths { <PDF::Object::Type> }

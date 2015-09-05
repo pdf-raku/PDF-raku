@@ -37,4 +37,7 @@ is ~$creation-date, q<D:20130629204853+02'00'>, 'creation data stringified';
 
 is-deeply $creation-date.content, (:literal<D:20130629204853+02'00'>), 'creation date content';
 
+lives-ok {$info.CreationDate = DateTime.new(:year(2105), :month(12), :day(25))}, "DateTime assignment - lives";
+is-deeply $creation-date.content, (:literal<D:20130629204853+02'00'>), 'creation date content';
+
 done-testing;

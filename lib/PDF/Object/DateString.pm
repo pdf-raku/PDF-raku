@@ -29,7 +29,7 @@ The apostrophe character (') after HH and mm is part of the syntax. All fields a
 
 =end pod
 
-    sub formatter  (DateTime $dt) {
+    sub formatter(DateTime $dt) returns Str {
 	my Int $offset-min = $dt.offset div 60;
 	my Str $tz-sign = 'Z';
 
@@ -66,9 +66,17 @@ The apostrophe character (') after HH and mm is part of the syntax. All fields a
 	nextwith( $iso-date, :&formatter );
     }
 
+    multi method new(DateTime $dt!) {
+        my %args = <year month day hour minute second timezone>.map({ $_ => $dt."$_"() });
+        $.new( |%args :&formatter);
+    }
+
+    multi method new(UInt :$year!, |c) {
+        nextsame;
+    }
 
     method content {
-	my Str $literal = ~ self;
+	my Str $literal = formatter( self );
 	:$literal;
     }
 }

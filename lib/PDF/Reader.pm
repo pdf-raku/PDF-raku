@@ -8,7 +8,7 @@ class PDF::Reader {
     use PDF::Storage::Serializer;
     use PDF::Object;
     use PDF::Object::Doc;
-    use PDF::Object::Util :to-ast;
+    use PDF::Object::Util :from-ast, :to-ast;
     use PDF::Writer;
     use PDF::Storage::Input;
 
@@ -52,8 +52,9 @@ class PDF::Reader {
         ) {
 
         my $trailer = self.trailer;
+
         for $keys.sort {
-            $trailer{$_} = $dict{$_}
+            $trailer{$_} = from-ast $dict{$_}
                  if $dict{$_}:exists;
         }
 

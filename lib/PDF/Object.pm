@@ -30,6 +30,9 @@ class PDF::Object {
     multi method coerce(Array $array!, |c) {
         $.coerce( :$array, |c )
     }
+    multi method coerce(DateTime $dt, |c) {
+	$.delegator.coerce( $dt, DateTime, |c)
+    }
     multi method coerce(Pair $_!, |c) {
 	$.coerce( |%$_, |c)
     }
