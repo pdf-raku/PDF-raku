@@ -1,48 +1,41 @@
 %PDF-1.2
-% This PDF was brought to you by PDF::Tools!!
+%¥±ë
 1 0 obj
-<< /Outlines 2 0 R /Pages 3 0 R /Type /Catalog >>
+<< /Type /Catalog /Outlines 2 0 R /Pages 3 0 R >>
 endobj
 2 0 obj
-<< /Count 0 /Type /Outlines >>
+<< /Type /Outlines /Count 0 >>
 endobj
 3 0 obj
-<< /Count 1 /Kids [ 4 0 R ] /Type /Pages >>
+<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>
 endobj
 4 0 obj
-<< /Contents 5 0 R /MediaBox [ 0 0 612 792 ] /Parent 3 0 R /Resources << /Font << /F1 7 0 R >> /ProcSet 6 0 R >> /Type /Page >>
+<< /Type /Page /Contents 5 0 R /MediaBox [ 0 0 420 595 ] /Parent 3 0 R /Resources << /Font << /F1 6 0 R >> /Procset [ /PDF /Text ] >> >>
 endobj
 5 0 obj
-<< /Length 45 >>
+<< /Length 46 >>
 stream
-BT
-/F1 24 Tf
-100 100 Td (Hello, world!) Tj
-ET
+BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
 endstream
 endobj
 6 0 obj
-[ /PDF /Text ]
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /MacRomanEncoding /Name /F1 >>
 endobj
 7 0 obj
-<< /BaseFont /Helvetica /Encoding /MacRomanEncoding /Name /F1 /Subtype /Type1 /Type /Font >>
-endobj
-8 0 obj
-45
+<< /CreationDate (D:20150905194954Z00'00') >>
 endobj
 xref
-0 9
+0 8
 0000000000 65535 f 
-0000000055 00000 n 
-0000000120 00000 n 
-0000000166 00000 n 
-0000000225 00000 n 
-0000000368 00000 n 
-0000000463 00000 n 
-0000000493 00000 n 
-0000000601 00000 n 
+0000000014 00000 n 
+0000000079 00000 n 
+0000000125 00000 n 
+0000000184 00000 n 
+0000000336 00000 n 
+0000000432 00000 n 
+0000000540 00000 n 
 trailer
-<< /Root 1 0 R /Size 9 >>
+<< /Info 7 0 R /Root 1 0 R /Size 8 >>
 startxref
-619
+601
 %%EOF

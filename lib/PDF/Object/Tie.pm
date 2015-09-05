@@ -96,11 +96,13 @@ role PDF::Object::Tie {
         default           { $_ }
     }
 
-    method apply-att($lval is rw, Attribute $att) is default {
-	PDF::Object.delegator.coerce($lval, $att.type)
-	    if $att.is-coerced && ! ($lval ~~ $att.type);
-	$lval.obj-num //= -1
-	    if $att.is-indirect && $lval ~~ PDF::Object;
+    method apply-att($lval is rw, Attribute $att) {
+	unless $lval.isa(Pair) {
+	    PDF::Object.delegator.coerce($lval, $att.type)
+		if $att.is-coerced && ! ($lval ~~ $att.type);
+	    $lval.obj-num //= -1
+		if $att.is-indirect && $lval ~~ PDF::Object;
+	}
     }
 
     #| indirect reference

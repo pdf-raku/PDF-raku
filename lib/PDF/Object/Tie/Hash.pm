@@ -45,7 +45,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 
 	Proxy.new( 
 	    FETCH => method {
-		my $val = $object{$key};
+		my $val := $object{$key};
 		$val //= inherit($object, $key)
 		    if $att.is-inherited;
 		$object.apply-att($val, $att);
@@ -85,18 +85,16 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
     }
 
     method tie-init {
-	self.entries //= do {
-	    PDF::Object::Tie::Hash.compose(self.WHAT);
-	}
+	self.entries //= PDF::Object::Tie::Hash.compose(self.WHAT);
     }
 
     #| for hash lookups, typically $foo<bar>
     method AT-KEY($key) is rw {
-        my $result := callsame;
+        my $val := callsame;
 
-        $result ~~ Pair | Array | Hash
-            ?? $.deref(:$key, $result)
-            !! $result;
+        $val ~~ Pair | Array | Hash
+            ?? $.deref(:$key, $val)
+            !! $val;
     }
 
     #| handle hash assignments: $foo<bar> = 42; $foo{$baz} := $x;

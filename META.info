@@ -18,12 +18,16 @@
         "PDF::Object::Null" : "lib/PDF/Object/Null.pm",
         "PDF::Object::Real" : "lib/PDF/Object/Real.pm",
         "PDF::Object::Stream" : "lib/PDF/Object/Stream.pm",
+
         "PDF::Object::Tie" : "lib/PDF/Object/Tie.pm",
         "PDF::Object::Tie::Array" : "lib/PDF/Object/Tie/Array.pm",
         "PDF::Object::Tie::Hash" : "lib/PDF/Object/Tie/Hash.pm",
+
         "PDF::Object::Type" : "lib/PDF/Object/Type.pm",
+        "PDF::Object::Type::Info" : "lib/PDF/Object/Type/Info.pm",
         "PDF::Object::Type::ObjStm" : "lib/PDF/Object/Type/ObjStm.pm",
         "PDF::Object::Type::XRef" : "lib/PDF/Object/Type/XRef.pm",
+
         "PDF::Object::Delegator" : "lib/PDF/Object/Delegator.pm",
         "PDF::Object::Util" : "lib/PDF/Object/Util.pm",
 

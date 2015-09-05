@@ -27,7 +27,7 @@ my $reader = t::DummyReader.new;
 
 my $obj = PDF::Object.coerce( {
         :A(10),
-        :B(:ind-ref[42,5]),
+        :B(:ind-ref[42,4]),
         :Kids[
              42,
              { :X(99) },
@@ -40,11 +40,14 @@ my $obj = PDF::Object.coerce( {
 isa-ok $obj, PDF::Object::Dict;
 is $obj.reader, $reader, 'reader attribute';
 is $obj<A>, 10, 'shallow reference';
-is-json-equiv $obj<B>, {Desc => "indirect object: 42 5 R", :Name<Test>}, 'hash dereference';
+is-json-equiv $obj<B>, {Desc => "indirect object: 42 4 R", :Name<Test>}, 'hash dereference';
 
 my $raw;
 lives-ok {$raw = $obj.raw}, '.raw - lives';
-is-json-equiv $raw<B>, (:ind-ref[42, 5]), 'new hash entry - .raw deref';
+is-json-equiv $raw<B>, (:ind-ref[42, 4]), 'new hash entry - .raw deref';
+
+$obj<B> = :ind-ref[42, 5];
+is-json-equiv $obj<B>, {Desc => "indirect object: 42 5 R", :Name<Test>}, 'hash dereference - updated';
 
 isa-ok $obj<Kids>, PDF::Object::Array;
 is-deeply $obj<Kids>.reader, $reader, 'reader array stickyness';

@@ -77,17 +77,15 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
     }
 
     method tie-init {
-	self.index //= do {
-	    PDF::Object::Tie::Array.compose(self.WHAT);
-	}
+	self.index //= PDF::Object::Tie::Array.compose(self.WHAT);
     }
 
     #| for array lookups, typically $foo[42]
     method AT-POS($pos) is rw {
-        my $result := callsame;
-        $result ~~ Pair | Array | Hash
-            ?? $.deref(:$pos, $result )
-            !! $result;
+        my $val := callsame;
+        $val ~~ Pair | Array | Hash
+            ?? $.deref(:$pos, $val )
+            !! $val;
     }
 
     #| handle array assignments: $foo[42] = 'bar'; $foo[99] := $baz;

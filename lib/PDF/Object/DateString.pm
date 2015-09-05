@@ -29,7 +29,7 @@ The apostrophe character (') after HH and mm is part of the syntax. All fields a
 
 =end pod
 
-    sub formatter(DateTime $dt) returns Str {
+    our sub formatter(DateTime $dt) returns Str {
 	my Int $offset-min = $dt.offset div 60;
 	my Str $tz-sign = 'Z';
 
