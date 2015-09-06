@@ -29,27 +29,8 @@ The apostrophe character (') after HH and mm is part of the syntax. All fields a
 
 =end pod
 
-    our sub formatter(DateTime $dt) returns Str {
-	my Int $offset-min = $dt.offset div 60;
-	my Str $tz-sign = 'Z';
-
-	if $offset-min < 0 {
-	    $tz-sign = '-';
-	    $offset-min = - $offset-min;
-	}
-	elsif $offset-min > 0 {
-	    $tz-sign = '+';
-	}
-
-	my UInt $tz-min = $offset-min mod 60;
-	my UInt $tz-hour = $offset-min div 60;
-
-	my $date-spec = sprintf "%04d%02d%02d", $dt.year, $dt.month, $dt.day;
-	my $time-spec = sprintf "%02d%02d%02d", $dt.hour, $dt.minute, $dt.second;
-	my Str $tz-spec = sprintf "%s%02d'%02d'", $tz-sign, $tz-hour, $tz-min;
-
-       [~] "D:", $date-spec, $time-spec, $tz-spec;
-    }
+    use PDF::Object::Util :date-time-formatter;
+    BEGIN our &formatter = &date-time-formatter;
 
     multi method new(Str $pdf-date!) {
 	my \DateRx = rx/^ 'D:'? $<year>=\d**4 [$<month>=\d**2 [$<day>=\d**2 [$<hour>=\d**2 [$<min>=\d**2 [$<sec>=\d**2]? ]? ]? ]? ]?
@@ -68,11 +49,11 @@ The apostrophe character (') after HH and mm is part of the syntax. All fields a
 
     multi method new(DateTime $dt!) {
         my %args = <year month day hour minute second timezone>.map({ $_ => $dt."$_"() });
-        $.new( |%args :&formatter);
+        $.new( |%args, :&formatter);
     }
 
     multi method new(UInt :$year!, |c) {
-        nextsame;
+        callwith( :&formatter, :$year, |c);
     }
 
     method content {

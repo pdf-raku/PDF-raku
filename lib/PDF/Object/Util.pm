@@ -22,6 +22,33 @@ module PDF::Object::Util {
         :@array;
     }
     multi sub to-ast-native(Str $literal!) {:$literal}
+
+    sub date-time-formatter(DateTime $dt) returns Str is export(:date-time-formatter) {
+	my Int $offset-min = $dt.offset div 60;
+	my Str $tz-sign = 'Z';
+
+	if $offset-min < 0 {
+	    $tz-sign = '-';
+	    $offset-min = - $offset-min;
+	}
+	elsif $offset-min > 0 {
+	    $tz-sign = '+';
+	}
+
+	my UInt $tz-min = $offset-min mod 60;
+	my UInt $tz-hour = $offset-min div 60;
+
+	my $date-spec = sprintf "%04d%02d%02d", $dt.year, $dt.month, $dt.day;
+	my $time-spec = sprintf "%02d%02d%02d", $dt.hour, $dt.minute, $dt.second;
+	my Str $tz-spec = sprintf "%s%02d'%02d'", $tz-sign, $tz-hour, $tz-min;
+
+       [~] "D:", $date-spec, $time-spec, $tz-spec;
+    }
+
+    multi sub to-ast-native(DateTime $date-time!) {
+	my Str $literal = date-time-formatter($date-time);
+	:$literal
+    }
     multi sub to-ast-native(Bool $bool!) {:$bool}
     multi sub to-ast-native($other) is default {
         return (:null(Any))

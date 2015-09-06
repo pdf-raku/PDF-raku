@@ -30,6 +30,7 @@ my $font = PDF::Object.coerce: {
 $page1<Resources> = PDF::Object.coerce: { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
 $page1<Contents> = PDF::Object.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 
+$pdf<Info> = { :CreationDate( DateTime.now ) };
 $pdf.save-as('/tmp/helloworld.pdf');
 ```
 # Reading and Writing of PDF files:
@@ -136,7 +137,7 @@ A table of Object types follows:
 `bool` | PDF::Object::Bool | Bool | `true`
 `int` | PDF::Object::Int | Int | `42`
 `literal` | PDF::Object::ByteString (literal) | Str | `(hello world)`
-`literal` | PDF::Object::DateString | Str | `(D:199812231952-08'00')`
+`literal` | PDF::Object::DateString | DateTime | `(D:199812231952-08'00')`
 `hex-string` | PDF::Object::ByteString (hex-string) | | `<736E6F6f7079>`
 `dict` | PDF::Object::Dict | Hash | `<< /Length 42 /Apples(oranges) >>` | abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
 `name` | PDF::Object::Name | | `/Catalog`
