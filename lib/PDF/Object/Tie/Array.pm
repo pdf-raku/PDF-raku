@@ -111,7 +111,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
         nextwith( $lval );
     }
 
-    method splice($pos, $elems, *@replacement) {
+    method splice($pos, $elems, **@replacement) {
         my @lvals = @replacement.map({ self.lvalue($_).item });
         nextwith( $pos, $elems, |@lvals);
     }

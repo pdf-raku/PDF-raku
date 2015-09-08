@@ -3,6 +3,6 @@ use PDF::Object;
 
 role PDF::Object::Bool
     is PDF::Object {
-    method content { :bool(self??True!!False) };
+    method content { :bool(?self) };
 }
 

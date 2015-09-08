@@ -4,12 +4,12 @@ module PDF::Storage::Util {
 
     #= resample a buffer as n-bit to m-bit unsigned integers
     proto sub resample( $, $, $ --> Array) is export(:resample) {*};
-    multi sub resample( $nums!, 8, 4)  { $nums.list.map: { ($_ +> 4, $_ +& 15).flat } }
+    multi sub resample( $nums!, 8, 4)  { $nums.list.map: { ($_ +> 4, $_ +& 15).Slip } }
     multi sub resample( $nums!, 4, 8)  { $nums.list.map: -> $hi, $lo { $hi +< 4  +  $lo } }
     multi sub resample( $nums!, 8, 16) { $nums.list.map: -> $hi, $lo { $hi +< 8  +  $lo } }
     multi sub resample( $nums!, 8, 32) { $nums.list.map: -> $b1, $b2, $b3, $b4 { $b1 +< 24  +  $b2 +< 16  +  $b3 +< 8  +  $b4 } }
-    multi sub resample( $nums!, 16, 8) { $nums.list.map: { ($_ +> 8, $_ +& 255).flat } }
-    multi sub resample( $nums!, 32, 8) { $nums.list.map: { ($_ +> 24, $_ +> 16 +& 255, $_ +> 8 +& 255, $_ +& 255).flat } }
+    multi sub resample( $nums!, 16, 8) { $nums.list.map: { ($_ +> 8, $_ +& 255).Slip } }
+    multi sub resample( $nums!, 32, 8) { $nums.list.map: { ($_ +> 24, $_ +> 16 +& 255, $_ +> 8 +& 255, $_ +& 255).Slip } }
     multi sub resample( $nums!, $n!, $m where $_ == $n) { $nums }
     multi sub resample( $nums!, $n!, $m!) is default {
         warn "unoptimised $n => $m bit sampling";
@@ -63,7 +63,7 @@ module PDF::Storage::Util {
     }
 
     multi sub resample( $num-sets, Array $W!, 8)  {
-        $num-sets.list.map: -> Array $nums {
+        flat $num-sets.list.map: -> Array $nums {
             my Int $i = 0;
             $nums.list.map: -> Int $num is copy {
                 my @bytes;

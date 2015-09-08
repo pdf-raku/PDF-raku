@@ -50,7 +50,7 @@ class PDF::Reader {
         Hash $dict,
         Array :$keys = [ $dict.keys.grep({ $_ ne 'Prev' | 'Size'}) ],
         ) {
-
+	temp $.auto-deref = False;
         my $trailer = self.trailer;
 
         for $keys.sort {
@@ -238,7 +238,7 @@ class PDF::Reader {
 
     #| utility method for basic deferencing, e.g.
     #| $reader.deref($root,<Pages>,<Kids>,[0],<Contents>)
-    method deref($val is copy, *@ops ) is rw {
+    method deref($val is copy, **@ops ) is rw {
         for @ops -> $op {
             $val = self!"ind-deref"($val)
                 if $val.isa(Pair);
@@ -361,7 +361,7 @@ class PDF::Reader {
 
                             given $type {
                                 when 0  {} # ignore free objects
-                                when 1  { @obj-idx.push: { :$type, :$obj-num, :$gen-num, :$offset } }
+                                when 1  { @obj-idx.push( { :$type, :$obj-num, :$gen-num, :$offset }.item ) }
                                 default { die "unhandled type: $_" }
                             }
                             $obj-num++;
@@ -517,7 +517,7 @@ class PDF::Reader {
         my @object-refs;
 
         my %objstm-objects;
-        for %!ind-obj-idx.values>>.values {
+        for %!ind-obj-idx.values.map( *.values.Slip ) {
             # implicitly an objstm object, if it contains type2 (compressed) objects
             %objstm-objects{ .<ref-obj-num> }++
                 if .<type> == 2;
@@ -556,30 +556,30 @@ class PDF::Reader {
                     default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
                 }
 
-                my $final-ast;
+                my $ast;
                 if $incremental {
 
 		    # preparing incremental updates. only need to consider fetched objects
-		    $final-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :!eager);
+		    $ast = $.ind-obj($obj-num, $gen-num, :get-ast, :!eager);
 
 		    # the object hasn't been fetched. It cannot have been updated!
-		    next unless $final-ast;
+		    next unless $ast;
 
 		    if $offset && $obj-num {
 			# check updated vs original PDF value.
 			my $original-ast = self!"fetch-ind-obj"(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
 			# discard, if not updated
-			next if $original-ast eqv $final-ast.value;
+			next if $original-ast eqv $ast.value;
 		    }
                 }
                 else {
                     # renegerating PDF. need to eagerly copy updates + unaltered entries
                     # from the full object tree.
-                    $final-ast = $.ind-obj($obj-num, $gen-num, :get-ast, :eager)
+                    $ast = $.ind-obj($obj-num, $gen-num, :get-ast, :eager)
                         or next;
                 }
 
-                my $ind-obj = $final-ast.value[2];
+                my $ind-obj = $ast.value[2];
 
                 if $ind-obj<stream>:exists && (my $obj-type = $ind-obj<stream><dict><Type>) {
                     # discard existing /Type /XRef and ObjStm objects.
@@ -587,12 +587,12 @@ class PDF::Reader {
                 }
 
                 $offset ||= 0;
-                @object-refs.push: [ $final-ast, $offset + $seq ];
+                @object-refs.push( ($offset + $seq) => $ast );
             }
         }
 
         # preserve input order
-        my @objects := @object-refs.sort({$^a[1]}).map: {.[0]};
+        my @objects = @object-refs.list.sort(*.key).map: *.value;
 
         if !$incremental && +@objects {
             # Discard Linearization aka "Fast Web View"

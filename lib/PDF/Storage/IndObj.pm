@@ -24,7 +24,7 @@ class PDF::Storage::IndObj {
 
     #| recreate a PDF::Grammar::PDF / PDF::Writer compatibile ast from the object
     method ast returns Pair {
-        :ind-obj[ $.obj-num, $.gen-num, %$.content ]
+        :ind-obj[ $.obj-num, $.gen-num, $.content ]
     }
 
     #| create ast for an indirect reference to this object

@@ -19,11 +19,11 @@ class PDF::Storage::Filter::RunLength {
 
             if $len > 1 {
                 # run of repeating characters
-                @chunks.push: [257 - $len, $ord];
+                @chunks.push: $[257 - $len, $ord];
             }
             else {
                 # literal sequence
-                @chunks.push: [-1]
+                @chunks.push: $[-1]
                     unless @chunks && @chunks[*-1][0] < 127;
 
                 given @chunks[*-1] {
@@ -33,9 +33,9 @@ class PDF::Storage::Filter::RunLength {
             }
         }
 
-        @chunks.push: [128] if $eod;
+        @chunks.push: $[128] if $eod;
 
-        my $buf = buf8.new: [ @chunks.map: { @$_ } ];
+        my $buf = buf8.new: [ flat @chunks.map: { @$_ } ];
         return $buf.decode('latin1');
     }
 

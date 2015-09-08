@@ -22,7 +22,7 @@ is-deeply resample($result, 6, 8), $bytes, 'resample round-trip: 8 => 6 => 8';
 is-deeply $result=resample([109], 8, 1), (0,1,1,0,1,1,0,1).list.item, ' 8 => 1 (bit) resample';
 is-deeply resample($result, 1, 8), (109).list.item, '8 => 1 => 8 round trip';
 
-is-deeply $result=resample($bytes, 8, [1, 3, 2]), [[10, 1318440, 12860]].list.item, '  8 => [1, 3, 2] resample';
+is-deeply $result=resample($bytes, 8, [1, 3, 2]), [[10, 1318440, 12860],].list.item, '  8 => [1, 3, 2] resample';
 is-deeply $result=resample($result, [1, 3, 2], 8), $bytes, '  [1, 3, 2] => 8 resample';
 
 my $in = [[1, 16, 0], [1, 741, 0], [1, 1030, 0], [1, 1446, 0]];

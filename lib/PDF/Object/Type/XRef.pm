@@ -127,13 +127,13 @@ our class PDF::Object::Type::XRef
                         # free or inuse objects
                         my Int $offset = $idx[1];
                         my Int $gen-num = $idx[2];
-                        $decoded-stage2.push: { :$type, :$obj-num, :$gen-num, :$offset };
+                        $decoded-stage2.push( { :$type, :$obj-num, :$gen-num, :$offset }.item );
                     }
                     when 2 {
                         # embedded objects
                         my Int $ref-obj-num = $idx[1];
                         my Int $index = $idx[2];
-                        $decoded-stage2.push: { :$type, :$obj-num, :$ref-obj-num, :$index };
+                        $decoded-stage2.push( { :$type, :$obj-num, :$ref-obj-num, :$index }.item );
                     }
                     default {
                         die "XRef index object type outside range 0..2: $type"

@@ -127,7 +127,7 @@ class PDF::Writer {
     #| BI <dict> - BeginImage
     multi method write-op('BI', $arg = :dict{}) {
         my Hash $entries = $arg<dict>;
-        my @lines = 'BI', $entries.pairs.sort.map( {
+        my @lines = flat 'BI', $entries.pairs.sort.map( {
             [~] $.write( :name( .key )), ' ', $.write( .value ),
         });
         @lines.join: "\n";
@@ -139,7 +139,7 @@ class PDF::Writer {
     }
 
     multi method write-op(Str $op, *@args) is default {
-        (@args.map({ $.write( $_ ) }), $.write( :$op )).join(' ');
+        (@args.map({ $.write( $_ ) }).Slip, $.write( :$op )).join(' ');
     }
 
     multi method write( Str :$content! ) {
@@ -202,7 +202,7 @@ class PDF::Writer {
     }
 
     multi method write( Str :$hex-string! ) {
-        [~] '<', $hex-string.comb.map({ 
+        [~] flat '<', $hex-string.comb.map({ 
             die "illegal non-latin character in string: U+" ~ .ord.base(16)
                 unless 0 <= .ord <= 0xFF;
             sprintf '%02X', .ord;
@@ -229,7 +229,7 @@ class PDF::Writer {
 
     multi method write( Str :$literal! ) {
 
-        [~] '(',
+        [~] flat '(',
             $literal.comb.map({
                 when ' ' .. '~' { %escapes{$_} // $_ }
                 when "\o0" .. "\o377" { sprintf "\\%03o", .ord }
@@ -241,7 +241,7 @@ class PDF::Writer {
     BEGIN constant Name-Reg-Chars = set ('!'..'~').grep({/<PDF::Grammar::name-reg-char>/});
 
     multi method write( Str :$name! ) {
-        [~] '/', $name.comb.map( {
+        [~] flat '/', $name.comb.map( {
             when $_ ∈ Name-Reg-Chars { $_ }
             when '#' { '##' }
             default {
@@ -314,14 +314,14 @@ class PDF::Writer {
     }
 
     multi method write(Array :$xref!) {
-        ( 'xref',
+        (flat 'xref',
           $xref.map({ $.write( :xref($_) ) }),
-          '').join: "\n";
+	 '').join: "\n";
     }
 
     #| write a traditional (PDF 1.4-) cross reference table
     multi method write(Hash :$xref!) {
-        (
+        (flat
          $xref<object-first-num> ~ ' ' ~ $xref<object-count>,
          $xref<entries>.map({
              my Str $status = do given .<type> {

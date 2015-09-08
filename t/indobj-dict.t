@@ -61,7 +61,7 @@ class MyCat
     has Bool $.NeedsRendering is entry;
 }
 
-my $cat = MyCat.new( :dict{ :Pages{ :Kids[ { :Type( :name<Page> ) } ] } } );
+my $cat = MyCat.new( :dict{ :Pages{ :Kids[ { :Type( :name<Page> ) }, ] } } );
 
 isa-ok $cat, MyCat, 'root object';
 does-ok $cat.Pages, MyPages, '.Pages role';
