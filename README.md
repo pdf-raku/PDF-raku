@@ -11,14 +11,13 @@ use PDF::Object::Doc;
 
 sub prefix:</>($name){ PDF::Object.coerce(:$name) };
 
-my $pdf = PDF::Object::Doc.new;
-$pdf<Root> = { :Type(/'Catalog') };
-$pdf<Root><Outlines> = { :Type(/'Outlines'), :Count(0) };
-$pdf<Root><Pages> = { :Type(/'Pages') };
+my $Root = PDF::Object.coerce: { :Type(/'Catalog') };
+$Root<Outlines> = { :Type(/'Outlines'), :Count(0) };
+$Root<Pages> = { :Type(/'Pages') };
 
 my $page1 = PDF::Object.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595] };
-$pdf<Root><Pages><Kids> = [ $page1 ];
-$pdf<Root><Pages><Count> = 0;
+$Root<Pages><Kids> = [ $page1 ];
+$Root<Pages><Count> = 0;
 
 my $font = PDF::Object.coerce: {
         :Type(/'Font'),
@@ -30,7 +29,9 @@ my $font = PDF::Object.coerce: {
 $page1<Resources> = PDF::Object.coerce: { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
 $page1<Contents> = PDF::Object.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 
-$pdf<Info> = { :CreationDate( DateTime.now ) };
+$Info = PDF::Object.coerce: { :CreationDate( DateTime.now ) };
+
+my $pdf = PDF::Object::Doc.new: { :$Root, :$Info };
 $pdf.save-as('/tmp/helloworld.pdf');
 ```
 # Reading and Writing of PDF files:
