@@ -224,7 +224,7 @@ class PDF::Reader {
             # regenerate ast from object, if required
             $ind-obj = $ind-obj.ast
         }
-        elsif $to-obj && ! $is-ind-obj {
+        elsif $to-obj {
             # upgrade storage to object, if object requested
             $ind-obj = PDF::Storage::IndObj.new( :$ind-obj, :reader(self) );
             $idx<ind-obj> = $ind-obj;

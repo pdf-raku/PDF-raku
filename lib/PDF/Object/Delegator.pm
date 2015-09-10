@@ -25,10 +25,8 @@ class PDF::Object::Delegator {
     }
 
     # adds the DateTime 'object' rw accessor
-## causing class-load issues
-##    use PDF::Object::DateString;
-##    multi method coerce( Str $obj is rw, PDF::Object::DateString $class, |c) {
-    multi method coerce( Str $obj is rw, DateTime $class where PDF::Object, |c) {
+    use PDF::Object::DateString;
+    multi method coerce( Str $obj is rw, PDF::Object::DateString $class, |c) {
 	$obj = $class.new( $obj, |c );
     }
     multi method coerce( DateTime $obj is rw, DateTime $class where PDF::Object, |c) {

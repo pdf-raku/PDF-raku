@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 16;
+plan 18;
 
 use PDF::Storage::IndObj;
 
@@ -17,6 +17,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
 my $ast = $/.ast;
 my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
 isa-ok $ind-obj.object, Int;
+does-ok $ind-obj.object, ::('PDF::Object::Int');
 is $ind-obj.obj-num, 37, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 isa-ok $ind-obj.object, Int, '$.object';
@@ -33,6 +34,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
 $ast = $/.ast;
 $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
 isa-ok $ind-obj.object, Rat;
+does-ok $ind-obj.object, ::('PDF::Object::Real');
 is $ind-obj.obj-num, 5, '$.obj-num';
 is $ind-obj.gen-num, 6, '$.gen-num';
 isa-ok $ind-obj.object, Rat, '$.object';
