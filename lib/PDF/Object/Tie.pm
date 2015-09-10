@@ -36,8 +36,6 @@ role PDF::Object::Tie {
     multi sub process-args(True, Attribute $att) {}
     multi sub process-args($entry, Attribute $att) {
 
-	my $elems = $att.elems-att;
-
 	for $entry.list -> $arg {
 	    unless $arg ~~ Pair {
 		warn "ignoring entry trait  argument: {$arg.perl}";
@@ -47,9 +45,9 @@ role PDF::Object::Tie {
 		when 'alias'    { $att.aliases      = $arg.value.list }
 		when 'inherit'  { $att.is-inherited = $arg.value }
 		when 'required' { $att.is-required  = $arg.value }
-		when 'coerce' { ($elems // $att).is-coerced = $arg.value }
-		when 'indirect' { ($elems // $att).is-indirect = $arg.value }
-		default    { warn "ignoring entry attribute: $_" }
+		when 'coerce'   { $att.is-coerced = $arg.value }
+		when 'indirect' { $att.is-indirect = $arg.value }
+		default         { warn "ignoring entry attribute: $_" }
 	    }
 	}
     }

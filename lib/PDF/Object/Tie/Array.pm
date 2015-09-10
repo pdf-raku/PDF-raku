@@ -90,15 +90,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 
     #| handle array assignments: $foo[42] = 'bar'; $foo[99] := $baz;
     method ASSIGN-POS($pos, $val) {
-	if $.index[$pos]:exists {
-	    # tied to an attribute
-	    my $key = $.index[$pos].accessor-name;
-	    self."$key"() = $val
-	}
-	else {
-	    # undeclared, fallback to untied array
-	    nextwith($pos, $.lvalue($val));
-	}
+	nextwith($pos, $.lvalue($val));
     }
 
     method push($val) {

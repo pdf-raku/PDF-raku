@@ -121,7 +121,7 @@ class PDF::Storage::Serializer {
             if %!obj-num-idx{$id}:exists;
     }
 
-    #| construct a reverse index that unique maps unique $objects, identfied by .WHICH,
+    #| construct a reverse index that unique maps unique $objects, identified by .WHICH,
     #| to an object-number and generation-number. 
     method !index-object( Pair $ind-obj! is rw, Str :$id!, :$object) {
         my Int $obj-num = $object.obj-num 
