@@ -47,7 +47,6 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 		my $val := $object{$key};
 		$val := inherit($object, $key)
 		    if !$val.defined && $att.is-inherited;
-		$object.apply-att($val, $att);
 		type-check($val, $att.type);
 	    },
 	    STORE => method ($val is copy) {
@@ -91,9 +90,13 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
     method AT-KEY($key) is rw {
         my $val := callsame;
 
-        $val ~~ Pair | Array | Hash
-            ?? $.deref(:$key, $val)
-            !! $val;
+        $val := $.deref(:$key, $val)
+	    if $val ~~ Pair | Array | Hash;
+
+	self.apply-att($val, $.entries{$key})
+	    if $.entries{$key}:exists;
+
+	$val;
     }
 
     #| handle hash assignments: $foo<bar> = 42; $foo{$baz} := $x;

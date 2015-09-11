@@ -32,6 +32,10 @@ class PDF::Object::Delegator {
     multi method coerce( DateTime $obj is rw, DateTime $class where PDF::Object, |c) {
 	$obj = $class.new( $obj, |c );
     }
+    use PDF::Object::TextString;
+    multi method coerce( Str $obj is rw, PDF::Object::TextString $class, |c) {
+	$obj = $class.new( :value($obj), |c );
+    }
 
     multi method coerce( $obj, $role) is default {
 	die "unable to coerce object $obj of type {$obj.WHAT.gist} to role {$role.WHAT.gist}"
