@@ -52,12 +52,13 @@ use PDF::Object::Tie::Hash;
 use PDF::Object::Dict;
 role KidRole does PDF::Object::Tie::Hash {method bar {42}}
 role MyPages does PDF::Object::Tie::Hash {
-    has Hash @.Kids is entry(:required, :indirect );
+    my subset ArrayOfHash of Array where { $_ == .grep( *.isa(Hash) ) }
+    has ArrayOfHash $.Kids is entry(:required, :indirect );
 }
 
 class MyCat
     is PDF::Object::Dict {
-    has MyPages $.Pages is entry(:required, :indirect, :coerce);
+    has MyPages $.Pages is entry(:required, :indirect);
     has Bool $.NeedsRendering is entry;
 }
 

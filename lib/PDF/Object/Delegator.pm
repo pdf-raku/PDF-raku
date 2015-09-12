@@ -38,7 +38,7 @@ class PDF::Object::Delegator {
     }
 
     multi method coerce( $obj, $role) is default {
-	die "unable to coerce object $obj of type {$obj.WHAT.gist} to role {$role.WHAT.gist}"
+	warn "unable to coerce object $obj of type {$obj.WHAT.gist} to role {$role.WHAT.gist}"
     }
 
     method class-paths { <PDF::Object::Type> }

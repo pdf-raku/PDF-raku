@@ -17,6 +17,10 @@ class PDF::Object {
 	False
     }				    
 
+    multi method coerce(Mu $obj is rw, Mu $type ) {
+	$.delegator.coerce( $obj, $type )
+    }
+
     # coerce Hash & Array assignments to objects
     multi method coerce(PDF::Object $val!) { $val }
     #| to allow round-tripping from JSON

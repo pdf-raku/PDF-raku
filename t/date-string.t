@@ -23,7 +23,7 @@ is $date.offset,  0, 'Date offset (default)';
 use PDF::Object::Dict;
 class MyInfo is PDF::Object::Dict {
     use PDF::Object::Tie;
-    has PDF::Object::DateString $.CreationDate is entry(:coerce);
+    has PDF::Object::DateString $.CreationDate is entry;
 }
 
 my $info = MyInfo.new( :dict{ :CreationDate( :literal<D:20130629204853+02'00'> ) } );

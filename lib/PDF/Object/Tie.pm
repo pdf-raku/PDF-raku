@@ -18,14 +18,11 @@ role PDF::Object::Tie {
 	has Bool $.is-required is rw = False;
 	has Bool $.is-indirect is rw = False;
 	has Bool $.is-inherited is rw = False;
-	has Bool $.is-coerced is rw = False;
 	has Str $.accessor-name is rw;
 	has Bool $.gen-accessor is rw;
+	has Code $.coerce is rw = sub ($lval is rw) { PDF::Object.coerce($lval, self.type) };
         has Str @.aliases is rw;
 	has $.type is rw;
-	has Attribute $.elems-att is rw;  #| used if the attribute has been declared with a '@' sigil, e.g.:
-	                                  #| has Hash @.Kids is entry(:indirect)
-	# turn off rakudo accessor generation
 	has method has_accessor { False }
     }
 
@@ -45,8 +42,8 @@ role PDF::Object::Tie {
 		when 'alias'    { $att.aliases      = $arg.value.list }
 		when 'inherit'  { $att.is-inherited = $arg.value }
 		when 'required' { $att.is-required  = $arg.value }
-		when 'coerce'   { $att.is-coerced = $arg.value }
 		when 'indirect' { $att.is-indirect = $arg.value }
+		when 'coerce'   { $att.coerce = $arg.value }
 		default         { warn "ignoring entry attribute: $_" }
 	    }
 	}
@@ -59,13 +56,9 @@ role PDF::Object::Tie {
 	$att.accessor-name = $name.subst(/^(\$|\@|\%)'!'/, '');
 	my $sigil = $0 && ~ $0;
 	if $sigil eq '@'|'%' {
-	    warn "use of '$sigil' sigil is NYI";
-	    $att.elems-att = (Attribute.new( :name<elems-att>, :$type, :package<anon> ) does Tied);
-	    $att.type = $sigil eq '@' ?? Array !! Hash;
+	    warn "ignoring '$sigil' sigil";
 	}
-	else {
-	    $att.type = $type;
-	}
+	$att.type = $type;
 	$att.gen-accessor = $att.has-accessor;
 	process-args($entry, $att);
     }
@@ -96,8 +89,8 @@ role PDF::Object::Tie {
 
     method apply-att($lval is rw, Attribute $att) {
 	unless $lval.isa(Pair) {
-	    PDF::Object.delegator.coerce($lval, $att.type)
-		if $att.is-coerced && $lval.defined && ! ($lval ~~ $att.type);
+	    ($att.coerce)($lval)
+		if $lval.defined && ! ($lval ~~ $att.type);
 	    $lval.obj-num //= -1
 		if $att.is-indirect && $lval ~~ PDF::Object;
 	}

@@ -52,7 +52,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	    STORE => method ($val is copy) {
 		my $lval = $object.lvalue($val);
 		$object.apply-att($lval, $att);
-		$att.set_value($object, $object{$key} := type-check($lval, $att.type));
+		$object{$key} := type-check($lval, $att.type);
 	    });
     }
 

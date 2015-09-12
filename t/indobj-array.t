@@ -42,7 +42,7 @@ class ColorSpaceArray
 
     method type {'ColorSpace'}
     has Str $.Subtype is index(0, :alias<sub-type>);
-    has ColorSpaceDict $.Dict is index(1, :coerce);
+    has ColorSpaceDict $.Dict is index(1);
 }
 
 my $cs = ColorSpaceArray.new;

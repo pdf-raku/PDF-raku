@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 6;
+plan 8;
 
 use PDF::Object::Dict;
 use PDF::Object::Type::Info;
@@ -15,7 +15,7 @@ class DummyCatalog
 
     use PDF::Object::Tie;
 
-    has PDF::Object::Type::Info $.Info is entry(:coerce);
+    has PDF::Object::Type::Info $.Info is entry;
 }
 
 my $input = q:to"--ENOUGH!!--";
@@ -41,4 +41,5 @@ does-ok $catalog.Info, PDF::Object::Type::Info;
 isa-ok $catalog.Info.CreationDate, DateTime, 'Info.CreationDate';
 is $catalog.Info.CreationDate.year, 1997, 'Info.CreationDate.year';
 is ~ $catalog.Info.CreationDate, "D:19970915110347-08'00'", 'Info.CreationDate stringification';
-
+isa-ok $catalog.Info.Title, ::('PDF::Object::TextString'), 'Info.Title';
+is $catalog.Info.Title, "PostScript Language Reference, Third Edition", 'Info.Title';

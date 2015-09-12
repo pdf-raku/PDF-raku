@@ -17,7 +17,7 @@ class PDF::Object::Doc
     has Int $.Size is entry;              #| 1 greater than the highest object number used in the file.
                                           #| (Required; must be an indirect reference) The catalog dictionary for the PDF document contained in the file
     has Hash $.Encrypt is entry;          #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
-    has PDF::Object::Type::Info $.Info is entry(:indirect, :coerce);  #| (Optional; must be an indirect reference) The document’s information dictionary 
+    has PDF::Object::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary 
     has Array $.ID is entry;              #| (Optional, but strongly recommended; PDF 1.1) An array of two byte-strings constituting a file identifier
 
     #| open an input file
