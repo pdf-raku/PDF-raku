@@ -15,6 +15,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	    my $item-type = $type.of;
 	    type-check($_, $item-type)
 		for $val.list;
+	    $val;
 	}
 
 	#| untyped attribute
