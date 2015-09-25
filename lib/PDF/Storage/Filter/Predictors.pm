@@ -1,6 +1,6 @@
 use v6;
 
-role PDF::Storage::Filter::Role::Predictors {
+role PDF::Storage::Filter::Predictors {
 
     use PDF::Storage::Util :resample;
     # post prediction functions as described in the PDF 1.7 spec, table 3.8
@@ -84,7 +84,7 @@ role PDF::Storage::Filter::Role::Predictors {
     multi method prediction($encoded where Blob | Buf,
 			    Int :$Predictor=1, #| predictor function
         ) {
-        die "Uknown Flate/LZW predictor function: $Predictor"
+        die "Unknown Flate/LZW predictor function: $Predictor"
             unless $Predictor == 1;
         $encoded;
     }
@@ -205,7 +205,7 @@ role PDF::Storage::Filter::Role::Predictors {
     multi method post-prediction($decoded where Blob | Buf,
                                  Int :$Predictor=1, #| predictor function 
         ) {
-        die "Uknown Flate/LZW predictor function: $Predictor"
+        die "Unknown Flate/LZW predictor function: $Predictor"
             unless $Predictor == 1;
         $decoded;
     }

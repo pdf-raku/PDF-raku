@@ -8,6 +8,22 @@ role PDF::Object::Tie {
     has Int $.obj-num is rw;
     has Int $.gen-num is rw;
 
+    method is-indirect is rw returns Bool {
+	Proxy.new(
+	    FETCH => method { ?$.obj-num },
+	    STORE => method (Bool $val) {
+		if $val {
+		    # Serializer will renumber
+		    $.obj-num //= -1;
+		}
+		else {
+		    $.obj-num = Nil;
+		}
+		$val
+	    },
+	    );
+    }
+
     method ind-ref {
 	die "not an indirect obect"
 	    unless $.obj-num && $.obj-num > 0;
@@ -20,7 +36,7 @@ role PDF::Object::Tie {
 	has Bool $.is-inherited is rw = False;
 	has Str $.accessor-name is rw;
 	has Bool $.gen-accessor is rw;
-	has Code $.coerce is rw = sub ($lval is rw) { PDF::Object.coerce($lval, self.type) };
+	has Code $.coerce is rw = sub ($lval is rw, Mu:U $type) { PDF::Object.coerce($lval, $type) };
         has Str @.aliases is rw;
 	has $.type is rw;
 	has method has_accessor { False }
@@ -54,9 +70,17 @@ role PDF::Object::Tie {
 	$att does TiedEntry;
 	my $name = $att.name;
 	$att.accessor-name = $name.subst(/^(\$|\@|\%)'!'/, '');
-	my $sigil = $0 && ~ $0;
-	if $sigil eq '@'|'%' {
-	    warn "ignoring '$sigil' sigil";
+	my $sigil = ~ $0;
+	given $sigil {
+	    when '$' {}
+	    when '@' {
+		# assert that rakudo has interpreted this as Positional[SomeType]
+		die "internal error. expecting Positional role, got {$type.gist}"
+		    unless $type ~~ Positional;
+	    }
+	    default {
+		warn "ignoring '$sigil' sigil";
+	    }
 	}
 	$att.type = $type;
 	$att.gen-accessor = $att.has-accessor;
@@ -87,10 +111,16 @@ role PDF::Object::Tie {
         default           { $_ }
     }
 
-    method apply-att($lval is rw, Attribute $att) {
+    multi method apply-att($lval is rw, Attribute $att where {$att.type ~~ Positional[Hash]}) {
+	my $of-type = $att.type.of;
+	$.apply-att($_, $att, $of-type)
+	    for $lval.list;
+    }
+
+    multi method apply-att($lval is rw, Attribute $att, Mu $type = $att.type) is default {
 	unless $lval.isa(Pair) {
-	    ($att.coerce)($lval)
-		if $lval.defined && ! ($lval ~~ $att.type);
+	    ($att.coerce)($lval, $type)
+		if $lval.defined && ! ($lval ~~ $type);
 	    $lval.obj-num //= -1
 		if $att.is-indirect && $lval ~~ PDF::Object;
 	}

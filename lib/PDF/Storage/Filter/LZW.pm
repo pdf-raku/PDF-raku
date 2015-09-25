@@ -1,9 +1,9 @@
 use v6;
 # code adapted from http://rosettacode.org/wiki/LZW_compression#Perl_6
-use PDF::Storage::Filter::Role::Predictors;
+use PDF::Storage::Filter::Predictors;
 
 class PDF::Storage::Filter::LZW
-    does PDF::Storage::Filter::Role::Predictors {
+    does PDF::Storage::Filter::Predictors {
 
     # Maintainer's Note: LZW is described in the PDF 1.7 spec
     # in section 3.3.3.

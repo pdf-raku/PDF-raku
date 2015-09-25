@@ -1,10 +1,10 @@
 use v6;
 # based on Perl 5's PDF::API::Core::PDF::Filter::ASCIIHexDecode
 
-use PDF::Storage::Filter::Role::Predictors;
+use PDF::Storage::Filter::Predictors;
 
 class PDF::Storage::Filter::Flate
-    does PDF::Storage::Filter::Role::Predictors {
+    does PDF::Storage::Filter::Predictors {
 
     use Compress::Zlib;
 

@@ -2,7 +2,7 @@ use Test;
 
 plan 12;
 
-use PDF::Storage::Filter::Role::Predictors;
+use PDF::Storage::Filter::Predictors;
 use PDF::Storage::Filter;
 
 my $prediction-in = buf8.new: [
@@ -30,21 +30,21 @@ my $png-post-prediction = buf8.new: [
     1,   2,   3,    4,
     ];
 
-is-deeply PDF::Storage::Filter::Role::Predictors.post-prediction( $prediction-in,
+is-deeply PDF::Storage::Filter::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(1), ),
     $prediction-in,
     "NOOP predictive filter sanity";
 
-is-deeply PDF::Storage::Filter::Role::Predictors.post-prediction( $prediction-in,
+is-deeply PDF::Storage::Filter::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(2), ),
     $tiff-post-prediction,
     "TIFF predictive filter sanity";
 
-is-deeply PDF::Storage::Filter::Role::Predictors.post-prediction( $prediction-in,
+is-deeply PDF::Storage::Filter::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Predictor(12), ),
     $png-post-prediction,
@@ -60,11 +60,11 @@ my $rand-data = buf8.new: [
 for None => 1, TIFF => 2, PNG => 10 {
     my ($desc, $Predictor) = .kv;
 
-    my $prediction = PDF::Storage::Filter::Role::Predictors.prediction( $rand-data,
+    my $prediction = PDF::Storage::Filter::Predictors.prediction( $rand-data,
                                                            :Columns(4),
                                                            :$Predictor, );
 
-    my $post-prediction = PDF::Storage::Filter::Role::Predictors.post-prediction( $prediction,
+    my $post-prediction = PDF::Storage::Filter::Predictors.post-prediction( $prediction,
                                                                      :Columns(4),
                                                                      :$Predictor, );
 

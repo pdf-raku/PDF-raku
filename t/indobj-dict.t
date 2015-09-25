@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 19;
+plan 23;
 
 use PDF::Storage::IndObj;
 use PDF::Object::Util :to-ast;
@@ -52,8 +52,7 @@ use PDF::Object::Tie::Hash;
 use PDF::Object::Dict;
 role KidRole does PDF::Object::Tie::Hash {method bar {42}}
 role MyPages does PDF::Object::Tie::Hash {
-    my subset ArrayOfHash of Array where { $_ == .grep( *.isa(Hash) ) }
-    has ArrayOfHash $.Kids is entry(:required, :indirect );
+    has Hash @.Kids is entry(:required, :indirect );
 }
 
 class MyCat
@@ -63,14 +62,21 @@ class MyCat
 }
 
 my $cat = MyCat.new( :dict{ :Pages{ :Kids[ { :Type( :name<Page> ) }, ] } } );
+warn $cat<Pages><Kids>[0].perl;
 
 isa-ok $cat, MyCat, 'root object';
+does-ok $cat<Pages>, MyPages, '<Pages> role';
 does-ok $cat.Pages, MyPages, '.Pages role';
+isa-ok $cat<Pages><Kids>, Array, '<Pages><Kids>';
+is-json-equiv $cat<Pages><Kids>, [ { :Type<Page> }, ], '<Pages><Kids>';
+todo ':does and @ sigil on entry traits', 2;
 isa-ok $cat.Pages.Kids, Array, '.Pages.Kids';
+is-json-equiv $cat.Pages.Kids, [{ :Type<Page> }, ], '.Pages.Kids';
 lives-ok { $cat.NeedsRendering = True }, 'valid assignment';
 dies-ok { $cat.NeedsRendering = 42 }, 'typechecking';
-is-deeply $cat.NeedsRendering, True, 'typechecking';
+is-json-equiv $cat.NeedsRendering, True, 'typechecking';
+todo ':does and @ sigil on entry traits';
 is $cat.Pages.Kids[0]<Type>, 'Page', '.Pages.Kids[0]<Type>';
-todo ':does and @ sigil on entry traits', 2;
+todo ':does and @ sigil on entry traits';
 ok $cat.Pages.Kids[0] ~~ KidRole, 'Array Instance role';
 dies-ok {$cat.Pages.Kids[1] = 42}, 'typechecking - array elems';

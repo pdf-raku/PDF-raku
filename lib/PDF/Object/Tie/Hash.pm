@@ -8,6 +8,15 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 
     sub tie-att-hash(Hash $object, Str $key, Attribute $att) is rw {
 
+	#| array of type, declared with '@' sigil, e.g.
+        #| has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
+	multi sub type-check($val, Positional[Hash] $type) {
+	    type-check($val, Array);
+	    my $item-type = $type.of;
+	    type-check($_, $item-type)
+		for $val.list;
+	}
+
 	#| untyped attribute
 	multi sub type-check($val, Mu $type) is rw {
 	    if !$val.defined {

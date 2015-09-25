@@ -287,10 +287,7 @@ class PDF::Reader {
     #| raw ast indirect objects. Useful if the index is corrupt and/or
     #| the PDF has been hand-created/edited.
     multi method load('PDF', :$repair! where {$repair} ) {
-        use PDF::Grammar::PDF;
-        use PDF::Grammar::PDF::Actions;
-        my $actions = PDF::Grammar::PDF::Actions.new;
-        self!"full-scan"( PDF::Grammar::PDF, $actions, :repair);
+        self!"full-scan"( PDF::Grammar::PDF, $.actions, :repair);
     }
 
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
