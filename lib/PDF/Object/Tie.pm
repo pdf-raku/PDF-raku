@@ -111,7 +111,7 @@ role PDF::Object::Tie {
         default           { $_ }
     }
 
-    multi method apply-att($lval is rw, Attribute $att where {$att.type ~~ Positional[Hash]}) {
+    multi method apply-att($lval is rw, Attribute $att where {$att.type ~~ Positional[Mu]}) {
 	my $of-type = $att.type.of;
 	$.apply-att($_, $att, $of-type)
 	    for $lval.list;

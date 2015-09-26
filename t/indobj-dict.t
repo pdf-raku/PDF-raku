@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 23;
+plan 24;
 
 use PDF::Storage::IndObj;
 use PDF::Object::Util :to-ast;
@@ -52,7 +52,8 @@ use PDF::Object::Tie::Hash;
 use PDF::Object::Dict;
 role KidRole does PDF::Object::Tie::Hash {method bar {42}}
 role MyPages does PDF::Object::Tie::Hash {
-    has Hash @.Kids is entry(:required, :indirect );
+    multi sub coerce(Hash $h, KidRole) { $h does KidRole }
+    has KidRole @.Kids is entry(:required, :indirect, :&coerce );
 }
 
 class MyCat
@@ -74,6 +75,7 @@ lives-ok { $cat.NeedsRendering = True }, 'valid assignment';
 dies-ok { $cat.NeedsRendering = 42 }, 'typechecking';
 is-json-equiv $cat.NeedsRendering, True, 'typechecking';
 is $cat.Pages.Kids[0]<Type>, 'Page', '.Pages.Kids[0]<Type>';
-todo ':does and @ sigil on entry traits', 2;
-ok $cat.Pages.Kids[0] ~~ KidRole, 'Array Instance role';
+does-ok $cat.Pages.Kids[0], KidRole, 'Array Instance role';
+is $cat.Pages.Kids[0].obj-num, -1, '@ sigil entry(:indirect)';
+todo ':does and @ sigil on entry traits', 1;
 dies-ok {$cat.Pages.Kids[1] = 42}, 'typechecking - array elems';
