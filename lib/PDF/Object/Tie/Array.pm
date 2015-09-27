@@ -39,10 +39,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	    STORE => method ($val is copy) {
 		my $lval = $object.lvalue($val);
 		$object.apply-att($lval, $att);
-		my $sval = ($object[$idx] := type-check($lval, $att.type));
-	        $att.name eq 'elems-att'
-	             ?? $sval
-                     !! $att.set_value($object, $sval);
+		$object[$idx] := type-check($lval, $att.type);
 	    });
     }
 
