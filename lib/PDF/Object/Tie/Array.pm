@@ -4,7 +4,7 @@ use PDF::Object::Tie;
 
 role PDF::Object::Tie::Array does PDF::Object::Tie {
 
-    has Array $.index is rw;
+    has Array $.index is rw;  #| for typed indices
 
     sub tie-att-array($object, Int $idx, Attribute $att) is rw {
 
@@ -80,14 +80,24 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
     #| for array lookups, typically $foo[42]
     method AT-POS($pos) is rw {
         my $val := callsame;
-        $val ~~ Pair | Array | Hash
-            ?? $.deref(:$pos, $val )
-            !! $val;
+
+        $val := $.deref(:$pos, $val)
+	    if $val ~~ Pair | Array | Hash;
+
+	self.apply-att($val, $.index[$pos])
+	    if $.index[$pos]:exists;
+
+	$val;
     }
 
     #| handle array assignments: $foo[42] = 'bar'; $foo[99] := $baz;
     method ASSIGN-POS($pos, $val) {
-	nextwith($pos, $.lvalue($val));
+	my $lval = $.lvalue($val);
+
+	self.apply-att($lval, $.index[$pos])
+	    if $.index[$pos]:exists;
+
+	nextwith($pos, $lval )
     }
 
     method push($val) {
