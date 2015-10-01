@@ -2,21 +2,6 @@ use v6;
 
 class PDF::Object {
 
-    proto method is-indirect-type(|c --> Bool) {*}
-
-    multi method is-indirect-type(Hash $dict!) {
-	? <Type FunctionType PatternType ShadingType>.first({$dict{$_}:exists});
-    }
-
-    #| tba
-    multi method is-indirect-type(Array $array) {
-	Mu
-    }
-
-    multi method is-indirect-type($) {
-	False
-    }				    
-
     multi method coerce(Mu $obj is rw, Mu $type ) {
 	$.delegator.coerce( $obj, $type )
     }

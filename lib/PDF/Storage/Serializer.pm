@@ -169,7 +169,7 @@ class PDF::Storage::Serializer {
     multi method is-indirect($, :$id! where {%!ref-count{$id} > 1})       {True}
 
     #| typed objects should be indirect, e.g. << /Type /Catalog .... >>
-    multi method is-indirect(Hash $obj where PDF::Object.is-indirect-type($obj))  {True}
+    multi method is-indirect(Hash $obj where {.<Type>:exists})            {True}
 
     #| presumably sourced as an indirect object, so output as such.
     multi method is-indirect($obj where { .can('obj-num') && .obj-num })  {True}
