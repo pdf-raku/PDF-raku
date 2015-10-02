@@ -58,7 +58,7 @@ role PDF::Object::Tie {
 		when 'alias'    { $att.aliases      = $arg.value.list }
 		when 'inherit'  { $att.is-inherited = $arg.value }
 		when 'required' { $att.is-required  = $arg.value }
-		when 'indirect' { $att.is-indirect = $arg.value }
+		when 'indirect' { $att.is-indirect  = $arg.value }
 		when 'coerce'   { $att.coerce = $arg.value }
 		default         { warn "ignoring entry attribute: $_" }
 	    }
@@ -111,13 +111,8 @@ role PDF::Object::Tie {
         default           { $_ }
     }
 
-    multi method apply-att($lval is rw, Attribute $att where {$att.type ~~ Positional[Mu]}) {
-	my $of-type = $att.type.of;
-	$.apply-att($_, $att, $of-type)
-	    for $lval.list;
-    }
-
-    multi method apply-att($lval is rw, Attribute $att, Mu $type = $att.type) is default {
+    multi method apply-att($lval is rw, Attribute $att) is default {
+	my $type = $att.type;
 	unless $lval.isa(Pair) {
 	    ($att.coerce)($lval, $type)
 		if $lval.defined && ! ($lval ~~ $type);

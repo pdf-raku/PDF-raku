@@ -64,14 +64,14 @@ class PDF::Storage::Serializer {
 
     #| prepare a set of objects for an incremental update. Only return indirect objects:
     #| - objects that have been fetched and updated, and
-    #| - the trailer dictionary (returned as firt object
+    #| - the trailer dictionary (returned as first object)
     multi method body( $reader, Bool :$updates! where $updates, :$*compress ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
         $.size = $reader.size;
         my $prev = $reader.prev;
 
-        # disable auto-deref to keep all analysis and freeze stages lazy. We don't
-        # need to consider or load anything that has not been already.
+        # disable auto-deref to keep all analysis and freeze stages lazy. if it hasn't been
+        # loaded, it hasn't been updated
         temp $reader.auto-deref = False;
 
         # preserve existing object numbers. objects need to overwritten using the same

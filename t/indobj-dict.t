@@ -52,7 +52,8 @@ use PDF::Object::Tie::Hash;
 use PDF::Object::Dict;
 role KidRole does PDF::Object::Tie::Hash {method bar {42}}
 role MyPages does PDF::Object::Tie::Hash {
-    multi sub coerce(Hash $h, KidRole) { $h does KidRole }
+    multi sub coerce(Hash $h is rw, KidRole) {die 42; $h does KidRole }
+    warn :&coerce.perl;
     has KidRole @.Kids is entry(:required, :indirect, :&coerce );
 }
 

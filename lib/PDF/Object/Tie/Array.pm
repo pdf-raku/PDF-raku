@@ -4,7 +4,9 @@ use PDF::Object::Tie;
 
 role PDF::Object::Tie::Array does PDF::Object::Tie {
 
-    has Array $.index is rw;  #| for typed indices
+    has Attribute @.index is rw;    #| for typed indices
+    has Attribute $.att is rw;      #| default attribute
+    has Bool $!composed;
 
     sub tie-att-array($object, Int $idx, Attribute $att) is rw {
 
@@ -47,15 +49,15 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	tie-att-array(self, $idx, $att);
     }
 
-    method compose($class) {
+    method compose( --> Bool) {
+	my $class = self.WHAT;
 	my $class-name = $class.^name;
-	my @index;
 
 	for $class.^attributes.grep({.name !~~ /descriptor/ && .can('index') }) -> $att {
 	    my $pos = $att.index;
 	    die "redefinition of trait index($pos)"
-		if @index[$pos];
-	    @index[$pos] = $att;
+		if @!index[$pos];
+	    @!index[$pos] = $att;
 
 	    my &meth = method { self.rw-accessor( $pos, $att ) };
 
@@ -70,11 +72,11 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 		for $att.aliases;
 	}
 
-	@index;
+	True;
     }
 
     method tie-init {
-	self.index //= PDF::Object::Tie::Array.compose(self.WHAT);
+	$!composed ||= self.compose;
     }
 
     #| for array lookups, typically $foo[42]
@@ -84,8 +86,10 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
         $val := $.deref(:$pos, $val)
 	    if $val ~~ Pair | Array | Hash;
 
-	self.apply-att($val, $.index[$pos])
-	    if $.index[$pos]:exists;
+	my $att = $.index[$pos] // $.att;
+
+	self.apply-att($val, $att)
+	    if $att.defined;
 
 	$val;
     }
@@ -94,8 +98,10 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
     method ASSIGN-POS($pos, $val) {
 	my $lval = $.lvalue($val);
 
-	self.apply-att($lval, $.index[$pos])
-	    if $.index[$pos]:exists;
+	my $att = $.index[$pos] // $.att;
+
+	self.apply-att($lval, $att)
+	    if $att;
 
 	nextwith($pos, $lval )
     }
