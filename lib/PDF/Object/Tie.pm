@@ -30,7 +30,7 @@ role PDF::Object::Tie {
 	:ind-ref[ $.obj-num, $.gen-num ];
     }
 
-    my role Tied {
+    my class Tied {
 	has Bool $.is-required is rw = False;
 	has Bool $.is-indirect is rw = False;
 	has Bool $.is-inherited is rw = False;
@@ -40,6 +40,16 @@ role PDF::Object::Tie {
         has Str @.aliases is rw;
 	has $.type is rw;
 	has method has_accessor { False }
+	method apply($lval is rw) {
+	    my $type = $.type;
+	    unless $lval.isa(Pair) {
+		($.coerce)($lval, $type)
+		    if $lval.defined && ! ($lval ~~ $type);
+		$lval.obj-num //= -1
+		    if $.is-indirect && $lval ~~ PDF::Object;
+	    }
+	}
+
     }
 
     my role TiedEntry does Tied {
@@ -109,16 +119,6 @@ role PDF::Object::Tie {
         when PDF::Object  { $_ }
         when Hash | Array | DateTime { $.coerce($_, :$.reader) }
         default           { $_ }
-    }
-
-    multi method apply-att($lval is rw, Attribute $att) is default {
-	my $type = $att.type;
-	unless $lval.isa(Pair) {
-	    ($att.coerce)($lval, $type)
-		if $lval.defined && ! ($lval ~~ $type);
-	    $lval.obj-num //= -1
-		if $att.is-indirect && $lval ~~ PDF::Object;
-	}
     }
 
     #| indirect reference

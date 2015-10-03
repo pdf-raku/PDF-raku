@@ -35,12 +35,12 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	Proxy.new(
 	    FETCH => method {
 		my $val = $object[$idx];
-		$object.apply-att($val, $att);
+		$att.apply($val);
 		type-check($val, $att.type);
 	    },
 	    STORE => method ($val is copy) {
 		my $lval = $object.lvalue($val);
-		$object.apply-att($lval, $att);
+		$att.apply($lval);
 		$object[$idx] := type-check($lval, $att.type);
 	    });
     }
@@ -87,8 +87,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	    if $val ~~ Pair | Array | Hash;
 
 	my $att = $.index[$pos] // $.att;
-
-	self.apply-att($val, $att)
+	$att.apply($val)
 	    if $att.defined;
 
 	$val;
@@ -99,9 +98,8 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	my $lval = $.lvalue($val);
 
 	my $att = $.index[$pos] // $.att;
-
-	self.apply-att($lval, $att)
-	    if $att;
+	$att.apply($lval)
+	    if $att.defined;
 
 	nextwith($pos, $lval )
     }

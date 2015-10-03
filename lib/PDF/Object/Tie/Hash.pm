@@ -62,7 +62,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	    },
 	    STORE => method ($val is copy) {
 		my $lval = $object.lvalue($val);
-		$object.apply-att($lval, $att);
+		$att.apply($lval);
 		$object{$key} := type-check($lval, $att.type);
 	    });
     }
@@ -105,8 +105,9 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
         $val := $.deref(:$key, $val)
 	    if $val ~~ Pair | Array | Hash;
 
-	self.apply-att($val, $.entries{$key})
-	    if $.entries{$key}:exists;
+	my $att = $.entries{$key};
+	$att.apply($val)
+	    if $att.defined;
 
 	$val;
     }
@@ -115,8 +116,9 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
     method ASSIGN-KEY($key, $val) {
 	my $lval = $.lvalue($val);
 
-	self.apply-att($lval, $.entries{$key})
-	    if $.entries{$key}:exists;
+	my $att = $.entries{$key};
+	$att.apply($lval)
+	    if $att.defined;
 
 	nextwith($key, $lval )
     }
