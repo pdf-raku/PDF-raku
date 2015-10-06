@@ -39,7 +39,6 @@ role PDF::Object::Tie {
 	has Code $.coerce is rw = sub ($lval is rw, Mu:U $type) { PDF::Object.coerce($lval, $type) };
         has Str @.aliases is rw;
 	has $.type is rw;
-	has method has_accessor { False }
 	method apply($lval is rw) {
 	    my $type = $.type;
 	    unless $lval.isa(Pair) {
@@ -52,7 +51,9 @@ role PDF::Object::Tie {
 
     }
 
-    my role TiedEntry does Tied {
+    my role TiedEntry {
+	has Tied $.tied handles <apply> = Tied.new;
+	has method has_accessor { False }
 	has Bool $.entry = True;
     }
 
@@ -65,11 +66,11 @@ role PDF::Object::Tie {
 		next;
 	    }
 	    given $arg.key {
-		when 'alias'    { $att.aliases      = $arg.value.list }
-		when 'inherit'  { $att.is-inherited = $arg.value }
-		when 'required' { $att.is-required  = $arg.value }
-		when 'indirect' { $att.is-indirect  = $arg.value }
-		when 'coerce'   { $att.coerce = $arg.value }
+		when 'alias'    { $att.tied.aliases      = $arg.value.list }
+		when 'inherit'  { $att.tied.is-inherited = $arg.value }
+		when 'required' { $att.tied.is-required  = $arg.value }
+		when 'indirect' { $att.tied.is-indirect  = $arg.value }
+		when 'coerce'   { $att.tied.coerce = $arg.value }
 		default         { warn "ignoring entry attribute: $_" }
 	    }
 	}
@@ -79,7 +80,7 @@ role PDF::Object::Tie {
 	my $type = $att.type;
 	$att does TiedEntry;
 	my $name = $att.name;
-	$att.accessor-name = $name.subst(/^(\$|\@|\%)'!'/, '');
+	$att.tied.accessor-name = $name.subst(/^(\$|\@|\%)'!'/, '');
 	my $sigil = ~ $0;
 	given $sigil {
 	    when '$' {}
@@ -92,26 +93,28 @@ role PDF::Object::Tie {
 		warn "ignoring '$sigil' sigil";
 	    }
 	}
-	$att.type = $type;
-	$att.gen-accessor = $att.has-accessor;
+	$att.tied.type = $type;
+	$att.tied.gen-accessor = $att.has-accessor;
 	process-args($entry, $att);
     }
 
-    my role TiedIndex does Tied {
+    my role TiedIndex {
+	has Tied $.tied handles <apply> = Tied.new;
+	has method has_accessor { False }
 	has Int $.index is rw;
     }
 
     multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
 	my $type = $att.type;
 	$att does TiedIndex;
-	$att.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
+	$att.tied.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
 	my $sigil = $0 && ~ $0;
 	my @args = $index.list;
 	die "index trait requires a UInt argument, e.g. 'is index(1)'"
 	    unless @args && @args[0] ~~ UInt;
 	$att.index = @args.shift;
-	$att.type = $type;
-	$att.gen-accessor = $att.has-accessor;
+	$att.tied.type = $type;
+	$att.tied.gen-accessor = $att.has-accessor;
 	process-args(@args, $att);
     }
 

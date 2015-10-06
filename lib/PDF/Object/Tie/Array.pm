@@ -14,7 +14,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	multi sub type-check($val, Mu $type) is rw {
 	    if !$val.defined {
 		die "missing required array entry: $idx"
-		    if $att.is-required;
+		    if $att.tied.is-required;
 		return Nil
 	    }
 	    $val
@@ -23,7 +23,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	multi sub type-check($val is rw, $type) is rw is default {
 	  if !$val.defined {
 	      die "{$object.WHAT.^name}: missing required index: $idx"
-		  if $att.is-required;
+		  if $att.tied.is-required;
 	      return Nil
 	  }
 	  die "{$object.WHAT.^name}.[$idx]: {$val.perl} - not of type: {$type.gist}"
@@ -36,12 +36,12 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 	    FETCH => method {
 		my $val = $object[$idx];
 		$att.apply($val);
-		type-check($val, $att.type);
+		type-check($val, $att.tied.type);
 	    },
 	    STORE => method ($val is copy) {
 		my $lval = $object.lvalue($val);
 		$att.apply($lval);
-		$object[$idx] := type-check($lval, $att.type);
+		$object[$idx] := type-check($lval, $att.tied.type);
 	    });
     }
 
@@ -61,15 +61,15 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
 
 	    my &meth = method { self.rw-accessor( $pos, $att ) };
 
-	    my $key = $att.accessor-name;
-	    if $att.gen-accessor && ! $class.^declares_method($key) {
+	    my $key = $att.tied.accessor-name;
+	    if $att.tied.gen-accessor && ! $class.^declares_method($key) {
 		$att.set_rw;
 		$class.^add_method( $key, &meth );
 	    }
 
 	    $class.^add_method( $_ , &meth )
 		unless $class.^declares_method($_)
-		for $att.aliases;
+		for $att.tied.aliases;
 	}
 
 	True;

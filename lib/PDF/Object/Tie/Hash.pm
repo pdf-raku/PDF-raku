@@ -23,7 +23,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	multi sub type-check($val, Mu $type) is rw {
 	    if !$val.defined {
 		die "missing required field: $key"
-		    if $att.is-required;
+		    if $att.tied.is-required;
 		return Nil
 	    }
 	    $val
@@ -32,7 +32,7 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	multi sub type-check($val is rw, $type) is rw is default {
 	    if !$val.defined {
 	      die "{$object.WHAT.^name}: missing required field: $key"
-		  if $att.is-required;
+		  if $att.tied.is-required;
 	      return Nil
 	  }
 	  die "{$object.WHAT.^name}.$key: {$val.perl} - not of type: {$type.gist}"
@@ -57,13 +57,13 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	    FETCH => method {
 		my $val := $object{$key};
 		$val := inherit($object, $key)
-		    if !$val.defined && $att.is-inherited;
-		type-check($val, $att.type);
+		    if !$val.defined && $att.tied.is-inherited;
+		type-check($val, $att.tied.type);
 	    },
 	    STORE => method ($val is copy) {
 		my $lval = $object.lvalue($val);
 		$att.apply($lval);
-		$object{$key} := type-check($lval, $att.type);
+		$object{$key} := type-check($lval, $att.tied.type);
 	    });
     }
 
@@ -76,19 +76,19 @@ role PDF::Object::Tie::Hash does PDF::Object::Tie {
 	my $class-name = $class.^name;
 
 	for $class.^attributes.grep({.name !~~ /descriptor/ && .can('entry') }) -> $att {
-	    my $key = $att.accessor-name;
+	    my $key = $att.tied.accessor-name;
 	    %!entries{$key} = $att;
 
 	    my &meth = method { self.rw-accessor( $key, $att ) };
 
-	    if $att.gen-accessor &&  ! $class.^declares_method($key) {
+	    if $att.tied.gen-accessor &&  ! $class.^declares_method($key) {
 		$att.set_rw;
 		$class.^add_method( $key, &meth );
 	    }
 
 	    $class.^add_method( $_ , &meth )
 		unless $class.^declares_method($_)
-		for $att.aliases;
+		for $att.tied.aliases;
 	}
 
 	True
