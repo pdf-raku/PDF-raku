@@ -5,22 +5,12 @@ use PDF::Object::Tie;
 role PDF::Object::Tie::Array does PDF::Object::Tie {
 
     has Attribute @.index is rw;    #| for typed indices
-    has Attribute $.att is rw;      #| default attribute
+    has Attribute $.positional is rw;      #| default attribute
     has Bool $!composed;
 
     sub tie-att-array($object, Int $idx, Attribute $att) is rw {
 
-	#| untyped attribute
-	multi sub type-check($val, Mu $type) is rw {
-	    if !$val.defined {
-		die "missing required array entry: $idx"
-		    if $att.tied.is-required;
-		return Nil
-	    }
-	    $val
-	}
-	#| type attribute
-	multi sub type-check($val is rw, $type) is rw is default {
+	sub type-check($val is rw, $type) is rw is default {
 	  if !$val.defined {
 	      die "{$object.WHAT.^name}: missing required index: $idx"
 		  if $att.tied.is-required;
@@ -86,7 +76,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
         $val := $.deref(:$pos, $val)
 	    if $val ~~ Pair | Array | Hash;
 
-	my $att = $.index[$pos] // $.att;
+	my $att = $.index[$pos] // $.positional;
 	$att.apply($val)
 	    if $att.defined;
 
@@ -97,7 +87,7 @@ role PDF::Object::Tie::Array does PDF::Object::Tie {
     method ASSIGN-POS($pos, $val) {
 	my $lval = $.lvalue($val);
 
-	my $att = $.index[$pos] // $.att;
+	my $att = $.index[$pos] // $.positional;
 	$att.apply($lval)
 	    if $att.defined;
 

@@ -52,13 +52,13 @@ use PDF::Object::Tie::Hash;
 use PDF::Object::Dict;
 role KidRole does PDF::Object::Tie::Hash {method bar {42}}
 role MyPages does PDF::Object::Tie::Hash {
-    multi sub coerce(Hash $h is rw, KidRole) {die 42; $h does KidRole }
-    warn :&coerce.perl;
+    multi sub coerce(Hash $h is rw, KidRole) { $h does KidRole }
     has KidRole @.Kids is entry(:required, :indirect, :&coerce );
 }
 
 class MyCat
     is PDF::Object::Dict {
+    multi sub coerce(Hash $h is rw, MyPages) {die 42; $h does MyPages }
     has MyPages $.Pages is entry(:required, :indirect);
     has Bool $.NeedsRendering is entry;
 }
@@ -78,5 +78,4 @@ is-json-equiv $cat.NeedsRendering, True, 'typechecking';
 is $cat.Pages.Kids[0]<Type>, 'Page', '.Pages.Kids[0]<Type>';
 does-ok $cat.Pages.Kids[0], KidRole, 'Array Instance role';
 is $cat.Pages.Kids[0].obj-num, -1, '@ sigil entry(:indirect)';
-todo ':does and @ sigil on entry traits', 1;
 dies-ok {$cat.Pages.Kids[1] = 42}, 'typechecking - array elems';

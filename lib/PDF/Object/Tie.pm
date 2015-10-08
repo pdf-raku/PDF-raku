@@ -30,7 +30,22 @@ role PDF::Object::Tie {
 	:ind-ref[ $.obj-num, $.gen-num ];
     }
 
+    my class Tied {...}
+
+    my role TiedEntry {
+	has Tied $.tied handles <apply> = Tied.new;
+	has method has_accessor { False }
+	has Bool $.entry = True;
+    }
+
+    my role TiedIndex {
+	has Tied $.tied is rw handles <apply> = Tied.new;
+	has method has_accessor { False }
+	has Int $.index is rw;
+    }
+
     my class Tied {
+	has $.type is rw;
 	has Bool $.is-required is rw = False;
 	has Bool $.is-indirect is rw = False;
 	has Bool $.is-inherited is rw = False;
@@ -38,23 +53,43 @@ role PDF::Object::Tie {
 	has Bool $.gen-accessor is rw;
 	has Code $.coerce is rw = sub ($lval is rw, Mu:U $type) { PDF::Object.coerce($lval, $type) };
         has Str @.aliases is rw;
-	has $.type is rw;
+
 	method apply($lval is rw) {
 	    my $type = $.type;
 	    unless $lval.isa(Pair) {
-		($.coerce)($lval, $type)
-		    if $lval.defined && ! ($lval ~~ $type);
+		if $lval.defined && ! ($lval ~~ $type) {
+
+		    if $type ~~ Positional[Mu] && $lval ~~ Array {
+			# positional array declaration, e.g.:
+			# has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
+			my $of-type = $type.of;
+			my $att = $lval.positional;
+			if $att {
+			    die "conflicting types for {$att.name} {$att.type.gist} {$of-type.gist}"
+				unless $of-type ~~ $att.type;
+			}
+			else {
+			    $att = Attribute.new( :name('@!' ~ $.accessor-name), :type($type.of), :package<?> );
+			    $att does TiedIndex;
+			    $att.tied = $.clone;
+			    $att.tied.type = $of-type;
+			    $lval.positional = $att;
+			}
+			
+			for $lval.keys {
+			    ($att.tied.coerce)($lval[$_], $att.tied.type)
+				unless $lval[$_] ~~ $att.tied.type;
+			}
+		    }
+		    else {
+			($.coerce)($lval, $type)
+		    }
+		}
 		$lval.obj-num //= -1
 		    if $.is-indirect && $lval ~~ PDF::Object;
 	    }
 	}
 
-    }
-
-    my role TiedEntry {
-	has Tied $.tied handles <apply> = Tied.new;
-	has method has_accessor { False }
-	has Bool $.entry = True;
     }
 
     multi sub process-args(True, Attribute $att) {}
@@ -96,12 +131,6 @@ role PDF::Object::Tie {
 	$att.tied.type = $type;
 	$att.tied.gen-accessor = $att.has-accessor;
 	process-args($entry, $att);
-    }
-
-    my role TiedIndex {
-	has Tied $.tied handles <apply> = Tied.new;
-	has method has_accessor { False }
-	has Int $.index is rw;
     }
 
     multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
