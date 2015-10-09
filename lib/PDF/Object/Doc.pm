@@ -22,8 +22,8 @@ class PDF::Object::Doc
 
     #| open an input file
     use PDF::Storage::Input;
-    multi method open(Str $file-name where { !.isa(PDF::Storage::Input) }) { self!"open"($file-name) }
-    multi method open(PDF::Storage::Input $input) { self!"open"($input) }
+    multi method open(Str $file-name where { !.isa(PDF::Storage::Input) }) { self!open($file-name) }
+    multi method open(PDF::Storage::Input $input) { self!open($input) }
 
     method !open($spec) {
 	require ::('PDF::Reader');

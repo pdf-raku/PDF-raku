@@ -85,7 +85,7 @@ class PDF::Reader {
 
             if .<trailer> {
                 my $dict = PDF::Object.coerce( |%(.<trailer>) );
-                self!"set-trailer"( $dict.content<dict> );
+                self!set-trailer( $dict.content<dict> );
             }
        }
 
@@ -170,7 +170,7 @@ class PDF::Reader {
                 $actual-obj-num = $ind-obj[0];
                 $actual-gen-num = $ind-obj[1];
 
-                self!"fetch-stream-data"($ind-obj, $input, :$offset, :$max-end)
+                self!fetch-stream-data($ind-obj, $input, :$offset, :$max-end)
                     if $ind-obj[2].key eq 'stream';
             }
             when 2 {
@@ -211,7 +211,7 @@ class PDF::Reader {
 
         my $ind-obj = $idx<ind-obj> //= do {
             return unless $eager;
-            my $_ind-obj = self!"fetch-ind-obj"($idx, :$obj-num, :$gen-num);
+            my $_ind-obj = self!fetch-ind-obj($idx, :$obj-num, :$gen-num);
             # only fully stantiate object when needed
             $get-ast ?? $_ind-obj !! PDF::Storage::IndObj.new( :ind-obj($_ind-obj), :reader(self) )
         };
@@ -240,7 +240,7 @@ class PDF::Reader {
     #| $reader.deref($root,<Pages>,<Kids>,[0],<Contents>)
     method deref($val is copy, **@ops ) is rw {
         for @ops -> $op {
-            $val = self!"ind-deref"($val)
+            $val = self!ind-deref($val)
                 if $val.isa(Pair);
             $val = do given $op {
                 when Array { $val[ $op[0] ] }
@@ -248,7 +248,7 @@ class PDF::Reader {
                 default    {die "bad $.deref arg: {.perl}"}
             };
         }
-        $val = self!"ind-deref"($val)
+        $val = self!ind-deref($val)
             if $val.isa(Pair);
         $val;
     }
@@ -280,14 +280,14 @@ class PDF::Reader {
         use PDF::Grammar::FDF;
         use PDF::Grammar::FDF::Actions;
         my $actions = PDF::Grammar::FDF::Actions.new;
-        self!"full-scan"( PDF::Grammar::FDF, $actions);
+        self!full-scan( PDF::Grammar::FDF, $actions);
     }
 
     #| scan the entire PDF, bypass any indices. Populate index with
     #| raw ast indirect objects. Useful if the index is corrupt and/or
     #| the PDF has been hand-created/edited.
     multi method load('PDF', :$repair! where {$repair} ) {
-        self!"full-scan"( PDF::Grammar::PDF, $.actions, :repair);
+        self!full-scan( PDF::Grammar::PDF, $.actions, :repair);
     }
 
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
@@ -344,7 +344,7 @@ class PDF::Reader {
                     or die "unable to parse index: $xref";
                 my Hash $index = $parse.ast;
                 $dict = PDF::Object.coerce( |%($index<trailer>) );
-                self!"set-trailer"($dict);
+                self!set-trailer($dict);
 
                 my $prev-offset;
 
@@ -375,7 +375,7 @@ class PDF::Reader {
                 my $ind-obj = PDF::Storage::IndObj.new( |%ast, :input($xref), :reader(self) );
                 my $xref-obj = $ind-obj.object;
                 $dict = $xref-obj;
-                self!"set-trailer"($dict);
+                self!set-trailer($dict);
                 @obj-idx.push: $xref-obj.decode-to-stage2.list;
             }
 
@@ -451,9 +451,9 @@ class PDF::Reader {
                     $dict<Length> = :int($end - $start + 1)
                         if $repair;
 
-                    self!"fetch-stream-data"($ind-obj, $.input, :$offset, :$max-end);
+                    self!fetch-stream-data($ind-obj, $.input, :$offset, :$max-end);
 		    if $stream-type && $stream-type eq 'XRef' {
-			self!"set-trailer"( $dict, :keys<Root Encrypt Info ID> );
+			self!set-trailer( $dict, :keys<Root Encrypt Info ID> );
 			# discard existing /Type /XRef stream objects. These are specific to the input PDF
 			next;
 		    }
@@ -491,7 +491,7 @@ class PDF::Reader {
 
             if .<trailer> {
                 my $dict = PDF::Object.coerce( |%(.<trailer>) );
-                self!"set-trailer"( $dict.content<dict> )
+                self!set-trailer( $dict.content<dict> )
                     if $dict.content<dict>:exists;
             }
         }
@@ -564,7 +564,7 @@ class PDF::Reader {
 
 		    if $offset && $obj-num {
 			# check updated vs original PDF value.
-			my $original-ast = self!"fetch-ind-obj"(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
+			my $original-ast = self!fetch-ind-obj(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
 			# discard, if not updated
 			next if $original-ast eqv $ast.value;
 		    }

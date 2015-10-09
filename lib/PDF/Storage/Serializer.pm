@@ -55,7 +55,7 @@ class PDF::Storage::Serializer {
         $.analyse( $trailer );
         $.freeze( $trailer, :indirect);
         my @objects = $.ind-objs.list;
-	my %dict = self!"get-trailer"(@objects);
+	my %dict = self!get-trailer(@objects);
 
         %dict<Size> = :int($.size);
 
@@ -94,7 +94,7 @@ class PDF::Storage::Serializer {
 	}
 
         my @objects = $.ind-objs.list;
-	my %dict = self!"get-trailer"(@objects);
+	my %dict = self!get-trailer(@objects);
 
         %dict<Prev> = :int($prev);
         %dict<Size> = :int($.size);
@@ -108,7 +108,7 @@ class PDF::Storage::Serializer {
     #| return objects without renumbering existing objects. requires a PDF reader
     multi method body( $reader!, Bool:_ :$*compress ) is default {
         my @objects = @( $reader.get-objects );
-	my %dict = self!"get-trailer"(@objects);
+	my %dict = self!get-trailer(@objects);
         %dict<Prev>:delete;
         %dict<Size> = :int($reader.size)
             unless $reader.type eq 'FDF';
@@ -189,7 +189,7 @@ class PDF::Storage::Serializer {
         my $id = ~$object.WHICH;
 
         # already an indirect object
-        return self!"get-ind-ref"(:$id )
+        return self!get-ind-ref(:$id )
             if %!obj-num-idx{$id}:exists;
 
         my Bool $is-stream = $object.isa(PDF::Object::Stream);
@@ -215,10 +215,10 @@ class PDF::Storage::Serializer {
 
         # register prior to traversing the object. in case there are cyclical references
         my $ret = $indirect || $.is-indirect( $object, :$id )
-            ?? self!"index-object"($ind-obj, :$id, :$object )
+            ?? self!index-object($ind-obj, :$id, :$object )
             !! $ind-obj;
 
-        $slot = self!"freeze-dict"($object);
+        $slot = self!freeze-dict($object);
 
         $ret;
     }
@@ -228,7 +228,7 @@ class PDF::Storage::Serializer {
         my $id = ~$object.WHICH;
 
         # already an indirect object
-        return self!"get-ind-ref"( :$id )
+        return self!get-ind-ref( :$id )
             if %!obj-num-idx{$id}:exists;
 
         my $ind-obj = array => Mu;
@@ -236,10 +236,10 @@ class PDF::Storage::Serializer {
 
         # register prior to traversing the object. in case there are cyclical references
         my $ret = $indirect || $.is-indirect( $object, :$id )
-            ?? self!"index-object"($ind-obj, :$id, :$object )
+            ?? self!index-object($ind-obj, :$id, :$object )
             !! $ind-obj;
 
-        $slot = self!"freeze-array"($object);
+        $slot = self!freeze-array($object);
 
         $ret;
     }
