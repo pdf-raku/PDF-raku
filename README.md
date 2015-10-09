@@ -1,6 +1,6 @@
 perl6-PDF
 =========
-This module provides low-level tools for PDF manipulation. Features include:
+This module provides low-level tools for low-level PDF manipulation. Features include:
 
 - index based reading from PDF, with lazy loading of objects
 - optimized serialization
@@ -10,8 +10,12 @@ This module provides low-level tools for PDF manipulation. Features include:
 - high level data access via tied Hashes and Arrays
 - a type system for mapping PDF internal structures to Perl 6 objects
 
-For high level tools, see <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) - general
+For high level tools, see <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> - high level
 PDF manipulation.
+
+## Development Status
+
+Under construction. Highest tested Rakudo version: `perl6 version 2015.07.1-875-g2b05975 built on MoarVM version 2015.08-15-g4b427ed`
 
 ```
 #!/usr/bin/env perl6
