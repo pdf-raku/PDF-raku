@@ -1,6 +1,17 @@
 perl6-PDF
 =========
-This module provides low-level tools for reading, update and writing of PDF content.
+This module provides low-level tools for PDF manipulation. Features include:
+
+- index based reading from PDF, with lazy loading of objects
+- optimized serialization
+- lazy incremental updates
+- JSON interoperability
+- reading, update and writing of PDF content
+- high level data access via tied Hashes and Arrays
+- a type system for mapping PDF internal structures to Perl 6 objects
+
+For high level tools, see <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) - general
+PDF manipulation.
 
 ```
 #!/usr/bin/env perl6
@@ -240,7 +251,11 @@ my $writer = PDF::Writer.new( :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 ```
 
-# DOM classes
+# PDF::Object - Type System
+
+PDF::Object enable direct high level access to PDF internal data as nested Hashes and Arrays. Data
+is automatically fetch from open input PDF files as the data structures are dereferenced.
+
 
 ## PDF::Object::Delegator
 
@@ -291,6 +306,13 @@ class My::Delegator is PDF::Object::Delegator {
 
 PDF::Object.delegator = My::Delegator;
 
+class My::DOM::Pages
+    is PDF::Object::Dict
+    does PDF::Oject::Type {
+
+    has My::DOM::Page @.Kids is entry(:required, :indirect);
+}
+
 class My::DOM::Catalog
     is PDF::Object::Dict
     does PDF::Object::Type {
@@ -299,7 +321,6 @@ class My::DOM::Catalog
     use PDF::Object::Name;
     has PDF::Object::Name $.Version is entry;        #| (Optional; PDF 1.4) The version of the PDF specification to which the document conforms (for example, /1.4) 
     has Hash $.Pages is entry(:required, :indirect); #| (Required; must be an indirect reference) The page tree node
-    has Array $.Kids is entry;
     # ... etc
 }
 ```
