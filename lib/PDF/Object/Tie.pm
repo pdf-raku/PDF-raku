@@ -76,9 +76,9 @@ role PDF::Object::Tie {
 			    $lval.positional = $att;
 			}
 			
-			for $lval.keys {
-			    ($att.tied.coerce)($lval[$_], $att.tied.type)
-				unless $lval[$_] ~~ $att.tied.type;
+			for $lval.list {
+			    ($att.tied.coerce)($_, $att.tied.type)
+				unless $_ ~~ Pair | $att.tied.type;
 			}
 		    }
 		    else {
