@@ -15,10 +15,10 @@ our class PDF::Object::Type::XRef
 #| See [PDF 1.7 TABLE 3.15 Additional entries specific to a cross-reference stream dictionary]
     has Int $.Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
     # rakudo 2015.07.1-12-g174049f; Index is a reserved attribute
-#    has Array $!Index is entry;          #| (Optional) An array containing a pair of integers for each subsection in this section. The first integer is the first object number in the subsection; the second integer is the number of entries in the subsection
-    method Index is rw returns Array:_ { self<Index> }
+    has UInt @.Index is entry;           #| (Optional) An array containing a pair of integers for each subsection in this section. The first integer is the first object number in the subsection; the second integer is the number of entries in the subsection
+##    method Index is rw returns Array:_ { self<Index> }
     has Int $.Prev is entry;             #| (Present only if the file has more than one cross-reference stream; not meaningful in hybrid-reference files) The byte offset from the beginning of the file to the beginning of the previous cross-reference stream. This entry has the same function as the Prev entry in the trailer dictionary (
-    has Array $.W is entry(:required);   #| (Required) An array of integers, each representing the size of the fields in a single cross-reference entry.
+    has UInt @.W is entry(:required);    #| (Required) An array of integers, each representing the size of the fields in a single cross-reference entry.
 
 #| See [PDF 1.7 TABLE 3.17 Additional entries in a hybrid-reference file’s trailer dictionary]
     has Int $.XRefStm is entry;          #| (Optional) The byte offset from the beginning of the file of a cross-reference stream.
@@ -35,7 +35,7 @@ our class PDF::Object::Type::XRef
     method encode(Array $xref = $.decoded --> Str) {
 
         self.Index[0] //= 0;
-        self.Index[1] //= $.Size;
+        self.Index[1] ||= $.Size;
 
         die 'mandatory /Index[0] entry is missing'
             unless $.first-obj-num.defined;
