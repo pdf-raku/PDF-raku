@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 24;
+plan 25;
 
 use PDF::Storage::IndObj;
 use PDF::Object::Util :to-ast;
@@ -79,3 +79,18 @@ is $cat.Pages.Kids[0]<Type>, 'Page', '.Pages.Kids[0]<Type>';
 does-ok $cat.Pages.Kids[0], KidRole, 'Array Instance role';
 is $cat.Pages.Kids[0].obj-num, -1, '@ sigil entry(:indirect)';
 dies-ok {$cat.Pages.Kids[1] = 42}, 'typechecking - array elems';
+
+use PDF::Object::Doc;
+use PDF::Storage::Serializer;
+my $doc = PDF::Object::Doc.new( { :Root($cat) } );
+my $serializer = PDF::Storage::Serializer.new;
+my $body = $serializer.body( $doc );
+
+is-json-equiv $body, {:objects($[
+			       :ind-obj($[1, 0, :dict(${:NeedsRendering(:bool),
+							:Pages(:ind-ref($[2, 0]))})]),
+                               :ind-obj($[2, 0, :dict(${:Kids(:array($[:ind-ref($[3, 0])]))})]),
+                               :ind-obj($[3, 0, :dict(${:Type(:name("Page"))})])
+                              ]),
+                       :trailer(${:dict(${:Root(:ind-ref($[1, 0])), :Size(:int(4))})})
+                     }, 'body serialization';

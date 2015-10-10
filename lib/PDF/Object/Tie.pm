@@ -85,8 +85,10 @@ role PDF::Object::Tie {
 			($.coerce)($lval, $type)
 		    }
 		}
-		$lval.obj-num //= -1
-		    if $.is-indirect && $lval ~~ PDF::Object;
+		else {
+		    $lval.obj-num //= -1
+			if $.is-indirect && $lval ~~ PDF::Object;
+		}
 	    }
 	}
 
