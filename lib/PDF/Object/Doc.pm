@@ -14,16 +14,18 @@ class PDF::Object::Doc
     use PDF::Object::Tie;
     use PDF::Object::Type::Info;
 
-    has Int $.Size is entry;              #| 1 greater than the highest object number used in the file.
-                                          #| (Required; must be an indirect reference) The catalog dictionary for the PDF document contained in the file
-    has Hash $.Encrypt is entry;          #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
+    has Int $.Size is entry;         #| 1 greater than the highest object number used in the file.
+                                     #| (Required; must be an indirect reference) The catalog dictionary for the PDF document contained in the file
+    has Hash $.Encrypt is entry;     #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
     has PDF::Object::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary 
-    has Array $.ID is entry;              #| (Optional, but strongly recommended; PDF 1.1) An array of two byte-strings constituting a file identifier
+    has Array $.ID is entry;         #| (Optional, but strongly recommended; PDF 1.1) An array of two byte-strings constituting a file identifier
+
+    has Hash $.Root is entry( :indirect );
 
     #| open an input file
     use PDF::Storage::Input;
-    multi method open(Str $file-name where { !.isa(PDF::Storage::Input) }) { self!open($file-name) }
     multi method open(PDF::Storage::Input $input) { self!open($input) }
+    multi method open(Str $file-name) is default  { self!open($file-name) }
 
     method !open($spec) {
 	require ::('PDF::Reader');
