@@ -50,6 +50,8 @@ role PDF::Object::Type::Encrypt
 
     has Str $.U is entry;       #| (Required) A 32-byte string, based on the user password, that is used in determining whether to prompt the user for a password and, if so, whether a valid user or owner password was entered.
 
+    my enum Permissions is export(:Permissions) « :Print(3) :Modify(4) :Copy(5) :Add(6) :Fill(9) :Extract(10) :Assemble(11) :Distribute(12) »;
+
     has UInt $.P is entry;      #| (Required) A set of flags specifying which operations are permitted when the document is opened with user access
 
     has Bool $.EncryptMetadata; #| (Optional; meaningful only when the value of V is 4; PDF 1.5) Indicates whether the document-level metadata stream (see Section 10.2.2, “Metadata Streams”) is to be encrypted. Applications should respect this value.
