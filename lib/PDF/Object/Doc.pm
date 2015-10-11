@@ -3,7 +3,7 @@ use v6;
 use PDF::Object::Dict;
 use PDF::Object::Tie::Hash;
 
-#| this class represent the top level node in a PDF document,
+#| this class represents the top level node in a PDF document,
 #| the trailer dictionary
 class PDF::Object::Doc
     is PDF::Object::Dict
@@ -12,13 +12,16 @@ class PDF::Object::Doc
     use PDF::Storage::Serializer;
     use PDF::Writer;
     use PDF::Object::Tie;
-    use PDF::Object::Type::Info;
+    use PDF::Object::Type::Encrypt;
+
+    # See [PDF 1.7 TABLE 3.13 Entries in the file trailer dictionary]
 
     has Int $.Size is entry;         #| 1 greater than the highest object number used in the file.
                                      #| (Required; must be an indirect reference) The catalog dictionary for the PDF document contained in the file
-    has Hash $.Encrypt is entry;     #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
+    has PDF::Object::Type::Encrypt $.Encrypt is entry;     #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
+    use PDF::Object::Type::Info;
     has PDF::Object::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary 
-    has Str @.ID is entry;         #| (Optional, but strongly recommended; PDF 1.1) An array of two byte-strings constituting a file identifier
+    has Str @.ID is entry;           #| (Optional, but strongly recommended; PDF 1.1) An array of two byte-strings constituting a file identifier
 
     has Hash $.Root is entry( :indirect );
 

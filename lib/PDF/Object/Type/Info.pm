@@ -3,7 +3,7 @@ use v6;
 use PDF::Object::Tie;
 use PDF::Object::Tie::Hash;
 
-# AcroForm role - see PDF::DOM::Type::Catalog - /AcroForm entry
+# /Info - Trailer entry
 
 role PDF::Object::Type::Info
     does PDF::Object::Tie::Hash {

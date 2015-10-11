@@ -25,6 +25,7 @@
         "PDF::Object::Tie::Hash" : "lib/PDF/Object/Tie/Hash.pm",
 
         "PDF::Object::Type" : "lib/PDF/Object/Type.pm",
+        "PDF::Object::Type::Encrypt" : "lib/PDF/Object/Type/Encrypt.pm",
         "PDF::Object::Type::Info" : "lib/PDF/Object/Type/Info.pm",
         "PDF::Object::Type::ObjStm" : "lib/PDF/Object/Type/ObjStm.pm",
         "PDF::Object::Type::XRef" : "lib/PDF/Object/Type/XRef.pm",
