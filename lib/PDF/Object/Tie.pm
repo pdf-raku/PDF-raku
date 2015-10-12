@@ -113,7 +113,7 @@ role PDF::Object::Tie {
 	}
     }
 
-    multi trait_mod:<is>(Attribute $att is rw, :$entry!) is export(:DEFAULT) {
+    multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {
 	my $type = $att.type;
 	$att does TiedEntry;
 	my $name = $att.name;
