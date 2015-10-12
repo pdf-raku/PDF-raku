@@ -1,10 +1,9 @@
 perl6-PDF-DAO
 =============
-This module aims to provide a high level Data Access Layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>).
+This module aims to provide a high level Data Access Layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF internal structures.
 
-It's access layer is roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it
-provides the ability to define and map Perl 6 classes to PDF internal structures whilst hiding details of serialization and internal
-representations.
+It's roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it
+provides the ability to define and map Perl 6 classes to PDF internal structures whilst hiding details of serialization and internal representations.
 
 Features include:
 
@@ -42,7 +41,7 @@ class MyPDF::Catalog
     # see [PDF 1.7 TABLE 3.25 Entries in the catalog dictionary]
     use PDF::DAO::Name;
     has PDF::DAO::Name $.Version is entry;        #| (Optional; PDF 1.4) The version of the PDF specification to which the document conforms (for example, /1.4) 
-    has Hash $.Pages is entry(:required, :indirect); #| (Required; must be an indirect reference) The page tree node
+    has MyPDF::Pages $.Pages is entry(:required, :indirect); #| (Required; must be an indirect reference) The page tree node
     # ... etc
 }
 ```
