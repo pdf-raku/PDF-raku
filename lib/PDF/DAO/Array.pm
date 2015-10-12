@@ -1,14 +1,14 @@
 use v6;
 
-use PDF::Object;
-use PDF::Object::Tie::Array;
+use PDF::DAO;
+use PDF::DAO::Tie::Array;
 
-class PDF::Object::Array
-    is PDF::Object
+class PDF::DAO::Array
+    is PDF::DAO
     is Array
-    does PDF::Object::Tie::Array {
+    does PDF::DAO::Tie::Array {
 
-    use PDF::Object::Util :from-ast, :to-ast;
+    use PDF::DAO::Util :from-ast, :to-ast;
 
     our %obj-cache = (); #= to catch circular references
 
@@ -22,8 +22,8 @@ class PDF::Object::Array
         unless $obj.defined {
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
 	    $obj.tie-init;
-            # this may trigger cascading PDF::Object::Tie coercians
-            # e.g. native Array to PDF::Object::Array
+            # this may trigger cascading PDF::DAO::Tie coercians
+            # e.g. native Array to PDF::DAO::Array
             $obj[ .key ] = from-ast(.value) for $array.pairs;
             $obj.?cb-init;
         }

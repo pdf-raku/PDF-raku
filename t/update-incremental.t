@@ -3,16 +3,16 @@ use Test;
 
 use PDF::Reader;
 use PDF::Writer;
-use PDF::Object;
-use PDF::Object::Doc;
+use PDF::DAO;
+use PDF::DAO::Doc;
 use PDF::Storage::Serializer;
 use PDF::Grammar::Test :is-json-equiv;
 
-sub prefix:</>($name){ PDF::Object.coerce(:$name) };
+sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
 't/pdf/pdf.in'.IO.copy('t/pdf/pdf-updated.out');
 
-my $doc = PDF::Object::Doc.open( 't/pdf/pdf-updated.out', :a );
+my $doc = PDF::DAO::Doc.open( 't/pdf/pdf-updated.out', :a );
 my $reader = $doc.reader;
 my $root-obj = $doc<Root>;
 
@@ -20,8 +20,8 @@ my $root-obj = $doc<Root>;
     my $Pages = $root-obj<Pages>;
     my $Resources = $Pages<Kids>[0]<Resources>;
     my $MediaBox = $Pages<Kids>[0]<MediaBox>;
-    my $new-page = PDF::Object.coerce: { :Type(/'Page'), :$MediaBox, :$Resources, :Parent($Pages) };
-    my $contents = PDF::Object.coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
+    my $new-page = PDF::DAO.coerce: { :Type(/'Page'), :$MediaBox, :$Resources, :Parent($Pages) };
+    my $contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
     $new-page<Contents> = $contents;
     $Pages<Kids>.push: $new-page;
     $Pages<Count>++;
@@ -62,7 +62,7 @@ dies-ok {$reader.ind-obj( 5, 0, :!eager ),}, "defunct reader access - dies";
 # now re-read the pdf. Will also test our ability to read a PDF
 # with multiple segments
 
-my $doc2 = PDF::Object::Doc.open: 't/pdf/pdf-updated.out';
+my $doc2 = PDF::DAO::Doc.open: 't/pdf/pdf-updated.out';
 $reader = $doc2.reader;
 
 my $ast = $reader.ast( :rebuild );

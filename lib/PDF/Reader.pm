@@ -6,9 +6,9 @@ class PDF::Reader {
     use PDF::Grammar::PDF::Actions;
     use PDF::Storage::IndObj;
     use PDF::Storage::Serializer;
-    use PDF::Object;
-    use PDF::Object::Doc;
-    use PDF::Object::Util :from-ast, :to-ast;
+    use PDF::DAO;
+    use PDF::DAO::Doc;
+    use PDF::DAO::Util :from-ast, :to-ast;
     use PDF::Writer;
     use PDF::Storage::Input;
 
@@ -33,7 +33,7 @@ class PDF::Reader {
         self.ind-obj(0, 0).object;
     }
 
-    method install-trailer(PDF::Object::Dict $object = PDF::Object::Doc.new) {
+    method install-trailer(PDF::DAO::Dict $object = PDF::DAO::Doc.new) {
         my $obj-num = 0;
         my $gen-num = 0;
 
@@ -84,7 +84,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my $dict = PDF::Object.coerce( |%(.<trailer>) );
+                my $dict = PDF::DAO.coerce( |%(.<trailer>) );
                 self!set-trailer( $dict.content<dict> );
             }
        }
@@ -343,7 +343,7 @@ class PDF::Reader {
                               || &fallback() )
                     or die "unable to parse index: $xref";
                 my Hash $index = $parse.ast;
-                $dict = PDF::Object.coerce( |%($index<trailer>) );
+                $dict = PDF::DAO.coerce( |%($index<trailer>) );
                 self!set-trailer($dict);
 
                 my $prev-offset;
@@ -490,7 +490,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my $dict = PDF::Object.coerce( |%(.<trailer>) );
+                my $dict = PDF::DAO.coerce( |%(.<trailer>) );
                 self!set-trailer( $dict.content<dict> )
                     if $dict.content<dict>:exists;
             }

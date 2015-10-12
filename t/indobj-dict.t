@@ -4,8 +4,8 @@ use Test;
 plan 25;
 
 use PDF::Storage::IndObj;
-use PDF::Object::Util :to-ast;
-use PDF::Object::Dict;
+use PDF::DAO::Util :to-ast;
+use PDF::DAO::Dict;
 use PDF::Grammar::Test :is-json-equiv;
 use lib '.';
 
@@ -23,7 +23,7 @@ sub ind-obj-tests( :$ind-obj!, :$class!, :$to-json) {
 ind-obj-tests(
     :ind-obj[ 21, 0, :dict{ D => :array[ :ind-ref[216, 0], :name<XYZ>, :int(0), :int(441), :null(Any)],
                             S => :name<GoTo>}],
-    :class(PDF::Object::Dict),
+    :class(PDF::DAO::Dict),
     :to-json{ :D[ :ind-ref[216, 0], "XYZ", 0, 441, Any], :S<GoTo> },
     );
 
@@ -36,7 +36,7 @@ ind-obj-tests(
                                               Obj => :ind-ref[233, 0]},
                                ]},
     ],
-    :class(PDF::Object::Dict),
+    :class(PDF::DAO::Dict),
     :to-json{ :P{ :ind-ref[ 142, 0 ] },
               :S<Link>,
               :K[ :ind-ref[ 207, 0 ],
@@ -47,17 +47,17 @@ ind-obj-tests(
                   ] },
     );
 
-use PDF::Object::Tie;
-use PDF::Object::Tie::Hash;
-use PDF::Object::Dict;
-role KidRole does PDF::Object::Tie::Hash {method bar {42}}
-role MyPages does PDF::Object::Tie::Hash {
+use PDF::DAO::Tie;
+use PDF::DAO::Tie::Hash;
+use PDF::DAO::Dict;
+role KidRole does PDF::DAO::Tie::Hash {method bar {42}}
+role MyPages does PDF::DAO::Tie::Hash {
     multi sub coerce(Hash $h is rw, KidRole) { $h does KidRole }
     has KidRole @.Kids is entry(:required, :indirect, :&coerce );
 }
 
 class MyCat
-    is PDF::Object::Dict {
+    is PDF::DAO::Dict {
     multi sub coerce(Hash $h is rw, MyPages) {die 42; $h does MyPages }
     has MyPages $.Pages is entry(:required, :indirect);
     has Bool $.NeedsRendering is entry;
@@ -80,9 +80,9 @@ does-ok $cat.Pages.Kids[0], KidRole, 'Array Instance role';
 is $cat.Pages.Kids[0].obj-num, -1, '@ sigil entry(:indirect)';
 dies-ok {$cat.Pages.Kids[1] = 42}, 'typechecking - array elems';
 
-use PDF::Object::Doc;
+use PDF::DAO::Doc;
 use PDF::Storage::Serializer;
-my $doc = PDF::Object::Doc.new( { :Root($cat) } );
+my $doc = PDF::DAO::Doc.new( { :Root($cat) } );
 my $serializer = PDF::Storage::Serializer.new;
 my $body = $serializer.body( $doc );
 

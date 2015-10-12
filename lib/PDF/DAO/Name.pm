@@ -1,8 +1,8 @@
 use v6;
-use PDF::Object;
+use PDF::DAO;
 
-role PDF::Object::Name
-    is PDF::Object {
+role PDF::DAO::Name
+    is PDF::DAO {
 
     method content {
         :name(self~'')

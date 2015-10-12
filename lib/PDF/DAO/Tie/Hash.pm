@@ -1,8 +1,8 @@
 use v6;
 
-use PDF::Object::Tie;
+use PDF::DAO::Tie;
 
-role PDF::Object::Tie::Hash does PDF::Object::Tie {
+role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
     has Attribute %.entries is rw;
     has Bool $!composed;

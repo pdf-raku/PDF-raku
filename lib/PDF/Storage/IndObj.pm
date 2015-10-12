@@ -2,14 +2,14 @@ use v6;
 
 class PDF::Storage::IndObj {
 
-    use PDF::Object;
+    use PDF::DAO;
 
     has Int $.obj-num;
     has Int $.gen-num;
     has $.object handles <content>;
 
-    #| construct by wrapping a pre-existing PDF::Object
-    multi submethod BUILD( PDF::Object :$!object!, :$!obj-num, :$!gen-num ) {
+    #| construct by wrapping a pre-existing PDF::DAO
+    multi submethod BUILD( PDF::DAO :$!object!, :$!obj-num, :$!gen-num ) {
     }
 
     #| construct an object instance from a PDF::Grammar::PDF ast representation of
@@ -19,7 +19,7 @@ class PDF::Storage::IndObj {
         $!gen-num = $ind-obj[1];
         my $ast = $ind-obj[2];
 
-        $!object = PDF::Object.coerce( :$!obj-num, :$!gen-num, |%$ast, |c );
+        $!object = PDF::DAO.coerce( :$!obj-num, :$!gen-num, |%$ast, |c );
     }
 
     #| recreate a PDF::Grammar::PDF / PDF::Writer compatibile ast from the object

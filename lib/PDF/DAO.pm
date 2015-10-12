@@ -1,13 +1,13 @@
 use v6;
 
-class PDF::Object {
+class PDF::DAO {
 
     multi method coerce(Mu $obj is rw, Mu $type ) {
 	$.delegator.coerce( $obj, $type )
     }
 
     # coerce Hash & Array assignments to objects
-    multi method coerce(PDF::Object $val!) { $val }
+    multi method coerce(PDF::DAO $val!) { $val }
     #| to allow round-tripping from JSON
 
     multi method coerce(Hash $dict!, |c) {
@@ -33,13 +33,13 @@ class PDF::Object {
     }
 
     multi method coerce( Array :$array!, |c ) {
-        require ::("PDF::Object::Array");
-        my $fallback = ::("PDF::Object::Array");
+        require ::("PDF::DAO::Array");
+        my $fallback = ::("PDF::DAO::Array");
         $.delegate( :$array, :$fallback ).new( :$array, |c );
     }
 
     multi method coerce( Bool :$bool!) {
-        $.add-role($bool, "PDF::Object::Bool");
+        $.add-role($bool, "PDF::DAO::Bool");
     }
 
     multi method coerce( Array :$ind-ref!) {
@@ -47,37 +47,37 @@ class PDF::Object {
     }
 
     multi method coerce( Int :$int!) {
-        $.add-role($int, "PDF::Object::Int");
+        $.add-role($int, "PDF::DAO::Int");
     }
 
     multi method coerce( Numeric :$real!) {
-        $.add-role($real, "PDF::Object::Real");
+        $.add-role($real, "PDF::DAO::Real");
     }
 
     multi method coerce( Str :$hex-string!) {
-        $.add-role($hex-string, "PDF::Object::ByteString");
+        $.add-role($hex-string, "PDF::DAO::ByteString");
         $hex-string.type = 'hex-string';
         $hex-string;
     }
 
     multi method coerce( Str :$literal!) {
-        $.add-role( $literal, "PDF::Object::ByteString");
+        $.add-role( $literal, "PDF::DAO::ByteString");
         $literal.type = 'literal';
         $literal;
     }
 
     multi method coerce( Str :$name!) {
-        $.add-role($name, "PDF::Object::Name");
+        $.add-role($name, "PDF::DAO::Name");
     }
 
     multi method coerce( Any :$null!) {
-        require ::("PDF::Object::Null");
-        ::("PDF::Object::Null").new;
+        require ::("PDF::DAO::Null");
+        ::("PDF::DAO::Null").new;
     }
 
     multi method coerce( Hash :$dict!, |c ) {
-        require ::("PDF::Object::Dict");
-	my $class = ::("PDF::Object::Dict");
+        require ::("PDF::DAO::Dict");
+	my $class = ::("PDF::DAO::Dict");
 	$class = $.delegate( :$dict, :fallback($class) );
 	$class.new( :$dict, |c );
     }
@@ -89,8 +89,8 @@ class PDF::Object {
             if $stream{$_}:exists;
         }
         my Hash $dict = $stream<dict> // {};
-        require ::("PDF::Object::Stream");
-	my $class = ::("PDF::Object::Stream");
+        require ::("PDF::DAO::Stream");
+	my $class = ::("PDF::DAO::Stream");
 	$class = $.delegate( :$dict, :fallback($class) );
         $class.new( :$dict, |%params, |c );
     }
@@ -100,8 +100,8 @@ class PDF::Object {
     our $delegator;
     method delegator is rw {
 	unless $delegator.can('delegate') {
-	    require ::('PDF::Object::Delegator');
-	    $delegator = ::('PDF::Object::Delegator');
+	    require ::('PDF::DAO::Delegator');
+	    $delegator = ::('PDF::DAO::Delegator');
 	}
 	$delegator
     }

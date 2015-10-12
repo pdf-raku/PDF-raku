@@ -16,7 +16,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
 my %ast = %( $/.ast );
 my $ind-obj = PDF::Storage::IndObj.new( |%ast, :$input );
 my $xref-obj = $ind-obj.object;
-isa-ok $xref-obj, ::('PDF::Object::Type')::('XRef');
+isa-ok $xref-obj, ::('PDF::DAO::Type')::('XRef');
 is-json-equiv $xref-obj.W, [ 1, 2, 1], '$xref.new .W';
 is $xref-obj.Size, 251, '$xref.new .Size';
 is-json-equiv $xref-obj.Index, [ 214, 37], '$xref.new .Index';
@@ -52,14 +52,14 @@ my $xref-recompressed-from-stage2 = $ind-obj.object.encode-from-stage2($xref-sta
 $xref-roundtrip = $ind-obj2.object.decode-to-stage2( $xref-recompressed-from-stage2 );
 is-json-equiv $xref-stage2, $xref-roundtrip, 'encode-from-stage2/decode-from-stage1 round-trip';
 
-my $xref-new = ::('PDF::Object::Type')::('XRef').new(:decoded($expected-xref), :dict{ :Index[42, 37], :Size(37) } );
+my $xref-new = ::('PDF::DAO::Type')::('XRef').new(:decoded($expected-xref), :dict{ :Index[42, 37], :Size(37) } );
 my $xref-roundtrip2 = $xref-new.decode( $xref-new.encode );
 is-json-equiv $xref-new.W, [ 1, 2, 1], '$xref.new .W';
 is $xref-new.Size, 37, '$xref.new .Size';
 is-json-equiv $xref-new.Index, [ 42, 37], '$xref.new .Index';
 is-deeply $xref, $xref-roundtrip2, '$xref.new round-trip';
 
-my $xref-wide = PDF::Object.coerce( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>) }, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]]} );
+my $xref-wide = PDF::DAO.coerce( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>) }, :decoded[[1, 16, 0], [1, 1 +< 16 , 1 +< 8]]} );
 dies-ok {$xref-wide.encode}, 'encode incomplete setup';
 $xref-wide.first-obj-num = 42;
 $xref-wide<Size> = 2;

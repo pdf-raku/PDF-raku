@@ -1,9 +1,9 @@
 use v6;
 
-use PDF::Object;
+use PDF::DAO;
 
-class PDF::Object::DateString
-    is PDF::Object
+class PDF::DAO::DateString
+    is PDF::DAO
     is DateTime {
 
 =begin pod
@@ -29,7 +29,7 @@ The apostrophe character (') after HH and mm is part of the syntax. All fields a
 
 =end pod
 
-    use PDF::Object::Util :date-time-formatter;
+    use PDF::DAO::Util :date-time-formatter;
     BEGIN our &formatter = &date-time-formatter;
 
     multi method new(Str $pdf-date!) {

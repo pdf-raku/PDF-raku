@@ -1,8 +1,8 @@
 use v6;
-use PDF::Object;
+use PDF::DAO;
 
-role PDF::Object::Int
-    is PDF::Object {
+role PDF::DAO::Int
+    is PDF::DAO {
 
     method flag-is-set(UInt $flag-num) returns Bool {
 	my Int $i = self;

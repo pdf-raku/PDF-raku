@@ -4,9 +4,9 @@ use Test;
 use PDF::Reader;
 use PDF::Writer;
 use PDF::Storage::Serializer;
-use PDF::Object;
+use PDF::DAO;
 
-sub prefix:</>($name){ PDF::Object.coerce(:$name) };
+sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
 my $reader = PDF::Reader.new();
 isa-ok $reader, PDF::Reader;
@@ -38,7 +38,7 @@ is-deeply $Pages.reader, $reader, 'root has deref - stickyness';
 
 my $Kids = $Pages<Kids>;
 isa-ok $Kids, Array;
-isa-ok $Kids, PDF::Object::Array;
+isa-ok $Kids, PDF::DAO::Array;
 is-deeply $Kids.reader, $reader, 'hash -> array deref - reader stickyness';
 my $kid := $Kids[0];
 is-deeply $kid.reader, $reader, 'array -> hash deref - reader stickyness';
@@ -60,8 +60,8 @@ ET
 
 lives-ok {
     my $Resources = $Pages<Kids>[0]<Resources>;
-    my $new-page = PDF::Object.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
-    my $contents = PDF::Object.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );
+    my $new-page = PDF::DAO.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
+    my $contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );
     $new-page<Contents> = $contents;
     $new-page<Parent> = $Pages;
     $Pages<Kids>.push: $new-page;
@@ -73,7 +73,7 @@ is $contents.Length, 41, '$stream<Length> is tied to $stream.Length';
 $contents<Length>:delete;
 ok !$contents.Length.defined, '$stream<Length>:delete propagates to $stream.Length';
 
-my $Root = PDF::Object.coerce: { :Type(/'Catalog') };
+my $Root = PDF::DAO.coerce: { :Type(/'Catalog') };
 $Root<Outlines> = $root-obj<Outlines>;
 $Root<Pages> = $root-obj<Pages>;
 

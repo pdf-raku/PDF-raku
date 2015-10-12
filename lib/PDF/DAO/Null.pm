@@ -1,8 +1,8 @@
 use v6;
-use PDF::Object;
+use PDF::DAO;
 
-class PDF::Object::Null
-    is PDF::Object
+class PDF::DAO::Null
+    is PDF::DAO
     is Any {
     method defined { False }
     method content { :null(Any) };

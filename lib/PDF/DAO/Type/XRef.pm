@@ -1,16 +1,16 @@
 use v6;
 
-use PDF::Object;
-use PDF::Object::Stream;
+use PDF::DAO;
+use PDF::DAO::Stream;
 
 # /Type /XRef - cross reference stream
 # introduced with PDF 1.5
 # see [PDF 1.7 Section 3.4.7 Cross-Reference Streams]
-our class PDF::Object::Type::XRef
-    is PDF::Object::Stream {
+our class PDF::DAO::Type::XRef
+    is PDF::DAO::Stream {
 
     use PDF::Storage::Util :resample;
-    use PDF::Object::Tie;
+    use PDF::DAO::Tie;
 
 #| See [PDF 1.7 TABLE 3.15 Additional entries specific to a cross-reference stream dictionary]
     has Int $.Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
@@ -27,7 +27,7 @@ our class PDF::Object::Type::XRef
     method next-obj-num is rw { self<Size> }
 
     method cb-init {
-	self<Type> = PDF::Object.coerce( :name<XRef> );
+	self<Type> = PDF::DAO.coerce( :name<XRef> );
         self<W> //= [ 1, 2, 1 ];
         self<Size> //= 0;
     }

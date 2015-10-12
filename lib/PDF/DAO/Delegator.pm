@@ -1,39 +1,39 @@
 use v6;
 
-class PDF::Object::Delegator {
+class PDF::DAO::Delegator {
 
-    use PDF::Object;
-    use PDF::Object::Util :from-ast;
+    use PDF::DAO;
+    use PDF::DAO::Util :from-ast;
 
-    use PDF::Object::Array;
-    use PDF::Object::Tie::Array;
+    use PDF::DAO::Array;
+    use PDF::DAO::Tie::Array;
 
-    use PDF::Object::Dict;
-    use PDF::Object::Tie::Hash;
+    use PDF::DAO::Dict;
+    use PDF::DAO::Tie::Hash;
 
     multi method coerce( $obj, $role where {$obj ~~ $role}) {
 	# already does it
 	$obj
     }
 
-    multi method coerce( PDF::Object::Dict $obj, PDF::Object::Tie::Hash $role) {
+    multi method coerce( PDF::DAO::Dict $obj, PDF::DAO::Tie::Hash $role) {
 	$obj does $role; $obj.?tie-init;
     }
 
-    multi method coerce( PDF::Object::Array $obj, PDF::Object::Tie::Array $role) {
+    multi method coerce( PDF::DAO::Array $obj, PDF::DAO::Tie::Array $role) {
 	$obj does $role; $obj.?tie-init;
     }
 
     # adds the DateTime 'object' rw accessor
-    use PDF::Object::DateString;
-    multi method coerce( Str $obj is rw, PDF::Object::DateString $class, |c) {
+    use PDF::DAO::DateString;
+    multi method coerce( Str $obj is rw, PDF::DAO::DateString $class, |c) {
 	$obj = $class.new( $obj, |c );
     }
-    multi method coerce( DateTime $obj is rw, DateTime $class where PDF::Object, |c) {
+    multi method coerce( DateTime $obj is rw, DateTime $class where PDF::DAO, |c) {
 	$obj = $class.new( $obj, |c );
     }
-    use PDF::Object::TextString;
-    multi method coerce( Str $obj is rw, PDF::Object::TextString $class, |c) {
+    use PDF::DAO::TextString;
+    multi method coerce( Str $obj is rw, PDF::DAO::TextString $class, |c) {
 	$obj = $class.new( :value($obj), |c );
     }
 
@@ -41,7 +41,7 @@ class PDF::Object::Delegator {
 	warn "unable to coerce object $obj of type {$obj.WHAT.gist} to role {$role.WHAT.gist}"
     }
 
-    method class-paths { <PDF::Object::Type> }
+    method class-paths { <PDF::DAO::Type> }
 
     our %handler;
     method handler {%handler}

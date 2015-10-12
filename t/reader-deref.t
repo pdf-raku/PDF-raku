@@ -3,9 +3,9 @@ use Test;
 
 use PDF::Reader;
 use PDF::Writer;
-use PDF::Object;
+use PDF::DAO;
 
-sub prefix:</>($name){ PDF::Object.coerce(:$name) };
+sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
 my $reader = PDF::Reader.new(:debug);
 

@@ -1,8 +1,8 @@
 use v6;
 
-use PDF::Object;
+use PDF::DAO;
 
-role PDF::Object::Tie {
+role PDF::DAO::Tie {
 
     has $.reader is rw;
     has Int $.obj-num is rw;
@@ -51,7 +51,7 @@ role PDF::Object::Tie {
 	has Bool $.is-inherited is rw = False;
 	has Str $.accessor-name is rw;
 	has Bool $.gen-accessor is rw;
-	has Code $.coerce is rw = sub ($lval is rw, Mu:U $type) { PDF::Object.coerce($lval, $type) };
+	has Code $.coerce is rw = sub ($lval is rw, Mu:U $type) { PDF::DAO.coerce($lval, $type) };
         has Str @.aliases is rw;
 
 	method apply($lval is rw) {
@@ -87,7 +87,7 @@ role PDF::Object::Tie {
 		}
 		else {
 		    $lval.obj-num //= -1
-			if $.is-indirect && $lval ~~ PDF::Object;
+			if $.is-indirect && $lval ~~ PDF::DAO;
 		}
 	    }
 	}
@@ -150,7 +150,7 @@ role PDF::Object::Tie {
     }
 
     method lvalue($_) is rw {
-        when PDF::Object  { $_ }
+        when PDF::DAO  { $_ }
         when Hash | Array | DateTime { $.coerce($_, :$.reader) }
         default           { $_ }
     }
@@ -163,7 +163,7 @@ role PDF::Object::Tie {
         $.reader.ind-obj( $obj-num, $gen-num ).object;
     }
     #| already an object
-    multi method deref(PDF::Object $value) { $value }
+    multi method deref(PDF::DAO $value) { $value }
 
     #| coerce and save hash entry
     multi method deref($value where Hash | Array , :$key!) {

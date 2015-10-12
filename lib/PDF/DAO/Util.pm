@@ -1,12 +1,12 @@
 use v6;
 
-module PDF::Object::Util {
+module PDF::DAO::Util {
 
-    use PDF::Object;
+    use PDF::DAO;
 
     proto sub to-ast(|) is export(:to-ast) {*};
     multi sub to-ast(Pair $p!) {$p}
-    multi sub to-ast(PDF::Object $object!) {$object.content}
+    multi sub to-ast(PDF::DAO $object!) {$object.content}
     multi sub to-ast($other!) is default {
         to-ast-native $other
     }
@@ -82,7 +82,7 @@ module PDF::Object::Util {
 
     multi sub from-ast( Str :$encoded! ) { $encoded }
 
-    multi sub from-ast( Str :$hex-string! ) { PDF::Object.coerce( :$hex-string ) }
+    multi sub from-ast( Str :$hex-string! ) { PDF::DAO.coerce( :$hex-string ) }
 
     multi sub from-ast( Array :$ind-ref! ) {
         :$ind-ref;
@@ -94,17 +94,17 @@ module PDF::Object::Util {
     }
 
     multi sub from-ast( Numeric :$int! ) {
-        PDF::Object.coerce :$int;
+        PDF::DAO.coerce :$int;
     }
 
     multi sub from-ast( Str :$literal! ) { $literal }
 
     multi sub from-ast( Str :$name! ) {
-        PDF::Object.coerce :$name;
+        PDF::DAO.coerce :$name;
     }
 
     multi sub from-ast( Numeric :$real! ) {
-        PDF::Object.coerce :$real;
+        PDF::DAO.coerce :$real;
     }
 
     multi sub from-ast( Hash :$stream! ) {

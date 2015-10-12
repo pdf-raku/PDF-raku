@@ -1,9 +1,9 @@
 use v6;
 
-use PDF::Object;
+use PDF::DAO;
 
-class PDF::Object::TextString
-    is PDF::Object
+class PDF::DAO::TextString
+    is PDF::DAO
     is Str {
 
 =begin pod

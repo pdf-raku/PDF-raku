@@ -1,19 +1,19 @@
 use v6;
 
-use PDF::Object;
-use PDF::Object::Type;
-use PDF::Object::Tie::Hash;
+use PDF::DAO;
+use PDF::DAO::Type;
+use PDF::DAO::Tie::Hash;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
-class PDF::Object::Stream
-    is PDF::Object
+class PDF::DAO::Stream
+    is PDF::DAO
     is Hash
-    does PDF::Object::Type 
-    does PDF::Object::Tie::Hash {
+    does PDF::DAO::Type 
+    does PDF::DAO::Tie::Hash {
 
-    use PDF::Object::Tie;
+    use PDF::DAO::Tie;
     use PDF::Storage::Filter;
-    use PDF::Object::Util :from-ast, :to-ast-native;
+    use PDF::DAO::Util :from-ast, :to-ast-native;
 
     has $!encoded;
     has $!decoded;
@@ -47,7 +47,7 @@ class PDF::Object::Stream
         unless $obj.defined {
             temp %obj-cache{$id} = $obj = self.bless(|%etc);
 	    $obj.tie-init;
-            # this may trigger cascading PDF::Object::Tie coercians
+            # this may trigger cascading PDF::DAO::Tie coercians
             $obj{.key} = from-ast(.value) for $dict.pairs;
             $obj.?cb-init;
 
@@ -153,8 +153,8 @@ class PDF::Object::Stream
         unless self<Filter>:exists {
             $!decoded //= $!encoded;
             $!encoded = Nil;
-            require PDF::Object;
-            self<Filter> = PDF::Object.coerce( :name<FlateDecode> );
+            require PDF::DAO;
+            self<Filter> = PDF::DAO.coerce( :name<FlateDecode> );
             self<Length>:delete;        # recompute this later
         }
     }

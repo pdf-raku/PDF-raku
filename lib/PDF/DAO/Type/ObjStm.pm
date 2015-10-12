@@ -1,27 +1,27 @@
 use v6;
 
-use PDF::Object;
-use PDF::Object::Stream;
+use PDF::DAO;
+use PDF::DAO::Stream;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
 # See [PDF 1.7 Section 3.4.6 Object Streams]
-class PDF::Object::Type::ObjStm
-    is PDF::Object::Stream {
+class PDF::DAO::Type::ObjStm
+    is PDF::DAO::Stream {
 
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
-    use PDF::Object::Tie;
+    use PDF::DAO::Tie;
 
     # see [PDF 1.7 TABLE 3.14 Additional entries specific to an object stream dictionary]
     has Int $.N is entry(:required);             #| (Required) The number of compressed objects in the stream.
     has Int $.First is entry(:required);         #| (Required) The byte offset (in the decoded stream) of the first compressed object.
-    has PDF::Object::Stream $.Extends is entry;  #| (Optional) A reference to an object stream, of which the current object stream is considered an extension
+    has PDF::DAO::Stream $.Extends is entry;  #| (Optional) A reference to an object stream, of which the current object stream is considered an extension
 
     method cb-init {
 	self.N //= 0;
 	self.First //= 0;
-        self.Type //= PDF::Object.coerce( :name<ObjStm> );
+        self.Type //= PDF::DAO.coerce( :name<ObjStm> );
     }
 
     method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {

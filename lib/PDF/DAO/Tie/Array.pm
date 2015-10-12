@@ -1,8 +1,8 @@
 use v6;
 
-use PDF::Object::Tie;
+use PDF::DAO::Tie;
 
-role PDF::Object::Tie::Array does PDF::Object::Tie {
+role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 
     has Attribute @.index is rw;    #| for typed indices
     has Attribute $.positional is rw;      #| default attribute

@@ -2,11 +2,11 @@ use v6;
 
 class PDF::Storage::Serializer {
 
-    use PDF::Object;
-    use PDF::Object::Array;
-    use PDF::Object::Dict;
-    use PDF::Object::Stream;
-    use PDF::Object::Util :to-ast;
+    use PDF::DAO;
+    use PDF::DAO::Array;
+    use PDF::DAO::Dict;
+    use PDF::DAO::Stream;
+    use PDF::DAO::Util :to-ast;
     use PDF::Writer;
 
     has Int $.size is rw = 1;  # first free object number
@@ -15,13 +15,13 @@ class PDF::Storage::Serializer {
     has %.ref-count;
     has Bool $.renumber is rw = True;
 
-    #| Reference count hashes. Could be derivate class of PDF::Object::Dict or PDF::Object::Stream.
+    #| Reference count hashes. Could be derivate class of PDF::DAO::Dict or PDF::DAO::Stream.
     multi method analyse( Hash $dict! is rw) {
         return if %!ref-count{$dict.WHICH}++; # already encountered
         $.analyse($dict{$_}) for $dict.keys.sort;
     }
 
-    #| Reference count arrays. Could be derivate class of PDF::Object::Array
+    #| Reference count arrays. Could be derivate class of PDF::DAO::Array
     multi method analyse( Array $array! is rw ) {
         return if %!ref-count{$array.WHICH}++; # already encountered
         $.analyse($array[$_]) for $array.keys;
@@ -41,12 +41,12 @@ class PDF::Storage::Serializer {
     }
 
     #| rebuilds the body
-    multi method body( PDF::Object :$Root!, |c) {
-	$.body( PDF::Object.coerce({ :$Root }), |c);
+    multi method body( PDF::DAO :$Root!, |c) {
+	$.body( PDF::DAO.coerce({ :$Root }), |c);
     }
 
     #| rebuild document body from root
-    multi method body( PDF::Object $trailer!, Bool:_ :$*compress) {
+    multi method body( PDF::DAO $trailer!, Bool:_ :$*compress) {
 
 	temp $trailer.obj-num = 0;
 	temp $trailer.gen-num = 0;
@@ -163,7 +163,7 @@ class PDF::Storage::Serializer {
     multi method is-indirect($ --> Bool) {*}
 
     #| streams always need to be indirect objects
-    multi method is-indirect(PDF::Object::Stream $object)                 {True}
+    multi method is-indirect(PDF::DAO::Stream $object)                 {True}
 
     #| avoid duplication of multiply referenced objects
     multi method is-indirect($, :$id! where {%!ref-count{$id} > 1})       {True}
@@ -184,7 +184,7 @@ class PDF::Storage::Serializer {
     #|   generating or reusing the object-number in the process.
     proto method freeze(|) {*}
 
-    #| handles PDF::Object::Dict, PDF::Object::Stream, (plain) Hash
+    #| handles PDF::DAO::Dict, PDF::DAO::Stream, (plain) Hash
     multi method freeze( Hash $object! is rw, Bool :$indirect) {
         my $id = ~$object.WHICH;
 
@@ -192,7 +192,7 @@ class PDF::Storage::Serializer {
         return self!get-ind-ref(:$id )
             if %!obj-num-idx{$id}:exists;
 
-        my Bool $is-stream = $object.isa(PDF::Object::Stream);
+        my Bool $is-stream = $object.isa(PDF::DAO::Stream);
 
         if $is-stream && $*compress.defined {
             $*compress ?? $object.compress !! $object.uncompress;
@@ -223,7 +223,7 @@ class PDF::Storage::Serializer {
         $ret;
     }
 
-    #| handles PDF::Object::Array, (plain) Array
+    #| handles PDF::DAO::Array, (plain) Array
     multi method freeze( Array $object! is rw, Bool :$indirect ) {
         my $id = ~$object.WHICH;
 
@@ -251,7 +251,7 @@ class PDF::Storage::Serializer {
 
     #| do a full save to the named file
     multi method save-as(Str $file-name!,
-			 PDF::Object $trailer-dict!,
+			 PDF::DAO $trailer-dict!,
                          Numeric :$version=1.3,
                          Str :$type='PDF',     #| e.g. 'PDF', 'FDF;
                          Bool :$compress,

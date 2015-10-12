@@ -2,13 +2,13 @@ use v6;
 use Test;
 
 use PDF::Storage::Serializer;
-use PDF::Object::Util :to-ast;
+use PDF::DAO::Util :to-ast;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Writer;
 
 sub prefix:</>($name){
-    use PDF::Object;
-    PDF::Object.coerce(:$name)
+    use PDF::DAO;
+    PDF::DAO.coerce(:$name)
 };
 
 # construct a nasty cyclic structure
@@ -17,7 +17,7 @@ my $dict2 = { :ID(2) };
 # create circular hash ref
 $dict2<SelfRef> := $dict2;
 
-my $Root = PDF::Object.coerce: [ $dict1, $dict2 ];
+my $Root = PDF::DAO.coerce: [ $dict1, $dict2 ];
 # create circular array reference
 $Root[2] := $Root;
 
@@ -36,7 +36,7 @@ is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => 
 
 is-deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], ID => :int(2)}]), "circular hash ref resolution";
 
-$Root = PDF::Object.coerce: {
+$Root = PDF::DAO.coerce: {
     :Type(/'Catalog'),
     :Pages{
             :Type(/'Pages'),
@@ -49,7 +49,7 @@ $Root = PDF::Object.coerce: {
                                  },
                                  :Procset[ /'PDF',  /'Text' ],
                      },
-                     :Contents( PDF::Object.coerce( :stream{ :encoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET") } ) ),
+                     :Contents( PDF::DAO.coerce( :stream{ :encoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET") } ) ),
                    },
                 ],
             :Count(1),
@@ -90,7 +90,7 @@ is-json-equiv $objects[3], (:ind-obj[4, 0, :dict{
                                                },
                                    ]), 'page object';
 
-my $obj-with-utf8 = PDF::Object.coerce: { :Name(/"Heydər Əliyev") };
+my $obj-with-utf8 = PDF::DAO.coerce: { :Name(/"Heydər Əliyev") };
 $obj-with-utf8.obj-num = -1;
 my $writer = PDF::Writer.new;
 
@@ -104,7 +104,7 @@ is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'com
 is $stream<encoded>.chars, 54, 'compressed stream length';
 
 # just to define current behaviour. blows up during final write.
-my $obj-with-bad-byte-string = PDF::Object.coerce: { :Name("Heydər Əliyev") };
+my $obj-with-bad-byte-string = PDF::DAO.coerce: { :Name("Heydər Əliyev") };
 $objects = PDF::Storage::Serializer.new.body(:Root($obj-with-bad-byte-string))<objects>;
 dies-ok {$writer.write( :ind-obj($objects[0].value) )}, 'out-of-range byte-string dies during write';
 
