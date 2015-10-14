@@ -25,12 +25,12 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	Proxy.new(
 	    FETCH => method {
 		my $val = $object[$idx];
-		$att.apply($val);
+		$val = $att.apply($val);
 		type-check($val, $att.tied.type);
 	    },
 	    STORE => method ($val is copy) {
 		my $lval = $object.lvalue($val);
-		$att.apply($lval);
+		$lval = $att.apply($lval);
 		$object[$idx] := type-check($lval, $att.tied.type);
 	    });
     }
@@ -77,7 +77,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	    if $val ~~ Pair | Array | Hash;
 
 	my $att = $.index[$pos] // $.positional;
-	$att.apply($val)
+	$val := $att.apply($val)
 	    if $att.defined;
 
 	$val;
@@ -88,7 +88,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	my $lval = $.lvalue($val);
 
 	my $att = $.index[$pos] // $.positional;
-	$att.apply($lval)
+	$lval = $att.apply($lval)
 	    if $att.defined;
 
 	nextwith($pos, $lval )

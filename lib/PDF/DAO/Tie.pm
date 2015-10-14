@@ -54,7 +54,7 @@ role PDF::DAO::Tie {
 	has Code $.coerce is rw = sub ($lval is rw, Mu:U $type) { PDF::DAO.coerce($lval, $type) };
         has Str @.aliases is rw;
 
-	method apply($lval is rw) {
+	method apply($lval is copy) {
 	    my $type = $.type;
 	    unless $lval.isa(Pair) {
 		if $lval.defined && ! ($lval ~~ $type) {
@@ -94,6 +94,7 @@ role PDF::DAO::Tie {
 			if $.is-indirect && $lval ~~ PDF::DAO;
 		}
 	    }
+	    $lval;
 	}
 
     }

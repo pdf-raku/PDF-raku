@@ -28,8 +28,10 @@ our class PDF::DAO::Type::XRef
 
     method cb-init {
 	self<Type> = PDF::DAO.coerce( :name<XRef> );
-        self<W> //= [ 1, 2, 1 ];
-        self<Size> //= 0;
+        self<W> = [ 1, 2, 1 ]
+	    unless self<W>:exists;
+        self<Size> = 0
+	    unless self<Size>:exists;
     }
 
     method encode(Array $xref = $.decoded --> Str) {

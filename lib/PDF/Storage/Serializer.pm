@@ -16,26 +16,25 @@ class PDF::Storage::Serializer {
     has Bool $.renumber is rw = True;
 
     #| Reference count hashes. Could be derivate class of PDF::DAO::Dict or PDF::DAO::Stream.
-    multi method analyse( Hash $dict! is rw) {
+    multi method analyse( Hash $dict!) {
         return if %!ref-count{$dict.WHICH}++; # already encountered
         $.analyse($dict{$_}) for $dict.keys.sort;
     }
 
     #| Reference count arrays. Could be derivate class of PDF::DAO::Array
-    multi method analyse( Array $array! is rw ) {
+    multi method analyse( Array $array!) {
         return if %!ref-count{$array.WHICH}++; # already encountered
         $.analyse($array[$_]) for $array.keys;
     }
 
     #| we don't reference count anything else at the moment.
-    multi method analyse( $other! is rw ) is default {
+    multi method analyse( $other! ) is default {
     }
 
-    method !get-trailer(@objects is rw) {
+    method !get-trailer(@objects) {
 	my subset TrailerIndObj of Pair where {.key eq 'ind-obj'
 					       && .value[2] ~~ Pair
 					       && .value[2].key eq 'dict'}
-
 	my TrailerIndObj $trailer-ind-obj = @objects.shift; # first object is trailer dict
 	$trailer-ind-obj.value[2]<dict>.list;
     }

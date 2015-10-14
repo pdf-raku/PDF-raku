@@ -10,8 +10,8 @@ module PDF::Storage::Util {
     multi sub resample( $nums!, 8, 32) { flat $nums.list.map: -> $b1, $b2, $b3, $b4 { $b1 +< 24  +  $b2 +< 16  +  $b3 +< 8  +  $b4 } }
     multi sub resample( $nums!, 16, 8) { flat $nums.list.map: { ($_ +> 8, $_ +& 255) } }
     multi sub resample( $nums!, 32, 8) { flat $nums.list.map: { ($_ +> 24, $_ +> 16 +& 255, $_ +> 8 +& 255, $_ +& 255) } }
-    multi sub resample( $nums!, $n!, $m where $_ == $n) { $nums }
-    multi sub resample( $nums!, $n!, $m!) is default {
+    multi sub resample( $nums!, UInt $n!, UInt $m where $_ == $n) { $nums }
+    multi sub resample( $nums!, UInt $n!, UInt $m!) is default {
         warn "unoptimised $n => $m bit sampling";
         flat gather {
             my Int $m0 = 1;
@@ -57,23 +57,25 @@ module PDF::Storage::Util {
                 }
                 $s;
             }
-            @samples.push: @sample.item;
+            @samples.push: @sample;
         }
-        @samples;
+	@samples;
     }
 
     multi sub resample( $num-sets, Array $W!, 8)  {
-        flat $num-sets.list.map: -> Array $nums {
+	my @sample;
+         for $num-sets.list -> Array $nums {
             my Int $i = 0;
-            $nums.list.map: -> Int $num is copy {
+            for $nums.list -> Int $num is copy {
                 my @bytes;
                 for 1 .. $W[$i++] {
                     @bytes.unshift: $num +& 255;
                     $num div= 256;
                 }
-                @bytes;
+                @sample.append: @bytes;
             }
         }
+	flat @sample;
     }
 
 }

@@ -29,7 +29,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	    $val
 	}
 	#| type attribute
-	multi sub type-check($val is rw, $type) is rw is default {
+	multi sub type-check($val, $type) is rw is default {
 	    if !$val.defined {
 	      die "{$object.WHAT.^name}: missing required field: $key"
 		  if $att.tied.is-required;
@@ -62,7 +62,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	    },
 	    STORE => method ($val is copy) {
 		my $lval = $object.lvalue($val);
-		$att.apply($lval);
+		$lval = $att.apply($lval);
 		$object{$key} := type-check($lval, $att.tied.type);
 	    });
     }
@@ -106,7 +106,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	    if $val ~~ Pair | Array | Hash;
 
 	my $att = $.entries{$key};
-	$att.apply($val)
+	$val := $att.apply($val)
 	    if $att.defined;
 
 	$val;
@@ -117,7 +117,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	my $lval = $.lvalue($val);
 
 	my $att = $.entries{$key};
-	$att.apply($lval)
+	$lval = $att.apply($lval)
 	    if $att.defined;
 
 	nextwith($key, $lval )
