@@ -59,6 +59,8 @@ role PDF::DAO::Tie {
 	    unless $lval.isa(Pair) {
 		if $lval.defined && ! ($lval ~~ $type) {
 
+		    my $reader = $lval.?reader;
+
 		    if $type ~~ Positional[Mu] && $lval ~~ Array {
 			# positional array declaration, e.g.:
 			# has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
@@ -77,12 +79,14 @@ role PDF::DAO::Tie {
 			}
 			
 			for $lval.list {
-			    ($att.tied.coerce)($_, $att.tied.type)
-				unless $_ ~~ Pair | $att.tied.type;
+			    next if $_ ~~ Pair | $att.tied.type;
+			    ($att.tied.coerce)($_, $att.tied.type);
+			     .reader //= $reader if $reader && .can('reader');
 			}
 		    }
 		    else {
-			($.coerce)($lval, $type)
+			($.coerce)($lval, $type);
+			$lval.reader //= $reader if $reader;
 		    }
 		}
 		else {

@@ -70,9 +70,9 @@ class PDF::DAO {
         $.add-role($name, "PDF::DAO::Name");
     }
 
-    multi method coerce( Any :$null!) {
+    multi method coerce( Any :$null!, |c) {
         require ::("PDF::DAO::Null");
-        ::("PDF::DAO::Null").new;
+        ::("PDF::DAO::Null").new( |c );
     }
 
     multi method coerce( Hash :$dict!, |c ) {

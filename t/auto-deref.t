@@ -67,8 +67,12 @@ lives-ok {$obj<Kids>[1]<Parent> = $obj}, 'circular assignment - lives';
 my $parent;
 lives-ok { $parent = $obj<Kids>[1]<Parent>}, 'circular deref - lives';
 is ~$parent.WHICH, ~$obj.WHICH, 'assign/deref - graphical integrity';
+
+is-json-equiv $obj<Kids>.raw[2], (:ind-ref[99, 0]), 'existing array entry - raw';
+is-json-equiv $obj<Kids>[2], {Desc => "indirect object: 99 0 R", :Name<Test>}, 'existing ind-ref array entry - deref';
+
 $obj<Kids>.push( (:ind-ref[123,0]) );
-is-json-equiv $obj<Kids>[3], {Desc => "indirect object: 123 0 R", :Name<Test>}, 'new array entry - deref';
+is-json-equiv $obj<Kids>[3], {Desc => "indirect object: 123 0 R", :Name<Test>}, 'new ind-ref array entry - deref';
 is-json-equiv $obj<Kids>.raw[3], (:ind-ref[123, 0]), 'new array entry - raw';
 lives-ok {$obj<Y><Z> = 'foo'}, 'vivification - lives';
 is $obj<Y><Z>, 'foo', 'vivification - value';
