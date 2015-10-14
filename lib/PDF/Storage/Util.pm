@@ -57,7 +57,7 @@ module PDF::Storage::Util {
                 }
                 $s;
             }
-            @samples.push: @sample;
+            @samples.push: @sample.item;
         }
 	@samples;
     }
@@ -72,7 +72,7 @@ module PDF::Storage::Util {
                     @bytes.unshift: $num +& 255;
                     $num div= 256;
                 }
-                @sample.append: @bytes;
+                @sample.push: flat @bytes;
             }
         }
 	flat @sample;

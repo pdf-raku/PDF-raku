@@ -197,7 +197,7 @@ role PDF::Storage::Filter::Predictors {
             }
 
             @up = @out;
-            @output.append: @out;
+            @output.push: flat @out;
         }
         return buf8.new: @output;
     }
