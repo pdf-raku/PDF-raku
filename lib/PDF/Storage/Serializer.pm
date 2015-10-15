@@ -58,7 +58,7 @@ class PDF::Storage::Serializer {
 
         %dict<Size> = :int($.size);
 
-        %( :@objects, :trailer{ :%dict } );
+        my %body = :@objects, :trailer{ :%dict };
     }
 
     #| prepare a set of objects for an incremental update. Only return indirect objects:
@@ -144,14 +144,14 @@ class PDF::Storage::Serializer {
         :$ind-ref;
     }
 
-    method !freeze-dict( Hash $dict is rw) {
+    method !freeze-dict( Hash $dict) {
         my %frozen;
         %frozen{$_} = $.freeze( $dict{$_} )
             for $dict.keys.sort;
         %frozen;
     }
 
-    method !freeze-array( Array $array is rw) {
+    method !freeze-array( Array $array) {
         my @frozen;
         @frozen.push( $.freeze( $array[$_] ) )
             for $array.keys;
@@ -184,12 +184,14 @@ class PDF::Storage::Serializer {
     proto method freeze(|) {*}
 
     #| handles PDF::DAO::Dict, PDF::DAO::Stream, (plain) Hash
-    multi method freeze( Hash $object! is rw, Bool :$indirect) {
+    multi method freeze( Hash $object!, Bool :$indirect) {
         my $id = ~$object.WHICH;
 
         # already an indirect object
-        return self!get-ind-ref(:$id )
-            if %!obj-num-idx{$id}:exists;
+	if %!obj-num-idx{$id}:exists {
+	    my $ind-ref = self!get-ind-ref( :$id );
+	    return $ind-ref;
+	}
 
         my Bool $is-stream = $object.isa(PDF::DAO::Stream);
 
@@ -199,16 +201,17 @@ class PDF::Storage::Serializer {
 
         my $ind-obj;
         my $slot;
+	my $dict;
 
         if $is-stream {
             $ind-obj = :stream{
-                :dict(Mu),
+                :$dict,
                 :encoded($object.encoded),
             };
             $slot := $ind-obj.value<dict>;
         }
         else {
-            $ind-obj = dict => Mu;
+            $ind-obj = :$dict;
             $slot := $ind-obj.value;
         }
 
@@ -223,14 +226,18 @@ class PDF::Storage::Serializer {
     }
 
     #| handles PDF::DAO::Array, (plain) Array
-    multi method freeze( Array $object! is rw, Bool :$indirect ) {
+    multi method freeze( Array $object!, Bool :$indirect ) {
         my $id = ~$object.WHICH;
 
         # already an indirect object
-        return self!get-ind-ref( :$id )
-            if %!obj-num-idx{$id}:exists;
+	if %!obj-num-idx{$id}:exists {
+	    my $ind-ref = self!get-ind-ref( :$id );
+	    return $ind-ref;
+	}
 
-        my $ind-obj = array => Mu;
+	my $array;
+
+        my $ind-obj = :$array;
         my $slot := $ind-obj.value;
 
         # register prior to traversing the object. in case there are cyclical references
@@ -244,8 +251,8 @@ class PDF::Storage::Serializer {
     }
 
     #| handles other basic types
-    multi method freeze($other) {
-        to-ast $other;
+    multi method freeze($other) is default {
+	to-ast $other
     }
 
     #| do a full save to the named file

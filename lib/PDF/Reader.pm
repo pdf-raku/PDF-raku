@@ -230,7 +230,8 @@ class PDF::Reader {
             $idx<ind-obj> = $ind-obj;
         }
         elsif ! $is-ind-obj  {
-            $ind-obj = :$ind-obj
+            # immediate return to work around rakudo RT#126369
+            return :$ind-obj;
         }
 
         $ind-obj;
@@ -583,7 +584,7 @@ class PDF::Reader {
                     next if $obj-type<name> eq 'XRef' | 'ObjStm';
                 }
 
-                $offset ||= 0;
+                $offset //= 0;
                 @object-refs.push( ($offset + $seq) => $ast );
             }
         }
