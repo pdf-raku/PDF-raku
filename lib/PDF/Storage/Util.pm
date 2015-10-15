@@ -72,7 +72,7 @@ module PDF::Storage::Util {
                     @bytes.unshift: $num +& 255;
                     $num div= 256;
                 }
-                @sample.push: flat @bytes;
+                @sample.append: @bytes;
             }
         }
 	flat @sample;

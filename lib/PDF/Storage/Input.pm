@@ -17,12 +17,12 @@ class PDF::Storage::Input {
 
     multi method coerce( IO::Handle $value! ) {
         require ::('PDF::Storage::Input::IOH');
-        return ::('PDF::Storage::Input::IOH').new( :$value );
+        ::('PDF::Storage::Input::IOH').bless( :$value );
     }
 
     multi method coerce( Str $value! where { !.isa(PDF::Storage::Input) }) {
         require ::('PDF::Storage::Input::Str');
-        return ::('PDF::Storage::Input::Str').new( :$value );
+        ::('PDF::Storage::Input::Str').bless( :$value );
     }
 
     multi method stream-data( Array :$ind-obj! ) {

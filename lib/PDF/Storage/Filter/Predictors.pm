@@ -111,7 +111,7 @@ role PDF::Storage::Filter::Predictors {
                     @pixels[$_] = (@pixels[$_] + $nums[ $ptr++ ]) +& $bit-mask;
                 }
 
-                @output.push: @pixels;
+                @output.append: @pixels;
             }
         }
 
@@ -197,7 +197,7 @@ role PDF::Storage::Filter::Predictors {
             }
 
             @up = @out;
-            @output.push: flat @out;
+            @output.append: @out;
         }
         return buf8.new: @output;
     }

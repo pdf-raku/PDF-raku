@@ -29,7 +29,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	    $val
 	}
 	#| type attribute
-	multi sub type-check($val is rw, $type) is rw is default {
+	multi sub type-check($val, $type) is rw is default {
 	    if !$val.defined {
 	      die "{$object.WHAT.^name}: missing required field: $key"
 		  if $att.tied.is-required;

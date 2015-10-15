@@ -1,9 +1,9 @@
 perl6-PDF-DAO
 =============
-This module aims to provide a high level Data Access Layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF internal structures.
+This module aims to provide an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures.
 
 It's roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it
-provides the ability to define and map Perl 6 classes to PDF internal structures whilst hiding details of serialization and internal representations.
+provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
 
 Features include:
 
@@ -15,7 +15,7 @@ Features include:
 - high level data access via tied Hashes and Arrays
 - a type system for mapping PDF internal structures to Perl 6 objects
 
-The following demonstrates setup of DOM namespace `MyPDF` and document root class `MyPDF::Catalog`.
+The following outlines the  setup of document root class `MyPDF::Catalog`.
 ```
 use PDF::DAO::Tie;
 use PDF::DAO::Type;
