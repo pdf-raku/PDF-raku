@@ -10,7 +10,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 
     sub tie-att-array($object, Int $idx, Attribute $att) is rw {
 
-	sub type-check($val is rw, Mu $type) is rw is default {
+	sub type-check($val is copy, Mu $type) is rw is default {
 	  if !$val.defined {
 	      die "{$object.WHAT.^name}: missing required index: $idx"
 		  if $att.tied.is-required;
