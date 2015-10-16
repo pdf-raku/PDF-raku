@@ -32,6 +32,6 @@ $page<Parent> = $pages;
 
 my $Info = PDF::DAO.coerce( { :CreationDate( DateTime.new( :year(1999) ) ), :Author<PDF-Tools/t/helloworld.t> } );
 
-my $doc = PDF::DAO::Doc.new( { :$Root :$Info } );
+my $doc = PDF::DAO::Doc.new( { :$Root, :$Info } );
 lives-ok {$doc.save-as("t/helloworld.pdf")};
 done-testing;

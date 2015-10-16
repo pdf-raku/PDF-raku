@@ -377,7 +377,7 @@ class PDF::Reader {
                 my $xref-obj = $ind-obj.object;
                 $dict = $xref-obj;
                 self!set-trailer($dict);
-                @obj-idx.push: $xref-obj.decode-to-stage2.list;
+                @obj-idx.append: $xref-obj.decode-to-stage2.list;
             }
 
             $xref-offset = $dict<Prev>:exists
