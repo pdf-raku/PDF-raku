@@ -61,10 +61,6 @@ my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
 This module's 'biggest customer' is <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> - an evolving general
 purpose high level PDF manipulation library.
 
-## Development Status
-
-Under construction. Highest tested Rakudo version: `perl6 version 2015.07.1-875-g2b05975 built on MoarVM version 2015.08-15-g4b427ed`
-
 # Direct Use of PDF::DAO
 
 This module can, in some cases, be used  directly for low level access to PDF documents. The following example demonstrates
@@ -350,4 +346,11 @@ $catalog<Outlines> = { :Type(/'Outlines'), :Count(0) };
 ```
 
 PDF::DAO::Tie also provides the `entry` trait (hashes) and `index` (arrays) trait for declaring accessors.
+
+## Development Status
+
+Under construction (not yet released to Perl 6 ecosystem)
+- Highest tested Rakudo version: `perl6 version 2015.09-416-gfc1ef69 built on MoarVM version 2015.09-79-gee9fc2b`
+- Encryption is NYI. Digest::MD5 has been ported. May also need Crypt::RC4 + others for PDF V3 & V4 level encryption
+
 
