@@ -61,7 +61,9 @@ role PDF::DAO::Tie {
 	    unless $lval.isa(Pair) {
 		if $lval.defined && ! ($lval ~~ $type) {
 
-		    my $reader = $lval.?reader;
+		    my $reader  = $lval.?reader;
+		    my $obj-num = $lval.?obj-num;
+		    my $gen-num = $lval.?gen-num;
 
 		    if $type ~~ Positional[Mu] && $lval ~~ Array {
 			# positional array declaration, e.g.:
@@ -88,7 +90,9 @@ role PDF::DAO::Tie {
 		    }
 		    else {
 			($.coerce)($lval, $type);
-			$lval.reader //= $reader if $reader;
+			$lval.reader  //= $reader  if $reader.defined;
+			$lval.obj-num //= $obj-num if $obj-num.defined;
+			$lval.gen-num //= $gen-num if $gen-num.defined;
 		    }
 		}
 		else {
