@@ -12,7 +12,7 @@ class PDF::DAO::Doc
     use PDF::Storage::Serializer;
     use PDF::Writer;
     use PDF::DAO::Tie;
-    use PDF::DAO::Type::Encrypt;
+    use PDF::DAO::Type::Encrypt :PermissionsFlag;
 
     # See [PDF 1.7 TABLE 3.13 Entries in the file trailer dictionary]
 
@@ -81,5 +81,17 @@ class PDF::DAO::Doc
         ) {
 	my $serializer = PDF::Storage::Serializer.new;
 	$serializer.save-as( $file-name, self, :$type, :$version, :$compress);
+    }
+
+    # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )
+    method permitted(UInt $flag --> Bool) {
+	my $encrypt = self.Encrypt;
+        my $perms = $encrypt.P
+            if $encrypt;
+
+	return True
+	    unless $perms.defined;
+
+	return $perms.flag-is-set( $flag );
     }
 }
