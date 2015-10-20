@@ -33,8 +33,9 @@ class PDF::DAO::Delegator {
 	$obj = $class.new( $obj, |c );
     }
     use PDF::DAO::TextString;
-    multi method coerce( Str $obj is rw, PDF::DAO::TextString $class, |c) {
-	$obj = $class.new( :value($obj), |c );
+    multi method coerce( Str $obj is rw, PDF::DAO::TextString $class, Str :$type is copy, |c) {
+	$type //= $obj.?type // 'literal';
+	$obj = $class.new( :value($obj), :$type, |c );
     }
 
     multi method coerce( $obj, $role) is default {

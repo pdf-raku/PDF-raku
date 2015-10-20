@@ -6,6 +6,9 @@ class PDF::DAO::TextString
     is PDF::DAO
     is Str {
 
+    has Str $.type is rw = 'literal';
+    has Bool $.bom;
+
 =begin pod
 
 See [PDF 1.7 TABLE 3.31 PDF data types]
@@ -15,13 +18,14 @@ using either PDFDocEncoding or UTF-16BE with a leading byte-order marker
 
 =end pod
 
-    method new( Str :$value! is copy ) {
+    method new( Str :$value! is copy, Bool :$bom is copy = False, |c ) {
         if $value ~~ s/^ $<bom>=[\xFE \xFF]// {
+            $bom = True;
             $value = $value.ords.map( -> $b1, $b2 {
             chr($b1 +< 8  +  $b2)
            }).join: '';
         }
-        nextwith( :$value );
+        nextwith( :$value, :$bom, |c );
     }
 
     our sub utf16-encode(Str $str --> Str) {
@@ -39,10 +43,10 @@ using either PDFDocEncoding or UTF-16BE with a leading byte-order marker
     }
 
     method content {
-        my $literal = self ~~ /<-[\x0..\xFF]>/
+        my $val = self.bom || self ~~ /<-[\x0..\xFF]>/
 	    ?? utf16-encode(self)
             !! self ~ '';
 
-	:$literal;
+	$.type => $val;
     }
 }
