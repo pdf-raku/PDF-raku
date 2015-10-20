@@ -38,6 +38,10 @@ class PDF::DAO::Delegator {
 	$obj = $class.new( :value($obj), :$type, |c );
     }
 
+    multi method coerce( Str $obj, $role where PDF::DAO::Name ) {
+	$obj does $role
+    }
+
     multi method coerce( $obj, $role) is default {
 	warn "unable to coerce object $obj of type {$obj.WHAT.gist} to role {$role.WHAT.gist}"
     }
