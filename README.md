@@ -1,9 +1,8 @@
 perl6-PDF-DAO
 =============
-This module aims to provide an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures.
+This provides an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures.
 
-It's roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it
-provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
+It's roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
 
 Features include:
 
@@ -48,8 +47,8 @@ class MyPDF::Catalog
 if we then say
 ```
 my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
-                                    :Version( :name<PDF>),
-                                    :Pages{ :Type{ :name<Pages> }, :Kids[], :Count(0) } };
+                                 :Version( :name<PDF>),
+                                 :Pages{ :Type{ :name<Pages> }, :Kids[], :Count(0) } };
 
 ```
 `$Catalog` is coerced to type `MyPDF::Catalog`.
@@ -128,7 +127,7 @@ saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
 
 ## See also:
 - `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] <pdf-or-json-file-in> <pdf-or-json-file-out>`
-This script is a thin wrapper script to the `PDF::DAO::Doc` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
+This script is a thin wrapper for the `PDF::DAO::Doc` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
 
 # Classes
 
@@ -183,13 +182,13 @@ In some cases, we can omit the AST tags. E.g. we can use `1`, instead of `:int(1
 ```
 # using explicit AST tags
 my $object2 = PDF::DAO.coerce({ :Type( :name<Pages> ),
-                                   :Count(:int(1)),
-                                   :Kids( :array[ :ind-ref[4, 0] ) ] });
+                                :Count(:int(1)),
+                                :Kids( :array[ :ind-ref[4, 0] ) ] });
 
 # same but with a casting from native typs
 my $object3 = PDF::DAO.coerce({ :Type( :name<Pages> ),
-                                   :Count(1),
-                                   :Kids[ :ind-ref[4, 0] ] });
+                                :Count(1),
+                                :Kids[ :ind-ref[4, 0] ] });
 say '#'~$object2.perl;
 
 ```
@@ -350,7 +349,7 @@ PDF::DAO::Tie also provides the `entry` trait (hashes) and `index` (arrays) trai
 ## Development Status
 
 Under construction (not yet released to Perl 6 ecosystem)
-- Highest tested Rakudo version: `perl6 version 2015.09-416-gfc1ef69 built on MoarVM version 2015.09-79-gee9fc2b`
-- Encryption is NYI. Digest::MD5 has been ported. May also need Crypt::RC4 + others for PDF V3 & V4 level encryption
+- Highest tested Rakudo version: `perl6 version 2015.09-431-g5d83db3 built on MoarVM version 2015.09-79-gee9fc2b`
+- Encryption is NYI.
 
 
