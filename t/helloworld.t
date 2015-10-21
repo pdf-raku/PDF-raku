@@ -5,12 +5,10 @@ use PDF::DAO;
 use PDF::DAO::Doc;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
-my $Root = PDF::DAO.coerce: { :Type(/'Catalog') };
-my $outlines = PDF::DAO.coerce: { :Type(/'Outlines'), :Count(0) };
-$Root<Outlines> = $outlines;
-
-my $pages = PDF::DAO.coerce: { :Type(/'Pages') };
-$Root<Pages> = $pages;
+my $doc = PDF::DAO::Doc.new;
+my $Root     = $doc.Root       = { :Type(/'Catalog') };
+my $outlines = $Root<Outlines> = { :Type(/'Outlines'), :Count(0) };
+my $pages    = $Root<Pages>    = { :Type(/'Pages') };
 
 my $page = PDF::DAO.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595] };
 $pages<Kids> = [ $page ];
@@ -30,8 +28,9 @@ my $contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hel
 $page<Contents> = $contents;
 $page<Parent> = $pages;
 
-my $Info = PDF::DAO.coerce( { :CreationDate( DateTime.new( :year(1999) ) ), :Author<PDF-Tools/t/helloworld.t> } );
+my $Info = $doc.Info = {};
+$Info.CreationDate = DateTime.new( :year(1999) );
+$Info.Author = 'PDF-Tools/t/helloworld.t';
 
-my $doc = PDF::DAO::Doc.new( { :$Root, :$Info } );
 lives-ok {$doc.save-as("t/helloworld.pdf")};
 done-testing;
