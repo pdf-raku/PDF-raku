@@ -27,8 +27,8 @@ my $root-obj = $doc<Root>;
     $Pages<Count>++;
 }
 
-my $serializer = PDF::Storage::Serializer.new;
-my $body = $serializer.body( $reader, :updates );
+my $serializer = PDF::Storage::Serializer.new( :$reader );
+my $body = $serializer.body( :updates );
 
 is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
 is-deeply $body<trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';

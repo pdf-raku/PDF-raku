@@ -73,11 +73,11 @@ is $contents.Length, 41, '$stream<Length> is tied to $stream.Length';
 $contents<Length>:delete;
 ok !$contents.Length.defined, '$stream<Length>:delete propagates to $stream.Length';
 
-my $Root = PDF::DAO.coerce: { :Type(/'Catalog') };
-$Root<Outlines> = $root-obj<Outlines>;
-$Root<Pages> = $root-obj<Pages>;
+my $doc = PDF::DAO.coerce: { :Root{ :Type(/'Catalog') } };
+$doc<Root><Outlines> = $root-obj<Outlines>;
+$doc<Root><Pages> = $root-obj<Pages>;
 
-my $body = PDF::Storage::Serializer.new.body(:$Root);
+my $body = PDF::Storage::Serializer.new.body( $doc );
 
 # write the two page pdf
 my $ast = :pdf{ :version(1.2), :$body };

@@ -51,8 +51,8 @@ class PDF::DAO::Doc
         # todo we should be able to leave the input file open and append to it
         my Numeric $offset = $reader.input.chars + 1;
 
-        my $serializer = PDF::Storage::Serializer.new;
-        my Hash $body = $serializer.body( $reader, :updates, :$compress );
+        my $serializer = PDF::Storage::Serializer.new( :$reader );
+        my Hash $body = $serializer.body( :updates, :$compress );
         my Int $prev = $body<trailer><dict><Prev>.value;
         my $writer = PDF::Writer.new( :$offset, :$prev );
         my Str $new-body = "\n" ~ $writer.write( :$body );
@@ -65,22 +65,18 @@ class PDF::DAO::Doc
     #| use the reader when available.
     multi method save-as(Str $file-name! where {$.reader.defined && !$.reader.defunct},
                          Numeric :$version?,
-                         Bool :$rebuild = False,
                          :$compress,
+			 |c
         ) {
         $.reader.recompress( :$compress ) if $compress.defined;
         $.reader.version = $version if $version.defined;
-        $.reader.save-as($file-name, :$rebuild);
+        $.reader.save-as($file-name, |c);
     }
 
     #| do a full save to the named file
-    multi method save-as(Str $file-name!,
-                         Numeric :$version=1.3,
-                         :$type='PDF',     #| e.g. 'PDF', 'FDF;
-                         :$compress = False,
-        ) {
+    multi method save-as(Str $file-name!, |c) {
 	my $serializer = PDF::Storage::Serializer.new;
-	$serializer.save-as( $file-name, self, :$type, :$version, :$compress);
+	$serializer.save-as( $file-name, self, |c)
     }
 
     # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )

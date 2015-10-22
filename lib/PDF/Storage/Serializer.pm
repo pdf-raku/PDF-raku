@@ -14,6 +14,7 @@ class PDF::Storage::Serializer {
     has %!obj-num-idx;
     has %.ref-count;
     has Bool $.renumber is rw = True;
+    has $.reader;
 
     #| Reference count hashes. Could be derivate class of PDF::DAO::Dict or PDF::DAO::Stream.
     multi method analyse( Hash $dict!) {
@@ -39,11 +40,6 @@ class PDF::Storage::Serializer {
 	$trailer-ind-obj.value[2]<dict>.list;
     }
 
-    #| rebuilds the body
-    multi method body( PDF::DAO :$Root!, |c) {
-	$.body( PDF::DAO.coerce({ :$Root }), |c);
-    }
-
     #| rebuild document body from root
     multi method body( PDF::DAO $trailer!, Bool:_ :$*compress) {
 
@@ -51,6 +47,7 @@ class PDF::Storage::Serializer {
 	temp $trailer.gen-num = 0;
 
         %!ref-count = ();
+	@!ind-objs = ();
         $.analyse( $trailer );
         $.freeze( $trailer, :indirect);
         my @objects = $.ind-objs.list;
@@ -64,24 +61,25 @@ class PDF::Storage::Serializer {
     #| prepare a set of objects for an incremental update. Only return indirect objects:
     #| - objects that have been fetched and updated, and
     #| - the trailer dictionary (returned as first object)
-    multi method body( $reader, Bool :$updates! where $updates, :$*compress ) {
+    multi method body( Bool :$updates! where $updates, :$*compress ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
-        $.size = $reader.size;
-        my $prev = $reader.prev;
+        $.size = $.reader.size;
+        my $prev = $.reader.prev;
 
         # disable auto-deref to keep all analysis and freeze stages lazy. if it hasn't been
         # loaded, it hasn't been updated
-        temp $reader.auto-deref = False;
+        temp $.reader.auto-deref = False;
 
         # preserve existing object numbers. objects need to overwritten using the same
         # object and generation numbers
         temp $.renumber = False;
         %!ref-count = ();
-	my $trailer = $reader.trailer;
+	@!ind-objs = ();
+	my $trailer = $.reader.trailer;
         temp $trailer.obj-num = 0;
         temp $trailer.gen-num = 0;
 
-        my @updated-objects = $reader.get-updates.list;
+        my @updated-objects = $.reader.get-updates.list;
 
         for @updated-objects -> $object {
             # reference count new objects
@@ -105,12 +103,12 @@ class PDF::Storage::Serializer {
     }
 
     #| return objects without renumbering existing objects. requires a PDF reader
-    multi method body( $reader!, Bool:_ :$*compress ) is default {
-        my @objects = @( $reader.get-objects );
+    multi method body( Bool:_ :$*compress ) is default {
+        my @objects = @( $.reader.get-objects );
 	my %dict = self!get-trailer(@objects);
         %dict<Prev>:delete;
-        %dict<Size> = :int($reader.size)
-            unless $reader.type eq 'FDF';
+        %dict<Size> = :int($.reader.size)
+            unless $.reader.type eq 'FDF';
 
         %( :@objects, :trailer{ :%dict } );
     }
@@ -124,7 +122,8 @@ class PDF::Storage::Serializer {
     #| to an object-number and generation-number. 
     method !index-object( Pair $ind-obj! is rw, Str :$id!, :$object) {
         my Int $obj-num = $object.obj-num 
-	    if $object.can('obj-num');
+	    if $object.can('obj-num')
+	    && (! $.reader || $object.reader === $.reader);
         my Int $gen-num;
 	my subset IsTrailer of UInt where 0;
 

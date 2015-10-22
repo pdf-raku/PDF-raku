@@ -633,11 +633,11 @@ class PDF::Reader {
     }
 
     method ast( Bool :$rebuild = False ) {
-        my $serializer = PDF::Storage::Serializer.new;
+        my $serializer = PDF::Storage::Serializer.new( :reader(self) );
 
         my $body = $rebuild
             ?? $serializer.body( self.trailer )
-            !! $serializer.body( self, :$rebuild );
+            !! $serializer.body( :$rebuild );
 
         :pdf{
             :header{ :$.type, :$.version },
@@ -650,16 +650,16 @@ class PDF::Reader {
 
     #| dump to json
     multi method save-as( $output-path where m:i/'.json' $/,
-                          Bool :$rebuild = False,
-                          :$ast = $.ast(:$rebuild) ) {
+                          :$ast is copy, |c ) {
+        $ast //= $.ast(|c);
         note "dumping {$output-path}...";
         $output-path.IO.spurt( to-json( $ast ) );
     }
 
     #| write to PDF/FDF
     multi method save-as( $output-path,
-                          Bool :$rebuild = False,
-                          :$ast = $.ast(:$rebuild) ) is default {
+                          :$ast is copy, |c ) is default {
+        $ast //= $.ast(|c);
         note "saving {$output-path}...";
         my $pdf-writer = PDF::Writer.new( :$.input );
         $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );

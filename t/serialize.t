@@ -17,15 +17,15 @@ my $dict2 = { :ID(2) };
 # create circular hash ref
 $dict2<SelfRef> := $dict2;
 
-my $Root = PDF::DAO.coerce: [ $dict1, $dict2 ];
+my $doc = PDF::DAO.coerce: { :Root[ $dict1, $dict2 ] };
 # create circular array reference
-$Root[2] := $Root;
+$doc<Root>[2] := $doc<Root>;
 
 # cycle back from hash to array
-$Root[0]<Parent> := $Root;
+$doc<Root>[0]<Parent> := $doc<Root>;
 
 # our serializer should create indirect refs to resolve the above
-my $result = PDF::Storage::Serializer.new.body( :$Root );
+my $result = PDF::Storage::Serializer.new.body( $doc );
 is-deeply $result<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
 is-deeply $result<trailer><dict><Size>, (:int(3)), 'body trailer dict - Size';
 my $s-objects = $result<objects>;
@@ -36,7 +36,7 @@ is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => 
 
 is-deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], ID => :int(2)}]), "circular hash ref resolution";
 
-$Root = PDF::DAO.coerce: {
+$doc = PDF::DAO.coerce: { :Root{
     :Type(/'Catalog'),
     :Pages{
             :Type(/'Pages'),
@@ -55,11 +55,11 @@ $Root = PDF::DAO.coerce: {
             :Count(1),
     },
     :Outlines{ :Type(/'Outlines'), :Count(0) },
-};
+} };
 
-$Root<Pages><Kids>[0]<Parent> = $Root<Pages>;
+$doc<Root><Pages><Kids>[0]<Parent> = $doc<Root><Pages>;
 
-my $body = PDF::Storage::Serializer.new.body(:$Root);
+my $body = PDF::Storage::Serializer.new.body( $doc );
 my $objects = $body<objects>;
 
 sub infix:<object-order-ok>($obj-a, $obj-b) {
@@ -90,22 +90,22 @@ is-json-equiv $objects[3], (:ind-obj[4, 0, :dict{
                                                },
                                    ]), 'page object';
 
-my $obj-with-utf8 = PDF::DAO.coerce: { :Name(/"Heydər Əliyev") };
-$obj-with-utf8.obj-num = -1;
+my $obj-with-utf8 = PDF::DAO.coerce: { :Root{ :Name(/"Heydər Əliyev") } };
+$obj-with-utf8<Root>.obj-num = -1;
 my $writer = PDF::Writer.new;
 
-$objects = PDF::Storage::Serializer.new.body(:Root($obj-with-utf8))<objects>;
+$objects = PDF::Storage::Serializer.new.body($obj-with-utf8)<objects>;
 is-json-equiv $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
 is $writer.write( :ind-obj($objects[0].value)), "1 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj", 'name write';
 
-my $objects-compressed = PDF::Storage::Serializer.new.body(:$Root, :compress)<objects>;
+my $objects-compressed = PDF::Storage::Serializer.new.body($doc, :compress)<objects>;
 my $stream = $objects-compressed[*-2].value[2]<stream>;
 is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'compressed dict';
 is $stream<encoded>.chars, 54, 'compressed stream length';
 
 # just to define current behaviour. blows up during final write.
-my $obj-with-bad-byte-string = PDF::DAO.coerce: { :Name("Heydər Əliyev") };
-$objects = PDF::Storage::Serializer.new.body(:Root($obj-with-bad-byte-string))<objects>;
+my $obj-with-bad-byte-string = PDF::DAO.coerce: { :Root{ :Name("Heydər Əliyev") } };
+$objects = PDF::Storage::Serializer.new.body($obj-with-bad-byte-string)<objects>;
 dies-ok {$writer.write( :ind-obj($objects[0].value) )}, 'out-of-range byte-string dies during write';
 
 done-testing;
