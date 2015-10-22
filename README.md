@@ -62,44 +62,41 @@ purpose high level PDF manipulation library.
 
 # Direct Use of PDF::DAO
 
-This module can, in some cases, be used  directly for low level access to PDF documents. The following example demonstrates
-the creation of a 'Hello World!' PDF.
+The "DAO" level can be directly used to manipulate PDF data. The following example demonstrates
+the creation of a 'Hello World!' PDF from scratch.
 
 ```
 #!/usr/bin/env perl6
-# creates /tmp/helloworld.pdf
+# creates t/helloworld.pdf
 use v6;
-
 use PDF::DAO;
 use PDF::DAO::Doc;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
+
 my $doc = PDF::DAO::Doc.new;
-my $Root     = $doc.Root       = { :Type(/'Catalog') };
-my $outlines = $Root<Outlines> = { :Type(/'Outlines'), :Count(0) };
-my $pages    = $Root<Pages>    = { :Type(/'Pages') };
+my $root     = $doc.Root       = { :Type(/'Catalog') };
+my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
+my $pages    = $root<Pages>    = { :Type(/'Pages') };
 
-my $page = PDF::DAO.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595] };
-$pages<Kids> = [ $page ];
+$pages<Kids> = [ { :Type(/'Page'), :MediaBox[0, 0, 420, 595] }, ];
 $pages<Count> = + $pages<Kids>;
+my $page = $pages<Kids>[0];
+$page<Parent> = $pages;
 
-my $font = PDF::DAO.coerce: {
+$page<Resources><Procset> = [ /'PDF', /'Text'];
+$page<Resources><Font><F1> = {
         :Type(/'Font'),
         :Subtype(/'Type1'),
-        :Name(/'F1'),
         :BaseFont(/'Helvetica'),
         :Encoding(/'MacRomanEncoding'),
     };
 
-$page<Resources> = { :Font{ :F1($font) }, :Procset[ /'PDF', /'Text'] };
+$page<Contents> = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 
-my $contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
-$page<Contents> = $contents;
-$page<Parent> = $pages;
-
-my $Info = $doc.Info = {};
-$Info.CreationDate = DateTime.new( :year(1999) );
-$Info.Author = 'PDF-Tools/t/helloworld.t';
+my $info = $doc.Info = {};
+$info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
+$info.Author = 'PDF-Tools/t/helloworld.t';
 
 $doc.save-as("t/helloworld.pdf");
 ```
