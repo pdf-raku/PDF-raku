@@ -161,7 +161,7 @@ class PDF::Storage::Serializer {
     multi method is-indirect($ --> Bool) {*}
 
     #| streams always need to be indirect objects
-    multi method is-indirect(PDF::DAO::Stream $object)                 {True}
+    multi method is-indirect(PDF::DAO::Stream $object)                    {True}
 
     #| avoid duplication of multiply referenced objects
     multi method is-indirect($, :$id! where {%!ref-count{$id} > 1})       {True}

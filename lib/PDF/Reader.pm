@@ -509,7 +509,7 @@ class PDF::Reader {
     #| :!unpack 1.5+ (/ObjStm aware) compatible asts:
     #| -- sift type 2 objects
     method get-objects(
-        Bool :$incremental=False       #| only return updated objects
+        Bool :$incremental       #| only return updated objects
         ) {
         constant $unpack = True;
         my @object-refs;

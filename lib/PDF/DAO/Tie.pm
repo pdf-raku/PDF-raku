@@ -13,7 +13,7 @@ role PDF::DAO::Tie {
 	    FETCH => method { ?$.obj-num },
 	    STORE => method (Bool $val) {
 		if $val {
-		    # Serializer will renumber
+		    # Ensure this object is indirect. Serializer will renumber
 		    $.obj-num //= -1;
 		}
 		else {
@@ -24,10 +24,21 @@ role PDF::DAO::Tie {
 	    );
     }
 
+    #| generate an indirect reference to ourselves
     method ind-ref {
 	die "not an indirect obect"
 	    unless $.obj-num && $.obj-num > 0;
 	:ind-ref[ $.obj-num, $.gen-num ];
+    }
+
+    #| generate an indirect reference, include the reader, if spanning documents
+    method import($wrt) { 
+	return self
+	    unless self.reader && self.obj-num;
+	my @ind-ref = self.obj-num, self.gen-num;
+	@ind-ref.push: self.reader
+	    unless self.reader === $wrt.?reader;
+	:@ind-ref;
     }
 
     my class Tied {...}
@@ -170,11 +181,14 @@ role PDF::DAO::Tie {
     }
 
     #| indirect reference
-    multi method deref(Pair $ind-ref! where {.key eq 'ind-ref' && $.reader && $.reader.auto-deref}) {
+    multi method deref(Pair $ind-ref! where {.key eq 'ind-ref'}) {
         my Int $obj-num = $ind-ref.value[0];
         my Int $gen-num = $ind-ref.value[1];
+	my $reader      = $ind-ref.value[2] // $.reader;
 
-        $.reader.ind-obj( $obj-num, $gen-num ).object;
+	$reader && $reader.auto-deref
+	    ?? $reader.ind-obj( $obj-num, $gen-num ).object
+	    !! $ind-ref;
     }
     #| already an object
     multi method deref(PDF::DAO $value) { $value }
