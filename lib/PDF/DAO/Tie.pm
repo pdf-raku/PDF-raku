@@ -32,7 +32,7 @@ role PDF::DAO::Tie {
     }
 
     #| generate an indirect reference, include the reader, if spanning documents
-    method import { 
+    method link { 
 	my $obj-num = $.obj-num;
 	$obj-num && $obj-num > 0
 	    ?? :ind-ref[ $obj-num, $.gen-num, $.reader ]
