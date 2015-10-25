@@ -633,7 +633,6 @@ class PDF::Reader {
     }
 
     method ast( Bool :$rebuild = False ) {
-warn :$rebuild.perl;
         my $serializer = PDF::Storage::Serializer.new( :reader(self) );
 
         my Array $body = $rebuild
