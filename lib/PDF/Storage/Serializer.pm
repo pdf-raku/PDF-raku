@@ -260,7 +260,7 @@ class PDF::Storage::Serializer {
                          Str :$type='PDF',     #| e.g. 'PDF', 'FDF;
                          Bool :$compress,
         ) {
-        my Array $body = [ self.body($trailer-dict, :$compress ), ];
+        my Array $body = self.body($trailer-dict, :$compress );
         my Pair $ast = :pdf{ :header{ :$type, :$version }, :$body };
         my $writer = PDF::Writer.new( );
         $file-name ~~ m:i/'.json' $/
