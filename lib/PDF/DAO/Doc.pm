@@ -62,19 +62,7 @@ class PDF::DAO::Doc
         $reader.file-name.IO.open(:a).write( $new-body.encode('latin-1') );
     }
 
-    #| use the reader when available.
-    multi method save-as(Str $file-name! where {$.reader.defined && !$.reader.defunct},
-                         Numeric :$version?,
-                         :$compress,
-			 |c
-        ) {
-        $.reader.recompress( :$compress ) if $compress.defined;
-        $.reader.version = $version if $version.defined;
-        $.reader.save-as($file-name, |c);
-    }
-
-    #| do a full save to the named file
-    multi method save-as(Str $file-name!, |c) {
+    method save-as(Str $file-name!, |c) {
 	my $serializer = PDF::Storage::Serializer.new;
 	$serializer.save-as( $file-name, self, |c)
     }
