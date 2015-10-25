@@ -95,18 +95,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
     }
 
     method push($val) {
-        my $lval = self.lvalue($val);
-        nextwith( $lval );
-    }
-
-    method unshift($val) {
-        my $lval = self.lvalue($val);
-        nextwith( $lval );
-    }
-
-    method splice($pos, $elems, **@replacement) {
-        my @lvals = @replacement.map({ self.lvalue($_).item });
-        nextwith( $pos, $elems, |@lvals);
+	self[ +self ] = $val;
     }
 
 }
