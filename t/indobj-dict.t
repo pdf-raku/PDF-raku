@@ -86,7 +86,7 @@ my $doc = PDF::DAO::Doc.new( { :Root($cat) } );
 my $serializer = PDF::Storage::Serializer.new;
 my $body = $serializer.body( $doc );
 
-is-json-equiv $body, {:objects($[
+is-json-equiv $body[0], {:objects($[
 			       :ind-obj($[1, 0, :dict(${:NeedsRendering(:bool),
 							:Pages(:ind-ref($[2, 0]))})]),
                                :ind-obj($[2, 0, :dict(${:Kids(:array($[:ind-ref($[3, 0])]))})]),

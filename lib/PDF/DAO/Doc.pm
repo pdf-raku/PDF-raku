@@ -52,8 +52,8 @@ class PDF::DAO::Doc
         my Numeric $offset = $reader.input.chars + 1;
 
         my $serializer = PDF::Storage::Serializer.new( :$reader );
-        my Hash $body = $serializer.body( :updates, :$compress );
-        my Int $prev = $body<trailer><dict><Prev>.value;
+        my Array $body = $serializer.body( :updates, :$compress );
+        my Int $prev = $body[0]<trailer><dict><Prev>.value;
         my $writer = PDF::Writer.new( :$offset, :$prev );
         my Str $new-body = "\n" ~ $writer.write( :$body );
         $reader.input.?close;

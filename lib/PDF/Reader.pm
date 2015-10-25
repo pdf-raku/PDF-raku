@@ -633,15 +633,16 @@ class PDF::Reader {
     }
 
     method ast( Bool :$rebuild = False ) {
+warn :$rebuild.perl;
         my $serializer = PDF::Storage::Serializer.new( :reader(self) );
 
-        my $body = $rebuild
+        my Array $body = $rebuild
             ?? $serializer.body( self.trailer )
             !! $serializer.body( :$rebuild );
 
         :pdf{
             :header{ :$.type, :$.version },
-            :body[ $body ],
+            :$body,
         }
     }
 

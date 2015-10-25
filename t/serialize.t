@@ -25,10 +25,10 @@ $doc<Root>[2] := $doc<Root>;
 $doc<Root>[0]<Parent> := $doc<Root>;
 
 # our serializer should create indirect refs to resolve the above
-my $result = PDF::Storage::Serializer.new.body( $doc );
-is-deeply $result<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
-is-deeply $result<trailer><dict><Size>, (:int(3)), 'body trailer dict - Size';
-my $s-objects = $result<objects>;
+my $body = PDF::Storage::Serializer.new.body( $doc )[0];
+is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
+is-deeply $body<trailer><dict><Size>, (:int(3)), 'body trailer dict - Size';
+my $s-objects = $body<objects>;
 is +$s-objects, 2, 'expected number of objects';
 is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => :ind-ref[1, 0]},
                                                  :ind-ref[2, 0],
@@ -59,7 +59,7 @@ $doc = PDF::DAO.coerce: { :Root{
 
 $doc<Root><Pages><Kids>[0]<Parent> = $doc<Root><Pages>;
 
-my $body = PDF::Storage::Serializer.new.body( $doc );
+$body = PDF::Storage::Serializer.new.body( $doc )[0];
 my $objects = $body<objects>;
 
 sub infix:<object-order-ok>($obj-a, $obj-b) {
@@ -94,11 +94,11 @@ my $obj-with-utf8 = PDF::DAO.coerce: { :Root{ :Name(/"Heydər Əliyev") } };
 $obj-with-utf8<Root>.obj-num = -1;
 my $writer = PDF::Writer.new;
 
-$objects = PDF::Storage::Serializer.new.body($obj-with-utf8)<objects>;
+$objects = PDF::Storage::Serializer.new.body($obj-with-utf8)[0]<objects>;
 is-json-equiv $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
 is $writer.write( :ind-obj($objects[0].value)), "1 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj", 'name write';
 
-my $objects-compressed = PDF::Storage::Serializer.new.body($doc, :compress)<objects>;
+my $objects-compressed = PDF::Storage::Serializer.new.body($doc, :compress)[0]<objects>;
 my $stream = $objects-compressed[*-2].value[2]<stream>;
 is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'compressed dict';
 is $stream<encoded>.chars, 54, 'compressed stream length';

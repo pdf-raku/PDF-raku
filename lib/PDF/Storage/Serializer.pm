@@ -40,6 +40,8 @@ class PDF::Storage::Serializer {
 	$trailer-ind-obj.value[2]<dict>.list;
     }
 
+    proto method body(|c --> Array) {*}
+
     #| rebuild document body from root
     multi method body( PDF::DAO $trailer!, Bool:_ :$*compress) {
 
@@ -55,7 +57,7 @@ class PDF::Storage::Serializer {
 
         %dict<Size> = :int($.size);
 
-        my %body = :@objects, :trailer{ :%dict };
+        [ { :@objects, :trailer{ :%dict } }, ];
     }
 
     #| prepare a set of objects for an incremental update. Only return indirect objects:
@@ -96,10 +98,7 @@ class PDF::Storage::Serializer {
         %dict<Prev> = :int($prev);
         %dict<Size> = :int($.size);
 
-        return {
-            :@objects,
-            :trailer{ :%dict },
-        }
+        [ { :@objects, :trailer{ :%dict } }, ]
     }
 
     #| return objects without renumbering existing objects. requires a PDF reader
@@ -110,7 +109,7 @@ class PDF::Storage::Serializer {
         %dict<Size> = :int($.reader.size)
             unless $.reader.type eq 'FDF';
 
-        %( :@objects, :trailer{ :%dict } );
+        [ { :@objects, :trailer{ :%dict } }, ]
     }
 
     method !get-ind-ref( Str :$id!) {
@@ -261,7 +260,7 @@ class PDF::Storage::Serializer {
                          Str :$type='PDF',     #| e.g. 'PDF', 'FDF;
                          Bool :$compress,
         ) {
-        my Hash $body = self.body($trailer-dict, :$compress );
+        my Array $body = [ self.body($trailer-dict, :$compress ), ];
         my Pair $ast = :pdf{ :header{ :$type, :$version }, :$body };
         my $writer = PDF::Writer.new( );
         $file-name ~~ m:i/'.json' $/
