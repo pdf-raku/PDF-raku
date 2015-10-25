@@ -21,7 +21,6 @@ class PDF::Reader {
     has Str $.type is rw;
     has Int $.prev;
     has Int $.size is rw;   #= /Size entry in trailer dict ~ first free object number
-    has Bool $.defunct is rw = False;
 
     method actions {
         state $actions //= PDF::Grammar::PDF::Actions.new
@@ -90,6 +89,33 @@ class PDF::Reader {
        }
 
         $ast;
+    }
+
+    # process a batch of indirect object updates
+    method update( :@entries!, Int :$!prev ) {
+        for @entries -> Hash $entry {
+	    my $obj-num = $entry<obj-num>
+	        or next;
+
+            my $gen-num = $entry<gen-num>;
+            my $type = $entry<type>;
+
+	    given $type {
+	        when 0 { # freed
+		    %!ind-obj-idx{$obj-num}{$gen-num}:delete;
+		}
+	        when 1 { # type 1 entry
+		    my $ind-obj = $entry<ind-obj>;
+		    %!ind-obj-idx{$obj-num}{$gen-num} = {
+		        :$type,
+		        :$ind-obj,
+	            }
+		}
+                default {
+		    die "unable to handle indirect object update of type: $_";
+		}
+            }
+	}
     }
 
     #| open the named PDF/FDF file
@@ -202,9 +228,6 @@ class PDF::Reader {
                     :$get-ast = False,  #| get ast data, not formulated objects
                     :$eager = True,     #| fetch object, if not already loaded
         ) {
-
-        die "input pdf has been updated; reader object is now defunct"
-             if $!defunct;
 
         my $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
             // die "unable to find object: $obj-num $gen-num R";

@@ -55,9 +55,20 @@ is-json-equiv $updated-objects[2], (
                              :dict{Length => :int(70) },
                             }]), 'inserted content';
 
+my $ind-obj1 = $reader.ind-obj( 3, 0 );
+my $ast1 = $ind-obj1.ast;
+my $prev1 = $doc.reader.prev;
 $doc.update;
-is-deeply $reader.defunct, True, 'reader is now defunct';
-dies-ok {$reader.ind-obj( 5, 0, :!eager ),}, "defunct reader access - dies";
+my $prev2 = $doc.reader.prev;
+ok $prev2 > $prev1, "reader.prev incremented by update"
+   or diag "prev1:$prev1  prev2:$prev2";
+my $ind-obj2;
+lives-ok { $ind-obj2 = $reader.ind-obj( 3, 0 )}, "post update access - lives";
+
+ok $ind-obj1 !=== $ind-obj2, 'indirect object has been updated';
+my $ast2 = $ind-obj2.ast;
+todo "not quite equivalent";
+is-deeply $ast1, $ast2, 'indirect object ast equivalence';
 
 # now re-read the pdf. Will also test our ability to read a PDF
 # with multiple segments

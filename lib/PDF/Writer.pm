@@ -8,7 +8,7 @@ class PDF::Writer {
     has PDF::Storage::Input $.input;
     has $.ast is rw;
     has Int:_ $.offset;
-    has Int:_ $!prev;
+    has Int:_ $.prev;
     has %!init;
 
     submethod BUILD(:$input, :$!ast, :$!offset = Nil, :$!prev = Nil) {
@@ -35,7 +35,12 @@ class PDF::Writer {
     }
 
     multi method write( Hash :$body!, Str :$type = 'PDF' ) {
-        my @entries = %( :type(0), :offset(0), :gen-num(65535), :obj-num(0) ).item;
+	my Hash @entries;
+	$.build-index( $body, @entries, :$type);
+    }
+
+    method build-index( Hash $body!, @entries!, Str :$type = 'PDF' --> Str ) {
+        @entries = [{ :type(0), :offset(0), :gen-num(65535), :obj-num(0) }, ];
         my @out;
 
         for $body<objects>.list -> $obj {
@@ -44,7 +49,7 @@ class PDF::Writer {
                 my Int $obj-num = $ind-obj[0];
                 my Int $gen-num = $ind-obj[1];
 
-                @entries.push: %( :type(1), :$.offset, :$gen-num, :$obj-num ).item;
+                @entries.push: { :type(1), :$.offset, :$gen-num, :$obj-num, :$ind-obj };
                 @out.push: $.write( :$ind-obj );
 
             }
@@ -100,7 +105,7 @@ class PDF::Writer {
 
         $!offset += @out[*-1].chars + 2;
 
-        return @out.join: "\n";
+        @out.join: "\n";
     }
 
     multi method write( :$body! ) {

@@ -45,9 +45,6 @@ class PDF::DAO::Doc
         my $reader = $.reader
             // die "pdf is not associated with an input source";
 
-        die "pdf reader is defunct"
-            if $reader.defunct;
- 
         # todo we should be able to leave the input file open and append to it
         my Numeric $offset = $reader.input.chars + 1;
 
@@ -55,10 +52,12 @@ class PDF::DAO::Doc
         my Array $body = $serializer.body( :updates, :$compress );
         my Int $prev = $body[0]<trailer><dict><Prev>.value;
         my $writer = PDF::Writer.new( :$offset, :$prev );
-        my Str $new-body = "\n" ~ $writer.write( :$body );
-        $reader.input.?close;
-        $reader.input = Any;
-        $reader.defunct = True;
+	my @entries;
+        my Str $new-body = "\n" ~ $writer.build-index( $body[0], @entries, :$prev );
+	$prev = $writer.prev;
+	# merge the updated entries in the index
+	$reader.update( :@entries, :$prev );
+
         $reader.file-name.IO.open(:a).write( $new-body.encode('latin-1') );
     }
 
