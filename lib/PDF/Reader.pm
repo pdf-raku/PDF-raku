@@ -92,7 +92,7 @@ class PDF::Reader {
     }
 
     # process a batch of indirect object updates
-    method update( :@entries!, Int :$!prev ) {
+    method update( :@entries!, Int :$!prev, Int :$!size ) {
         for @entries -> Hash $entry {
 	    my $obj-num = $entry<obj-num>
 	        or next;

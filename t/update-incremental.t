@@ -58,10 +58,14 @@ is-json-equiv $updated-objects[2], (
 my $ind-obj1 = $reader.ind-obj( 3, 0 );
 my $ast1 = $ind-obj1.ast;
 my $prev1 = $doc.reader.prev;
+my $size1 = $doc.reader.size;
 $doc.update;
 my $prev2 = $doc.reader.prev;
 ok $prev2 > $prev1, "reader.prev incremented by update"
    or diag "prev1:$prev1  prev2:$prev2";
+my $size2 = $doc.reader.size;
+ok $size2 > $size1, "reader.size incremented by update"
+   or diag "size1:$size1  size2:$size2";
 my $ind-obj2;
 lives-ok { $ind-obj2 = $reader.ind-obj( 3, 0 )}, "post update access - lives";
 
@@ -71,7 +75,7 @@ todo "not quite equivalent";
 is-deeply $ast1, $ast2, 'indirect object ast equivalence';
 
 # now re-read the pdf. Will also test our ability to read a PDF
-# with multiple segments
+# with multiple body segments
 
 my $doc2 = PDF::DAO::Doc.open: 't/pdf/pdf-updated.out';
 $reader = $doc2.reader;

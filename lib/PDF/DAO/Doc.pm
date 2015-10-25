@@ -50,13 +50,14 @@ class PDF::DAO::Doc
 
         my $serializer = PDF::Storage::Serializer.new( :$reader );
         my Array $body = $serializer.body( :updates, :$compress );
-        my Int $prev = $body[0]<trailer><dict><Prev>.value;
+        my UInt $prev = $body[0]<trailer><dict><Prev>.value;
         my $writer = PDF::Writer.new( :$offset, :$prev );
 	my @entries;
         my Str $new-body = "\n" ~ $writer.build-index( $body[0], @entries, :$prev );
 	$prev = $writer.prev;
+	my UInt $size = $writer.size;
 	# merge the updated entries in the index
-	$reader.update( :@entries, :$prev );
+	$reader.update( :@entries, :$prev, :$size );
 
         $reader.file-name.IO.open(:a).write( $new-body.encode('latin-1') );
     }

@@ -7,8 +7,9 @@ class PDF::Writer {
 
     has PDF::Storage::Input $.input;
     has $.ast is rw;
-    has Int:_ $.offset;
-    has Int:_ $.prev;
+    has UInt:_ $.offset;
+    has UInt:_ $.prev;
+    has UInt:_ $.size;
     has %!init;
 
     submethod BUILD(:$input, :$!ast, :$!offset = Nil, :$!prev = Nil) {
@@ -77,17 +78,16 @@ class PDF::Writer {
             @entries = @entries.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
             my Hash @xref;
-            my UInt $size = 1;
 
             for @entries {
                 # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
                 # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
-                my $contigous = +@xref && .<obj-num> && .<obj-num> == $size;
+                my $contigous = +@xref && .<obj-num> && .<obj-num> == $!size;
                 @xref.push: %( object-first-num => .<obj-num>, entries => [] ).item
                     unless $contigous;
                 @xref[*-1]<entries>.push: $_;
                 @xref[*-1]<object-count>++;
-                $size = .<obj-num> + 1;
+                $!size = .<obj-num> + 1;
             }
 
             my Str $xref-str = $.write( :@xref );
@@ -95,7 +95,7 @@ class PDF::Writer {
 
             @out.push: [~] (
                 $xref-str,
-                $.write( :$trailer, :$!prev, :$size ),
+                $.write( :$trailer, :$!prev, :$!size ),
                 $.write( :$startxref ),
                 '%%EOF');
 
@@ -308,8 +308,8 @@ class PDF::Writer {
         %dict<Prev> = :int($prev)
             if $prev.defined;
 
-        %dict<Size> = :int($size)
-            if $size.defined;
+        %dict<Size> = :int($!size)
+            if $!size;
 
         ( "trailer", $.write( :%dict ), '' ).join: "\n";
     }
