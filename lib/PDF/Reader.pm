@@ -19,8 +19,9 @@ class PDF::Reader {
     has Bool $.auto-deref is rw = True;
     has Rat $.version is rw;
     has Str $.type is rw;
-    has Int $.prev;
-    has Int $.size is rw;   #= /Size entry in trailer dict ~ first free object number
+    has UInt $.prev;
+    has UInt $.size is rw;   #= /Size entry in trailer dict ~ first free object number
+    has UInt @.xrefs = (0); #= xref position for each revision in the file
 
     method actions {
         state $actions //= PDF::Grammar::PDF::Actions.new
@@ -93,6 +94,8 @@ class PDF::Reader {
 
     # process a batch of indirect object updates
     method update( :@entries!, Int :$!prev, Int :$!size ) {
+        @!xrefs.push: $!prev;
+
         for @entries -> Hash $entry {
 	    my $obj-num = $entry<obj-num>
 	        or next;
@@ -321,6 +324,7 @@ class PDF::Reader {
         my Str $tail = $.input.substr(* - $tail-bytes);
 
         my %offsets-seen;
+        @!xrefs = [];
 
         PDF::Grammar::PDF.parse($tail, :$.actions, :rule<postamble>)
             or die "expected file trailer 'startxref ... \%\%EOF', got: {synopsis($tail)}";
@@ -332,6 +336,7 @@ class PDF::Reader {
         my $dict;
 
         while $xref-offset.defined {
+	    @!xrefs.unshift: $xref-offset;
             die "xref '/Prev' cycle detected \@$xref-offset"
                 if %offsets-seen{$xref-offset}++;
             # see if our cross reference table is already contained in the current tail

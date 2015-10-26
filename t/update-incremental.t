@@ -14,6 +14,7 @@ sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
 my $doc = PDF::DAO::Doc.open( 't/pdf/pdf-updated.out', :a );
 my $reader = $doc.reader;
+is +$reader.xrefs, 1, 'reader.xrefs - initial';
 my $catalog = $doc<Root>;
 
 {
@@ -58,8 +59,9 @@ my $ast1 = $ind-obj1.ast;
 my $prev1 = $doc.reader.prev;
 my $size1 = $doc.reader.size;
 my $Info = $doc.Info //= {};
-$Info.ModDate = DateTime.now;
+$Info.ModDate = DateTime.new( :year(2015), :month(12), :day(26) );
 $doc.update;
+is +$reader.xrefs, 2, 'reader.xrefs - post-update';
 my $prev2 = $doc.reader.prev;
 ok $prev2 > $prev1, "reader.prev incremented by update"
    or diag "prev1:$prev1  prev2:$prev2";
@@ -82,6 +84,7 @@ isa-ok $doc<Root><Pages><Kids>[1], PDF::DAO::Dict, 'updated page 2 access';
 
 my $doc2 = PDF::DAO::Doc.open: 't/pdf/pdf-updated.out';
 $reader = $doc2.reader;
+is +$reader.xrefs, 2, 'reader.xrefs - reread';
 
 my $ast = $reader.ast( :rebuild );
 is +$ast<pdf><body>, 1, 'single body';

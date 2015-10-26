@@ -23,13 +23,12 @@ class PDF::Storage::Input::IOH
         $!str //= $.value.slurp-rest;
     }
 
-    multi method substr( WhateverCode $from-whatever!, $length? ) {
+    multi method substr( WhateverCode $from-whatever!, |c ) {
         my Int $from = $from-whatever( $.chars );
-        $.substr( $from, $length );
+        $.substr( $from, |c );
     }
 
-    multi method substr( Int $from!, $length is copy) {
-        $length //= $.chars - $from + 1;
+    multi method substr( Int $from!, $length = $.chars - $from + 1) {
         return $!str.substr( $from, $length )
             if $!str.defined;
         $!value.seek( $from, SEEK-FROM-START );
