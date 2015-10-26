@@ -1,7 +1,7 @@
 {
-    "name"        : "PDF::DAO",
+    "name"        : "PDF",
     "version"     : "0.1",
-    "description" : "PDF Data Access Object Layer",
+    "description" : "Tools for object oriented reading, writing and manipulation of PDFs",
     "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Tiny"  ],
     "source-url"  : "git://github.com/p6-css/p6-PDF-DAO.git",
     "provides"    : {
