@@ -1,6 +1,35 @@
 use v6;
-
 use PDF::DAO;
+
+=begin pod
+
+
+This is a role used by PDF::DAO. It makes the PDF object tree appear as a seamless
+structure comprised of nested hashs (PDF dictionarys) and arrays.
+
+PDF::DAO::Tie::Hash and PDF::DAO::Tie::Array encapsulate Hash and Array accces.
+
+- If the object has an associated  `reader` property, indirect references are resolved lazily and transparently
+as elements in the structure are dereferenced.
+- Hashs and arrays automaticaly coerced to objects on assignment to a parent object. For example:
+
+```
+sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
+my $catalog = PDF::DAO.coerce({ :Type(/'Catalog') });
+$catalog<Outlines> = PDF::DAO.coerce( { :Type(/'Outlines'), :Count(0) } );
+```
+
+is equivalent to:
+
+```
+sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
+my $catalog = PDF::DAO.coerce({ :Type(/'Catalog') });
+$catalog<Outlines> = { :Type(/'Outlines'), :Count(0) };
+```
+
+PDF::DAO::Tie also provides the `entry` trait (hashes) and `index` (arrays) trait for declaring accessors.
+
+=end pod
 
 role PDF::DAO::Tie {
 

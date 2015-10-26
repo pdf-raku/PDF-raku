@@ -33,10 +33,10 @@ a `Root` entry in the outermost trailer dictionary.  It is based on the <a href=
 This module implements the basic data-types and general syntax and serialization rules as described in the first four chapters of the
 specification.
 
-This module provides read and write access to the data structures that make up a PDF via tied arrays and hashes. Much of the details
+Read and write access to data structures is via direct manipulation of tied arrays and hashes. Much of the details
 of serialization and data representation are hidden.
 
-It also provides a set of class builder utilities to enable building an even higher level of abstract classes.
+PDF::DAO also provides a set of class builder utilities to enable building an even higher level of abstract classes.
 
 This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction),
 which  takes on where this module leaves off. It contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
@@ -95,7 +95,8 @@ my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  90 250 Td (Good
 $Parent<Kids>.push: { :Type(/'Page'), :$Parent, :$Contents };
 $Parent<Count>++;
 
-$doc.Info.ModDate = DateTime.now;
+my $info = $doc.Info //= {};
+$info.ModDate = DateTime.now;
 $doc.update;
 ```
 
@@ -348,43 +349,6 @@ my $prev = $body<trailer><dict><Prev>.value;
 my $writer = PDF::Writer.new( :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 ```
-
-## PDF::DAO::Delegator
-
-This forms the basis for `PDF::DOM`'s extensive library of document object classes. It
-includes classes and roles for object construction, validation and serialization.
-
-- The `PDF::DAO` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::DAO::Delegator`.
-
-- The delegator may be subclassed. For example, the upstream module `PDF::DOM` subclasses `PDF::DAO::Delegator` with
-`PDF::DOM::Delegator`.
-
-## PDF::DAO::Tie
-
-This is a role used by PDF::DAO. It makes the PDF object tree appear as a seamless
-structure comprised of nested hashs (PDF dictionarys) and arrays.
-
-PDF::DAO::Tie::Hash and PDF::DAO::Tie::Array encapsulate Hash and Array accces.
-
-- If the object has an associated  `reader` property, indirect references are resolved lazily and transparently
-as elements in the structure are dereferenced.
-- Hashs and arrays automaticaly coerced to objects on assignment to a parent object. For example:
-
-```
-sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
-my $catalog = PDF::DAO.coerce({ :Type(/'Catalog') });
-$catalog<Outlines> = PDF::DAO.coerce( { :Type(/'Outlines'), :Count(0) } );
-```
-
-is equivalent to:
-
-```
-sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
-my $catalog = PDF::DAO.coerce({ :Type(/'Catalog') });
-$catalog<Outlines> = { :Type(/'Outlines'), :Count(0) };
-```
-
-PDF::DAO::Tie also provides the `entry` trait (hashes) and `index` (arrays) trait for declaring accessors.
 
 ## Development Status
 

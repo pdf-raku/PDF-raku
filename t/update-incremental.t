@@ -14,17 +14,15 @@ sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
 my $doc = PDF::DAO::Doc.open( 't/pdf/pdf-updated.out', :a );
 my $reader = $doc.reader;
-my $root-obj = $doc<Root>;
+my $catalog = $doc<Root>;
 
 {
-    my $Pages = $root-obj<Pages>;
-    my $Resources = $Pages<Kids>[0]<Resources>;
-    my $MediaBox = $Pages<Kids>[0]<MediaBox>;
-    my $new-page = PDF::DAO.coerce: { :Type(/'Page'), :$MediaBox, :$Resources, :Parent($Pages) };
-    my $contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
-    $new-page<Contents> = $contents;
-    $Pages<Kids>.push: $new-page;
-    $Pages<Count>++;
+    my $Parent = $catalog<Pages>;
+    my $Resources = $Parent<Kids>[0]<Resources>;
+    my $MediaBox = $Parent<Kids>[0]<MediaBox>;
+    my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
+    $Parent<Kids>.push: { :Type(/'Page'), :$MediaBox, :$Resources, :$Parent, :$Contents };
+    $Parent<Count>++;
 }
 
 my $serializer = PDF::Storage::Serializer.new( :$reader );
@@ -59,6 +57,8 @@ my $ind-obj1 = $reader.ind-obj( 3, 0 );
 my $ast1 = $ind-obj1.ast;
 my $prev1 = $doc.reader.prev;
 my $size1 = $doc.reader.size;
+my $Info = $doc.Info //= {};
+$Info.ModDate = DateTime.now;
 $doc.update;
 my $prev2 = $doc.reader.prev;
 ok $prev2 > $prev1, "reader.prev incremented by update"
@@ -85,9 +85,9 @@ $reader = $doc2.reader;
 
 my $ast = $reader.ast( :rebuild );
 is +$ast<pdf><body>, 1, 'single body';
-is +$ast<pdf><body>[0]<objects>, 9, 'read-back has object count';
-is $ast<pdf><body>[0]<objects>[8], ( :ind-obj[9, 0, :stream{ :dict{ Length => :int(70)},
-                                                          :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET")},
+is +$ast<pdf><body>[0]<objects>, 10, 'read-back has object count';
+is-deeply $ast<pdf><body>[0]<objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Length => :int(70)},
+                                                                     :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET")},
                               ]), 'inserted content';
 
 # do a full rewrite of the updated PDF. Output should be cleaned up, with a single body and
