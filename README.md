@@ -1,5 +1,8 @@
 perl6-PDF-Tools
 ===============
+
+# Overview
+
 This provides basic tools for PDF Manipulation, including:
 - PDF::Reader - for indexed random access to PDFs
 - PDF::Storage::Filter - a collection of standard PDF decoding and encoding tools for PDF data streams
@@ -17,7 +20,30 @@ Particular features of this tool-kit include:
 
 Note: This is a fairly low-level module. For higher level PDF manipulation, please see <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a>.
 
-## Hello World Example
+# Introduction
+
+A PDF file contains of data structures, including dictionarys (hashs) arrays, numbers and strings, plus streams
+for holding data such as images, fonts and general content.
+
+PDF files are also indexed for random access and include compress and encryption at various levels.
+
+They have a reasonably well defined file structure and document structure that starts at
+a `Root` entry in the outermost trailer dictionary.  It is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf'>PDF Reference version 1.7<a>.
+
+This module implements the basic data-types and general syntax and serialization rules as described in the first four chapters of the
+specification.
+
+This module provides read and write access to the data structures that make up a PDF via tied arrays and hashes. Much of the details
+of serialization and data representation are hidden.
+
+It also provides a set of class builder utilities to enable building an even higher level of abstract classes.
+
+This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction),
+which  takes on where this module leaves off. It contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
+
+# Example Usage
+
+To create a one page PDF that displays 'Hello, World!'.
 
 ```
 #!/usr/bin/env perl6
@@ -29,22 +55,22 @@ use PDF::DAO::Doc;
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
 my $doc = PDF::DAO::Doc.new;
-my $root     = $doc.Root       = { :Type(/'Catalog') };
-my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
-my $pages    = $root<Pages>    = { :Type(/'Pages') };
+my $catalog  = $doc.Root          = { :Type(/'Catalog') };
+my $outlines = $catalog<Outlines> = { :Type(/'Outlines'), :Count(0) };
+my $pages    = $catalog<Pages>    = { :Type(/'Pages') };
 
-$pages<Kids> = [ { :Type(/'Page'), :MediaBox[0, 0, 420, 595] }, ];
-$pages<Count> = + $pages<Kids>;
-my $page = $pages<Kids>[0];
-$page<Parent> = $pages;
-
-$page<Resources><Procset> = [ /'PDF', /'Text'];
-$page<Resources><Font><F1> = {
+$pages<Resources><Procset> = [ /'PDF', /'Text'];
+$pages<Resources><Font><F1> = {
         :Type(/'Font'),
         :Subtype(/'Type1'),
         :BaseFont(/'Helvetica'),
         :Encoding(/'MacRomanEncoding'),
     };
+
+$pages<Kids> = [ { :Type(/'Page'), :MediaBox[0, 0, 420, 595] }, ];
+$pages<Count> = + $pages<Kids>;
+my $page = $pages<Kids>[0];
+$page<Parent> = $pages;
 
 $page<Contents> = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 
@@ -52,7 +78,25 @@ my $info = $doc.Info = {};
 $info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
 $info.Author = 'PDF-Tools/t/helloworld.t';
 
-$doc.save-as("t/helloworld.pdf");
+$doc.save-as: 't/helloworld.pdf';
+```
+
+Then to update the PDF, adding another page:
+
+```
+use v6;
+use PDF::DAO::Doc;
+
+my $doc = PDF::DAO::Doc.open: 't/helloworld.pdf';
+my $catalog = $doc<Root>;
+
+my $Parent = $catalog<Pages>;
+my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  90 250 Td (Goodbye for now!) Tj ET" ) } );
+$Parent<Kids>.push: { :Type(/'Page'), :$Parent, :$Contents };
+$Parent<Count>++;
+
+$doc.Info.ModDate = DateTime.now;
+$doc.update;
 ```
 
 # Data Access Objects
@@ -186,11 +230,6 @@ PDF::DAO::Doc | PDF::DAO::Dict | the absolute root of the document- the trailer 
 PDF::DAO::Type::Encrypt | PDF::DAO::Dict | PDF Encryption/Permissions dictionary
 PDF::DAO::Type::ObjStm | PDF::DAO::Stream | PDF 1.5+ Object stream (holds compressed objects)
 PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
-
-## See also
-
-This module's 'biggest customer' is <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> - an evolving general
-purpose high level PDF manipulation library.
 
 # Reading and Writing of PDF files:
 
