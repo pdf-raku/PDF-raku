@@ -67,12 +67,15 @@ my $size2 = $doc.reader.size;
 ok $size2 > $size1, "reader.size incremented by update"
    or diag "size1:$size1  size2:$size2";
 my $ind-obj2;
-lives-ok { $ind-obj2 = $reader.ind-obj( 3, 0 )}, "post update access - lives";
+lives-ok { $ind-obj2 = $reader.ind-obj( 3, 0 )}, "post update reader access - lives";
 
 ok $ind-obj1 !=== $ind-obj2, 'indirect object has been updated';
 my $ast2 = $ind-obj2.ast;
 todo "not quite equivalent";
 is-deeply $ast1, $ast2, 'indirect object ast equivalence';
+
+is $doc.Size, $size2, 'document trailer - updated Size';
+isa-ok $doc<Root><Pages><Kids>[1], PDF::DAO::Dict, 'updated page 2 access';
 
 # now re-read the pdf. Will also test our ability to read a PDF
 # with multiple body segments
@@ -89,6 +92,6 @@ is $ast<pdf><body>[0]<objects>[8], ( :ind-obj[9, 0, :stream{ :dict{ Length => :i
 
 # do a full rewrite of the updated PDF. Output should be cleaned up, with a single body and
 # cleansed of old object versions.
-ok $doc2.save-as('t/pdf/pdf-updated-and-rewritten.out', :rebuild);
+ok $doc2.save-as('t/pdf/pdf-updated-and-rewritten.out', :rebuild), 'save-as :rebuild';
 
 done-testing;
