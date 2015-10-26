@@ -15,11 +15,51 @@ Particular features od this tool-kit include:
 - high level data access via tied Hashes and Arrays
 - a type system for mapping PDF internal structures to Perl 6 objects
 
+Note: This is a fairly low-level module. For higher level PDF manipulation, please see <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a>.
+
+## Hello World Example
+
+```
+#!/usr/bin/env perl6
+# creates t/helloworld.pdf
+use v6;
+use PDF::DAO;
+use PDF::DAO::Doc;
+
+sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
+
+my $doc = PDF::DAO::Doc.new;
+my $root     = $doc.Root       = { :Type(/'Catalog') };
+my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
+my $pages    = $root<Pages>    = { :Type(/'Pages') };
+
+$pages<Kids> = [ { :Type(/'Page'), :MediaBox[0, 0, 420, 595] }, ];
+$pages<Count> = + $pages<Kids>;
+my $page = $pages<Kids>[0];
+$page<Parent> = $pages;
+
+$page<Resources><Procset> = [ /'PDF', /'Text'];
+$page<Resources><Font><F1> = {
+        :Type(/'Font'),
+        :Subtype(/'Type1'),
+        :BaseFont(/'Helvetica'),
+        :Encoding(/'MacRomanEncoding'),
+    };
+
+$page<Contents> = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
+
+my $info = $doc.Info = {};
+$info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
+$info.Author = 'PDF-Tools/t/helloworld.t';
+
+$doc.save-as("t/helloworld.pdf");
+```
+
 # Data Access Objects
 
 PDF::DAO is roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
 
-The following outlines the  setup of document root class `MyPDF::Catalog`.
+The following outlines the setup, from scratch, of document root class `MyPDF::Catalog`.
 ```
 use PDF::DAO::Tie;
 use PDF::DAO::Type;
@@ -60,46 +100,93 @@ my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
 - `$Catalog.Pages` will autoload and Coerce to type `MyPDF::Pages`
 - If that should fail (and there's no `PDF::DAO::Type::Pages` class), it falls-back to a plain `PDF::DAO::Dict` object.
 
-## Hello World Example
+## Datatypes and Coercian
 
-The "DAO" level can be directly used to manipulate PDF data. The following example demonstrates
-the creation of a 'Hello World!' PDF from scratch.
+The PDF::DAO namespace provides basic data-type classes for the representation and manipulation of PDF Objects.
 
 ```
-#!/usr/bin/env perl6
-# creates t/helloworld.pdf
+use PDF::DAO::Stream;
+my %dict = :Filter( :name<ASCIIHexDecode> );
+my $obj-num = 123;
+my $gen-num = 4;
+my $decoded = "100 100 Td (Hello, world!) Tj";
+my $stream-obj = PDF::DAO::Stream.new( :$obj-num, :$gen-num, :$dict, :$decoded );
+say $stream.obj.encoded;
+```
+
+`PDF::DAO.coerce` is a method for the construction of objects.
+
+It is used internally to build objects from parsed AST data, e.g.:
+
+```
 use v6;
+use PDF::Grammar::Doc;
+use PDF::Grammar::Doc::Actions;
 use PDF::DAO;
-use PDF::DAO::Doc;
+my $actions = PDF::Grammar::Doc::Actions.new;
+PDF::Grammar::Doc.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :rule<object>, :$actions)
+    or die "parse failed";
+my $ast = $/.ast;
 
-sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
+say '#'~$ast.perl;
+#:dict({:Count(:int(1)), :Kids(:array([:ind-ref([4, 0])])), :Type(:name("Pages"))})
 
-my $doc = PDF::DAO::Doc.new;
-my $root     = $doc.Root       = { :Type(/'Catalog') };
-my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
-my $pages    = $root<Pages>    = { :Type(/'Pages') };
+my $object = PDF::DAO.coerce( %$ast );
 
-$pages<Kids> = [ { :Type(/'Page'), :MediaBox[0, 0, 420, 595] }, ];
-$pages<Count> = + $pages<Kids>;
-my $page = $pages<Kids>[0];
-$page<Parent> = $pages;
+say '#'~$object.WHAT.gist;
+#(PDF::DAO::Dict)
 
-$page<Resources><Procset> = [ /'PDF', /'Text'];
-$page<Resources><Font><F1> = {
-        :Type(/'Font'),
-        :Subtype(/'Type1'),
-        :BaseFont(/'Helvetica'),
-        :Encoding(/'MacRomanEncoding'),
-    };
+say '#'~$object.perl;
+#{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
 
-$page<Contents> = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
+say '#'~$object<Type>;
+#(Str+{PDF::DAO::Name})
 
-my $info = $doc.Info = {};
-$info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
-$info.Author = 'PDF-Tools/t/helloworld.t';
-
-$doc.save-as("t/helloworld.pdf");
+say '#'~$object<Type>.WHAT.gist;
+#{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
 ```
+`PDF::DAO.coerce` method is also used to construct new objects from application data.
+
+In some cases, we can omit the AST tags. E.g. we can use `1`, instead of `:int(1)`:
+```
+# using explicit AST tags
+my $object2 = PDF::DAO.coerce({ :Type( :name<Pages> ),
+                                :Count(:int(1)),
+                                :Kids( :array[ :ind-ref[4, 0] ) ] });
+
+# same but with a casting from native typs
+my $object3 = PDF::DAO.coerce({ :Type( :name<Pages> ),
+                                :Count(1),
+                                :Kids[ :ind-ref[4, 0] ] });
+say '#'~$object2.perl;
+
+```
+
+A table of Object types follows:
+
+*AST Tag* | Object Role/Class | *Perl 6 Type | PDF Example | Description |
+--- | --- | --- | --- | --- |
+ `array` | PDF::DAO::Array | Array | `[ 1 (foo) /Bar ]` | array objects
+`bool` | PDF::DAO::Bool | Bool | `true`
+`int` | PDF::DAO::Int | Int | `42`
+`literal` | PDF::DAO::ByteString (literal) | Str | `(hello world)`
+`literal` | PDF::DAO::DateString | DateTime | `(D:199812231952-08'00')`
+`hex-string` | PDF::DAO::ByteString (hex-string) | | `<736E6F6f7079>`
+`dict` | PDF::DAO::Dict | Hash | `<< /Length 42 /Apples(oranges) >>` | abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
+`name` | PDF::DAO::Name | | `/Catalog`
+`null` | PDF::DAO::Null | Any | `null`
+`real` | PDF::DAO::Real | Numeric | `3.14159`
+`stream`| PDF::DAO::Stream | | | abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
+
+PDF::DAO also provides a few essential derived classes:
+
+*Class* | *Base Class* | *Description*
+--- | --- | --- |
+PDF::DAO::Doc | PDF::DAO::Dict | the absolute root of the document- the trailer dictionary
+PDF::DAO::Type::Encrypt | PDF::DAO::Dict | PDF Encryption/Permissions dictionary
+PDF::DAO::Type::ObjStm | PDF::DAO::Stream | PDF 1.5+ Object stream (holds compressed objects)
+PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
+
 ## See also
 
 This module's 'biggest customer' is <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> - an evolving general
@@ -136,94 +223,6 @@ saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
 ## See also:
 - `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] <pdf-or-json-file-in> <pdf-or-json-file-out>`
 This script is a thin wrapper for the `PDF::DAO::Doc` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
-
-# Classes
-
-## PDF::DAO
-
-Classes for the representation and manipulation of PDF Objects.
-
-```
-use PDF::DAO::Stream;
-my %dict = :Filter( :name<ASCIIHexDecode> );
-my $obj-num = 123;
-my $gen-num = 4;
-my $decoded = "100 100 Td (Hello, world!) Tj";
-my $stream-obj = PDF::DAO::Stream.new( :$obj-num, :$gen-num, :$dict, :$decoded );
-say $stream.obj.encoded;
-```
-
-The `PDF::DAO.coerce` is a method for the construction of objects.
-
-It is used internally to build objects from parsed objects, e.g.:
-
-```
-use v6;
-use PDF::Grammar::Doc;
-use PDF::Grammar::Doc::Actions;
-use PDF::DAO;
-my $actions = PDF::Grammar::Doc::Actions.new;
-PDF::Grammar::Doc.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :rule<object>, :$actions)
-    or die "parse failed";
-my $ast = $/.ast;
-
-say '#'~$ast.perl;
-#:dict({:Count(:int(1)), :Kids(:array([:ind-ref([4, 0])])), :Type(:name("Pages"))})
-
-my $object = PDF::DAO.coerce( %$ast );
-
-say '#'~$object.WHAT.gist;
-#(PDF::DAO::Dict)
-
-say '#'~$object.perl;
-#{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
-
-say '#'~$object<Type>;
-#(Str+{PDF::DAO::Name})
-
-say '#'~$object<Type>.WHAT.gist;
-#{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
-```
-The coerce method is also used to construct new objects.
-
-In some cases, we can omit the AST tags. E.g. we can use `1`, instead of `:int(1)`:
-```
-# using explicit AST tags
-my $object2 = PDF::DAO.coerce({ :Type( :name<Pages> ),
-                                :Count(:int(1)),
-                                :Kids( :array[ :ind-ref[4, 0] ) ] });
-
-# same but with a casting from native typs
-my $object3 = PDF::DAO.coerce({ :Type( :name<Pages> ),
-                                :Count(1),
-                                :Kids[ :ind-ref[4, 0] ] });
-say '#'~$object2.perl;
-
-```
-
-A table of Object types follows:
-
-*AST Tag* | Object Role/Class | *Perl 6 Type | PDF Example | Description |
---- | --- | --- | --- | --- |
- `array` | PDF::DAO::Array | Array | `[ 1 (foo) /Bar ]` | array objects
-`bool` | PDF::DAO::Bool | Bool | `true`
-`int` | PDF::DAO::Int | Int | `42`
-`literal` | PDF::DAO::ByteString (literal) | Str | `(hello world)`
-`literal` | PDF::DAO::DateString | DateTime | `(D:199812231952-08'00')`
-`hex-string` | PDF::DAO::ByteString (hex-string) | | `<736E6F6f7079>`
-`dict` | PDF::DAO::Dict | Hash | `<< /Length 42 /Apples(oranges) >>` | abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
-`name` | PDF::DAO::Name | | `/Catalog`
-`null` | PDF::DAO::Null | Any | `null`
-`real` | PDF::DAO::Real | Numeric | `3.14159`
-`stream`| PDF::DAO::Stream | | | abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
-
-Derived objects provided by PDF::Tools:
-
-*Class* | *Base Class* | *Description*
---- | --- | --- |
-PDF::DAO::Doc | PDF::DAO::Dict | the absolute root of the document- the trailer dictionary
-PDF::DAO::Type::ObjStm | PDF::DAO::Stream | PDF 1.5+ Object stream (holds compressed objects)
-PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 
 ## PDF::Reader
 
@@ -310,12 +309,6 @@ my $prev = $body<trailer><dict><Prev>.value;
 my $writer = PDF::Writer.new( :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 ```
-
-# PDF::DAO - Type System
-
-PDF::DAO enable direct high level access to PDF internal data as nested Hashes and Arrays. Data
-is automatically fetch from open input PDF files as the data structures are dereferenced.
-
 
 ## PDF::DAO::Delegator
 
