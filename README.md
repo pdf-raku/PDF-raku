@@ -36,7 +36,7 @@ sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 my $doc = PDF::DAO::Doc.new;
 my $catalog  = $doc.Root          = { :Type(/'Catalog') };
 my $outlines = $catalog<Outlines> = { :Type(/'Outlines'), :Count(0) };
-my $pages    = $catalog<Pages>    = { :Type(/'Pages') };
+my $pages    = $catalog<Pages>    = { :Type(/'Pages'), :MediaBox[0, 0, 420, 595] };
 
 $pages<Resources><Procset> = [ /'PDF', /'Text'];
 $pages<Resources><Font><F1> = {
@@ -46,7 +46,7 @@ $pages<Resources><Font><F1> = {
         :Encoding(/'MacRomanEncoding'),
     };
 
-$pages<Kids> = [ { :Type(/'Page'), :MediaBox[0, 0, 420, 595] }, ];
+$pages<Kids> = [ { :Type(/'Page') }, ];
 $pages<Count> = + $pages<Kids>;
 my $page = $pages<Kids>[0];
 $page<Parent> = $pages;
@@ -67,8 +67,8 @@ use v6;
 use PDF::DAO::Doc;
 
 my $doc = PDF::DAO::Doc.open: 't/helloworld.pdf';
-my $catalog = $doc<Root>;
 
+my $catalog = $doc<Root>;
 my $Parent = $catalog<Pages>;
 my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  90 250 Td (Goodbye for now!) Tj ET" ) } );
 $Parent<Kids>.push: { :Type(/'Page'), :$Parent, :$Contents };
@@ -84,7 +84,7 @@ $doc.update;
 A PDF file consists of data structures, including dictionarys (hashs) arrays, numbers and strings, plus streams
 for holding data such as images, fonts and general content.
 
-PDF files are also indexed for random access and include stream compression and overall encryption.
+PDF files are also indexed for random access and may also have filters for stream compression and overall encryption.
 
 They have a reasonably well specified structure. The document structure starts from
 a `Root` entry in the outermost trailer dictionary.
@@ -109,7 +109,7 @@ use PDF::DAO::Type;
 use PDF::DAO::Dict;
 
 class My::Delegator is PDF::DAO::Delegator {
-    method class-paths {<MyPDF PDF::DOM::Type>}
+    method class-paths {<MyPDF PDF::DAO::Type>}
 }
 
 PDF::DAO.delegator = My::Delegator;
@@ -145,7 +145,7 @@ my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
 
 ## Datatypes and Coercian
 
-The PDF::DAO namespace provides basic data-type classes for the representation and manipulation of PDF Objects.
+The `PDF::DAO` namespace provides basic data-type classes for the representation and manipulation of PDF Objects.
 
 ```
 use PDF::DAO::Stream;
@@ -190,7 +190,7 @@ say '#'~$object<Type>.WHAT.gist;
 ```
 `PDF::DAO.coerce` method is also used to construct new objects from application data.
 
-In some cases, we can omit the AST tags. E.g. we can use `1`, instead of `:int(1)`:
+In many cases, AST tags will coerce if omitted. E.g. we can use `1`, instead of `:int(1)`:
 ```
 # using explicit AST tags
 my $object2 = PDF::DAO.coerce({ :Type( :name<Pages> ),
@@ -205,7 +205,7 @@ say '#'~$object2.perl;
 
 ```
 
-A table of Object types follows:
+A table of Object types and coercements follows:
 
 *AST Tag* | Object Role/Class | *Perl 6 Type Coercian | PDF Example | Description |
 --- | --- | --- | --- | --- |
@@ -221,7 +221,7 @@ A table of Object types follows:
 `real` | PDF::DAO::Real | Numeric | `3.14159`
 `stream`| PDF::DAO::Stream | | | abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
 
-PDF::DAO also provides a few essential derived classes:
+`PDF::DAO` also provides a few essential derived classes:
 
 *Class* | *Base Class* | *Description*
 --- | --- | --- |
@@ -258,7 +258,7 @@ Documents can also be saved and restored from an intermediate `JSON` representat
 be handy for debugging, analysis and/or ad-hoc patching of PDF files. Beware that
 saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
 
-## See also:
+### See also:
 - `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] <pdf-or-json-file-in> <pdf-or-json-file-out>`
 This script is a thin wrapper for the `PDF::DAO::Doc` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
 
@@ -268,8 +268,6 @@ The `PDF::Reader` `.open` method oads a PDF index (cross reference table and/or 
 `.ind.obj(...)` method.
 
 The document can be traversed by dereferencing Array and Hash objects. The reader will load indirect objects via the index, as needed. 
-
-If PDF::DOM is loaded, the document can be traversed as a DOM object tree:
 
 ```
 use PDF
@@ -331,7 +329,13 @@ my $offset = $reader.input.chars + 1;
 my $prev = $body<trailer><dict><Prev>.value;
 my $writer = PDF::Writer.new( :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
+
 ```
+
+## See also
+
+- [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing
+- [PDF::DOM](https://github.com/p6-pdf/perl6-PDF-DOM) - PDF Document Object Model (under construction)
 
 ## Development Status
 
