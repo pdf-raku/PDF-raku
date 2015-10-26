@@ -7,7 +7,7 @@ This provides basic tools for PDF Manipulation, including:
 - PDF::Writer - for the creation or update of PDFs
 - PDF::DAO -  an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures.
 
-Particular features od this tool-kit include:
+Particular features of this tool-kit include:
 
 - index based reading from PDF, with lazy loading of objects
 - lazy incremental updates
