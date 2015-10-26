@@ -14,8 +14,8 @@ class PDF::DAO::Type::ObjStm
     use PDF::DAO::Tie;
 
     # see [PDF 1.7 TABLE 3.14 Additional entries specific to an object stream dictionary]
-    has Int $.N is entry(:required);             #| (Required) The number of compressed objects in the stream.
-    has Int $.First is entry(:required);         #| (Required) The byte offset (in the decoded stream) of the first compressed object.
+    has UInt $.N is entry(:required);         #| (Required) The number of compressed objects in the stream.
+    has UInt $.First is entry(:required);     #| (Required) The byte offset (in the decoded stream) of the first compressed object.
     has PDF::DAO::Stream $.Extends is entry;  #| (Optional) A reference to an object stream, of which the current object stream is considered an extension
 
     method cb-init {
@@ -27,9 +27,9 @@ class PDF::DAO::Type::ObjStm
     method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {
         my @idx;
         my Str $objects-str = '';
-        my Int $offset = 0;
+        my UInt $offset = 0;
         for $objstm.list { 
-            my Int $obj-num = .[0];
+            my UInt $obj-num = .[0];
             my Str $object-str = .[1];
             if $check {
                 PDF::Grammar::PDF.parse( $object-str, :rule<object> )
@@ -48,8 +48,8 @@ class PDF::DAO::Type::ObjStm
 
     method decode($? --> Array) {
         my Str $chars = callsame;
-        my Int $first = $.First;
-        my Int $n = $.N;
+        my UInt $first = $.First;
+        my UInt $n = $.N;
 
         my Str $object-index-str = substr($chars, 0, $first - 1);
         my Str $objects-str = substr($chars, $first);
@@ -64,9 +64,9 @@ class PDF::DAO::Type::ObjStm
             unless +$object-index >= $n;
 
         [ (0 ..^ $n).map: -> $i {
-            my Int $obj-num = $object-index[$i][0].Int;
-            my Int $start = $object-index[$i][1];
-            my Int $end = $object-index[$i + 1]:exists
+            my UInt $obj-num = $object-index[$i][0].Int;
+            my UInt $start = $object-index[$i][1];
+            my UInt $end = $object-index[$i + 1]:exists
                 ?? $object-index[$i + 1][1]
                 !! $objects-str.chars;
             my Int $length = $end - $start;

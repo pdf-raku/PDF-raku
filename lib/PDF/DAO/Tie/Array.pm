@@ -8,7 +8,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
     has Attribute $.positional is rw;      #| default attribute
     has Bool $!composed;
 
-    sub tie-att-array($object, Int $idx, Attribute $att) is rw {
+    sub tie-att-array($object, UInt $idx, Attribute $att) is rw {
 
 	sub type-check($val is copy, Mu $type) is rw is default {
 	  if !$val.defined {
@@ -35,7 +35,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	    });
     }
 
-    multi method rw-accessor(Int $idx!, Attribute $att) {
+    multi method rw-accessor(UInt $idx!, Attribute $att) {
 	tie-att-array(self, $idx, $att);
     }
 

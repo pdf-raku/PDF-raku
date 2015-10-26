@@ -13,14 +13,14 @@ our class PDF::DAO::Type::XRef
     use PDF::DAO::Tie;
 
 #| See [PDF 1.7 TABLE 3.15 Additional entries specific to a cross-reference stream dictionary]
-    has Int $.Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
+    has UInt $.Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
     # rakudo 2015.07.1-12-g174049f; Index is a reserved attribute
-    has UInt @.Index is entry;           #| (Optional) An array containing a pair of integers for each subsection in this section. The first integer is the first object number in the subsection; the second integer is the number of entries in the subsection
-    has Int $.Prev is entry;             #| (Present only if the file has more than one cross-reference stream; not meaningful in hybrid-reference files) The byte offset from the beginning of the file to the beginning of the previous cross-reference stream. This entry has the same function as the Prev entry in the trailer dictionary (
-    has UInt @.W is entry(:required);    #| (Required) An array of integers, each representing the size of the fields in a single cross-reference entry.
+    has UInt @.Index is entry;            #| (Optional) An array containing a pair of integers for each subsection in this section. The first integer is the first object number in the subsection; the second integer is the number of entries in the subsection
+    has UInt $.Prev is entry;             #| (Present only if the file has more than one cross-reference stream; not meaningful in hybrid-reference files) The byte offset from the beginning of the file to the beginning of the previous cross-reference stream. This entry has the same function as the Prev entry in the trailer dictionary (
+    has UInt @.W is entry(:required);     #| (Required) An array of integers, each representing the size of the fields in a single cross-reference entry.
 
 #| See [PDF 1.7 TABLE 3.17 Additional entries in a hybrid-reference file’s trailer dictionary]
-    has Int $.XRefStm is entry;          #| (Optional) The byte offset from the beginning of the file of a cross-reference stream.
+    has UInt $.XRefStm is entry;          #| (Optional) The byte offset from the beginning of the file of a cross-reference stream.
 
     method first-obj-num is rw { self<Index>[0] }
     method next-obj-num is rw { self<Size> }
@@ -44,8 +44,8 @@ our class PDF::DAO::Type::XRef
 
         # /W resize to widest byte-widths, if needed
         for 0..2 -> $i {
-            my Int $val = $xref.map({ .[$i] }).max;
-            my Int $max-bytes;
+            my UInt $val = $xref.map({ .[$i] }).max;
+            my UInt $max-bytes;
 
             repeat {
                 $max-bytes++;
@@ -110,7 +110,7 @@ our class PDF::DAO::Type::XRef
     #= an extra decoding stage - build index entries from raw decoded data
     multi method decode-to-stage2($encoded = $.encoded) {
 
-        my Int $i = 0;
+        my UInt $i = 0;
         my Array $index = self<Index> // [ 0, $.Size ];
         my Array $decoded-stage2 = [];
 
@@ -120,18 +120,18 @@ our class PDF::DAO::Type::XRef
 
             for 1 .. $num-entries {
                 my Array $idx = $decoded[$i++];
-                my Int $type = $idx[0];
+                my UInt $type = $idx[0];
                 given $type {
                     when 0|1 {
                         # free or inuse objects
-                        my Int $offset = $idx[1];
-                        my Int $gen-num = $idx[2];
+                        my UInt $offset = $idx[1];
+                        my UInt $gen-num = $idx[2];
                         $decoded-stage2.push( { :$type, :$obj-num, :$gen-num, :$offset }.item );
                     }
                     when 2 {
                         # embedded objects
-                        my Int $ref-obj-num = $idx[1];
-                        my Int $index = $idx[2];
+                        my UInt $ref-obj-num = $idx[1];
+                        my UInt $index = $idx[2];
                         $decoded-stage2.push( { :$type, :$obj-num, :$ref-obj-num, :$index }.item );
                     }
                     default {

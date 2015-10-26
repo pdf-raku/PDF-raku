@@ -47,8 +47,8 @@ class PDF::Writer {
         for $body<objects>.list -> $obj {
 
             if my $ind-obj = $obj<ind-obj> {
-                my Int $obj-num = $ind-obj[0];
-                my Int $gen-num = $ind-obj[1];
+                my UInt $obj-num = $ind-obj[0];
+                my UInt $gen-num = $ind-obj[1];
 
                 @entries.push: { :type(1), :$.offset, :$gen-num, :$obj-num, :$ind-obj };
                 @out.push: $.write( :$ind-obj );
@@ -91,7 +91,7 @@ class PDF::Writer {
             }
 
             my Str $xref-str = $.write( :@xref );
-            my Int $startxref = $.offset;
+            my UInt $startxref = $.offset;
 
             @out.push: [~] (
                 $xref-str,
@@ -215,7 +215,7 @@ class PDF::Writer {
     }
 
     multi method write(Array :$ind-obj! ) {
-        my (Int $obj-num, Int $gen-num, $object where Pair | Hash) = @$ind-obj;
+        my (UInt $obj-num, UInt $gen-num, $object where Pair | Hash) = @$ind-obj;
 
         (sprintf('%d %d obj', $obj-num, $gen-num),
          $.write( $object ),
@@ -314,7 +314,7 @@ class PDF::Writer {
         ( "trailer", $.write( :%dict ), '' ).join: "\n";
     }
 
-    multi method write(Int :$startxref! ) {
+    multi method write(UInt :$startxref! ) {
         "startxref\n" ~ $.write( :int( $startxref) ) ~ "\n"
     }
 

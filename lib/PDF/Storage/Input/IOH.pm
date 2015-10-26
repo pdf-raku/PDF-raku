@@ -7,7 +7,7 @@ class PDF::Storage::Input::IOH
 
     has IO::Handle $.value is rw;
     has Str $!str;
-    has Int $.chars is rw;
+    has UInt $.chars is rw;
 
     BEGIN constant SEEK-FROM-START = 0;
     BEGIN constant SEEK-FROM-EOF = 2;
@@ -24,11 +24,11 @@ class PDF::Storage::Input::IOH
     }
 
     multi method substr( WhateverCode $from-whatever!, |c ) {
-        my Int $from = $from-whatever( $.chars );
+        my UInt $from = $from-whatever( $.chars );
         $.substr( $from, |c );
     }
 
-    multi method substr( Int $from!, $length = $.chars - $from + 1) {
+    multi method substr( UInt $from!, UInt $length = $.chars - $from + 1) {
         return $!str.substr( $from, $length )
             if $!str.defined;
         $!value.seek( $from, SEEK-FROM-START );

@@ -4,8 +4,8 @@ class PDF::Storage::IndObj {
 
     use PDF::DAO;
 
-    has Int $.obj-num;
-    has Int $.gen-num;
+    has Int $.obj-num;   #| positive object number, 0 for trailer, or -1 to force renumbering
+    has UInt $.gen-num;
     has $.object handles <content>;
 
     #| construct by wrapping a pre-existing PDF::DAO

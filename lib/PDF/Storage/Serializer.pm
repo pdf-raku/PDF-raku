@@ -9,7 +9,7 @@ class PDF::Storage::Serializer {
     use PDF::DAO::Util :to-ast;
     use PDF::Writer;
 
-    has Int $.size is rw = 1;  # first free object number
+    has UInt $.size is rw = 1;  # first free object number
     has @.ind-objs;
     has %!obj-num-idx;
     has %.ref-count;
@@ -123,7 +123,7 @@ class PDF::Storage::Serializer {
         my Int $obj-num = $object.obj-num 
 	    if $object.can('obj-num')
 	    && (! $.reader || $object.reader === $.reader);
-        my Int $gen-num;
+        my UInt $gen-num;
 	my subset IsTrailer of UInt where 0;
 
         if $obj-num.defined && (($obj-num > 0 && ! $.renumber) || $obj-num ~~ IsTrailer) {
