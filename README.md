@@ -1,16 +1,16 @@
 perl6-PDF-Tools
 ===============
 
-# Overview
+## Overview
 
-This provides basic tools for PDF Manipulation, including:
+This module provides basic tools for PDF Manipulation, including:
 - PDF::Reader - for indexed random access to PDFs
 - PDF::Storage::Filter - a collection of standard PDF decoding and encoding tools for PDF data streams
 - PDF::Storage::Serializer - data marshalling utilies for the preparation of full or incremental updates
 - PDF::Writer - for the creation or update of PDFs
 - PDF::DAO -  an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures.
 
-Particular features of this tool-kit include:
+Features of this tool-kit include:
 
 - index based reading from PDF, with lazy loading of objects
 - lazy incremental updates
@@ -18,30 +18,28 @@ Particular features of this tool-kit include:
 - high level data access via tied Hashes and Arrays
 - a type system for mapping PDF internal structures to Perl 6 objects
 
-Note: This is a fairly low-level module. For higher level PDF manipulation, please see <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a>.
+Note: This is a low-to-medium level module. For higher level PDF manipulation, please see <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a>.
 
-# Introduction
+## Introduction
 
-A PDF file contains of data structures, including dictionarys (hashs) arrays, numbers and strings, plus streams
+A PDF file consists of data structures, including dictionarys (hashs) arrays, numbers and strings, plus streams
 for holding data such as images, fonts and general content.
 
-PDF files are also indexed for random access and include compress and encryption at various levels.
+PDF files are also indexed for random access and include stream compression and overall encryption.
 
-They have a reasonably well defined file structure and document structure that starts at
-a `Root` entry in the outermost trailer dictionary.  It is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf'>PDF Reference version 1.7<a>.
+They have a reasonably well specified structure. The document structure starts from
+a `Root` entry in the outermost trailer dictionary.
 
-This module implements the basic data-types and general syntax and serialization rules as described in the first four chapters of the
-specification.
+This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf'>PDF Reference version 1.7<a>. It implements the syntax,  basic data-types and serialization rules as described in the first four chapters of the specification.
 
-Read and write access to data structures is via direct manipulation of tied arrays and hashes. Much of the details
-of serialization and data representation are hidden.
+Read and write access to data structures is via direct manipulation of tied arrays and hashes. The details
+of serialization and data representation mostly remain hidden.
 
 PDF::DAO also provides a set of class builder utilities to enable building an even higher level of abstract classes.
 
-This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction),
-which  takes on where this module leaves off. It contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
+This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction), which continues on where this module leaves off. It contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
 
-# Example Usage
+## Example Usage
 
 To create a one page PDF that displays 'Hello, World!'.
 
@@ -100,7 +98,7 @@ $info.ModDate = DateTime.now;
 $doc.update;
 ```
 
-# Data Access Objects
+## Data Access Objects
 
 PDF::DAO is roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
 
@@ -209,7 +207,7 @@ say '#'~$object2.perl;
 
 A table of Object types follows:
 
-*AST Tag* | Object Role/Class | *Perl 6 Type | PDF Example | Description |
+*AST Tag* | Object Role/Class | *Perl 6 Type Coercian | PDF Example | Description |
 --- | --- | --- | --- | --- |
  `array` | PDF::DAO::Array | Array | `[ 1 (foo) /Bar ]` | array objects
 `bool` | PDF::DAO::Bool | Bool | `true`
@@ -232,7 +230,7 @@ PDF::DAO::Type::Encrypt | PDF::DAO::Dict | PDF Encryption/Permissions dictionary
 PDF::DAO::Type::ObjStm | PDF::DAO::Stream | PDF 1.5+ Object stream (holds compressed objects)
 PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 
-# Reading and Writing of PDF files:
+## Reading and Writing of PDF files:
 
 `PDF::DAO::Doc` is a base class for loading, editing and saving documents in PDF, FDF and other related formats.
 
@@ -328,9 +326,9 @@ Each file has `encode` and `decode` methods. Both return latin-1 encoded strings
  say $encoded.chars;
  ```
 
-## PDF::Storage::Serializer
+## Serialization
 
-Constructs AST for output by PDF::Writer. It can create full PDF bodies, or just changes for in-place incremental update to a PDF.
+PDF::Storage::Serializer constructs AST for output by PDF::Writer. It can create full PDF bodies, or just changes for in-place incremental update to a PDF.
 
 In place edits are particularly effective for making small changes to large PDF's, when we can avoid loading large unmodified portions of the PDF.
 
@@ -339,9 +337,7 @@ my $serializer = PDF::Storage::Serializer.new;
 my $body = $serializer.body( $reader, :updates );
 ```
 
-## PDF::Writer
-
-Reserializes an AST back to a PDF image with a rebuilt cross reference table.
+PDF::Writer then converts the AST back to a PDF byte image, with a rebulilt cross reference index.
 
 ```
 my $offset = $reader.input.chars + 1;
