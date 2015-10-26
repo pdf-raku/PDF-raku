@@ -4,11 +4,11 @@ perl6-PDF-Tools
 ## Overview
 
 This module provides basic tools for PDF Manipulation, including:
-- PDF::Reader - for indexed random access to PDFs
-- PDF::Storage::Filter - a collection of standard PDF decoding and encoding tools for PDF data streams
-- PDF::Storage::Serializer - data marshalling utilies for the preparation of full or incremental updates
-- PDF::Writer - for the creation or update of PDFs
-- PDF::DAO -  an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures.
+- `PDF::Reader` - for indexed random access to PDFs
+- `PDF::Storage::Filter` - a collection of standard PDF decoding and encoding tools for PDF data streams
+- `PDF::Storage::Serializer` - data marshalling utilies for the preparation of full or incremental updates
+- `PDF::Writer` - for the creation or update of PDFs
+- `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures.
 
 Features of this tool-kit include:
 
@@ -18,26 +18,7 @@ Features of this tool-kit include:
 - high level data access via tied Hashes and Arrays
 - a type system for mapping PDF internal structures to Perl 6 objects
 
-Note: This is a low-to-medium level module. For higher level PDF manipulation, please see <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a>.
-
-## Introduction
-
-A PDF file consists of data structures, including dictionarys (hashs) arrays, numbers and strings, plus streams
-for holding data such as images, fonts and general content.
-
-PDF files are also indexed for random access and include stream compression and overall encryption.
-
-They have a reasonably well specified structure. The document structure starts from
-a `Root` entry in the outermost trailer dictionary.
-
-This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf'>PDF Reference version 1.7<a>. It implements the syntax,  basic data-types and serialization rules as described in the first four chapters of the specification.
-
-Read and write access to data structures is via direct manipulation of tied arrays and hashes. The details
-of serialization and data representation mostly remain hidden.
-
-PDF::DAO also provides a set of class builder utilities to enable building an even higher level of abstract classes.
-
-This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction), which continues on where this module leaves off. It contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
+Note: This is a low-to-medium level module. For higher level PDF manipulation, please see <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction).
 
 ## Example Usage
 
@@ -98,11 +79,30 @@ $info.ModDate = DateTime.now;
 $doc.update;
 ```
 
+## Description
+
+A PDF file consists of data structures, including dictionarys (hashs) arrays, numbers and strings, plus streams
+for holding data such as images, fonts and general content.
+
+PDF files are also indexed for random access and include stream compression and overall encryption.
+
+They have a reasonably well specified structure. The document structure starts from
+a `Root` entry in the outermost trailer dictionary.
+
+This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf'>PDF Reference version 1.7<a> specification. It implements syntax, basic data-types and serialization rules as described in the first four chapters of the specification.
+
+Read and write access to data structures is via direct manipulation of tied arrays and hashes. The details
+of serialization and data representation mostly remain hidden.
+
+`PDF::DAO` also provides a set of class builder utilities to enable an even higher level of abstract classes.
+
+This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction), which contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
+
 ## Data Access Objects
 
-PDF::DAO is roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
+`PDF::DAO` is roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
 
-The following outlines the setup, from scratch, of document root class `MyPDF::Catalog`.
+The following outlines the setup, from scratch, of document mapped classes with root `MyPDF::Catalog`.
 ```
 use PDF::DAO::Tie;
 use PDF::DAO::Type;
@@ -225,7 +225,7 @@ PDF::DAO also provides a few essential derived classes:
 
 *Class* | *Base Class* | *Description*
 --- | --- | --- |
-PDF::DAO::Doc | PDF::DAO::Dict | the absolute root of the document- the trailer dictionary
+PDF::DAO::Doc | PDF::DAO::Dict | the absolute root of the document - the trailer dictionary
 PDF::DAO::Type::Encrypt | PDF::DAO::Dict | PDF Encryption/Permissions dictionary
 PDF::DAO::Type::ObjStm | PDF::DAO::Stream | PDF 1.5+ Object stream (holds compressed objects)
 PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
@@ -262,9 +262,10 @@ saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
 - `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] <pdf-or-json-file-in> <pdf-or-json-file-out>`
 This script is a thin wrapper for the `PDF::DAO::Doc` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
 
-## PDF::Reader
+## Reading PDF files
 
-Loads a PDF index (cross reference table and/or stream), then allows random access via the `$.ind.obj(...)` method.
+The `PDF::Reader` `.open` method oads a PDF index (cross reference table and/or stream). The document can then be access randomly via the
+`.ind.obj(...)` method.
 
 The document can be traversed by dereferencing Array and Hash objects. The reader will load indirect objects via the index, as needed. 
 
@@ -283,23 +284,9 @@ my $page1 = $doc<Pages><Kids>[0];
 
 # Tied objects can also be updated directly.
 $pdf<Info><Creator> = PDF::DAO.coerce( :name<t/helloworld.t> );
-
-# the PDF DOM provides additional functions for navigation and composition
-{
-    use PDF::DOM;
-    my $page = $doc.add-page();
-    my $gfx = $page.gfx;
-
-    my $bold = $page.core-font('Times-Bold');
-    $gfx.set-font($bold, 24);
-    $gfx.text-move(300, 50);
-    $gfx.print('The End!');
-}
-$pdf.save-as('/tmp/example.pdf');
-
 ```
 
-## PDF::Storage::Filter
+## Decode Filters
 
 Filters are used to compress or decompress stream data in objects of type `PDF::DAO::Stream`. These are implemented as follows:
 
