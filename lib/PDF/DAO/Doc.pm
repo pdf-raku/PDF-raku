@@ -43,7 +43,10 @@ class PDF::DAO::Doc
     method update(:$compress) {
 
         my $reader = $.reader
-            // die "pdf is not associated with an input source";
+            // die "PDF is not associated with an input source";
+
+	die "PDF has not been opened for indexed read."
+	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
 
         # todo we should be able to leave the input file open and append to it
         my Numeric $offset = $reader.input.chars + 1;
