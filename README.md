@@ -18,7 +18,7 @@ Features of this tool-kit include:
 - high level data access via tied Hashes and Arrays
 - a type system for mapping PDF internal structures to Perl 6 objects
 
-Note: This is a low-to-medium level module. For higher level PDF manipulation, please see <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction).
+Note: This is a low-to-medium level module that understands physical the structure of a PDF. <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) targets the logical document structure.
 
 ## Example Usage
 
@@ -98,50 +98,6 @@ of serialization and data representation mostly remain hidden.
 
 This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction), which contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
 
-## Data Access Objects
-
-`PDF::DAO` is roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
-
-The following outlines the setup, from scratch, of document mapped classes with root `MyPDF::Catalog`.
-```
-use PDF::DAO::Tie;
-use PDF::DAO::Type;
-use PDF::DAO::Dict;
-
-class My::Delegator is PDF::DAO::Delegator {
-    method class-paths {<MyPDF PDF::DAO::Type>}
-}
-
-PDF::DAO.delegator = My::Delegator;
-
-class MyPDF::Pages
-    is PDF::DAO::Dict
-    does PDF::Oject::Type {
-
-    has MyPDF::Page @.Kids is entry(:required, :indirect);
-}
-
-class MyPDF::Catalog
-    is PDF::DAO::Dict
-    does PDF::DAO::Type {
-
-    # see [PDF 1.7 TABLE 3.25 Entries in the catalog dictionary]
-    use PDF::DAO::Name;
-    has PDF::DAO::Name $.Version is entry;        #| (Optional; PDF 1.4) The version of the PDF specification to which the document conforms (for example, /1.4) 
-    has MyPDF::Pages $.Pages is entry(:required, :indirect); #| (Required; must be an indirect reference) The page tree node
-    # ... etc
-}
-```
-if we then say
-```
-my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
-                                 :Version( :name<PDF>),
-                                 :Pages{ :Type{ :name<Pages> }, :Kids[], :Count(0) } };
-
-```
-`$Catalog` is coerced to type `MyPDF::Catalog`.
-- `$Catalog.Pages` will autoload and Coerce to type `MyPDF::Pages`
-- If that should fail (and there's no `PDF::DAO::Type::Pages` class), it falls-back to a plain `PDF::DAO::Dict` object.
 
 ## Datatypes and Coercian
 
@@ -262,7 +218,7 @@ saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
 - `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] <pdf-or-json-file-in> <pdf-or-json-file-out>`
 This script is a thin wrapper for the `PDF::DAO::Doc` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
 
-## Reading PDF files
+### Reading PDF Files
 
 The `PDF::Reader` `.open` method oads a PDF index (cross reference table and/or stream). The document can then be access randomly via the
 `.ind.obj(...)` method.
@@ -284,7 +240,7 @@ my $page1 = $doc<Pages><Kids>[0];
 $pdf<Info><Creator> = PDF::DAO.coerce( :name<t/helloworld.t> );
 ```
 
-## Decode Filters
+### Decode Filters
 
 Filters are used to compress or decompress stream data in objects of type `PDF::DAO::Stream`. These are implemented as follows:
 
@@ -311,7 +267,7 @@ Each file has `encode` and `decode` methods. Both return latin-1 encoded strings
  say $encoded.chars;
  ```
 
-## Serialization
+### Serialization
 
 PDF::Storage::Serializer constructs AST for output by PDF::Writer. It can create full PDF bodies, or just changes for in-place incremental update to a PDF.
 
@@ -331,6 +287,52 @@ my $writer = PDF::Writer.new( :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
 
 ```
+## Data Access Objects
+
+`PDF::DAO` is roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
+
+It's subclasses and used by `PDF::DOM` to build the extenstive library of document specific classes in the `PDF::DOM::Type` namespace.
+
+The following outlines the setup, from scratch, of document mapped classes with root `MyPDF::Catalog`.
+```
+use PDF::DAO::Tie;
+use PDF::DAO::Type;
+use PDF::DAO::Dict;
+
+class My::Delegator is PDF::DAO::Delegator {
+    method class-paths {<MyPDF PDF::DAO::Type>}
+}
+
+PDF::DAO.delegator = My::Delegator;
+
+class MyPDF::Pages
+    is PDF::DAO::Dict
+    does PDF::Oject::Type {
+
+    has MyPDF::Page @.Kids is entry(:required, :indirect);
+}
+
+class MyPDF::Catalog
+    is PDF::DAO::Dict
+    does PDF::DAO::Type {
+
+    # see [PDF 1.7 TABLE 3.25 Entries in the catalog dictionary]
+    use PDF::DAO::Name;
+    has PDF::DAO::Name $.Version is entry;        #| (Optional; PDF 1.4) The version of the PDF specification to which the document conforms (for example, /1.4) 
+    has MyPDF::Pages $.Pages is entry(:required, :indirect); #| (Required; must be an indirect reference) The page tree node
+    # ... etc
+}
+```
+if we then say
+```
+my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
+                                 :Version( :name<PDF>),
+                                 :Pages{ :Type{ :name<Pages> }, :Kids[], :Count(0) } };
+
+```
+`$Catalog` is coerced to type `MyPDF::Catalog`.
+- `$Catalog.Pages` will autoload and Coerce to type `MyPDF::Pages`
+- If that should fail (and there's no `PDF::DAO::Type::Pages` class), it falls-back to a plain `PDF::DAO::Dict` object.
 
 ## See also
 
