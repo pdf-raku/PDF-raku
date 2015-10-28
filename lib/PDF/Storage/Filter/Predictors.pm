@@ -5,16 +5,16 @@ role PDF::Storage::Filter::Predictors {
     use PDF::Storage::Util :resample;
     # post prediction functions as described in the PDF 1.7 spec, table 3.8
     multi method post-prediction($decoded where Blob | Buf, 
-                                 Int :$Predictor! where { $_ <= 1}, #| predictor function
+                                 UInt :$Predictor! where { $_ <= 1}, #| predictor function
         ) {
         $decoded; # noop
     }
 
     multi method prediction($decoded where Blob | Buf, 
-                            Int :$Predictor! where { $_ == 2}, #| predictor function
-                            Int :$Columns = 1,          #| number of samples per row
-                            Int :$Colors = 1,           #| number of colors per sample
-                            Int :$BitsPerComponent = 8, #| number of bits per color
+                            UInt :$Predictor! where { $_ == 2}, #| predictor function
+                            UInt :$Columns = 1,          #| number of samples per row
+                            UInt :$Colors = 1,           #| number of colors per sample
+                            UInt :$BitsPerComponent = 8, #| number of bits per color
         ) {
         my UInt $bit-mask = 2 ** $BitsPerComponent  -  1;
         my @output;

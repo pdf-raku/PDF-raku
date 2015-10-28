@@ -340,7 +340,7 @@ my $new-body = "\n" ~ $writer.write( :$body );
 ## Development Status
 
 Under construction (not yet released to Perl 6 ecosystem)
-- Highest tested Rakudo version: `perl6 version 2015.10-21-gb0b2489 built on MoarVM version 2015.10`
+- Highest tested Rakudo version: `perl6 version 2015.10-49-ga333147 built on MoarVM version 2015.10`
 - Encryption is NYI.
 
 

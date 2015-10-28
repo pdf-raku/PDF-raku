@@ -8,14 +8,14 @@ class PDF::Storage::Filter::LZW
     # Maintainer's Note: LZW is described in the PDF 1.7 spec
     # in section 3.3.3.
 
-    method encode(Str $input, Bool :$eod, *%params --> Str) {
+    method encode(Str $input, Bool :$eod, :$Predictor, |c --> Str) {
 
         my $dict-size = 256;
         my %dictionary = (.chr => .chr for ^$dict-size);
 
         my Blob $buf = $input.encode('latin-1');
-        $buf = $.prediction( $buf, |%params )
-            if %params<Predictor>:exists;
+        $buf = $.prediction( $buf, :$Predictor, |c )
+            if $Predictor;
 
         my Str $w = "";
         my Str $str = join( '', gather {
@@ -36,7 +36,7 @@ class PDF::Storage::Filter::LZW
         $str;
     }
 
-    method decode(Str $input, Bool :$eod, *%params --> Str) {
+    method decode(Str $input, Bool :$eod, :$Predictor, |c --> Str) {
 
         my $dict-size = 256;
         my %dictionary = (.chr => .chr for ^$dict-size);
@@ -56,9 +56,9 @@ class PDF::Storage::Filter::LZW
             }
         };
 
-        if %params<Predictor>:exists {
+        if $Predictor {
             my Blob $buf = $str.encode('latin-1');
-            $buf = $.post-prediction( $buf, |%params );
+            $buf = $.post-prediction( $buf, :$Predictor, |c );
             $str = $buf.decode('latin-1');
         }
 

@@ -11,7 +11,7 @@ class PDF::Storage::Filter::Flate
     # Maintainer's Note: Flate is described in the PDF 1.7 spec in section 3.3.3.
     # See also http://www.libpng.org/pub/png/book/chapter09.html - PNG predictors
 
-    method encode(Str $input, *%params) {
+    method encode(Str $input, :$Predictor, |c) {
 
         if $input ~~ m{(<-[\x0 .. \xFF]>)} {
             die 'illegal wide byte: U+' ~ $0.ord.base(16)
@@ -19,18 +19,18 @@ class PDF::Storage::Filter::Flate
 
         my Blob $buf = $input.encode('latin-1');
 
-        $buf = $.prediction( $buf, |%params )
-            if %params<Predictor>:exists;
+        $buf = $.prediction( $buf, :$Predictor, |c )
+            if $Predictor;
 
         compress( $buf ).decode('latin-1');
     }
 
-    method decode(Str $input, Hash *%params --> Str) {
+    method decode(Str $input, :$Predictor, |c --> Str) {
 
         my Blob $buf = uncompress( $input.encode('latin-1') );
 
-        $buf = $.post-prediction( $buf, |%params )
-            if %params<Predictor>:exists;
+        $buf = $.post-prediction( $buf, :$Predictor, |c )
+            if $Predictor;
 
         $buf.decode('latin-1');
     }
