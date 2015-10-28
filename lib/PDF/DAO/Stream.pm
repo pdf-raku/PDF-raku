@@ -41,7 +41,7 @@ class PDF::DAO::Stream
 	self.new( :$dict, |c );
     }
 
-    multi method new(Hash :$dict = {}, *%etc) {
+    multi method new(Hash :$dict = {}, Int :$obj-num, Int :$gen-num, :$reader, *%etc) {
         my Str $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
@@ -57,6 +57,9 @@ class PDF::DAO::Stream
 		    if $missing;
 	    }
         }
+	$obj.obj-num = $obj-num if $obj-num.defined;
+	$obj.gen-num = $gen-num if $gen-num.defined;
+	$obj.reader  = $reader  if $reader.defined;
         $obj;
     }
 
