@@ -342,7 +342,7 @@ my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
 ## Development Status
 
 Under construction (not yet released to Perl 6 ecosystem)
-- Highest tested Rakudo version: `perl6 version 2015.10-49-ga333147 built on MoarVM version 2015.10`
+- Highest tested Rakudo version: `perl6 version 2015.10-60-g300d5be built on MoarVM version 2015.10-14-g5ff3001`
 - Encryption is NYI.
 
 
