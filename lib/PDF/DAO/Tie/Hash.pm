@@ -13,9 +13,18 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
         #| has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
 	multi sub type-check($val, Positional[Mu] $type) {
 	    type-check($val, Array);
-	    my $of-type = $type.of;
-	    type-check($_, $of-type)
+	    if $val.defined {
+		die "array not of length: {$att.tied.length}"
+		    if $att.tied.length && +$val != $att.tied.length;
+		my $of-type = $type.of;
+		type-check($_, $of-type)
 		for $val.list;
+	    }
+	    else {
+		die "missing required field: $key"
+		    if $att.tied.is-required;
+		return Nil
+	    }
 	    $val;
 	}
 

@@ -79,7 +79,7 @@ role PDF::DAO::Tie {
     my role TiedIndex {
 	has Tied $.tied is rw handles <apply> = Tied.new;
 	has method has_accessor { False }
-	has Int $.index is rw;
+	has UInt $.index is rw;
     }
 
     my class Tied {
@@ -91,6 +91,7 @@ role PDF::DAO::Tie {
 	has Bool $.gen-accessor is rw;
 	has Code $.coerce is rw = sub ($lval is rw, Mu:U $type) { PDF::DAO.coerce($lval, $type) };
         has Str @.aliases is rw;
+        has UInt $.length is rw;
 
 	use nqp;
 
@@ -160,6 +161,7 @@ role PDF::DAO::Tie {
 		when 'required' { $att.tied.is-required  = $arg.value }
 		when 'indirect' { $att.tied.is-indirect  = $arg.value }
 		when 'coerce'   { $att.tied.coerce = $arg.value }
+                when 'len'      { $att.tied.length = $arg.value }
 		default         { warn "ignoring entry attribute: $_" }
 	    }
 	}

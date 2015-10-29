@@ -21,7 +21,7 @@ class PDF::DAO::Doc
     has PDF::DAO::Type::Encrypt $.Encrypt is entry;     #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
     use PDF::DAO::Type::Info;
     has PDF::DAO::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary 
-    has Str @.ID is entry;           #| (Optional, but strongly recommended; PDF 1.1) An array of two byte-strings constituting a file identifier
+    has Str @.ID is entry(:len(2));  #| (Optional, but strongly recommended; PDF 1.1) An array of two byte-strings constituting a file identifier
 
     has Hash $.Root is entry( :indirect );
 
