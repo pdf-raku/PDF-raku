@@ -24,8 +24,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 
 	Proxy.new(
 	    FETCH => method {
-		my $val = $object[$idx];
-		$att.apply($val);
+		my $val := $object[$idx];
 		type-check($val, $att.tied.type);
 	    },
 	    STORE => method ($val is copy) {
