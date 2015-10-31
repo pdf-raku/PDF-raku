@@ -23,11 +23,11 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	}
 
 	Proxy.new(
-	    FETCH => method {
+	    FETCH => sub ($) {
 		my $val := $object[$idx];
 		type-check($val, $att.tied.type);
 	    },
-	    STORE => method ($val is copy) {
+	    STORE => sub ($, $val is copy) {
 		my $lval = $object.lvalue($val);
 		$att.apply($lval);
 		$object[$idx] := type-check($lval, $att.tied.type);

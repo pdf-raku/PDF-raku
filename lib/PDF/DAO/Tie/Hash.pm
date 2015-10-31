@@ -63,13 +63,13 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	multi sub inherit(Mu $, Str $, :$hops) is default { Nil }
 
 	Proxy.new( 
-	    FETCH => method {
+	    FETCH => sub ($) {
 		my $val := $object{$key};
 		$val := inherit($object, $key)
 		    if !$val.defined && $att.tied.is-inherited;
 		type-check($val, $att.tied.type);
 	    },
-	    STORE => method ($val is copy) {
+	    STORE => sub ($, $val is copy) {
 		my $lval = $object.lvalue($val);
 		$att.apply($lval);
 		$object{$key} := type-check($lval, $att.tied.type);
