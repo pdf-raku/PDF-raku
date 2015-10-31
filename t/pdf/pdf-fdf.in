@@ -1,16 +1,21 @@
 %FDF-1.2
-%âãÏÓ
-1 0 obj
-<< /FDF
-    << /F (Document.pdf)
-       /ID[<7a0631678ed475f0898815f0a818cfa1><bef7724317b311718e8675b677ef9b4e>]
-       /Fields[
-           << /T(Street) /V(345 Park Ave.) >>
-           << /T(City)   /V(San Jose)      >>
-       ]
-    >>
+%¥±ë
+1 0 obj <<
+  /FDF <<
+    /F (Document.pdf)
+    /Fields [ <<
+        /T (Street)
+        /V (345 Park Ave.)
+      >> <<
+        /T (City)
+        /V (San Jose)
+      >> ]
+    /ID [ <7A0631678ED475F0898815F0A818CFA1> <BEF7724317B311718E8675B677EF9B4E> ]
+  >>
 >>
 endobj
 trailer
-<</Root 1 0 R>>
+<<
+  /Root 1 0 R
+>>
 %%EOF

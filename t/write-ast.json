@@ -1,7 +1,7 @@
 { "ast" : { "literal" : "Hello World!" }, "pdf" : "(Hello World!)", "unboxed" : "Hello World!" }
 { "ast" : { "array" : [ { "hex-string" : "hi" }, { "bool" : true }, { "bool" : false }, { "null" : null} ] }, "pdf" : "[ <6869> true false null ]", "unboxed" : [ "hi", true, false, null ] }
-{ "ast" : { "dict" : { "foo" : { "literal" : "bar" }, "baz" : { "array" : [ { "int" : 42 }, { "real" : 4.2 } ] } } }, "pdf" : "<< /baz [ 42 4.2 ] /foo (bar) >>", "unboxed" : { "baz" : [ 42, 4.2 ], "foo" : "bar" } }
-{ "ast" : { "stream" : { "dict" : { "Length" : { "int" : 9 } }, "encoded" : "Hi there!" } }, "pdf" : "<< /Length 9 >>\nstream\nHi there!\nendstream" }
+{ "ast" : { "dict" : { "foo" : { "literal" : "bar" }, "baz" : { "array" : [ { "int" : 42 }, { "real" : 4.2 } ] } } }, "pdf" : "<<\n  /baz [ 42 4.2 ]\n  /foo (bar)\n>>", "unboxed" : { "baz" : [ 42, 4.2 ], "foo" : "bar" } }
+{ "ast" : { "stream" : { "dict" : { "Length" : { "int" : 9 } }, "encoded" : "Hi there!" } }, "pdf" : "<<\n  /Length 9\n>>\nstream\nHi there!\nendstream" }
 { "ast" : { "header" : { "version" : 1.5 } }, "pdf" : "%PDF-1.5" }
 { "ast" : { "header" : { "version" : 1.2, "type" : "FDF" } }, "pdf" : "%FDF-1.2" }
 { "ast" : { "name" : "Zsófia#" }, "pdf" : "/Zs#c3#b3fia##", "unboxed" : "Zsófia#" }
@@ -10,6 +10,6 @@
 { "ast" : { "startxref" : 42 }, "pdf" : "startxref\n42\n" }
 { "ast" : { "content" : { "Tj" : [ { "literal" : "Hello, World!" } ] } }, "pdf": "(Hello, World!) Tj" }
 { "ast" : { "content" : [ "q", { "m" : [ { "int" : 100 }, { "int" : 125 } ] }, { "Tm" : [ { "int" : 9 }, { "int" : 0 } , { "int" : 0 }, { "int" : 9 }, { "real" : 476.48 }, { "int" : 750 } ] }, "Q" ] }, "pdf" : "q\n100 125 m\n9 0 0 9 476.48 750 Tm\nQ" }
-{ "ast" : { "content" : [ { "BDC" : [ { "name" : "foo" }, { "dict" : { "xKey" : { "name" : "yVal" } } } ] }, { "m" : [ { "int" : 50 }, { "int" : 50 } ] }, { "BT" : [  ] }, { "Td" : [ { "int" : 200 }, { "int" : 200 } ] }, { "ET" : [  ] }, { "EMC" : [  ] } ] }, "pdf" : "/foo << /xKey /yVal >> BDC\n50 50 m\nBT\n200 200 Td\nET\nEMC" }
+{ "ast" : { "content" : [ { "BDC" : [ { "name" : "foo" }, { "dict" : { "xKey" : { "name" : "yVal" } } } ] }, { "m" : [ { "int" : 50 }, { "int" : 50 } ] }, { "BT" : [  ] }, { "Td" : [ { "int" : 200 }, { "int" : 200 } ] }, { "ET" : [  ] }, { "EMC" : [  ] } ] }, "pdf" : "/foo <<\n  /xKey /yVal\n>> BDC\n50 50 m\nBT\n200 200 Td\nET\nEMC" }
 { "ast" : { "content" : [ { "BI" : [ { "dict" : { "CS" : { "name" : "RGB" }, "F" : { "array" : [ { "name" : "A85" }, { "name" : "LZW" } ] }, "W" : { "int" : 17 }, "H" : { "int" : 17 }, "BPC" : { "int" : 8 } } } ] }, { "ID" : { "encoded" : "J1/gKA>.]AN&J?]-<HW]aRVcg*bb.\\eKAdVV%/PcZ\n%R.s(4KE3&d&7hb*7[%Ct2HCqC~>" } }, { "EI" : [  ] } ] }, "pdf" : "BI\n/BPC 8\n/CS /RGB\n/F [ /A85 /LZW ]\n/H 17\n/W 17\nID\nJ1/gKA>.]AN&J?]-<HW]aRVcg*bb.\\eKAdVV%/PcZ\n%R.s(4KE3&d&7hb*7[%Ct2HCqC~>\nEI" }
 { "ast" : { "expr" : [ { "int" : 2 }, { "int" : 1 }, { "int" : 1 }, { "op" : "add" }, { "op" : "eq" }, { "expr" : { "else" : { "expr" : [ { "int" : 7 }, { "int" : 6 }, { "op" : "mul" } ] }, "if" : { "expr" : [ { "literal" : "howdy" } ] } } } ] }, "pdf" : "{ 2 1 1 add eq { (howdy) } { 7 6 mul } ifelse }" }

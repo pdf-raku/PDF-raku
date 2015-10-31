@@ -22,14 +22,23 @@ for 't/pdf'.IO.dir.list {
     my $pdf-output-file = $json-file.subst( /'.json'$/, '.out' );
     my $input = PDF::Storage::Input.coerce( $pdf-input-file.IO );
     my $pdf-output = PDF::Writer.new( :$input, :offset(0), :%ast );
-    $pdf-output-file.IO.spurt: ~$pdf-output;
+    $pdf-output-file.IO.spurt( ~$pdf-output, :enc<latin-1> );
 
     my ($rule) = %ast.keys;
     my %expected = :%ast;
+
     my $class = PDF::Grammar::Doc;
 
     PDF::Grammar::Test::parse-tests($class, ~$input, :$rule, :$actions, :suite("[$pdf-input-file]"), :%expected );
-    PDF::Grammar::Test::parse-tests($class, ~$pdf-output, :$rule, :$actions, :suite("[$pdf-output-file]"), :%expected );
+
+    # needed when output ast doesn't match input. E.g. DOS input file
+    my $json-output-file = $pdf-output-file ~ '.json';
+    if $json-output-file.IO.e {
+        %ast = %( from-json( $json-output-file.IO.slurp ) );
+	%expected = :%ast;
+    }
+    my $output = PDF::Storage::Input.coerce( $pdf-output-file.IO );
+    PDF::Grammar::Test::parse-tests($class, ~$output, :$rule, :$actions, :suite("[$pdf-output-file]"), :%expected );
 }
 
 done-testing;

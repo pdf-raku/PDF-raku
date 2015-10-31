@@ -10,6 +10,7 @@ class PDF::Writer {
     has UInt:_ $.offset;
     has UInt:_ $.prev;
     has UInt:_ $.size;
+    has Str $.indent is rw = '';
     has %!init;
 
     submethod BUILD(:$input, :$!ast, :$!offset = Nil, :$!prev = Nil) {
@@ -27,7 +28,8 @@ class PDF::Writer {
     proto method write(|c) returns Str {*}
 
     multi method write( Array :$array! ) {
-        ('[', $array.map({ $.write($_) }), ']').join: ' ';
+	temp $!indent ~= '  ';  # for indentation of child dictionarys
+	('[', $array.map({ $.write($_) }), ']').join: ' ';
     }
 
     multi method write( Array :$body!, Str :$type='PDF' ) {
@@ -172,11 +174,13 @@ class PDF::Writer {
         });
 
         ( '<<',
-          @keys.map( -> $key {
-              [~] $.write( :name($key)), ' ', $.write( $dict{$key} ),
-          }),
-          '>>'
-        ).join: ' ';
+          $.indented({
+	      @keys.map( -> $key {
+		  [~] $.indent, $.write( :name($key)), ' ', $.write( $dict{$key} ),
+	      }).join: "\n"
+	  }),
+          $!indent ~ '>>'
+        ).join: "\n";
 
     }
 
@@ -217,10 +221,9 @@ class PDF::Writer {
     multi method write(Array :$ind-obj! ) {
         my (UInt $obj-num, UInt $gen-num, $object where Pair | Hash) = @$ind-obj;
 
-        (sprintf('%d %d obj', $obj-num, $gen-num),
-         $.write( $object ),
-         'endobj',
-        ).join: "\n";
+        [~] (sprintf('%d %d obj ', $obj-num, $gen-num),
+	     $.write( $object ),
+	     "\nendobj");
     }
 
     multi method write(Array :$ind-ref!) {
@@ -365,4 +368,9 @@ class PDF::Writer {
         die "unable to handle {%opt.keys} struct: {%opt.perl}"
     }
 
+    #| handle indentation.
+    method indented( &code ) {
+        temp $!indent ~= '  ';
+        &code();
+    }
 }
