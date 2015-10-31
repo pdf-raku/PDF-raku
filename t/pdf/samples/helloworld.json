@@ -1,0 +1,219 @@
+{
+  "pdf" : {
+    "body" : [
+      {
+        "trailer" : {
+          "dict" : {
+            "Info" : {
+              "ind-ref" : [
+                1,
+                0
+              ]
+            },
+            "Root" : {
+              "ind-ref" : [
+                2,
+                0
+              ]
+            },
+            "Size" : {
+              "int" : 8
+            }
+          }
+        },
+        "objects" : [
+          {
+            "ind-obj" : [
+              1,
+              0,
+              {
+                "dict" : {
+                  "CreationDate" : {
+                    "literal" : "D:20151225000000Z00'00'"
+                  },
+                  "Author" : {
+                    "literal" : "PDF-Tools/t/helloworld.t"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              2,
+              0,
+              {
+                "dict" : {
+                  "Outlines" : {
+                    "ind-ref" : [
+                      3,
+                      0
+                    ]
+                  },
+                  "Pages" : {
+                    "ind-ref" : [
+                      4,
+                      0
+                    ]
+                  },
+                  "Type" : {
+                    "name" : "Catalog"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              3,
+              0,
+              {
+                "dict" : {
+                  "Count" : {
+                    "int" : 0
+                  },
+                  "Type" : {
+                    "name" : "Outlines"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              4,
+              0,
+              {
+                "dict" : {
+                  "Count" : {
+                    "int" : 1
+                  },
+                  "Type" : {
+                    "name" : "Pages"
+                  },
+                  "Kids" : {
+                    "array" : [
+                      {
+                        "ind-ref" : [
+                          5,
+                          0
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              5,
+              0,
+              {
+                "dict" : {
+                  "Resources" : {
+                    "dict" : {
+                      "Procset" : {
+                        "array" : [
+                          {
+                            "name" : "PDF"
+                          },
+                          {
+                            "name" : "Text"
+                          }
+                        ]
+                      },
+                      "Font" : {
+                        "dict" : {
+                          "F1" : {
+                            "ind-ref" : [
+                              7,
+                              0
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "Contents" : {
+                    "ind-ref" : [
+                      6,
+                      0
+                    ]
+                  },
+                  "Parent" : {
+                    "ind-ref" : [
+                      4,
+                      0
+                    ]
+                  },
+                  "MediaBox" : {
+                    "array" : [
+                      {
+                        "int" : 0
+                      },
+                      {
+                        "int" : 0
+                      },
+                      {
+                        "int" : 420
+                      },
+                      {
+                        "int" : 595
+                      }
+                    ]
+                  },
+                  "Type" : {
+                    "name" : "Page"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              6,
+              0,
+              {
+                "stream" : {
+                  "encoded" : "BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET",
+                  "dict" : {
+                    "Length" : {
+                      "int" : 46
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj" : [
+              7,
+              0,
+              {
+                "dict" : {
+                  "Encoding" : {
+                    "name" : "MacRomanEncoding"
+                  },
+                  "BaseFont" : {
+                    "name" : "Helvetica"
+                  },
+                  "Type" : {
+                    "name" : "Font"
+                  },
+                  "Subtype" : {
+                    "name" : "Type1"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "header" : {
+      "type" : "PDF",
+      "version" : 1.3
+    }
+  }
+}

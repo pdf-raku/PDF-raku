@@ -30,5 +30,6 @@ my $info = $doc.Info = {};
 $info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
 $info.Author = 'PDF-Tools/t/helloworld.t';
 
-lives-ok {$doc.save-as("t/helloworld.pdf")};
+lives-ok {$doc.save-as("t/helloworld.pdf")}, 'save-as pdf';
+lives-ok {$doc.save-as("t/pdf/samples/helloworld.json")}, 'save-as json';
 done-testing;
