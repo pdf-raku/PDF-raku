@@ -4,7 +4,7 @@ use Test;
 use PDF::DAO::Doc;
 use PDF::DAO::Type::Info;
 
-for 'sample-pdfs'.IO.dir.list {
+for 't/pdf/samples'.IO.dir.list {
 
     my Str $pdf-filename = ~$_;
     next unless $pdf-filename ~~ m:i/ '.' [json|pdf ] $/;
