@@ -9,15 +9,14 @@ class PDF::Storage::Filter::LZW
     # in section 3.3.3.
     use PDF::Storage::Blob;
 
-    multi method encode(Blob $input, |c) {
-	$.encode($input.decode("latin-1"), |c);
+    multi method encode(Str $input, |c) {
+	$.encode($input.encode("latin-1"), |c);
     }
-    multi method encode(Str $input, Bool :$eod, :$Predictor, |c --> Blob) {
+    multi method encode(Blob $buf is copy, Bool :$eod, :$Predictor, |c --> Blob) {
 
         my $dict-size = 256;
         my %dictionary = (.chr => .chr for ^$dict-size);
 
-        my Blob $buf = $input.encode('latin-1');
         $buf = $.prediction( $buf, :$Predictor, |c )
             if $Predictor;
 
@@ -34,41 +33,40 @@ class PDF::Storage::Filter::LZW
                 }
             }
 
-            take %dictionary{$w} if $w.chars;
+            take %dictionary{$w}
+	        if %dictionary{$w}:exists;
         });
 
         PDF::Storage::Blob.new: $str.encode('latin-1');
     }
 
-    multi method decode(Blob $input, |c) {
-	$.decode($input.decode("latin-1"), |c);
+    multi method decode(Str $input, |c) {
+	$.decode($input.encode("latin-1"), |c);
     }
-    multi method decode(Str $input, Bool :$eod, :$Predictor, |c --> Blob) is default {
+    multi method decode(Blob $buf, Bool :$eod, :$Predictor, |c --> Blob) is default {
 
         my $dict-size = 256;
-        my %dictionary = (.chr => .chr for ^$dict-size);
-        my @compressed = $input.comb;
+        my @dictionary = map {[$_,]}, (0 .. $dict-size);
+        my uint8 @compressed = $buf.list;
 
-        my Str $w = shift @compressed;
-        my Str $str = join '', gather {
+        my $w = shift @compressed;
+        my uint8 @buf = flat gather {
             take $w;
             for @compressed -> $k {
-                my $entry;
-                if %dictionary{$k}:exists { take $entry = %dictionary{$k} }
-                elsif $k == $dict-size    { take $entry = $w ~ $w.substr(0,1) }
-                else                      { die "Bad compressed k: $k" }
-
-                %dictionary{$dict-size++} = $w ~ $entry.substr(0,1);
+                my $entry = @dictionary[$k];
+                take @dictionary[$k].Slip;
+		my @next = flat @$w, $w[0];
+                @dictionary[$dict-size++] = @next;
                 $w = $entry;
             }
         };
 
+	my $out = buf8.new: @buf;
+
         if $Predictor {
-            my Blob $buf = $str.encode('latin-1');
-            $buf = $.post-prediction( $buf, :$Predictor, |c );
-            $str = $buf.decode('latin-1');
+            $out = $.post-prediction( $out, :$Predictor, |c );
         }
 
-        PDF::Storage::Blob.new: $str.encode('latin-1');
+        PDF::Storage::Blob.new: $out;
     }
 }

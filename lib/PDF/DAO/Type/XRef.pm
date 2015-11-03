@@ -10,6 +10,7 @@ our class PDF::DAO::Type::XRef
     is PDF::DAO::Stream {
 
     use PDF::Storage::Util :resample;
+    use PDF::Storage::Blob;
     use PDF::DAO::Tie;
 
 #| See [PDF 1.7 TABLE 3.15 Additional entries specific to a cross-reference stream dictionary]
@@ -53,11 +54,11 @@ our class PDF::DAO::Type::XRef
             } until $val == 0;
 
             $.W[$i] = $max-bytes
-                if !$.W[$i] || $.W[$i] < $max-bytes;
+                if ($.W[$i] // 0) < $max-bytes;
         }
 
-        my Str $str = resample( $xref, $.W, 8 ).chrs;
-        nextwith( $str );
+        my uint8 @buf = resample( $xref, $.W, 8 );
+        nextwith( PDF::Storage::Blob.new: @buf );
     }
 
     #= inverse of $.decode-to-stage2 . handily calculates and sets $.Size and $.Index
