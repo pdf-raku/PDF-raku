@@ -31,7 +31,7 @@ our class PDF::DAO::Type::XRef
         self<Size> //= 0;
     }
 
-    method encode(Array $xref = $.decoded --> Str) {
+    method encode(Array $xref = $.decoded) {
 
         self.Index[0] //= 0;
         self.Index[1] ||= $.Size;
@@ -90,11 +90,14 @@ our class PDF::DAO::Type::XRef
     }
 
     method decode($? --> Array) {
-        my $chars = callsame;
+        my $buf = callsame;
+	$buf = $buf.encode('latin-1')
+	    if $buf.isa(Str);
+
         my $W = $.W
             // die "missing mandatory /XRef param: /W";
 
-        my Array $xref-array = resample( $chars.encode('latin-1'), 8, $W );
+        my Array $xref-array = resample( $buf, 8, $W );
         my $Size = $.Size
             // die "missing mandatory /XRef param: /Size";
 

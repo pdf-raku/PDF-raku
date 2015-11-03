@@ -7,22 +7,20 @@ class PDF::Storage::Filter {
     use PDF::Storage::Filter::Flate;
     use PDF::Storage::Filter::LZW;
     use PDF::Storage::Filter::RunLength;
-    use PDF::Storage::Blob;
 
     # chosen because, should have an underlying uint 8 representation and should stringfy
     # easily via :  ~$blob or $blob.Str
-    subset ByteBlob of Blob where {.encoding eq 'latin-1' }
 
-    proto method decode($, Hash :$dict!) returns ByteBlob {*}
-    proto method encode($, Hash :$dict!) returns ByteBlob {*}
+    proto method decode($, Hash :$dict!) {*}
+    proto method encode($, Hash :$dict!) returns PDF::Storage::Blob {*}
 
-    multi method decode( $input, Hash :$dict! where !.<Filter>.defined --> ByteBlob) {
+    multi method decode( $input, Hash :$dict! where !.<Filter>.defined) {
         # nothing to do
         $input;
     }
 
     # object may have an array of filters PDF 1.7 spec Table 3.4 
-    multi method decode( $data is copy, Hash :$dict! where .<Filter>.isa(List) --> ByteBlob) {
+    multi method decode( $data is copy, Hash :$dict! where .<Filter>.isa(List)) {
 
         if $dict<DecodeParms>:exists {
             die "Filter array {.<Filter>} does not have a corresponding DecodeParms array"
@@ -41,14 +39,14 @@ class PDF::Storage::Filter {
         $data;
     }
 
-    multi method decode( $input, Hash :$dict! --> ByteBlob ) {
+    multi method decode( $input, Hash :$dict! ) {
         my %params = %( $dict<DecodeParms> )
             if $dict<DecodeParms>:exists; 
         $.filter-class( $dict<Filter> ).decode( $input, |%params);
     }
 
     # object may have an array of filters PDF 1.7 spec Table 3.4 
-    multi method encode( $data is copy, Hash :$dict! where .<Filter>.isa(List) --> ByteBlob ) {
+    multi method encode( $data is copy, Hash :$dict! where .<Filter>.isa(List) ) {
 
         if $dict<DecodeParms>:exists {
             die "Filter array {.<Filter>} does not have a corresponding DecodeParms array"
@@ -67,7 +65,7 @@ class PDF::Storage::Filter {
         $data;
     }
 
-    multi method encode( $input, Hash :$dict! --> ByteBlob ) {
+    multi method encode( $input, Hash :$dict! --> PDF::Storage::Blob ) {
         my %params = %( $dict<DecodeParms> )
             if $dict<DecodeParms>:exists;
         $.filter-class( $dict<Filter> ).encode( $input, |%params);

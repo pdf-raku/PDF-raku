@@ -42,8 +42,8 @@ is-deeply $ind-obj.object.encoded, "q $decoded Q", 'stream object compressed, th
 sub stream_tests( $stream-obj, $subject) {
     isa-ok $stream-obj, PDF::DAO::Stream, $subject;
     is-json-equiv $stream-obj, %dict, $subject~' dictionary';
-    is-deeply $stream-obj.decoded, '100 100 Td (Hello, world!) Tj', $subject~' decoded';
-    is-deeply $stream-obj.encoded, $encoded, $subject~' encoded';
+    is $stream-obj.decoded, '100 100 Td (Hello, world!) Tj', $subject~' decoded';
+    is $stream-obj.encoded, $encoded, $subject~' encoded';
 }
 
 my $stream2 = PDF::DAO.coerce( :stream{  :dict{ :Foo( :name<Bar> ) } } );

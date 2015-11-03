@@ -119,16 +119,15 @@ class PDF::DAO::Stream
         }
         $.decoded;
         $!encoded = Any;
-        $!decoded //= '';
-        $!decoded = $prepend ~ $!decoded ~ $append;
+        $!decoded = $prepend ~ ($!decoded // '') ~ $append;
     }
 
-    method decode( Str $encoded = $.encoded ) {
+    method decode( $encoded = $.encoded ) {
         return $encoded unless self<Filter>:exists;
         PDF::Storage::Filter.decode( $encoded, :dict(self) );
     }
 
-    method encode( Str $decoded = $.decoded) {
+    method encode( $decoded = $.decoded) {
         return $decoded unless self<Filter>:exists;
         PDF::Storage::Filter.encode( $decoded, :dict(self) );
     }

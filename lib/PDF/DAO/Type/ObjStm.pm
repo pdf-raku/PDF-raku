@@ -24,7 +24,7 @@ class PDF::DAO::Type::ObjStm
         self.Type //= PDF::DAO.coerce( :name<ObjStm> );
     }
 
-    method encode(Array $objstm = $.decoded, Bool :$check = False --> Str) {
+    method encode(Array $objstm = $.decoded, Bool :$check = False) {
         my @idx;
         my Str $objects-str = '';
         my UInt $offset = 0;
@@ -47,7 +47,7 @@ class PDF::DAO::Type::ObjStm
     }
 
     method decode($? --> Array) {
-        my Str $chars = callsame;
+        my Blob $chars = callsame;
         my UInt $first = $.First;
         my UInt $n = $.N;
 
