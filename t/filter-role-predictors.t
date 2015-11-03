@@ -84,5 +84,5 @@ for $flate-dict, $lzw-dict -> $dict {
     my $decoded;
     lives-ok {$decoded = PDF::Storage::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with prediction";
 
-    is $decoded, $rand-chrs, "$dict<Filter> round-trip with prediction";
+    is-deeply ~$decoded, $rand-chrs, "$dict<Filter> round-trip with prediction";
 }

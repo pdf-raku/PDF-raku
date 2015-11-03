@@ -7,31 +7,39 @@ class PDF::Storage::Filter::Flate
     does PDF::Storage::Filter::Predictors {
 
     use Compress::Zlib;
+    use PDF::Storage::Blob;
 
     # Maintainer's Note: Flate is described in the PDF 1.7 spec in section 3.3.3.
     # See also http://www.libpng.org/pub/png/book/chapter09.html - PNG predictors
 
-    method encode(Str $input, :$Predictor, |c) {
+    multi method encode(Str $input, |c) {
 
         if $input ~~ m{(<-[\x0 .. \xFF]>)} {
             die 'illegal wide byte: U+' ~ $0.ord.base(16)
         }
 
-        my Blob $buf = $input.encode('latin-1');
+	$.encode( $input.encode('latin-1'), |c );
+    }
+
+    multi method encode(Blob $buf is copy, :$Predictor, |c --> PDF::Storage::Blob) is default {
 
         $buf = $.prediction( $buf, :$Predictor, |c )
             if $Predictor;
 
-        compress( $buf ).decode('latin-1');
+        PDF::Storage::Blob.new: compress( $buf );
     }
 
-    method decode(Str $input, :$Predictor, |c --> Str) {
+    multi method decode(Str $input, |c) {
+	$.decode( $input.encode('latin-1'), |c);
+    }
 
-        my Blob $buf = uncompress( $input.encode('latin-1') );
+    multi method decode(Blob $input is copy, :$Predictor, |c --> PDF::Storage::Blob) {
 
-        $buf = $.post-prediction( $buf, :$Predictor, |c )
+        my $buf = PDF::Storage::Blob.new: uncompress( $input );
+
+        $buf = PDF::Storage::Blob.new: $.post-prediction( $buf, :$Predictor, |c )
             if $Predictor;
 
-        $buf.decode('latin-1');
+        PDF::Storage::Blob.new: $buf;
     }
 }

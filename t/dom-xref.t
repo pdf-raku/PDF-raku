@@ -26,7 +26,7 @@ lives-ok { $xref = $xref-obj.decode }, 'basic content decode - lives';
 
 my $expected-xref = [[1, 16, 0], [1, 741, 0], [1, 1030, 0], [1, 1446, 0], [1, 2643, 0], [1, 3442, 0], [1, 4244, 0], [1, 5039, 0], [1, 5656, 0], [1, 6392, 0], [1, 7070, 0], [1, 7747, 0], [1, 8445, 0], [1, 11116, 0], [1, 17708, 0], [1, 19707, 0], [1, 34503, 0], [1, 116, 0], [2, 217, 0], [2, 217, 1], [2, 217, 2], [2, 217, 3], [2, 217, 4], [2, 217, 5], [2, 217, 6], [2, 217, 7], [2, 217, 8], [2, 217, 9], [2, 217, 10], [2, 217, 11], [2, 217, 12], [2, 217, 13], [2, 217, 14], [2, 217, 15], [2, 217, 16], [2, 217, 17], [1, 495, 0]];
 
-is-deeply $xref, $expected-xref, 'decoded index as expected';
+is-json-equiv $xref, $expected-xref, 'decoded index as expected';
 my $xref-recompressed = $xref-obj.encode;
 
 my %ast2;
@@ -46,7 +46,7 @@ my $expected-stage2-sample = [
     {:obj-num(250), :offset(495), :gen-num(0), :type(1)},
     ];
 
-is-deeply [ $xref-stage2[*-3..*] ], $expected-stage2-sample, 'decoded stage 2 (sample)';
+is-json-equiv [ $xref-stage2[*-3..*] ], $expected-stage2-sample, 'decoded stage 2 (sample)';
 
 my $xref-recompressed-from-stage2 = $ind-obj.object.encode-from-stage2($xref-stage2);
 $xref-roundtrip = $ind-obj2.object.decode-to-stage2( $xref-recompressed-from-stage2 );

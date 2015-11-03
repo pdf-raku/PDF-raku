@@ -24,7 +24,7 @@ lives-ok { $content = PDF::Storage::Filter.decode( $raw-content, :$dict ) }, 'ba
 
 my $content-expected = "16 0 17 141 <</BaseFont/CourierNewPSMT/Encoding/WinAnsiEncoding/FirstChar 111/FontDescriptor 15 0 R/LastChar 111/Subtype/TrueType/Type/Font/Widths[600]>><</BaseFont/TimesNewRomanPSMT/Encoding/WinAnsiEncoding/FirstChar 32/FontDescriptor 14 0 R/LastChar 32/Subtype/TrueType/Type/Font/Widths[250]>>";
 
-is-deeply $content, $content-expected,
+is $content, $content-expected,
     q{basic Flate decompression};
 
 my $flate-enc = [104, 222, 98, 98, 100, 16, 96, 96, 98, 96,
@@ -45,12 +45,12 @@ my $flate-dec = [1, 0, 16, 0, 1, 2, 229, 0, 1, 4, 6, 0, 1, 5, 166, 0,
 
 my %dict = :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) };
 
-is-deeply my $result=PDF::Storage::Filter.decode($flate-enc, :%dict),
+is my $result=PDF::Storage::Filter.decode($flate-enc, :%dict),
     $flate-dec, "Flate with PNG predictors - decode";
 
 my $re-encoded = PDF::Storage::Filter.encode($result, :%dict);
 
-is-deeply PDF::Storage::Filter.decode($re-encoded, :%dict),
+is PDF::Storage::Filter.decode($re-encoded, :%dict),
     $flate-dec, "Flate with PNG predictors - encode/decode round-trip";
 
 dies-ok { PDF::Storage::Filter.decode('This is not valid input', :%dict) },

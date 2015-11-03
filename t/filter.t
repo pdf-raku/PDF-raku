@@ -24,7 +24,7 @@ for 'ASCIIHexDecode', 'FlateDecode', 'RunLengthDecode', ['FlateDecode', 'RunLeng
         my $output;
         lives-ok { $output = PDF::Storage::Filter.encode($input, :%dict) }, $filter-name ~' encoding - lives';
 
-        is-deeply PDF::Storage::Filter.decode($output, :%dict), $input, "$filter-name roundtrip: $name"
+        is PDF::Storage::Filter.decode($output, :%dict), $input, "$filter-name roundtrip: $name"
             or diag :$input.perl;
 
     }

@@ -9,11 +9,11 @@ my $in = '--- Look at this test string. ---';
 my $out = "\x[fe]-\x01 L\xffo\x16k at this test string. \xfe-";
 my $filter = PDF::Storage::Filter::RunLength.new;
 
-is-deeply $filter.encode($in),
+is $filter.encode($in),
    $out,
    q{RunLength test string is encoded correctly};
 
-is-deeply $filter.decode($out),
+is $filter.decode($out),
    $in,
    q{RunLength test string is decoded correctly};
 

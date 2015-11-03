@@ -58,7 +58,7 @@ dies-ok { PDF::Storage::Filter::ASCIIHex.decode('This is not valid input') },
 # last digit"
 my $odd_out = 'FF00F>';
 my $expected_bytes = '255 0 240';
-my $actual_bytes = PDF::Storage::Filter::ASCIIHex.decode($odd_out).comb>>.ord.join: ' ';
+my $actual_bytes = PDF::Storage::Filter::ASCIIHex.decode($odd_out).Str.comb>>.ord.join: ' ';
 is($actual_bytes,
    $expected_bytes,
    q{ASCIIHex handles odd numbers of characters correctly});

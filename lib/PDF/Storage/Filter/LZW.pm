@@ -7,8 +7,12 @@ class PDF::Storage::Filter::LZW
 
     # Maintainer's Note: LZW is described in the PDF 1.7 spec
     # in section 3.3.3.
+    use PDF::Storage::Blob;
 
-    method encode(Str $input, Bool :$eod, :$Predictor, |c --> Str) {
+    multi method encode(Blob $input, |c) {
+	$.encode($input.decode("latin-1"), |c);
+    }
+    multi method encode(Str $input, Bool :$eod, :$Predictor, |c --> Blob) {
 
         my $dict-size = 256;
         my %dictionary = (.chr => .chr for ^$dict-size);
@@ -33,10 +37,13 @@ class PDF::Storage::Filter::LZW
             take %dictionary{$w} if $w.chars;
         });
 
-        $str;
+        PDF::Storage::Blob.new: $str.encode('latin-1');
     }
 
-    method decode(Str $input, Bool :$eod, :$Predictor, |c --> Str) {
+    multi method decode(Blob $input, |c) {
+	$.decode($input.decode("latin-1"), |c);
+    }
+    multi method decode(Str $input, Bool :$eod, :$Predictor, |c --> Blob) is default {
 
         my $dict-size = 256;
         my %dictionary = (.chr => .chr for ^$dict-size);
@@ -62,6 +69,6 @@ class PDF::Storage::Filter::LZW
             $str = $buf.decode('latin-1');
         }
 
-        $str;
+        PDF::Storage::Blob.new: $str.encode('latin-1');
     }
 }

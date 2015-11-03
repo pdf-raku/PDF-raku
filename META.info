@@ -35,6 +35,7 @@
 
         "PDF::Reader" : "lib/PDF/Reader.pm",
 
+        "PDF::Storage::Blob" : "lib/PDF/Storage/Blob.pm",
         "PDF::Storage::Filter" : "lib/PDF/Storage/Filter.pm",
         "PDF::Storage::Filter::ASCII85" : "lib/PDF/Storage/Filter/ASCII85.pm",
         "PDF::Storage::Filter::ASCIIHex" : "lib/PDF/Storage/Filter/ASCIIHex.pm",

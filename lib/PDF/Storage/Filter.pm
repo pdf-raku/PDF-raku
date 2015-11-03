@@ -7,17 +7,22 @@ class PDF::Storage::Filter {
     use PDF::Storage::Filter::Flate;
     use PDF::Storage::Filter::LZW;
     use PDF::Storage::Filter::RunLength;
+    use PDF::Storage::Blob;
 
-    proto method decode(|c) returns Str {*}
-    proto method encode(|c) returns Str {*}
+    # chosen because, should have an underlying uint 8 representation and should stringfy
+    # easily via :  ~$blob or $blob.Str
+    subset ByteBlob of Blob where {.encoding eq 'latin-1' }
 
-    multi method decode( $input, Hash :$dict! where !.<Filter>.defined) {
+    proto method decode($, Hash :$dict!) returns ByteBlob {*}
+    proto method encode($, Hash :$dict!) returns ByteBlob {*}
+
+    multi method decode( $input, Hash :$dict! where !.<Filter>.defined --> ByteBlob) {
         # nothing to do
         $input;
     }
 
     # object may have an array of filters PDF 1.7 spec Table 3.4 
-    multi method decode( $data is copy, Hash :$dict! where .<Filter>.isa(List) ) {
+    multi method decode( $data is copy, Hash :$dict! where .<Filter>.isa(List) --> ByteBlob) {
 
         if $dict<DecodeParms>:exists {
             die "Filter array {.<Filter>} does not have a corresponding DecodeParms array"
@@ -36,14 +41,14 @@ class PDF::Storage::Filter {
         $data;
     }
 
-    multi method decode( $input, Hash :$dict! ) {
+    multi method decode( $input, Hash :$dict! --> ByteBlob ) {
         my %params = %( $dict<DecodeParms> )
             if $dict<DecodeParms>:exists; 
         $.filter-class( $dict<Filter> ).decode( $input, |%params);
     }
 
     # object may have an array of filters PDF 1.7 spec Table 3.4 
-    multi method encode( $data is copy, Hash :$dict! where .<Filter>.isa(List) ) {
+    multi method encode( $data is copy, Hash :$dict! where .<Filter>.isa(List) --> ByteBlob ) {
 
         if $dict<DecodeParms>:exists {
             die "Filter array {.<Filter>} does not have a corresponding DecodeParms array"
@@ -62,7 +67,7 @@ class PDF::Storage::Filter {
         $data;
     }
 
-    multi method encode( $input, Hash :$dict! ) {
+    multi method encode( $input, Hash :$dict! --> ByteBlob ) {
         my %params = %( $dict<DecodeParms> )
             if $dict<DecodeParms>:exists;
         $.filter-class( $dict<Filter> ).encode( $input, |%params);
