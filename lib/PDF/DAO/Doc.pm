@@ -90,7 +90,7 @@ class PDF::DAO::Doc
     #| Generate a new document ID.  
     method !generate-id {
 
-	my uint8 @id-chars = (1 .. 16).map: { 256.rand.Int };
+	my uint8 @id-chars = (1 .. 16).map: { (^256).pick }
 	my Array $old-id = self.ID;
 	my Str $hex-string = Buf.new(@id-chars).decode("latin-1");
 	my $new-id = PDF::DAO.coerce: :$hex-string;
