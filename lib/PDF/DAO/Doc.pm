@@ -48,6 +48,8 @@ class PDF::DAO::Doc
 	die "PDF has not been opened for indexed read."
 	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
 
+	self!generate-id;
+
         # todo we should be able to leave the input file open and append to it
         my Numeric $offset = $reader.input.chars + 1;
 
@@ -68,6 +70,7 @@ class PDF::DAO::Doc
     }
 
     method save-as(Str $file-name!, |c) {
+	self!generate-id;
 	my $serializer = PDF::Storage::Serializer.new;
 	$serializer.save-as( $file-name, self, |c)
     }
@@ -82,5 +85,26 @@ class PDF::DAO::Doc
 	    unless $perms.defined;
 
 	return $perms.flag-is-set( $flag );
+    }
+
+    #| Generate a new document ID.  
+    method !generate-id {
+
+	my uint8 @id-chars = (1 .. 16).map: { 256.rand.Int };
+	my Array $old-id = self.ID;
+	my Str $hex-string = Buf.new(@id-chars).decode("latin-1");
+	my $new-id = PDF::DAO.coerce: :$hex-string;
+
+#	From [PDF 1.7 Section 10.3 File Indentifier
+#	File identifiers are defined by the optional ID entry in a PDF file’s trailer dictionary (see Section 3.4.4, “File Trailer”; see also implementation note 162 in Appendix H). The value of this entry is an array of two byte strings. The first byte string is a permanent identifier based on the contents of the file at the time it was originally created and does not change when the file is incrementally updated. The second byte string is a changing identifier based on the file’s contents at the time it was last updated. When a file is first written, both identifiers are set to the same value. If both identifiers match when a file reference is resolved, it is very likely that the correct file has been found. If only the first identifier matches, a different version of the correct file has been found.
+# This section also include a weird and expensive solution for generating the ID.
+# Contrary to this, just generate a random identifier.
+
+	if self.ID {
+	    self.ID[1] = $new-id
+	}
+	else {
+	    self.ID = [ $new-id, $new-id ];
+	}
     }
 }

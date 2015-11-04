@@ -18,6 +18,16 @@
             },
             "Size" : {
               "int" : 8
+            },
+            "ID" : {
+              "array" : [
+                {
+                  "hex-string" : "qk\u00e6\u00b9\u007fT]\u00f6!3\u009c\u001b:\u00fe\u00d8\u0090"
+                },
+                {
+                  "hex-string" : "\u00b6\u0086S\u008d\u007f\u0087\u00c0Q\u008d\u001b3Z`$\u00caI"
+                }
+              ]
             }
           }
         },

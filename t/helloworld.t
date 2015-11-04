@@ -31,5 +31,11 @@ $info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
 $info.Author = 'PDF-Tools/t/helloworld.t';
 
 lives-ok {$doc.save-as("t/helloworld.pdf")}, 'save-as pdf';
+ok $doc.ID, 'doc ID generated';
+my $doc-id = $doc.ID[0];
+my $upd-id = $doc.ID[1];
+is $upd-id, $doc-id, 'initial document ID';
 lives-ok {$doc.save-as("t/pdf/samples/helloworld.json")}, 'save-as json';
+is $doc.ID[0], $doc-id, 'document ID[0] - post update';
+isnt $doc.ID[1], $doc-id, 'document ID[1] - post update';
 done-testing;
