@@ -6,6 +6,9 @@ use PDF::DAO::Doc;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
+# ensure consistant document ID generation
+srand(123456);
+
 my $doc = PDF::DAO::Doc.new;
 my $root     = $doc.Root       = { :Type(/'Catalog') };
 my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };

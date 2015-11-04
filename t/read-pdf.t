@@ -6,6 +6,9 @@ use PDF::DAO::Dict;
 use PDF::DAO::Stream;
 use PDF::Grammar::Test :is-json-equiv;
 
+# ensure consistant document ID generation
+srand(123456);
+
 my $pdf-in = PDF::Reader.new();
 $pdf-in.open( 't/pdf/pdf.in' );
 

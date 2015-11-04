@@ -10,6 +10,9 @@ use PDF::Grammar::Test :is-json-equiv;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
+# ensure consistant document ID generation
+srand(123456);
+
 't/pdf/pdf.in'.IO.copy('t/pdf/pdf-updated.out');
 
 my $doc = PDF::DAO::Doc.open( 't/pdf/pdf-updated.out', :a );
