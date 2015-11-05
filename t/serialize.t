@@ -101,7 +101,7 @@ is $writer.write( :ind-obj($objects[0].value)), "1 0 obj <<\n  /Name /Heyd#c9#99
 my $objects-compressed = PDF::Storage::Serializer.new.body($doc, :compress)[0]<objects>;
 my $stream = $objects-compressed[*-2].value[2]<stream>;
 is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'compressed dict';
-is $stream<encoded>.chars, 54, 'compressed stream length';
+is $stream<encoded>.codes, 54, 'compressed stream length';
 
 # just to define current behaviour. blows up during final write.
 my $obj-with-bad-byte-string = PDF::DAO.coerce: { :Root{ :Name("Heydər Əliyev") } };

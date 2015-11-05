@@ -63,7 +63,7 @@ class PDF::Writer {
                 die "don't know how to serialize body component: {$obj.perl}"
             }
 
-            $!offset += @out[*-1].chars + 1;
+            $!offset += @out[*-1].codes + 1;
         }
 
         my Hash $trailer = $body<trailer>
@@ -101,11 +101,11 @@ class PDF::Writer {
                 $.write( :$startxref ),
                 '%%EOF');
 
-            $!offset += $xref-str.chars;
+            $!offset += $xref-str.codes;
             $!prev = $startxref;
         }
 
-        $!offset += @out[*-1].chars + 2;
+        $!offset += @out[*-1].codes + 2;
 
         @out.join: "\n";
     }
@@ -265,7 +265,7 @@ class PDF::Writer {
         my Str $comment = $pdf<comment>:exists
             ?? $.write( $pdf, :node<comment> )
             !! $.write( :comment<%¥±ë> );
-        $!offset = $header.chars + $comment.chars + 2;  # since format is byte orientated
+        $!offset = $header.codes + $comment.codes + 2;  # since format is byte orientated
         # Form Definition Format is normally written without an xref
         my Str $type = $pdf<header><type> // 'PDF';
         my $body = $.write( :body($pdf<body>), :$type );
@@ -295,7 +295,7 @@ class PDF::Writer {
 
         my %dict = %( $stream<dict> );
         my $data = $stream<encoded> // $.input.stream-data( :$stream ),
-        %dict<Length> //= :int($data.chars);
+        %dict<Length> //= :int($data.codes);
 
         ($.write( :%dict ),
          "stream",

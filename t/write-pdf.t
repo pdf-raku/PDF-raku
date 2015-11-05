@@ -31,12 +31,7 @@ for 't/pdf'.IO.dir.list {
 
     PDF::Grammar::Test::parse-tests($class, ~$input, :$rule, :$actions, :suite("[$pdf-input-file]"), :%expected );
 
-    # needed when output ast doesn't match input. E.g. DOS input file
     my $json-output-file = $pdf-output-file ~ '.json';
-    if $json-output-file.IO.e {
-        %ast = %( from-json( $json-output-file.IO.slurp ) );
-	%expected = :%ast;
-    }
     my $output = PDF::Storage::Input.coerce( $pdf-output-file.IO );
     PDF::Grammar::Test::parse-tests($class, ~$output, :$rule, :$actions, :suite("[$pdf-output-file]"), :%expected );
 }

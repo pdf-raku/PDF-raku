@@ -79,7 +79,7 @@ class PDF::DAO::Stream
 
     multi method encoded(Str $stream!) {
         $!decoded = Any;
-        self<Length> = $stream.chars;
+        self<Length> = $stream.codes;
         $!encoded = $stream;
     }
 
@@ -89,7 +89,7 @@ class PDF::DAO::Stream
         }
 
 	if $!encoded.defined {
-	    self<Length> = $!encoded.chars;
+	    self<Length> = $!encoded.codes;
 	}
 	else {
 	    self<Length>:delete

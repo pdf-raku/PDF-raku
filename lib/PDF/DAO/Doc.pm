@@ -51,7 +51,7 @@ class PDF::DAO::Doc
 	self!generate-id;
 
         # todo we should be able to leave the input file open and append to it
-        my Numeric $offset = $reader.input.chars + 1;
+        my Numeric $offset = $reader.input.codes + 1;
 
         my $serializer = PDF::Storage::Serializer.new( :$reader );
         my Array $body = $serializer.body( :updates, :$compress );

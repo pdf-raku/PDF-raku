@@ -9,8 +9,7 @@
             "int" : 68
           }
         },
-        "start" : 38,
-        "end" : 108
+	"encoded" : "BT\u000d\u000a  /F1 24 Tf  % useless comment\u000d\u000a  100 100 Td (Hello, world!) Tj\u000d\u000aET"
       }
     }
   ]

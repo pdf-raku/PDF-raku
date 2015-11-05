@@ -28,20 +28,8 @@ class PDF::Storage::Input {
     multi method stream-data( Array :$ind-obj! ) {
         $.stream-data( |$ind-obj[2] );
     }
-    multi method stream-data( Hash :$stream! ) {
-        return $stream<encoded>
-            if $stream<encoded>.defined;
-        my Int $start = $stream<start>;
-        my Int $end = $stream<end>;
-        my Int $length = $end - $start + 1;
-        $.substr($start, $length );
-    }
-    multi method stream-data( *@args, *%opts ) is default {
-
-        die "unexpected arguments: {[@args].perl}"
-            if @args;
-        
-        die "unable to handle {%opts.keys} struct: {%opts.perl}"
+    multi method stream-data( Hash :$stream! ) is default {
+        $stream<encoded>
     }
 
 }
