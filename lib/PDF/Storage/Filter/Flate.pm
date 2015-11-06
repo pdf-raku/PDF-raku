@@ -13,11 +13,6 @@ class PDF::Storage::Filter::Flate
     # See also http://www.libpng.org/pub/png/book/chapter09.html - PNG predictors
 
     multi method encode(Str $input, |c) {
-
-        if $input ~~ m{(<-[\x0 .. \xFF]>)} {
-            die 'illegal wide byte: U+' ~ $0.ord.base(16)
-        }
-
 	$.encode( $input.encode('latin-1'), |c );
     }
 
@@ -35,9 +30,9 @@ class PDF::Storage::Filter::Flate
 
     multi method decode(Blob $input is copy, :$Predictor, |c --> PDF::Storage::Blob) {
 
-        my $buf = PDF::Storage::Blob.new: uncompress( $input );
+        my $buf = uncompress( $input );
 
-        $buf = PDF::Storage::Blob.new: $.post-prediction( $buf, :$Predictor, |c )
+        $buf = $.post-prediction( $buf, :$Predictor, |c )
             if $Predictor;
 
         PDF::Storage::Blob.new: $buf;
