@@ -7,11 +7,8 @@ role PDF::DAO::Int
     method flag-is-set(UInt $flag-num) returns Bool {
 	my Int $i = self;
 	if $i < 0 {
-	    # assume two's compliment for negative nasks
-	    my $sign-bit = 1;
-	    $sign-bit *= 2
-		while $sign-bit <= -$i;
-	    $i += $sign-bit
+	    my uint32 @u32 = ($i);
+	    $i = @u32[0];
 	}
 	
 	my $bit := 1 +< ($flag-num - 1);
