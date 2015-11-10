@@ -3,37 +3,56 @@ use Test;
 use PDF::Storage::Crypt;
 use PDF::DAO::Doc;
 
-my Hash $Encrypt = {
-   :V(2),
-   :Filter<Standard>,
-   :Length(128),
-   :O("\xe6\x0\xec\xc2\x2\x88\xad\x8b\rd\xa9)\xc6\xa8>\xe2Qvy\xaa\x2\x18\xbe\xce\xea\x8by\x86rj\x8c\xdb"),
-   :U("\x90\xe3\x10\xf5\x3}\x88\xd4XG:^\n\fB8\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0"),
-   :P(-3904),
-   :R(3),
-};
+my $test1 = do {
+    my Hash $Encrypt = {
+	:V(2),
+	:Filter<Standard>,
+	:Length(128),
+	:O("\x[e6]\x0\x[ec]\x[c2]\x[2]\x[88]\x[ad]\x[8b]\rd\x[a9])\x[c6]\x[a8]>\x[e2]Qvy\x[aa]\x[2]\x[18]\x[be]\x[ce]\x[ea]\x[8b]y\x[86]rj\x[8c]\x[db]"),
+	:U("\x[90]\x[e3]\x[10]\x[f5]\x[3]}\x[88]\x[d4]XG:^\x[a]\fB8\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0"),
+	:P(-3904),
+	:R(3),
+    };
 
-my Str $doc-id = "4\t\xc9\x89\x1b<}\xb8\x2lp\xb7\xfe-\x3\xe8";
+    my Str $doc-id = "4\t\x[c9]\x[89]\x[1b]<}\x[b8]\x[2]lp\x[b7]\x[fe]-\x[3]\x[e8]";
+    
+    { :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass(''), :owner-pass<test> }
+}
 
-my $doc = PDF::DAO::Doc.new: {
-    :$Encrypt,
-    :ID[$doc-id, $doc-id],
-};
+my $test2 = do {
+    my Hash $Encrypt = {
+	:V(2),
+	:Filter<Standard>,
+	:Length(128),
+	:O("£\x[b]Y\$bÂòº\x[5]\x[4]¯\x[9c]êN\"'°¤9h\x[83]\@¾ò\x[a0]é)yVÑ8³"),
+	:U("Í¢Z¦\x[16]jU\bH^õO\x[1]£l\x[6]\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0"),
+	:P(-3904),
+	:R(3),
+    };
 
-my $crypt-delegate = PDF::Storage::Crypt.delegate-class( :$doc );
-isa-ok $crypt-delegate, ::('PDF::Storage::Crypt::RC4'), '/V 2 crypt delegate';
+    my Str $doc-id = "0Þ\x[14]}÷9´ªik`\x[90]g=\x[90]à";
+    
+    { :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass<test2>, :owner-pass<test1> }
+}
 
-my $crypt;
-lives-ok { $crypt = $crypt-delegate.new( :$doc, :owner-pass<test> ) }, '$crypt.new (RC4, owner-pass)';
-# hmm, I don't think CAM::PDF handles this either. Need to investigate
-todo "blank user password";
-lives-ok { $crypt = $crypt-delegate.new( :$doc ) }, '$crypt-new (RC4, blank user-pass)';
+my $doc;
+my $crypt-delegate;
 
-dies-ok { $crypt-delegate.new( :$doc, :owner-pass<junk>, :user-pass<junk> ) },  '$crypt-new (RC4, invalid passwords)';
+for $test1,
+    $test1
+ {
 
-do {
-    temp $doc<Encrypt><V> = 3;
-    dies-ok {  $crypt-delegate.new( :$doc ) }, '/V 3 (unsupported)';
+    $doc = PDF::DAO::Doc.new: .<doc>;
+    my $owner-pass = .<owner-pass>;
+    my $user-pass = .<user-pass>;
+    my $crypt-delegate = PDF::Storage::Crypt.delegate-class( :$doc );
+
+    isa-ok $crypt-delegate, ::('PDF::Storage::Crypt::RC4'), '/V 2 crypt delegate';
+
+    my $crypt = $crypt-delegate.new( :$doc );
+    lives-ok {$crypt.authenticate( $user-pass )}, 'user password';
+    todo("owner password authentication");
+    lives-ok {$crypt.authenticate( $owner-pass, :owner)}, 'owner password';
 }
 
 done-testing;

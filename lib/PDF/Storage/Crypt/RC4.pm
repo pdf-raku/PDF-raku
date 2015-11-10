@@ -14,7 +14,8 @@ class PDF::Storage::Crypt::RC4 {
     has UInt @!O;
     has UInt @!U;
     has UInt $!R;
-    has Int $!P;
+    has UInt @!P;
+    has Bool $!EncryptMetadata;
 
     BEGIN my uint8 @Padding = 
 	0x28, 0xbf, 0x4e, 0x5e,
@@ -31,34 +32,12 @@ class PDF::Storage::Crypt::RC4 {
 	@pass-padded[0..31];
     }
 
-    method !compute-hash(@pass) {
-	my uint32 @p32 = ($!P);
-	my uint8 @p8 = resample(@p32, 32, 8);
-	my @input = @pass, @!O, @p8, @!doc-id;
+    method !do-iter-crypt($code, @pass is copy, :@steps = (1 ... 19)) {
 
-	my $hash = Digest::MD5::md5(@input);
-
-	if $!R == 3 {
-	    for 1..50 {
-		$hash = Digest::MD5::md5($hash);
-	    }
-	}
-
-	my UInt $size = $!key-length +> 3;
-	$hash.subbuf(0, $size);
-    }
-
-    method !do-iter-crypt($code, @pass is copy, Bool :$backward = False) {
-
-	if $!R == 3 {
-	    my @steps = $backward
-		?? (19 ... 0)
-		!! (0 ... 19);
-
-	    my UInt $size = $!key-length +> 3;
+	if $!R >= 3 {
 	    for @steps -> $iter {
-		my uint8 @xor-code = $code.map({ $_ +^ $iter });
-		@pass = Crypt::RC4::RC4(@xor-code, @pass);
+		my uint8 @key = $code.map({ $_ +^ $iter });
+		@pass = Crypt::RC4::RC4(@key, @pass);
 	    }
 	}
 	else {
@@ -67,48 +46,6 @@ class PDF::Storage::Crypt::RC4 {
 	@pass;
     }
 
-    method !compute-owner( @u, @o) {
-
-	my $buf = Digest::MD5::md5(@o);
-
-	if $!R == 3 {
-	    $buf = Digest::MD5::md5($buf)
-		for 1 .. 50;
-	}
-
-	my UInt $size = $!key-length +> 3;
-	my $code = $buf.subbuf(0, $size);
-
-	self!do-iter-crypt($code, @u, :backward);
-    }
-
-    method !compute-user( @u, |c --> Array) {
-	my $hash = self!compute-hash(@u);
-	if $!R === 3 {
-	    my @input = flat @Padding, @!doc-id[0 .. 15];
-	    my $buf = Digest::MD5::md5(@input);
-	    $buf = $buf.subbuf(0, 16);
-	    my @code = self!do-iter-crypt($hash, $buf);
-	    return @code;
-	}
-	else {
-	    return Crypt::RC4::RC4($hash, @Padding);
-	}
-    }
-
-    method !check-owner-pass( :@user!, :@owner! --> Bool) {
-	my uint8 @computed = self!compute-owner( @user, @owner);
-	my uint8 @expected = @!O;
-	@computed eqv @expected;
-    }
-
-    method !check-user-pass( :@user! --> Bool) {
-	my uint8 @computed = self!compute-user( @user );
-	my uint8 @expected = @!O;
-	@computed eqv @expected;
-    }
-
-    # adapted from CAM::PDF
     submethod BUILD(PDF::DAO::Doc :$doc!, Str :$user-pass = '', Str :$owner-pass = '') {
 	my $encrypt = $doc.Encrypt
 	    or die "this document is not encrypted";
@@ -119,8 +56,11 @@ class PDF::Storage::Crypt::RC4 {
 	@!doc-id = $doc.ID[0].ords;
 	@!O = $encrypt.O.ords;
 	@!U = $encrypt.U.ords;
-	$!P = $encrypt.P;
+	my uint32 @p32 = $encrypt.P;
+	my uint8 @p8 = resample(@p32, 32, 8).reverse;
+	@!P = @p8;
 	$!R = $encrypt.R;
+	$!EncryptMetadata = $encrypt.EncryptMetadata // False;
 
 	my UInt $v = $encrypt.V;
 	my Str $filter = $encrypt.Filter;
@@ -131,26 +71,77 @@ class PDF::Storage::Crypt::RC4 {
 	die "Only Version 1 and 2 of the Standard encryption filter are supported"
 	    unless $v == 1 | 2 && $filter eq 'Standard';
 
-	$!key-length = $v == 1
-	    ?? 40
-	    !! $encrypt.Length // 40;
+	my UInt $key-bits = $v == 1 ?? 40 !! $encrypt.Length // 40;
+	die "invalid encryption key length: $key-bits"
+	    unless 40 <= $key-bits <= 128
+	    && $key-bits %% 8;
 
-	die "invalid encryption key length: $!key-length"
-	    unless 40 <= $!key-length <= 128
-	    && $!key-length %% 8;
 
-	$!code = do {
-	    when self!check-owner-pass( :@user, :@owner ) {
-		self!compute-hash(@!O);
-	    }
-	    when self!check-user-pass( :@user ) {
-		self!compute-hash(@!U);
-	    }
-	    default {
-		die "unable to decrypt this PDF with given password(s)";
+	$!key-length = $key-bits +> 3;
+    }
+
+    method !compute-user(@pass-padded) {
+	# Algorithm 3.2
+	my @input = flat @pass-padded,       # 1, 2
+	                 @!O,                # 3
+                         @!P,                # 4
+                         @!doc-id;           # 5
+
+
+	@input.append: 0xff xx 4             # 6
+	    if $!R >= 4 && $!EncryptMetadata;
+
+	my $key = Digest::MD5::md5(@input); # 7
+	my $n = 5;
+
+	if $!R >= 3 {                        # 8
+	    $n = $!key-length;
+	    for 1..50 {
+		$key = $key.subbuf(0, $n)
+		    unless +$key == $n;
+		$key = Digest::MD5::md5($key);
 	    }
 	}
 
+	$key;
+    }
+
+    method !auth-user-password(@pass) {
+	# Algorithm 3.6
+	my $key = self!compute-user( @pass )[0 .. 15];
+	my $pass = [ @Padding.list ];
+	my uint8 @computed;
+	my uint8 @expected;
+
+	if $!R >= 3 {
+	    # Algorithm 3.5
+	    $pass.append: @!doc-id;
+	    $pass = Digest::MD5::md5( $pass );
+	    $pass = Crypt::RC4::RC4($key, $pass);
+	    $pass = self!do-iter-crypt($key, $pass.list);
+	    $pass.append( @Padding[0 .. 15] );
+	    @computed = $pass[0 .. 15];
+	    @expected = @!U[0 .. 15];
+	}
+	else {
+	    # Algorithm 3.4
+	    $pass = Crypt::RC4::RC4($key, $pass);
+	    @computed = @$pass;
+	    @expected = @!U;
+	}
+
+	@computed eqv @expected
+	    ?? $key
+	    !! Nil
+    }
+
+    method !auth-owner-password(@) { ... }
+
+    method authenticate(Str $pass, Bool :$owner) {
+	my @pass = format-pass( $pass );
+	$!code = (!$owner && self!auth-user-password( @pass ))
+	    || self!auth-owner-password( @pass )
+	    || die "unable to decrypt this PDF with the given password";
     }
 
 }
