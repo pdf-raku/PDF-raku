@@ -27,25 +27,6 @@ class PDF::Storage::Crypt::RC4 {
 	0x2f, 0x0c, 0xa9, 0xfe,
 	0x64, 0x53, 0x69, 0x7a;
 
-    sub format-pass(Str $pass --> List) {
-	my @pass-padded = flat $pass.NFKC.list, @Padding;
-	@pass-padded[0..31];
-    }
-
-    method !do-iter-crypt($code, @pass is copy, :@steps = (1 ... 19)) {
-
-	if $!R >= 3 {
-	    for @steps -> $iter {
-		my uint8 @key = $code.map({ $_ +^ $iter });
-		@pass = Crypt::RC4::RC4(@key, @pass);
-	    }
-	}
-	else {
-	    @pass = Crypt::RC4::RC4($code, @pass);
-	}
-	@pass;
-    }
-
     submethod BUILD(PDF::DAO::Doc :$doc!) {
 	my $encrypt = $doc.Encrypt
 	    or die "this document is not encrypted";
@@ -75,6 +56,25 @@ class PDF::Storage::Crypt::RC4 {
 
 
 	$!key-length = $key-bits +> 3;
+    }
+
+    sub format-pass(Str $pass --> List) {
+	my @pass-padded = flat $pass.NFKC.list, @Padding;
+	@pass-padded[0..31];
+    }
+
+    method !do-iter-crypt($code, @pass is copy, :@steps = (1 ... 19)) {
+
+	if $!R >= 3 {
+	    for @steps -> $iter {
+		my uint8 @key = $code.map({ $_ +^ $iter });
+		@pass = Crypt::RC4::RC4(@key, @pass);
+	    }
+	}
+	else {
+	    @pass = Crypt::RC4::RC4($code, @pass);
+	}
+	@pass;
     }
 
     method !compute-user(@pass-padded) {
