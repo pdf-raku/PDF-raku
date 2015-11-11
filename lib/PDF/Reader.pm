@@ -388,7 +388,7 @@ class PDF::Reader {
 
                             given $type {
                                 when 0  {} # ignore free objects
-                                when 1  { @obj-idx.push( { :$type, :$obj-num, :$gen-num, :$offset }.item ) }
+                                when 1  { @obj-idx.push: { :$type, :$obj-num, :$gen-num, :$offset } }
                                 default { die "unhandled type: $_" }
                             }
                             $obj-num++;
@@ -624,7 +624,7 @@ class PDF::Reader {
                 && ($first-ind-obj<dict><Linearized>:exists);
         }
 
-        return @objects.item;
+        return @objects;
     }
 
     #| get just updated objects. return as objects

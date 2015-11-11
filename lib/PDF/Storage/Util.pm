@@ -57,7 +57,7 @@ module PDF::Storage::Util {
                 }
                 $s;
             }
-            @samples.push: @sample.item;
+            @samples.push: @sample;
         }
 	@samples;
     }

@@ -130,13 +130,13 @@ our class PDF::DAO::Type::XRef
                         # free or inuse objects
                         my UInt $offset = $idx[1];
                         my UInt $gen-num = $idx[2];
-                        $decoded-stage2.push( { :$type, :$obj-num, :$gen-num, :$offset }.item );
+                        $decoded-stage2.push: { :$type, :$obj-num, :$gen-num, :$offset };
                     }
                     when 2 {
                         # embedded objects
                         my UInt $ref-obj-num = $idx[1];
                         my UInt $index = $idx[2];
-                        $decoded-stage2.push( { :$type, :$obj-num, :$ref-obj-num, :$index }.item );
+                        $decoded-stage2.push: { :$type, :$obj-num, :$ref-obj-num, :$index };
                     }
                     default {
                         die "XRef index object type outside range 0..2: $type"

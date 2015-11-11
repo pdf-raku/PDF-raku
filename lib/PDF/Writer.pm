@@ -85,7 +85,7 @@ class PDF::Writer {
                 # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
                 # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
                 my $contigous = +@xref && .<obj-num> && .<obj-num> == $!size;
-                @xref.push: %( object-first-num => .<obj-num>, entries => [] ).item
+                @xref.push: %( object-first-num => .<obj-num>, entries => [] )
                     unless $contigous;
                 @xref[*-1]<entries>.push: $_;
                 @xref[*-1]<object-count>++;
