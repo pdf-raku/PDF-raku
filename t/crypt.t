@@ -51,8 +51,8 @@ for $test1,
 
     my $crypt = $crypt-delegate.new( :$doc );
     lives-ok {$crypt.authenticate( $user-pass )}, 'user password';
-    todo("owner password authentication");
     lives-ok {$crypt.authenticate( $owner-pass, :owner)}, 'owner password';
+    dies-ok {$crypt.authenticate( 'blah' )}, 'bad password';
 }
 
 done-testing;

@@ -46,7 +46,7 @@ class PDF::Storage::Crypt::RC4 {
 	@pass;
     }
 
-    submethod BUILD(PDF::DAO::Doc :$doc!, Str :$user-pass = '', Str :$owner-pass = '') {
+    submethod BUILD(PDF::DAO::Doc :$doc!) {
 	my $encrypt = $doc.Encrypt
 	    or die "this document is not encrypted";
 
@@ -64,9 +64,6 @@ class PDF::Storage::Crypt::RC4 {
 
 	my UInt $v = $encrypt.V;
 	my Str $filter = $encrypt.Filter;
-
-	my @user  = format-pass( $user-pass );
-	my @owner = format-pass( $owner-pass );
 
 	die "Only Version 1 and 2 of the Standard encryption filter are supported"
 	    unless $v == 1 | 2 && $filter eq 'Standard';
@@ -91,7 +88,7 @@ class PDF::Storage::Crypt::RC4 {
 	@input.append: 0xff xx 4             # 6
 	    if $!R >= 4 && $!EncryptMetadata;
 
-	my $key = Digest::MD5::md5(@input); # 7
+	my $key = Digest::MD5::md5(@input);  # 7
 	my $n = 5;
 
 	if $!R >= 3 {                        # 8
@@ -106,7 +103,7 @@ class PDF::Storage::Crypt::RC4 {
 	$key;
     }
 
-    method !auth-user-password(@pass) {
+    method !auth-user-pass(@pass) {
 	# Algorithm 3.6
 	my $key = self!compute-user( @pass )[0 .. 15];
 	my $pass = [ @Padding.list ];
@@ -114,7 +111,7 @@ class PDF::Storage::Crypt::RC4 {
 	my uint8 @expected;
 
 	if $!R >= 3 {
-	    # Algorithm 3.5
+	    # Algorithm 3.5 steps 1 .. 5
 	    $pass.append: @!doc-id;
 	    $pass = Digest::MD5::md5( $pass );
 	    $pass = Crypt::RC4::RC4($key, $pass);
@@ -135,12 +132,43 @@ class PDF::Storage::Crypt::RC4 {
 	    !! Nil
     }
 
-    method !auth-owner-password(@) { ... }
+    method !auth-owner-gen-key(@pass-padded) {
+        # Alogorithm 3.7 steps 1 .. 4
+	my @input = @pass-padded;           # 1
+
+	my $key = Digest::MD5::md5(@input); # 2
+	my $n = 5;
+
+	if $!R >= 3 {                       # 3
+	    $n = $!key-length;
+	    for 1..50 {
+		$key = $key.subbuf(0, $n)
+		    unless +$key == $n;
+		$key = Digest::MD5::md5($key);
+	    }
+	}
+
+	$key;                               # 4
+    }
+
+    method !auth-owner-pass(@pass) {
+	# Algorithm 3.7
+	my $key = self!auth-owner-gen-key( @pass );    # 1
+	my $user-pass = @!O.list;
+	if $!R == 2 {      # 2 (Revision 2 only)
+	    $user-pass = Crypt::RC4::RC4($key, $user-pass);
+	}
+	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
+	    $user-pass = self!do-iter-crypt($key, $user-pass.list,
+					    :steps(19, 18 ... 0) );
+	}
+	self!auth-user-pass($user-pass.list);          # 3
+    }
 
     method authenticate(Str $pass, Bool :$owner) {
 	my @pass = format-pass( $pass );
-	$!code = (!$owner && self!auth-user-password( @pass ))
-	    || self!auth-owner-password( @pass )
+	$!code = (!$owner && self!auth-user-pass( @pass ))
+	    || self!auth-owner-pass( @pass )
 	    || die "unable to decrypt this PDF with the given password";
     }
 
