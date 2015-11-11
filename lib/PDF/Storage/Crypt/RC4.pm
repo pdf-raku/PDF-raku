@@ -9,7 +9,7 @@ use Crypt::RC4;
 class PDF::Storage::Crypt::RC4 {
 
     has UInt $!key-length;
-    has $!code;
+    has $!auth;
     has UInt @!doc-id;
     has UInt @!O;
     has UInt @!U;
@@ -167,9 +167,30 @@ class PDF::Storage::Crypt::RC4 {
 
     method authenticate(Str $pass, Bool :$owner) {
 	my @pass = format-pass( $pass );
-	$!code = (!$owner && self!auth-user-pass( @pass ))
+	$!auth = (!$owner && self!auth-user-pass( @pass ))
 	    || self!auth-owner-pass( @pass )
 	    || die "unable to decrypt this PDF with the given password";
+    }
+
+    multi method crypt( Str $text, |c) {
+	$.crypt( $text.encode("latin-1"), |c ).decode("latin-1");
+    }
+
+    multi method crypt( $bytes, UInt :$obj-num!, UInt :$gen-num! ) is default {
+	# Algorithm 3.1
+
+	die "encyption has not been authenticated"
+	    unless $!auth;
+
+	my uint8 @obj-bytes = resample([ $obj-num, ], 32, 8).reverse;
+	my uint8 @gen-bytes = resample([ $gen-num, ], 32, 8).reverse;
+	my uint8 @obj-key = flat $!auth.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
+
+	my $key = Digest::MD5::md5( @obj-key );
+	my UInt $size = min( $!key-length, 16 );
+	$key = $key.subbuf(0, $size)
+	    unless +$key == $size;
+	Crypt::RC4::RC4( $key, $bytes );
     }
 
 }
