@@ -58,10 +58,27 @@ for $test1,
     my $obj-num = 6;
     my $gen-num = 0;
     my $length = 46;
-
     my $plain-text = "BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET";
+
     is $crypt.crypt(:$obj-num, :$gen-num, $cipher-text), $plain-text, 'decryption';
     is $crypt.crypt(:$obj-num, :$gen-num, $plain-text), $cipher-text, 'encryption';
+
+    my $encoded = $cipher-text;
+    my $ast = :ind-obj[ :int($obj-num), :int($gen-num),
+			:stream{
+			    :dict{ :Length{ :int($length) } },
+			    :$encoded,
+			}];
+
+    $encoded = $plain-text;
+    my $ast-decrypted = :ind-obj[ :int($obj-num), :int($gen-num),
+			      :stream{
+				  :dict{ :Length{ :int($length) } },
+				  :$encoded,
+				  }];
+
+    $crypt.crypt-ast($ast);
+    is-deeply $ast, $ast-decrypted, 'ast decryption';
 }
 
 done-testing;
