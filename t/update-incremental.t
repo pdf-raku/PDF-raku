@@ -15,7 +15,7 @@ srand(123456);
 
 't/pdf/pdf.in'.IO.copy('t/pdf/pdf-updated.out');
 
-my $doc = PDF::DAO::Doc.open( 't/pdf/pdf-updated.out', :a );
+my $doc = PDF::DAO::Doc.open( 't/pdf/pdf-updated.out' );
 my $reader = $doc.reader;
 is +$reader.xrefs, 1, 'reader.xrefs - initial';
 my $catalog = $doc<Root>;

@@ -25,12 +25,8 @@ class PDF::DAO::Doc
 
     has Hash $.Root is entry( :indirect );
 
-    #| open an input file
-    use PDF::Storage::Input;
-    multi method open(PDF::Storage::Input $input) { self!open($input) }
-    multi method open(Str $file-name) is default  { self!open($file-name) }
-
-    method !open($spec) {
+    #| open the input file-name or path
+    method open($spec) {
 	require ::('PDF::Reader');
         my $reader = ::('PDF::Reader').new;
         my $doc = self.new;
