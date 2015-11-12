@@ -13,6 +13,7 @@ class PDF::Storage::Crypt::RC4
 
     has UInt $!key-length;
     has $!auth;
+    has Bool $.is-owner;
     has UInt @!doc-id;
     has UInt @!O;
     has UInt @!U;
@@ -165,6 +166,7 @@ class PDF::Storage::Crypt::RC4
 	    $user-pass = self!do-iter-crypt($key, $user-pass.list,
 					    :steps(19, 18 ... 0) );
 	}
+	$!is-owner = True;
 	self!auth-user-pass($user-pass.list);          # 3
     }
 

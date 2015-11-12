@@ -4,7 +4,7 @@ use PDF::Storage::Crypt;
 use PDF::DAO::Doc;
 
 my $test1 = do {
-    # pdftk output enc.pdf encrypt helloworld.pdf ownerpw test
+    # pdftk output enc.pdf helloworld.pdf owner_pw test
     my Hash $Encrypt = {
 	:V(2),
 	:Filter<Standard>,
@@ -22,7 +22,7 @@ my $test1 = do {
 }
 
 my $test2 = do {
-    # pdftk output enc2.pdf encrypt helloword.pdf ownerpw test1 userpw test2
+    # pdftk helloworld.pdf output enc2.pdf owner_pw test1 user_pw test2
     my Hash $Encrypt = {
 	:V(2),
 	:Filter<Standard>,
@@ -64,14 +64,14 @@ for $test1,
     is $crypt.crypt(:$obj-num, :$gen-num, $plain-text), $cipher-text, 'encryption';
 
     my $encoded = $cipher-text;
-    my $ast = :ind-obj[ :int($obj-num), :int($gen-num),
+    my $ast = :ind-obj[ $obj-num, $gen-num,
 			:stream{
 			    :dict{ :Length{ :int($length) } },
 			    :$encoded,
 			}];
 
     $encoded = $plain-text;
-    my $ast-decrypted = :ind-obj[ :int($obj-num), :int($gen-num),
+    my $ast-decrypted = :ind-obj[ $obj-num, $gen-num,
 			      :stream{
 				  :dict{ :Length{ :int($length) } },
 				  :$encoded,

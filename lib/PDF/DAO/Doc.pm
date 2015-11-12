@@ -26,12 +26,12 @@ class PDF::DAO::Doc
     has Hash $.Root is entry( :indirect );
 
     #| open the input file-name or path
-    method open($spec) {
+    method open($spec, |c) {
 	require ::('PDF::Reader');
         my $reader = ::('PDF::Reader').new;
         my $doc = self.new;
         $reader.install-trailer( $doc );
-        $reader.open($spec);
+        $reader.open($spec, |c);
         $doc;
     }
 
@@ -43,6 +43,9 @@ class PDF::DAO::Doc
 
 	die "PDF has not been opened for indexed read."
 	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
+
+	die "incremental update of encrypted documents is nyi"
+	    if $reader.crypt;
 
 	self!generate-id;
 

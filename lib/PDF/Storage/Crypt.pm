@@ -23,8 +23,8 @@ class PDF::Storage::Crypt {
 
     #| descend and indirect object encrypting/decrypting any strings or streams
     multi method crypt-ast('ind-obj', Array $ast) {
-	my $obj-num = $ast[0].value;
-	my $gen-num = $ast[1].value;
+	my $obj-num = $ast[0];
+	my $gen-num = $ast[1];
 	$.crypt-ast( $ast[2], :$obj-num, :$gen-num );
     }
 

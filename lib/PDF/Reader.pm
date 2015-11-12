@@ -11,8 +11,9 @@ class PDF::Reader {
     use PDF::DAO::Util :from-ast, :to-ast;
     use PDF::Writer;
     use PDF::Storage::Input;
+    use PDF::Storage::Crypt;
 
-    has $.input is rw;  # raw PDF image (latin-1 encoding)
+    has $.input is rw;       #= raw PDF image (latin-1 encoding)
     has Str $.file-name;
     has Hash %!ind-obj-idx;
     has $.ast is rw;
@@ -21,7 +22,8 @@ class PDF::Reader {
     has Str $.type is rw;
     has UInt $.prev;
     has UInt $.size is rw;   #= /Size entry in trailer dict ~ first free object number
-    has UInt @.xrefs = (0); #= xref position for each revision in the file
+    has UInt @.xrefs = (0);  #= xref position for each revision in the file
+    has PDF::Storage::Crypt $.crypt;
 
     method actions {
         state $actions //= PDF::Grammar::PDF::Actions.new
@@ -45,6 +47,46 @@ class PDF::Reader {
         }
     }
 
+    method !setup-crypt( Str :$password = '') {
+	my PDF::DAO::Doc $doc = self.trailer;
+	return unless $doc<Encrypt>:exists;
+	my $encrypt = $doc<Encrypt>;
+	return unless $encrypt<O>:exists;
+
+	$!crypt = PDF::Storage::Crypt.delegate-class( :$doc ).new( :$doc );
+	$!crypt.authenticate( $password );
+
+	# decrypt any already loaded objects
+	my $enc-obj-num = $encrypt.obj-num;
+	my $enc-gen-num = $encrypt.gen-num;
+
+	for %!ind-obj-idx.pairs {
+
+	    my $obj-num = +.key
+		or next;
+
+	    for .value.pairs {
+		my $gen-num = +.key;
+		# don't decrypt the encryption dictionary
+		next if $obj-num == $enc-obj-num
+		    && $gen-num == $enc-gen-num;
+		my $idx = .value;
+
+		if my $ind-obj := $idx<ind-obj> {
+		    die "too late to setup encryption: $obj-num $gen-num R"
+			if $idx<type> != 0 | 1
+			|| $ind-obj.isa(PDF::Storage::IndObj);
+
+		    $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num );
+		}
+	    }
+	}
+
+	$doc<Encrypt>:delete;
+	%!ind-obj-idx{$enc-obj-num}{$enc-gen-num}<type> = 0; # freed
+
+    }
+
     #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
     method !set-trailer (
         Hash $dict,
@@ -62,7 +104,7 @@ class PDF::Reader {
     }
 
     #| derserialize a json dump
-    multi method open( Str $input-file  where m:i/'.json' $/ ) {
+    multi method open( Str $input-file  where m:i/'.json' $/, |c ) {
         my $ast = from-json( $input-file.IO.slurp );
         die "doesn't contain a pdf struct: $input-file"
             unless $ast.isa(Hash) && ($ast<pdf>:exists);
@@ -86,6 +128,7 @@ class PDF::Reader {
             if .<trailer> {
                 my $dict = PDF::DAO.coerce( |%(.<trailer>) );
                 self!set-trailer( $dict.content<dict> );
+		self!setup-crypt(|c);
             }
        }
 
@@ -202,6 +245,9 @@ class PDF::Reader {
 
                 self!fetch-stream-data($ind-obj, $.input, :$offset, :$max-end)
                     if $ind-obj[2].key eq 'stream';
+
+                $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num )
+                    if $!crypt;
             }
             when 2 {
                 # type 2 embedded object
@@ -314,13 +360,13 @@ class PDF::Reader {
     #| scan the entire PDF, bypass any indices. Populate index with
     #| raw ast indirect objects. Useful if the index is corrupt and/or
     #| the PDF has been hand-created/edited.
-    multi method load('PDF', :$repair! where {$repair} ) {
-        self!full-scan( PDF::Grammar::PDF, $.actions, :repair);
+    multi method load('PDF', :$repair! where {$repair}, |c ) {
+        self!full-scan( PDF::Grammar::PDF, $.actions, :repair, |c );
     }
 
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
     #| via the $.ind-obj() method.
-    multi method load('PDF') is default {
+    multi method load('PDF', |c) is default {
         my UInt $tail-bytes = min(1024, $.input.codes);
         my Str $tail = $.input.substr(* - $tail-bytes);
 
@@ -432,6 +478,8 @@ class PDF::Reader {
             %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(1), :$offset, :$end };
         }
 
+	self!setup-crypt(|c);
+
         my @type2-obj-entries = %obj-entries-of-type<2>.list
         if %obj-entries-of-type<2>:exists;
 
@@ -451,7 +499,7 @@ class PDF::Reader {
     }
 
     #| bypass any indices. directly parse and reconstruct index fromn objects.
-    method !full-scan( $grammar, $actions, :$repair ) {
+    method !full-scan( $grammar, $actions, Bool :$repair, |c) {
         temp $actions.get-offsets = True;
         $grammar.parse(~$.input, :$actions)
             or die "unable to parse document";
@@ -459,6 +507,7 @@ class PDF::Reader {
         my Array $body = $ast<body>;
 
         for $body.list.reverse {
+
             for .<objects>.list.reverse {
                 next unless .key eq 'ind-obj';
                 my $ind-obj = .value;
@@ -477,7 +526,8 @@ class PDF::Reader {
                         if $repair;
 
 		    if $stream-type && $stream-type eq 'XRef' {
-			self!set-trailer( $dict, :keys<Root Encrypt Info ID> );
+			self!set-trailer( $dict, :keys[<Root Encrypt Info ID>] );
+			self!setup-crypt(|c);
 			# discard existing /Type /XRef stream objects. These are specific to the input PDF
 			next;
 		    }
@@ -515,8 +565,8 @@ class PDF::Reader {
 
             if .<trailer> {
                 my $dict = PDF::DAO.coerce( |%(.<trailer>) );
-                self!set-trailer( $dict.content<dict> )
-                    if $dict.content<dict>:exists;
+                self!set-trailer( $dict.content<dict> );
+		self!setup-crypt(|c);
             }
         }
 
@@ -675,6 +725,8 @@ class PDF::Reader {
     #| dump to json
     multi method save-as( $output-path where m:i/'.json' $/,
                           :$ast is copy, |c ) {
+        die "unable to save encrypted document without owner password"
+             if $!crypt && ! $!crypt.is-owner;
         $ast //= $.ast(|c);
         note "dumping {$output-path}...";
         $output-path.IO.spurt( to-json( $ast ) );
@@ -683,6 +735,8 @@ class PDF::Reader {
     #| write to PDF/FDF
     multi method save-as( $output-path,
                           :$ast is copy, |c ) is default {
+        die "unable to save encrypted document without owner password"
+             if $!crypt && ! $!crypt.is-owner;
         $ast //= $.ast(|c);
         note "saving {$output-path}...";
         my $pdf-writer = PDF::Writer.new( :$.input );
@@ -690,3 +744,4 @@ class PDF::Reader {
     }
 
 }
+
