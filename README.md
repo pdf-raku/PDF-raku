@@ -3,10 +3,11 @@ perl6-PDF-Tools
 
 ## Overview
 
-This module provides basic tools for PDF Manipulation, including:
+This module provides base tools for low-level PDF Manipulation, including:
 - `PDF::Reader` - for indexed random access to PDFs
 - `PDF::Storage::Filter` - a collection of standard PDF decoding and encoding tools for PDF data streams
-- `PDF::Storage::Serializer` - data marshalling utilies for the preparation of full or incremental updates
+- `PDF::Storage::Serializer` - data marshalling utilities for the preparation of full or incremental updates
+- `PDF::Storage::Crypt` - basic decryption / encryption (V 2 & 3 RC4 only)
 - `PDF::Writer` - for the creation or update of PDFs
 - `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures.
 
@@ -18,7 +19,7 @@ Features of this tool-kit include:
 - high level data access via tied Hashes and Arrays
 - a type system for mapping PDF internal structures to Perl 6 objects
 
-Note: This is a low-to-medium level module that understands physical the structure of a PDF. <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) targets the logical document structure.
+Note: This is a low-to-medium level module that understands PDF data structures and serialization. <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) targets the logical document structure.
 
 ## Example Usage
 
@@ -98,6 +99,150 @@ of serialization and data representation mostly remain hidden.
 
 This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction), which contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
 
+## The Basics
+
+PDF files are serialized as numbered indirect objects. The `t/helloworld.pdf` file that we just wrote contains:
+```
+%PDF-1.3
+%...(control chars)
+1 0 obj <<
+  /Author (PDF-Tools/t/helloworld.t)
+  /CreationDate (D:20151225000000Z00'00')
+>>
+endobj
+2 0 obj <<
+  /Type /Catalog
+  /Outlines 3 0 R
+  /Pages 4 0 R
+>>
+endobj
+3 0 obj <<
+  /Type /Outlines
+  /Count 0
+>>
+endobj
+4 0 obj <<
+  /Type /Pages
+  /Count 1
+  /Kids [ 5 0 R ]
+>>
+endobj
+5 0 obj <<
+  /Type /Page
+  /Contents 6 0 R
+  /MediaBox [ 0 0 420 595 ]
+  /Parent 4 0 R
+  /Resources <<
+    /Font <<
+      /F1 7 0 R
+    >>
+    /Procset [ /PDF /Text ]
+  >>
+>>
+endobj
+6 0 obj <<
+  /Length 46
+>>
+stream
+BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
+endstream
+endobj
+7 0 obj <<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Helvetica
+  /Encoding /MacRomanEncoding
+>>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000014 00000 n 
+0000000114 00000 n 
+0000000185 00000 n 
+0000000235 00000 n 
+0000000300 00000 n 
+0000000482 00000 n 
+0000000580 00000 n 
+trailer
+<<
+  /ID [ <4386DC7BC3489E418B44434E3A168843> <4386DC7BC3489E418B44434E3A168843> ]
+  /Info 1 0 R
+  /Root 2 0 R
+  /Size 8
+>>
+startxref
+686
+%%EOF
+```
+
+The PDF is broken down into indirect objects, for example, the first object is:
+
+```
+1 0 obj <<
+  /Author (PDF-Tools/t/helloworld.t)
+  /CreationDate (D:20151225000000Z00'00')
+>>
+endobj
+```
+
+It's an indirect object with object number `1` and generation number `0`. Itontains the author and the date that the document was created.
+
+This is a PDF dictionary object which is roughly equivalent to a Perl 6 hash:
+
+``` { :Author("PDF-Tools/t/helloworld.t"), :CreationDate("D:20151225000000Z00'00'") } ```
+
+The bottom of the PDF contains
+
+```
+trailer
+<<
+  /ID [ <4386DC7BC3489E418B44434E3A168843> <4386DC7BC3489E418B44434E3A168843> ]
+  /Info 1 0 R
+  /Root 2 0 R
+  /Size 8
+>>
+```
+
+This is the trailer dictionary and the main entry point into the document. The dictionary entry `/Info 1 0 R`
+is an indirect reference to the first object (object number 1, generation 0) described above.
+
+We can quickly put PDF Tools to work using a Perl 6 REPL, to better explore the document:
+
+```
+snoopy: ~/git/perl6-PDF-Tools $ perl6 -MPDF::DAO::Doc
+> my $doc = PDF::DAO::Doc.open: "t/helloworld.pdf"
+ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
+> $doc.keys
+(Root Info ID)
+```
+This is the root of the PDF, loaded from the trailer dictionary
+```
+> $doc<Info>
+Author => PDF-Tools/t/helloworld.t, CreationDate => D:20151225000000Z00'00'
+```
+That's the document information entry, commonly used to store basic meta-data about the document.
+
+PDF Tools has conveniantly fetched indirect object 1 from the PDF, when we dereferenced this entry.
+```
+> $doc<Root>
+Outlines => ind-ref => [3 0], Pages => ind-ref => [4 0], Type => Catalog
+````
+The trailer `Root` entry references the document catalog, which contains the actual PDF content. Exploring
+further; the catalog potentially contains a number of pages, each with content.
+```
+> $doc<Root><Pages>
+Count => 1, Kids => [ind-ref => [5 0]], Type => Pages
+> $doc<Root><Pages><Kids>[0]
+Contents => ind-ref => [6 0], MediaBox => [0 0 420 595], Parent => ind-ref => [4 0], Resources => Font => F1 => ind-ref => [7 0], Procset => [PDF Text], Type => Page
+> $doc<Root><Pages><Kids>[0]<Contents>
+Length => 46
+> $doc<Root><Pages><Kids>[0]<Contents>.decoded
+BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
+> 
+```
+
+The page `Contents` is a PDF stream which contains graphical instructions. In the above example, to output the text `Hello, world!` at coordinates 100, 250.
 
 ## Datatypes and Coercian
 
@@ -343,6 +488,6 @@ my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
 
 Under construction (not yet released to Perl 6 ecosystem)
 - Highest tested Rakudo version: `perl6 version 2015.10-208-g76ee2d8 built on MoarVM version 2015.10-61-g624d504`
-- V 2 and 3 Decryption (RC4) is supported. Decryption Encryption is NYI.
+- V 2 and 3 Decryption (RC4) is supported. Encryption is NYI.
 
 
