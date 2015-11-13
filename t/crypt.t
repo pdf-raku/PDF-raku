@@ -6,19 +6,18 @@ use PDF::DAO::Doc;
 my $test1 = do {
     # pdftk output enc.pdf helloworld.pdf owner_pw test
     my Hash $Encrypt = {
-	:V(2),
-	:Filter<Standard>,
-	:Length(128),
-	:O("\x[e6]\x0\x[ec]\x[c2]\x[2]\x[88]\x[ad]\x[8b]\rd\x[a9])\x[c6]\x[a8]>\x[e2]Qvy\x[aa]\x[2]\x[18]\x[be]\x[ce]\x[ea]\x[8b]y\x[86]rj\x[8c]\x[db]"),
-	:U("\x[90]\x[e3]\x[10]\x[f5]\x[3]}\x[88]\x[d4]XG:^\x[a]\fB8\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0\x0"),
-	:P(-3904),
-	:R(3),
+      :V(1),
+      :Filter<Standard>,
+      :U("\%\x[7f]d°BPa\x[90]\x[8d]\x[8d]\x[e]Ð´'\x[3]\x[1]30\tË¤_\bóÙ'»\x[1f]\x[96][ß\x[93]"),
+      :R(2),
+      :P(-64),
+      :O("É\$\"h\x[7f]¬îhn7?\x[10]µÇÐG8\x[5]1R÷âî0á\x[1c]iìD\%v«"),
     };
 
-    my $stream = "\x[ee]\x[8a]\x[9a]\x[0b]\x[c9]^S\x[03]}\x[ac]\x[8c]q\x[e5]\t\x[f1]tU\x[f8]\x[ce]\x[88]V\x[e5]5\x[bc]\x[b7]Q@A\x[cf]\x[1a]<\x[d3]\x[d3]~\x[b9]\x[be]\x[13]\x[b6]\x[0b]\x[06]\x[a6]\x[02]\x[a7]\x[bb]!\x[1b]";
-    my Str $doc-id = "4\t\x[c9]\x[89]\x[1b]<}\x[b8]\x[2]lp\x[b7]\x[fe]-\x[3]\x[e8]";
+    my $stream = "åFðë)\x[8a]ø\x[6]}ðFî\x[3]\x[1a]7«Á\x[8b]7\"?^/l\x[a0]Áºqíp\x[13]H\x[3]7êß?ê\x[17]ÒGÉi/¡\x[89]";
+    my Str $doc-id = "0\x[8a]Ú\x[1a]D\x[7f]'Ë7äþÙÌ\x[94]»§";
     
-    { :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass(''), :owner-pass<test>, :$stream }
+    { :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass(''), :owner-pass<owner>, :$stream }
 }
 
 my $test2 = do {
@@ -40,7 +39,7 @@ my $test2 = do {
 }
 
 for $test1,
-    $test1
+    $test2
  {
     my $doc = PDF::DAO::Doc.new: .<doc>;
     my $owner-pass  = .<owner-pass>;
@@ -48,7 +47,7 @@ for $test1,
     my $cipher-text = .<stream>;
     my $crypt-delegate = PDF::Storage::Crypt.delegate-class( :$doc );
 
-    isa-ok $crypt-delegate, ::('PDF::Storage::Crypt::RC4'), '/V 2 crypt delegate';
+    isa-ok $crypt-delegate, ::('PDF::Storage::Crypt::RC4'), "/V {$doc.Encrypt.V}.{$doc.Encrypt.R} crypt delegate";
 
     my $crypt = $crypt-delegate.new( :$doc );
     dies-ok  { $crypt.authenticate( 'blah' ) }, 'bad password';
@@ -60,8 +59,8 @@ for $test1,
     my $length = 46;
     my $plain-text = "BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET";
 
-    is $crypt.crypt(:$obj-num, :$gen-num, $cipher-text), $plain-text, 'decryption';
-    is $crypt.crypt(:$obj-num, :$gen-num, $plain-text), $cipher-text, 'encryption';
+    is-deeply $crypt.crypt(:$obj-num, :$gen-num, $cipher-text), $plain-text, 'decryption';
+    is-deeply $crypt.crypt(:$obj-num, :$gen-num, $plain-text), $cipher-text, 'encryption';
 
     my $encoded = $cipher-text;
     my $ast = :ind-obj[ $obj-num, $gen-num,

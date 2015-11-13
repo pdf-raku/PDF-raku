@@ -92,16 +92,20 @@ class PDF::Storage::Crypt::RC4
 	@input.append: 0xff xx 4             # 6
 	    if $!R >= 4 && $!EncryptMetadata;
 
-	my $key = Digest::MD5::md5(@input);  # 7
-	my $n = 5;
+	my UInt $n = 5;
+	my UInt $reps = 1;
 
 	if $!R >= 3 {                        # 8
 	    $n = $!key-length;
-	    for 1..50 {
-		$key = $key.subbuf(0, $n)
-		    unless +$key == $n;
-		$key = Digest::MD5::md5($key);
-	    }
+	    $reps = 51;
+	}
+
+	my $key = [ @input ];
+
+	for 1..$reps {
+	    $key = Digest::MD5::md5($key);
+	    $key = $key.subbuf(0, $n)
+		unless +$key == $n;
 	}
 
 	$key;
@@ -126,7 +130,7 @@ class PDF::Storage::Crypt::RC4
 	}
 	else {
 	    # Algorithm 3.4
-	    $pass = Crypt::RC4::RC4($key, $pass);
+	    $pass = Crypt::RC4::RC4($key, @Padding);
 	    @computed = @$pass;
 	    @expected = @!U;
 	}
@@ -136,20 +140,24 @@ class PDF::Storage::Crypt::RC4
 	    !! Nil
     }
 
-    method !auth-owner-gen-key(@pass-padded) {
+    method !computer-owner(@pass-padded) {
         # Alogorithm 3.7 steps 1 .. 4
 	my @input = @pass-padded;           # 1
 
-	my $key = Digest::MD5::md5(@input); # 2
-	my $n = 5;
+	my UInt $n = 5;
+	my UInt $reps = 1;
 
 	if $!R >= 3 {                       # 3
 	    $n = $!key-length;
-	    for 1..50 {
-		$key = $key.subbuf(0, $n)
-		    unless +$key == $n;
-		$key = Digest::MD5::md5($key);
-	    }
+	    $reps = 51;
+	}
+
+	my $key = [ @input ];
+
+	for 1..$reps {
+	    $key = Digest::MD5::md5($key);
+	    $key = $key.subbuf(0, $n)
+		unless +$key == $n;
 	}
 
 	$key;                               # 4
@@ -157,7 +165,7 @@ class PDF::Storage::Crypt::RC4
 
     method !auth-owner-pass(@pass) {
 	# Algorithm 3.7
-	my $key = self!auth-owner-gen-key( @pass );    # 1
+	my $key = self!computer-owner( @pass );    # 1
 	my $user-pass = @!O.list;
 	if $!R == 2 {      # 2 (Revision 2 only)
 	    $user-pass = Crypt::RC4::RC4($key, $user-pass);
@@ -191,10 +199,11 @@ class PDF::Storage::Crypt::RC4
 	my uint8 @gen-bytes = resample([ $gen-num, ], 32, 8).reverse;
 	my uint8 @obj-key = flat $!auth.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
 
+	my UInt $size = +@obj-key;
 	my $key = Digest::MD5::md5( @obj-key );
-	my UInt $size = min( $!key-length, 16 );
 	$key = $key.subbuf(0, $size)
-	    unless +$key == $size;
+	    if $size < 16;
+
 	Crypt::RC4::RC4( $key, $bytes );
     }
 

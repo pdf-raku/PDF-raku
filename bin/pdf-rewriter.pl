@@ -14,7 +14,7 @@ sub MAIN (
     Bool :$rebuild    = False,   # rebuild object tree (renumber, garbage collect and deduplicate objects)
     Bool :$compress   = False,   # uncompress streams
     Bool :$uncompress = False,   # compress streams
-    Str :$password = '';         # owner password for encrypted documents
+    Str  :$password = '';        # owner password for encrypted documents
     Bool :$dom = False,          # require PDF::DOM
     ) {
 
