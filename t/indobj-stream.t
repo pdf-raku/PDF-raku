@@ -48,5 +48,5 @@ sub stream_tests( $stream-obj, $subject) {
 
 my $stream2 = PDF::DAO.coerce( :stream{  :dict{ :Foo( :name<Bar> ) } } );
 is-json-equiv $stream2.content, (:dict{:Foo(:name<Bar>)}), 'stream without content';
-$stream2.decoded('ABC12345678');
+$stream2.decoded = 'ABC12345678';
 is-json-equiv $stream2.content, (:stream{ :dict{:Foo(:name<Bar>), :Length{ :int(11) } }, :encoded<ABC12345678> }), 'stream with content'

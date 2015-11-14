@@ -57,62 +57,69 @@ class PDF::DAO::Stream
 		    if $missing;
 	    }
         }
-	if $decoded.defined {
-	    $obj.decoded($decoded);
-	}
-	elsif $encoded.defined {
-	    $obj.encoded($encoded);
-	}
+
+	$obj.decoded = $decoded if $decoded.defined;
+	$obj.encoded = $encoded if $encoded.defined;
 	$obj.obj-num = $obj-num if $obj-num.defined;
 	$obj.gen-num = $gen-num if $gen-num.defined;
 	$obj.reader  = $reader  if $reader.defined;
         $obj;
     }
 
-    multi method encoded($stream!) {
-        $!decoded = Any;
-        self<Length> = $stream.codes
-	    if $stream.can('codes');
-        $!encoded = $stream;
+    method encoded is rw {
+	my $encoded := $!encoded;
+	my $decoded := $!decoded;
+	my $obj := self;
+	Proxy.new(
+	    FETCH => sub ($) {
+
+		$encoded //= $obj.encode( $decoded )
+		    if $decoded.defined;
+
+		if $encoded.can('codes') {
+		    $obj<Length> = $encoded.codes;
+		}
+		else {
+		    $obj<Length>:delete
+		}
+		$encoded;
+	    },
+
+	    STORE => sub ($, $stream) {
+		$decoded = Any;
+		$obj<Length> = $stream.codes
+		    if $stream.can('codes');
+		$encoded = $stream;
+	    },
+	    )
     }
 
-    multi method encoded is default {
-        if $!decoded.defined {
-            $!encoded //= $.encode( $!decoded );
-        }
-
-	if $!encoded.can('codes') {
-	    self<Length> = $!encoded.codes;
-	}
-	else {
-	    self<Length>:delete
-	}
-	$!encoded;
-    }
-
-    multi method decoded($stream!) {
-        $!encoded = Any;
-        self<Length>:delete;
-        $!decoded = $stream;
-    }
-
-    multi method decoded is default {
-        $!decoded //= $.decode( $!encoded )
-            if $!encoded.defined;
-
-        $!decoded;
+    method decoded is rw {
+	my $encoded := $!encoded;
+	my $decoded := $!decoded;
+	my $obj := self;
+	Proxy.new(
+	    FETCH => sub ($) {
+		$decoded //= $obj.decode( $encoded )
+		    if $encoded.defined;
+		$decoded;
+	    },
+	    STORE => sub ($, $stream) {
+		$encoded = Any;
+		$obj<Length>:delete;
+		$decoded = $stream;
+	    }
+	    );
     }
 
     method edit-stream( Str :$prepend = '', Str :$append = '' ) {
         for $prepend, $append {
-            for .comb {
-                die "illegal non-latin hex byte: U+" ~ .ord.base(16)
-                    unless 0 <= .ord <= 0xFF;
+            for .codes {
+                die "illegal non-latin hex byte: U+" ~ .base(16)
+                    unless 0 <= $_ <= 0xFF;
             }
         }
-        $.decoded;
-        $!encoded = Any;
-        $!decoded = $prepend ~ ($!decoded // '') ~ $append;
+        $.decoded = $prepend ~ ($!decoded // '') ~ $append;
     }
 
     method decode( $encoded = $.encoded ) {
@@ -139,7 +146,8 @@ class PDF::DAO::Stream
                 $!encoded = Nil;
                 self<Filter>:delete;
                 self<DecodeParms>:delete;
-                self<Length> = $!decoded.chars;
+                self<Length> = $!decoded.codes
+		    if $!decoded.can('codes')
             }
         }
     }
