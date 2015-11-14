@@ -186,7 +186,7 @@ The PDF is broken down into indirect objects, for example, the first object is:
 endobj
 ```
 
-It's an indirect object with object number `1` and generation number `0`. Itontains the author and the date that the document was created.
+It's an indirect object with object number `1` and generation number `0`, containing the author and the date that the document was created.
 
 This is a PDF dictionary object which is roughly equivalent to a Perl 6 hash:
 
@@ -223,7 +223,7 @@ Author => PDF-Tools/t/helloworld.t, CreationDate => D:20151225000000Z00'00'
 ```
 That's the document information entry, commonly used to store basic meta-data about the document.
 
-PDF Tools has conveniantly fetched indirect object 1 from the PDF, when we dereferenced this entry.
+(PDF Tools has conveniantly fetched indirect object 1 from the PDF, when we dereferenced this entry).
 ```
 > $doc<Root>
 Outlines => ind-ref => [3 0], Pages => ind-ref => [4 0], Type => Catalog
