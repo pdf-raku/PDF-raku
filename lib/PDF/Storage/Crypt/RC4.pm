@@ -18,6 +18,7 @@ class PDF::Storage::Crypt::RC4
     has UInt @!O;
     has UInt @!U;
     has UInt $!R;
+    has Int $.P;
     has UInt @!P;
     has Bool $!EncryptMetadata;
 
@@ -41,7 +42,8 @@ class PDF::Storage::Crypt::RC4
 	@!doc-id = $doc.ID[0].ords;
 	@!O = $encrypt.O.ords;
 	@!U = $encrypt.U.ords;
-	my uint32 @p32 = $encrypt.P;
+	$!P = $encrypt.P;
+	my uint32 @p32 = [ $!P, ];
 	my uint8 @p8 = resample(@p32, 32, 8).reverse;
 	@!P = @p8;
 	$!R = $encrypt.R;
@@ -90,7 +92,7 @@ class PDF::Storage::Crypt::RC4
 
 
 	@input.append: 0xff xx 4             # 6
-	    if $!R >= 4 && $!EncryptMetadata;
+	    if $!R >= 4 && ! $!EncryptMetadata;
 
 	my UInt $n = 5;
 	my UInt $reps = 1;

@@ -1,10 +1,8 @@
 use v6;
 
-use PDF::DAO::Doc;
-
 class PDF::Storage::Crypt {
 
-    method delegate-class( PDF::DAO::Doc :$doc! ) {
+    method delegate-class( Hash :$doc! ) {
 	return Nil
 	    unless ($doc<Encrypt>:exists)
 	    && ($doc<Encrypt><V>:exists);

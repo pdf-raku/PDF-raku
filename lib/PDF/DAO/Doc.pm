@@ -76,12 +76,14 @@ class PDF::DAO::Doc
 
     # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )
     method permitted(UInt $flag --> Bool) {
-	my $encrypt = self.Encrypt;
-        my $perms = $encrypt.P
-            if $encrypt;
+
+	my $crypt = self.reader.?crypt
+	    // return;
+
+	my $perms = $crypt.P;
 
 	return True
-	    unless $perms.defined;
+	    if $crypt.?is-owner // ! $perms.defined;
 
 	return $perms.flag-is-set( $flag );
     }
