@@ -10,13 +10,13 @@ my $stream-obj;
 
 my %dict = ( :Filter<ASCIIHexDecode>,
              :DecodeParms{ :BitsPerComponent(4), :Predictor(10), :Colors(3) },
-             :Length(58),
     );
 
 my $decoded = '100 100 Td (Hello, world!) Tj';
 my $encoded = '31303020313030205464202848656c6c6f2c20776f726c64212920546a';
 lives-ok { $stream-obj = PDF::DAO.coerce( :$decoded, :stream{ :%dict } ) }, 'basic stream object construction';
 stream_tests( $stream-obj, 'stream object' );
+%dict<Length> = 58;
 stream_tests( $stream-obj.clone, 'stream object cloned' );
 
 my $ind-obj;

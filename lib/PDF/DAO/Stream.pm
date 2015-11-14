@@ -41,11 +41,11 @@ class PDF::DAO::Stream
 	self.new( :$dict, |c );
     }
 
-    multi method new(Hash :$dict = {}, Int :$obj-num, Int :$gen-num, :$reader, *%etc) {
+    multi method new(Hash :$dict = {}, Int :$obj-num, Int :$gen-num, :$reader, :$decoded, :$encoded, |c) {
         my Str $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
-            temp %obj-cache{$id} = $obj = self.bless(|%etc);
+            temp %obj-cache{$id} = $obj = self.bless(|c);
 	    $obj.tie-init;
             # this may trigger cascading PDF::DAO::Tie coercians
             $obj{.key} = from-ast(.value) for $dict.pairs;
@@ -57,29 +57,22 @@ class PDF::DAO::Stream
 		    if $missing;
 	    }
         }
+	if $decoded.defined {
+	    $obj.decoded($decoded);
+	}
+	elsif $encoded.defined {
+	    $obj.encoded($encoded);
+	}
 	$obj.obj-num = $obj-num if $obj-num.defined;
 	$obj.gen-num = $gen-num if $gen-num.defined;
 	$obj.reader  = $reader  if $reader.defined;
         $obj;
     }
 
-    multi submethod BUILD( :$start!, :$end!, :$input!) {
-        my Int $length = $end - $start + 1;
-        $!encoded = $input.substr($start, $length );
-    }
-
-    multi submethod BUILD( :$!decoded!) {
-    }
-
-    multi submethod BUILD( :$!encoded!) {
-    }
-
-    multi submethod BUILD() is default {
-    }
-
-    multi method encoded(Str $stream!) {
+    multi method encoded($stream!) {
         $!decoded = Any;
-        self<Length> = $stream.codes;
+        self<Length> = $stream.codes
+	    if $stream.can('codes');
         $!encoded = $stream;
     }
 
@@ -88,7 +81,7 @@ class PDF::DAO::Stream
             $!encoded //= $.encode( $!decoded );
         }
 
-	if $!encoded.defined {
+	if $!encoded.can('codes') {
 	    self<Length> = $!encoded.codes;
 	}
 	else {
@@ -97,7 +90,7 @@ class PDF::DAO::Stream
 	$!encoded;
     }
 
-    multi method decoded(Str $stream!) {
+    multi method decoded($stream!) {
         $!encoded = Any;
         self<Length>:delete;
         $!decoded = $stream;
