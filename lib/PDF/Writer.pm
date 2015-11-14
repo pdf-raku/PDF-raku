@@ -7,9 +7,9 @@ class PDF::Writer {
 
     has PDF::Storage::Input $.input;
     has $.ast is rw;
-    has UInt:_ $.offset;
-    has UInt:_ $.prev;
-    has UInt:_ $.size;
+    has UInt $.offset;
+    has UInt $.prev;
+    has UInt $.size;
     has Str $.indent is rw = '';
     has %!init;
 
