@@ -50,15 +50,12 @@ class PDF::Reader {
     method !setup-crypt( Str :$password = '') {
 	my PDF::DAO::Doc $doc = self.trailer;
 	return unless $doc<Encrypt>:exists;
-	my $encrypt = $doc<Encrypt>;
-	return unless $encrypt<O>:exists;
+	my $enc = $doc<Encrypt>;
 
 	$!crypt = PDF::Storage::Crypt.delegate-class( :$doc ).new( :$doc );
 	$!crypt.authenticate( $password );
-
-	# decrypt any already loaded objects
-	my $enc-obj-num = $encrypt.obj-num;
-	my $enc-gen-num = $encrypt.gen-num;
+	$doc<Encrypt>:delete;
+	%!ind-obj-idx{$enc.obj-num}{$enc.gen-num}:delete;
 
 	for %!ind-obj-idx.pairs {
 
@@ -67,9 +64,6 @@ class PDF::Reader {
 
 	    for .value.pairs {
 		my $gen-num = +.key;
-		# don't decrypt the encryption dictionary
-		next if $obj-num == $enc-obj-num
-		    && $gen-num == $enc-gen-num;
 		my $idx = .value;
 
 		if my $ind-obj := $idx<ind-obj> {
@@ -81,9 +75,6 @@ class PDF::Reader {
 		}
 	    }
 	}
-
-	$doc<Encrypt>:delete;
-	%!ind-obj-idx{$enc-obj-num}{$enc-gen-num}<type> = 0; # freed
 
     }
 
