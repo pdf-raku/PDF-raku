@@ -3,23 +3,24 @@ perl6-PDF-Tools
 
 ## Overview
 
-This module provides base tools for low-level PDF Manipulation, including:
-- `PDF::Reader` - for indexed random access to PDFs
-- `PDF::Storage::Filter` - a collection of standard PDF decoding and encoding tools for PDF data streams
-- `PDF::Storage::Serializer` - data marshalling utilities for the preparation of full or incremental updates
-- `PDF::Storage::Crypt` - basic decryption / encryption (V 2 & 3 RC4 only)
-- `PDF::Writer` - for the creation or update of PDFs
-- `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures.
+This Perl 6 module provides basic tools for PDF manipulation. Features include:
 
-Features of this tool-kit include:
-
-- index based reading from PDF, with lazy loading of objects
+- index based PDF reading, with lazy loading of objects
 - lazy incremental updates
 - JSON interoperability
 - high level data access via tied Hashes and Arrays
 - a type system for mapping PDF internal structures to Perl 6 objects
 
-Note: This is a low-to-medium level module that understands PDF data structures and serialization. <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) targets the logical document structure.
+Classes in this tool-kit include:
+
+- `PDF::Reader` - for indexed random access to PDFs
+- `PDF::Storage::Filter` - a collection of standard PDF decoding and encoding tools for PDF data streams
+- `PDF::Storage::Serializer` - data marshalling utilities for the preparation of full or incremental updates
+- `PDF::Storage::Crypt` - decryption / encryption (V 2 & 3 RC4 only)
+- `PDF::Writer` - for the creation or update of PDFs
+- `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures.
+
+This is a low-to-medium level module for working with PDF data structures and serialization. <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) will provide classes for high-level manipulation of PDF documents.
 
 ## Example Usage
 
@@ -478,6 +479,11 @@ my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
 `$Catalog` is coerced to type `MyPDF::Catalog`.
 - `$Catalog.Pages` will autoload and Coerce to type `MyPDF::Pages`
 - If that should fail (and there's no `PDF::DAO::Type::Pages` class), it falls-back to a plain `PDF::DAO::Dict` object.
+
+## Further Reading
+
+- [PDF Explained](http://shop.oreilly.com/product/0636920021483.do) By John Whitington (120pp) - Offers an excellent overview of the PDF format.
+- [PDF Reference version 1.7](http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf) Adobe Systems Incorporated - This is the main reference used in the construction of this module.
 
 ## See also
 
