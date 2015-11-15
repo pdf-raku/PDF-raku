@@ -19,6 +19,14 @@ class PDF::Storage::Crypt {
 	$class;
     }
 
+    #| encrypt/decrypt all strings/streams in a PDF body
+    multi method crypt-ast('body', Array $body) {
+	for $body.values {
+	    $.crypt-ast(.key, .value)
+		for .<objects>.values;
+	}
+    }
+
     #| descend and indirect object encrypting/decrypting any strings or streams
     multi method crypt-ast('ind-obj', Array $ast) {
 	my $obj-num = $ast[0];

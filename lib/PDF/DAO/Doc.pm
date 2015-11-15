@@ -44,9 +44,6 @@ class PDF::DAO::Doc
 	die "PDF has not been opened for indexed read."
 	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
 
-	die "incremental update of encrypted documents is nyi"
-	    if $reader.crypt;
-
 	self!generate-id;
 
         # todo we should be able to leave the input file open and append to it
@@ -54,6 +51,9 @@ class PDF::DAO::Doc
 
         my $serializer = PDF::Storage::Serializer.new( :$reader );
         my Array $body = $serializer.body( :updates, :$compress );
+	$reader.crypt.crypt-ast('body', $body)
+	    if $reader.crypt;
+
 	my Hash $trailer = $body[0]<trailer><dict>;
 	my UInt $prev = $trailer<Prev>.value;
         my $writer = PDF::Writer.new( :$offset, :$prev );
@@ -71,19 +71,18 @@ class PDF::DAO::Doc
     method save-as(Str $file-name!, |c) {
 	self!generate-id;
 	my $serializer = PDF::Storage::Serializer.new;
-	$serializer.save-as( $file-name, self, |c)
+	my $crypt = self.reader.?crypt;
+	$serializer.save-as( $file-name, self, :$crypt, |c)
     }
 
     # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )
     method permitted(UInt $flag --> Bool) {
 
-	my $crypt = self.reader.?crypt
-	    // return;
-
-	my $perms = $crypt.P;
-
 	return True
-	    if $crypt.?is-owner // ! $perms.defined;
+	    if self.reader.?is-owner;
+
+	my $perms = self.Encrypt.?P
+	    // return False;
 
 	return $perms.flag-is-set( $flag );
     }

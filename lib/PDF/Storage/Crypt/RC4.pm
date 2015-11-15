@@ -13,12 +13,11 @@ class PDF::Storage::Crypt::RC4
 
     has UInt $!key-length;
     has $!auth;
-    has Bool $.is-owner;
+    has Bool $.is-owner is rw;
     has UInt @!doc-id;
     has UInt @!O;
     has UInt @!U;
     has UInt $!R;
-    has Int $.P;
     has UInt @!P;
     has Bool $!EncryptMetadata;
 
@@ -42,8 +41,7 @@ class PDF::Storage::Crypt::RC4
 	@!doc-id = $doc.ID[0].ords;
 	@!O = $encrypt.O.ords;
 	@!U = $encrypt.U.ords;
-	$!P = $encrypt.P;
-	my uint32 @p32 = [ $!P, ];
+	my uint32 @p32 = [ $encrypt.P, ];
 	my uint8 @p8 = resample(@p32, 32, 8).reverse;
 	@!P = @p8;
 	$!R = $encrypt.R;

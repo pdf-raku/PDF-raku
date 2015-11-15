@@ -54,8 +54,6 @@ class PDF::Reader {
 
 	$!crypt = PDF::Storage::Crypt.delegate-class( :$doc ).new( :$doc );
 	$!crypt.authenticate( $password );
-	$doc<Encrypt>:delete;
-	%!ind-obj-idx{$enc.obj-num}{$enc.gen-num}:delete;
 
 	for %!ind-obj-idx.pairs {
 
@@ -65,6 +63,9 @@ class PDF::Reader {
 	    for .value.pairs {
 		my $gen-num = +.key;
 		my $idx = .value;
+
+		next if $obj-num == $enc.obj-num
+		    && $gen-num == $enc.gen-num;
 
 		if my $ind-obj := $idx<ind-obj> {
 		    die "too late to setup encryption: $obj-num $gen-num R"
@@ -139,7 +140,7 @@ class PDF::Reader {
 
 	    given $type {
 	        when 0 { # freed
-		    %!ind-obj-idx{$obj-num}{$gen-num}:delete;
+                    %!ind-obj-idx{$obj-num}{$gen-num}:delete;
 		}
 	        when 1 { # type 1 entry
 		    my $ind-obj = $entry<ind-obj>;
@@ -704,6 +705,9 @@ class PDF::Reader {
             ?? $serializer.body( self.trailer )
             !! $serializer.body( :$rebuild );
 
+        self.crypt.crypt-ast('body', $body)
+            if self.crypt;
+
         :pdf{
             :header{ :$.type, :$.version },
             :$body,
@@ -716,8 +720,6 @@ class PDF::Reader {
     #| dump to json
     multi method save-as( $output-path where m:i/'.json' $/,
                           :$ast is copy, |c ) {
-        die "unable to save encrypted document without owner password"
-             if $!crypt && ! $!crypt.is-owner;
         $ast //= $.ast(|c);
         note "dumping {$output-path}...";
         $output-path.IO.spurt( to-json( $ast ) );
@@ -726,8 +728,6 @@ class PDF::Reader {
     #| write to PDF/FDF
     multi method save-as( $output-path,
                           :$ast is copy, |c ) is default {
-        die "unable to save encrypted document without owner password"
-             if $!crypt && ! $!crypt.is-owner;
         $ast //= $.ast(|c);
         note "saving {$output-path}...";
         my $pdf-writer = PDF::Writer.new( :$.input );

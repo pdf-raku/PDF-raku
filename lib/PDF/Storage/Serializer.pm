@@ -259,8 +259,11 @@ class PDF::Storage::Serializer {
                          Numeric :$version=1.3,
                          Str :$type='PDF',     #| e.g. 'PDF', 'FDF;
                          Bool :$compress,
+			 :$crypt,
         ) {
         my Array $body = self.body($trailer-dict, :$compress );
+	$crypt.crypt-ast('body', $body)
+	    if $crypt;
         my Pair $ast = :pdf{ :header{ :$type, :$version }, :$body };
         my $writer = PDF::Writer.new( );
         $file-name ~~ m:i/'.json' $/
