@@ -9,30 +9,30 @@ class PDF::Storage::Input::IOH
     has Str $!str;
     has UInt $.codes is rw;
 
-    BEGIN constant SEEK-FROM-START = 0;
-    BEGIN constant SEEK-FROM-EOF = 2;
-
     multi submethod BUILD( IO::Handle :$!value! ) {
-        $!value.seek( 0, SEEK-FROM-EOF );
+        $!value.seek( 0, SeekFromEnd );
         $!codes = $!value.tell;
-        $!value.seek( 0, SEEK-FROM-START );
+        $!value.seek( 0, SeekFromBeginning );
     }
 
-    multi method Str( ) {
-        $.value.seek( 0, SEEK-FROM-START );
+    multi method Str {
+        $.value.seek( 0, SeekFromBeginning );
         $!str //= $.value.slurp-rest;
     }
 
-    multi method substr( WhateverCode $from-whatever!, |c ) {
-        my UInt $from = $from-whatever( $.codes );
-        $.substr( $from, |c );
+    multi method subbuf( WhateverCode $whence!, |c --> Buf) {
+        my UInt $from = $whence( $.codes );
+        $.subbuf( $from, |c );
     }
 
-    multi method substr( UInt $from!, UInt $length = $.codes - $from + 1) {
+    multi method subbuf( UInt $from!, UInt $length = $.codes - $from + 1 --> Buf) {
         return $!str.substr( $from, $length )
             if $!str.defined;
-        $!value.seek( $from, SEEK-FROM-START );
-        my $buf = $.value.read( $length );
-        $buf.decode('latin-1');
+        $!value.seek( $from, SeekFromBeginning );
+        $.value.read( $length );
+    }
+
+    method substr(|c) {
+	$.subbuf(|c).decode('latin-1');
     }
 }
