@@ -3,24 +3,20 @@ perl6-PDF-Tools
 
 ## Overview
 
-This Perl 6 module provides basic tools for PDF manipulation. Features include:
+This Perl 6 module provides tools for reading and updating PDF files. It is a low level tool-kit that understands PDF as a serialization format, including data structures, compression and indexing, but not the logical PDF document structure.
 
-- index based PDF reading, with lazy loading of objects
-- lazy incremental updates
-- JSON interoperability
-- high level data access via tied Hashes and Arrays
-- a type system for mapping PDF internal structures to Perl 6 objects
+It is possible to construct simple documents and perform simple edits using this tool-kit. Or to use it in Perl 6's REPL mode to browse PDF documents.
+
+The medium term plan is to use this as a base for higher level modules. <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) will provide classes for high-level and structured manipulation of PDF documents.
 
 Classes in this tool-kit include:
 
 - `PDF::Reader` - for indexed random access to PDFs
 - `PDF::Storage::Filter` - a collection of standard PDF decoding and encoding tools for PDF data streams
 - `PDF::Storage::Serializer` - data marshalling utilities for the preparation of full or incremental updates
-- `PDF::Storage::Crypt` - decryption / encryption (V 2 & 3 RC4 only)
+- `PDF::Storage::Crypt` - decryption / encryption (V 2 & 3 RC4 only at this stage)
 - `PDF::Writer` - for the creation or update of PDFs
-- `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures.
-
-This is a low-to-medium level module for working with PDF data structures and serialization. <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) will provide classes for high-level manipulation of PDF documents.
+- `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures. Base classes for PDF::DOM
 
 ## Example Usage
 
