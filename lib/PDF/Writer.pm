@@ -11,7 +11,6 @@ class PDF::Writer {
     has UInt $.prev;
     has UInt $.size;
     has Str $.indent is rw = '';
-    has %!init;
 
     submethod BUILD(:$input, :$!ast, :$!offset = Nil, :$!prev = Nil) {
         $!input = PDF::Storage::Input.coerce( $input )

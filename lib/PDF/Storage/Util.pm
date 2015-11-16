@@ -63,11 +63,11 @@ module PDF::Storage::Util {
     }
 
     multi sub resample( $num-sets, Array $W!, 8)  {
-	my @sample;
+	my uint8 @sample;
          for $num-sets.list -> Array $nums {
             my Int $i = 0;
             for $nums.list -> Int $num is copy {
-                my @bytes;
+                my uint8 @bytes;
                 for 1 .. $W[$i++] {
                     @bytes.unshift: $num +& 255;
                     $num div= 256;

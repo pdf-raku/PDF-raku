@@ -10,9 +10,9 @@ class PDF::Storage::Serializer {
     use PDF::Writer;
 
     has UInt $.size is rw = 1;  # first free object number
-    has @.ind-objs;
-    has %!obj-num-idx;
-    has %.ref-count;
+    has Pair @.ind-objs;
+    has Array %!obj-num-idx;
+    has UInt %.ref-count;
     has Bool $.renumber is rw = True;
     has $.reader;
 

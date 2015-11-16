@@ -17,7 +17,7 @@ role PDF::Storage::Filter::Predictors {
                             UInt :$BitsPerComponent = 8, #| number of bits per color
         ) {
         my UInt $bit-mask = 2 ** $BitsPerComponent  -  1;
-        my @output;
+        my UInt @output;
         my UInt $ptr = 0;
         my Buf $nums = resample( $decoded, 8, $BitsPerComponent );
 
@@ -45,7 +45,7 @@ role PDF::Storage::Filter::Predictors {
         my UInt $bytes-per-row = $bytes-per-col * $Columns;
         my UInt $ptr = 0;
         my UInt $row = 0;
-        my @output;
+        my uint8 @output;
 
         while $ptr < +$encoded {
 
@@ -99,7 +99,7 @@ role PDF::Storage::Filter::Predictors {
         my UInt $bit-mask = 2 ** $BitsPerComponent  -  1;
         my UInt $ptr = 0;
         my Buf $nums = resample( $decoded, 8, $BitsPerComponent );
-        my @output;
+        my uint8 @output;
 
         while $ptr < +$nums {
 
@@ -128,9 +128,9 @@ role PDF::Storage::Filter::Predictors {
         my UInt $bytes-per-col = ($Colors * $BitsPerComponent  +  7) div 8;
         my UInt $bytes-per-row = $bytes-per-col * $Columns;
         my UInt $ptr = 0;
-        my @output;
+        my uint8 @output;
 
-        my @up = 0 xx $bytes-per-row;
+        my uint8 @up = 0 xx $bytes-per-row;
 
         while $ptr < +$decoded {
             # PNG prediction can vary from row to row

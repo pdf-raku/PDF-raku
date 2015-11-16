@@ -65,9 +65,8 @@ our class PDF::DAO::Type::XRef
     method encode-from-stage2(Array $xref-index) {
         my @entries = $xref-index.list.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
-        my @xref;
         my $size = 0;
-        my @index;
+        my UInt @index;
         my Array $encoded = [];
 
         for @entries -> $entry {
@@ -99,7 +98,7 @@ our class PDF::DAO::Type::XRef
             // die "missing mandatory /XRef param: /W";
 
         my Array $xref-array = resample( $buf, 8, $W );
-        my $Size = $.Size
+        my UInt $Size = $.Size
             // die "missing mandatory /XRef param: /Size";
 
         if my $index = self<Index> {

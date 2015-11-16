@@ -25,7 +25,7 @@ class PDF::DAO::Type::ObjStm
     }
 
     method encode(Array $objstm = $.decoded, Bool :$check = False) {
-        my @idx;
+        my UInt @idx;
         my Str $objects-str = '';
         my UInt $offset = 0;
         for $objstm.list { 
