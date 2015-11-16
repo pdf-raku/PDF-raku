@@ -85,10 +85,10 @@ class PDF::Writer {
                 # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
                 # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
                 my $contigous = +@xref && .<obj-num> && .<obj-num> == $!size;
-                @xref.push: %( object-first-num => .<obj-num>, entries => [] )
+                @xref.push: %( obj-first-num => .<obj-num>, entries => [] )
                     unless $contigous;
                 @xref[*-1]<entries>.push: $_;
-                @xref[*-1]<object-count>++;
+                @xref[*-1]<obj-count>++;
                 $!size = .<obj-num> + 1;
             }
 
@@ -330,7 +330,7 @@ class PDF::Writer {
     #| write a traditional (PDF 1.4-) cross reference table
     multi method write(Hash :$xref!) {
         (flat
-         $xref<object-first-num> ~ ' ' ~ $xref<object-count>,
+         $xref<obj-first-num> ~ ' ' ~ $xref<obj-count>,
          $xref<entries>.map({
              my Str $status = do given .<type> {
                  when (0) {'f'} # free

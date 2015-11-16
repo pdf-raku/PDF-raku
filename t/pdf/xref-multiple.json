@@ -1,8 +1,8 @@
 {
   "xref" : [
     {
-      "object-first-num" : 0,
-      "object-count" : 2,
+      "obj-first-num" : 0,
+      "obj-count" : 2,
       "entries" : [
         {
           "offset" : 0,
@@ -17,8 +17,8 @@
       ]
     },
     {
-      "object-first-num" : 2,
-      "object-count" : 3,
+      "obj-first-num" : 2,
+      "obj-count" : 3,
       "entries" : [
         {
           "offset" : 77,

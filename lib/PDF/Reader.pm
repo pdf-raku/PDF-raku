@@ -418,7 +418,7 @@ class PDF::Reader {
 
                 if $index<xref>:exists {
                     for $index<xref>.list {
-                        my $obj-num = .<object-first-num>;
+                        my $obj-num = .<obj-first-num>;
                         for @( .<entries> ) {
                             my UInt $type = .<type>;
                             my UInt $gen-num = .<gen-num>;
