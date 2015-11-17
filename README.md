@@ -3,15 +3,21 @@ perl6-PDF-Tools
 
 ## Overview
 
-perl6-PDF-Tools is an experimental low level tool-kit for opening, reading, editing and writing PDF files.
+perl6-PDF-Tools is an experimental low-level tool-kit for accessing and manipulating data from PDF files.
 
-This module intends to make it easy to access and manipulate the low level data structures in a PDF, but does not hide details. It does
-not understand the logical document structure of PDF files. You will need some awareness of the PDF internal structures to use
-it effectively. Please see the 'Recommended Reading' section below.
+It handles various compression and encryptions layers in a PDF document, including general streams, object streams, and
+indirect objects to present a high level view of the underlying data for the purposes of reading, editing and writing or
+updating of PDF files.
 
-It is possible to construct simple documents and perform simple edits by direct manipulation of PDF data structures. However, this module is primarily intended for low-level exploration of PDF internals, or as base for higher level modules.
+This module is primarily intended as base for higher level modules. It can also be used as a general tool for exploring and
+checking the contents of a PDF.
 
-<a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) is being built on this module with the aim of providing a richer set of classes and methods for high-level manipulation of PDF documents.
+It does not understand logical PDF document structure. It is however possible to construct simple documents and
+perform simple edits by direct manipulation of PDF data structures. You will need some knowledge of how PDF documents are
+structured. Please see 'The Basics' and 'Recommended Reading' sections below.
+
+<a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) is being built on this module with the aim of
+providing a richer set of classes and methods for high-level manipulation of PDF documents.
 
 Classes in this tool-kit include:
 
@@ -89,12 +95,9 @@ for holding data such as images, fonts and general content.
 PDF files are also indexed for random access and may also have filters for stream compression and overall encryption.
 
 They have a reasonably well specified structure. The document structure starts from
-a `Root` entry in the outermost trailer dictionary.
+`Root` entry in the trailer dictionary, which is the main entry point into a PDF.
 
-This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf'>PDF Reference version 1.7<a> specification. It implements syntax, basic data-types and serialization rules as described in the first four chapters of the specification.
-
-Read and write access to data structures is via direct manipulation of tied arrays and hashes. It handles
-serialization, including stream compression and encryption.
+This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf'>PDF Reference version 1.7<a> specification. It implements syntax, basic data-types, serialization and encryption rules as described in the first four chapters of the specification. Read and write access to data structures is via direct manipulation of tied arrays and hashes.
 
 `PDF::DAO` provides a set of class builder utilities to enable higher level classes for general application development.
 
