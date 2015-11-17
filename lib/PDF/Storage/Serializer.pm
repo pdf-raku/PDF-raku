@@ -9,9 +9,9 @@ class PDF::Storage::Serializer {
     use PDF::DAO::Util :to-ast;
     use PDF::Writer;
 
-    has UInt $.size is rw = 1;  # first free object number
-    has Pair @.ind-objs;
-    has Array %!obj-num-idx;
+    has UInt $.size is rw = 1;  #| first free object number
+    has Pair  @!objects;        #| renumbered objects
+    has Array %!objects-idx;    #| @objects index, by id
     has UInt %.ref-count;
     has Bool $.renumber is rw = True;
     has $.reader;
@@ -49,15 +49,14 @@ class PDF::Storage::Serializer {
 	temp $trailer.gen-num = 0;
 
         %!ref-count = ();
-	@!ind-objs = ();
+	@!objects = ();
         $.analyse( $trailer );
         $.freeze( $trailer, :indirect);
-        my @objects = $.ind-objs.list;
-	my %dict = self!get-trailer(@objects);
+	my %dict = self!get-trailer(@!objects);
 
         %dict<Size> = :int($.size);
 
-        [ { :@objects, :trailer{ :%dict } }, ];
+        [ { :@!objects, :trailer{ :%dict } }, ];
     }
 
     #| prepare a set of objects for an incremental update. Only return indirect objects:
@@ -76,7 +75,7 @@ class PDF::Storage::Serializer {
         # object and generation numbers
         temp $.renumber = False;
         %!ref-count = ();
-	@!ind-objs = ();
+	@!objects = ();
 	my $trailer = $.reader.trailer;
         temp $trailer.obj-num = 0;
         temp $trailer.gen-num = 0;
@@ -92,13 +91,12 @@ class PDF::Storage::Serializer {
 	    $.freeze( $object, :indirect )
 	}
 
-        my @objects = $.ind-objs.list;
-	my %dict = self!get-trailer(@objects);
+	my %dict = self!get-trailer(@!objects);
 
         %dict<Prev> = :int($prev);
         %dict<Size> = :int($.size);
 
-        [ { :@objects, :trailer{ :%dict } }, ]
+        [ { :@!objects, :trailer{ :%dict } }, ]
     }
 
     #| return objects without renumbering existing objects. requires a PDF reader
@@ -113,8 +111,8 @@ class PDF::Storage::Serializer {
     }
 
     method !get-ind-ref( Str :$id!) {
-        :ind-ref( %!obj-num-idx{$id} )
-            if %!obj-num-idx{$id}:exists;
+        :ind-ref( %!objects-idx{$id} )
+            if %!objects-idx{$id}:exists;
     }
 
     #| construct a reverse index that unique maps unique $objects, identified by .WHICH,
@@ -136,9 +134,9 @@ class PDF::Storage::Serializer {
             $gen-num = 0;
         }
 
+        @!objects.push: (:ind-obj[ $obj-num, $gen-num, $ind-obj]);
         my $ind-ref = [ $obj-num, $gen-num ];
-        @.ind-objs.push: (:ind-obj[ $obj-num, $gen-num, $ind-obj]);
-        %!obj-num-idx{$id} = $ind-ref;
+        %!objects-idx{$id} = $ind-ref;
         :$ind-ref;
     }
 
@@ -186,7 +184,7 @@ class PDF::Storage::Serializer {
         my $id = ~$object.WHICH;
 
         # already an indirect object
-	if %!obj-num-idx{$id}:exists {
+	if %!objects-idx{$id}:exists {
 	    my $ind-ref = self!get-ind-ref( :$id );
 	    return $ind-ref;
 	}
@@ -228,7 +226,7 @@ class PDF::Storage::Serializer {
         my $id = ~$object.WHICH;
 
         # already an indirect object
-	if %!obj-num-idx{$id}:exists {
+	if %!objects-idx{$id}:exists {
 	    my $ind-ref = self!get-ind-ref( :$id );
 	    return $ind-ref;
 	}
