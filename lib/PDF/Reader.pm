@@ -96,6 +96,7 @@ class PDF::Reader {
 
     #| derserialize a json dump
     multi method open( Str $input-file  where m:i/'.json' $/, |c ) {
+        use JSON::Fast;
         my $ast = from-json( $input-file.IO.slurp );
         die "doesn't contain a pdf struct: $input-file"
             unless $ast.isa(Hash) && ($ast<pdf>:exists);
@@ -721,6 +722,7 @@ class PDF::Reader {
                           :$ast is copy, |c ) {
         $ast //= $.ast(|c);
         note "dumping {$output-path}...";
+        use JSON::Fast;
         $output-path.IO.spurt( to-json( $ast ) );
     }
 

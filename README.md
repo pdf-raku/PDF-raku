@@ -3,7 +3,7 @@ perl6-PDF-Tools
 
 ## Overview
 
-perl6-PDF-Tools is a low level tool-kit for opening, reading, editing and writing PDF files.
+perl6-PDF-Tools is an experimental low level tool-kit for opening, reading, editing and writing PDF files.
 
 This module intends to make it easy to access and manipulate the low level data structures in a PDF, but does not hide details. It does
 not understand the logical document structure of PDF files. You will need some awareness of the PDF internal structures to use
@@ -490,11 +490,4 @@ my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
 
 - [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing
 - [PDF::DOM](https://github.com/p6-pdf/perl6-PDF-DOM) - PDF Document Object Model (under construction)
-
-## Development Status
-
-Under construction (not yet released to Perl 6 ecosystem)
-- Highest tested Rakudo version: `perl6 version 2015.10-339-ga662e02 built on MoarVM version 2015.10-103-gaf3b12e`
-- Encryption is limited to V 2 and 3 (RC4)
-
 

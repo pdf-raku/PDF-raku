@@ -264,6 +264,7 @@ class PDF::Storage::Serializer {
 	    if $crypt;
         my Pair $ast = :pdf{ :header{ :$type, :$version }, :$body };
         my $writer = PDF::Writer.new( );
+        use JSON::Fast;
         $file-name ~~ m:i/'.json' $/
             ?? $file-name.IO.spurt( to-json( $ast ))
             !! $file-name.IO.spurt( $writer.write( $ast ), :enc<latin-1> );

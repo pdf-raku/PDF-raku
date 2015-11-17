@@ -1,78 +1,78 @@
 {
-  "pdf" : {
-    "body" : [
+  "pdf": {
+    "body": [
       {
-        "trailer" : {
-          "dict" : {
-            "Root" : {
-              "ind-ref" : [
+        "trailer": {
+          "dict": {
+            "Root": {
+              "ind-ref": [
                 1,
                 0
               ]
             },
-            "Size" : {
-              "int" : 8
+            "Size": {
+              "int": 8
             }
           }
         },
-        "objects" : [
+        "objects": [
           {
-            "ind-obj" : [
+            "ind-obj": [
               1,
               0,
               {
-                "dict" : {
-                  "Outlines" : {
-                    "ind-ref" : [
+                "dict": {
+                  "Outlines": {
+                    "ind-ref": [
                       2,
                       0
                     ]
                   },
-                  "Pages" : {
-                    "ind-ref" : [
+                  "Pages": {
+                    "ind-ref": [
                       3,
                       0
                     ]
                   },
-                  "Type" : {
-                    "name" : "Catalog"
+                  "Type": {
+                    "name": "Catalog"
                   }
                 }
               }
             ]
           },
           {
-            "ind-obj" : [
+            "ind-obj": [
               2,
               0,
               {
-                "dict" : {
-                  "Count" : {
-                    "int" : 0
+                "dict": {
+                  "Count": {
+                    "int": 0
                   },
-                  "Type" : {
-                    "name" : "Outlines"
+                  "Type": {
+                    "name": "Outlines"
                   }
                 }
               }
             ]
           },
           {
-            "ind-obj" : [
+            "ind-obj": [
               3,
               0,
               {
-                "dict" : {
-                  "Count" : {
-                    "int" : 1
+                "dict": {
+                  "Count": {
+                    "int": 1
                   },
-                  "Type" : {
-                    "name" : "Pages"
+                  "Type": {
+                    "name": "Pages"
                   },
-                  "Kids" : {
-                    "array" : [
+                  "Kids": {
+                    "array": [
                       {
-                        "ind-ref" : [
+                        "ind-ref": [
                           4,
                           0
                         ]
@@ -84,23 +84,23 @@
             ]
           },
           {
-            "ind-obj" : [
+            "ind-obj": [
               4,
               0,
               {
-                "dict" : {
-                  "Resources" : {
-                    "dict" : {
-                      "ProcSet" : {
-                        "ind-ref" : [
+                "dict": {
+                  "Resources": {
+                    "dict": {
+                      "ProcSet": {
+                        "ind-ref": [
                           7,
                           0
                         ]
                       },
-                      "Font" : {
-                        "dict" : {
-                          "F1" : {
-                            "ind-ref" : [
+                      "Font": {
+                        "dict": {
+                          "F1": {
+                            "ind-ref": [
                               6,
                               0
                             ]
@@ -109,51 +109,51 @@
                       }
                     }
                   },
-                  "Contents" : {
-                    "ind-ref" : [
+                  "Contents": {
+                    "ind-ref": [
                       5,
                       0
                     ]
                   },
-                  "Parent" : {
-                    "ind-ref" : [
+                  "Parent": {
+                    "ind-ref": [
                       3,
                       0
                     ]
                   },
-                  "MediaBox" : {
-                    "array" : [
+                  "MediaBox": {
+                    "array": [
                       {
-                        "int" : 0
+                        "int": 0
                       },
                       {
-                        "int" : 0
+                        "int": 0
                       },
                       {
-                        "int" : 420
+                        "int": 420
                       },
                       {
-                        "int" : 595
+                        "int": 595
                       }
                     ]
                   },
-                  "Type" : {
-                    "name" : "Page"
+                  "Type": {
+                    "name": "Page"
                   }
                 }
               }
             ]
           },
           {
-            "ind-obj" : [
+            "ind-obj": [
               5,
               0,
               {
-                "stream" : {
-                  "encoded" : "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET",
-                  "dict" : {
-                    "Length" : {
-                      "int" : 45
+                "stream": {
+                  "encoded": "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET",
+                  "dict": {
+                    "Length": {
+                      "int": 45
                     }
                   }
                 }
@@ -161,41 +161,41 @@
             ]
           },
           {
-            "ind-obj" : [
+            "ind-obj": [
               6,
               0,
               {
-                "dict" : {
-                  "Encoding" : {
-                    "name" : "MacRomanEncoding"
+                "dict": {
+                  "Encoding": {
+                    "name": "MacRomanEncoding"
                   },
-                  "Name" : {
-                    "name" : "F1"
+                  "Name": {
+                    "name": "F1"
                   },
-                  "BaseFont" : {
-                    "name" : "Helvetica"
+                  "BaseFont": {
+                    "name": "Helvetica"
                   },
-                  "Type" : {
-                    "name" : "Font"
+                  "Type": {
+                    "name": "Font"
                   },
-                  "Subtype" : {
-                    "name" : "Type1"
+                  "Subtype": {
+                    "name": "Type1"
                   }
                 }
               }
             ]
           },
           {
-            "ind-obj" : [
+            "ind-obj": [
               7,
               0,
               {
-                "array" : [
+                "array": [
                   {
-                    "name" : "PDF"
+                    "name": "PDF"
                   },
                   {
-                    "name" : "Text"
+                    "name": "Text"
                   }
                 ]
               }
@@ -204,9 +204,9 @@
         ]
       }
     ],
-    "header" : {
-      "type" : "PDF",
-      "version" : 1.2
+    "header": {
+      "type": "PDF",
+      "version": 1.2
     }
   }
 }
