@@ -41,11 +41,11 @@ class PDF::DAO::Stream
 	self.new( :$dict, |c );
     }
 
-    multi method new(Hash :$dict = {}, Int :$obj-num, Int :$gen-num, :$reader, :$decoded, :$encoded, |c) {
+    multi method new(Hash :$dict = {}, :$decoded, :$encoded, *%etc) {
         my Str $id = ~$dict.WHICH;
         my $obj = %obj-cache{$id};
         unless $obj.defined {
-            temp %obj-cache{$id} = $obj = self.bless(|c);
+            temp %obj-cache{$id} = $obj = self.bless(|%etc);
 	    $obj.tie-init;
             # this may trigger cascading PDF::DAO::Tie coercians
             $obj{.key} = from-ast(.value) for $dict.pairs;
@@ -60,9 +60,7 @@ class PDF::DAO::Stream
 
 	$obj.decoded = $decoded if $decoded.defined;
 	$obj.encoded = $encoded if $encoded.defined;
-	$obj.obj-num = $obj-num if $obj-num.defined;
-	$obj.gen-num = $gen-num if $gen-num.defined;
-	$obj.reader  = $reader  if $reader.defined;
+
         $obj;
     }
 
