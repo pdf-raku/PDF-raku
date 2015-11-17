@@ -3,11 +3,15 @@ perl6-PDF-Tools
 
 ## Overview
 
-This Perl 6 module provides tools for reading and updating PDF files. It is a low level tool-kit that understands PDF as a serialization format, including data structures, compression and indexing, but not the logical PDF document structure.
+perl6-PDF-Tools is a low level tool-kit for opening, reading, editing and writing PDF files.
 
-It is possible to construct simple documents and perform simple edits using this tool-kit. Or to use it in Perl 6's REPL mode to browse PDF documents.
+This module intends to make it easy to access and manipulate the low level data structures in a PDF, but does not hide details. It does
+not understand the logical document structure of PDF files. You will need some awareness of the PDF internal structures to use
+it effectively. Please see the 'Recommended Reading' section below.
 
-The medium term plan is to use this as a base for higher level modules. <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) will provide classes for high-level and structured manipulation of PDF documents.
+It is possible to construct simple documents and perform simple edits by direct manipulation of PDF data structures. However, this module is primarily intended for low-level exploration of PDF internals, or as base for higher level modules.
+
+<a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) is being built on this module with the aim of providing a richer set of classes and methods for high-level manipulation of PDF documents.
 
 Classes in this tool-kit include:
 
@@ -89,10 +93,10 @@ a `Root` entry in the outermost trailer dictionary.
 
 This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf'>PDF Reference version 1.7<a> specification. It implements syntax, basic data-types and serialization rules as described in the first four chapters of the specification.
 
-Read and write access to data structures is via direct manipulation of tied arrays and hashes. The details
-of serialization and data representation mostly remain hidden.
+Read and write access to data structures is via direct manipulation of tied arrays and hashes. It handles
+serialization, including stream compression and encryption.
 
-`PDF::DAO` also provides a set of class builder utilities to enable an even higher level of abstract classes.
+`PDF::DAO` provides a set of class builder utilities to enable higher level classes for general application development.
 
 This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction), which contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
 
@@ -286,7 +290,7 @@ say '#'~$object<Type>;
 say '#'~$object<Type>.WHAT.gist;
 #{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
 ```
-`PDF::DAO.coerce` method is also used to construct new objects from application data.
+The `PDF::DAO.coerce` method is also used to construct new objects from application data.
 
 In many cases, AST tags will coerce if omitted. E.g. we can use `1`, instead of `:int(1)`:
 ```
@@ -323,8 +327,9 @@ A table of Object types and coercements follows:
 
 *Class* | *Base Class* | *Description*
 --- | --- | --- |
-PDF::DAO::Doc | PDF::DAO::Dict | the absolute root of the document - the trailer dictionary
+PDF::DAO::Doc | PDF::DAO::Dict | document entry point - the trailer dictionary
 PDF::DAO::Type::Encrypt | PDF::DAO::Dict | PDF Encryption/Permissions dictionary
+PDF::DAO::Type::Info | PDF::DAO::Dict | Document Information Dictionary
 PDF::DAO::Type::ObjStm | PDF::DAO::Stream | PDF 1.5+ Object stream (holds compressed objects)
 PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 
@@ -357,7 +362,7 @@ be handy for debugging, analysis and/or ad-hoc patching of PDF files. Beware tha
 saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
 
 ### See also:
-- `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] <pdf-or-json-file-in> <pdf-or-json-file-out>`
+- `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] [--password=Xxx] <pdf-or-json-file-in> <pdf-or-json-file-out>`
 This script is a thin wrapper for the `PDF::DAO::Doc` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
 
 ### Reading PDF Files
@@ -423,7 +428,7 @@ my $body = $serializer.body( $reader, :updates );
 PDF::Writer then converts the AST back to a PDF byte image, with a rebulilt cross reference index.
 
 ```
-my $offset = $reader.input.chars + 1;
+my $offset = $reader.input.codes + 1;
 my $prev = $body<trailer><dict><Prev>.value;
 my $writer = PDF::Writer.new( :$offset, :$prev );
 my $new-body = "\n" ~ $writer.write( :$body );
@@ -489,7 +494,7 @@ my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
 ## Development Status
 
 Under construction (not yet released to Perl 6 ecosystem)
-- Highest tested Rakudo version: `perl6 version 2015.10-321-g8e19973 built on MoarVM version 2015.10-92-g0181385`
+- Highest tested Rakudo version: `perl6 version 2015.10-339-ga662e02 built on MoarVM version 2015.10-103-gaf3b12e`
 - Encryption is limited to V 2 and 3 (RC4)
 
 
