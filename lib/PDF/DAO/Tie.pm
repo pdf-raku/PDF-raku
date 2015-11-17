@@ -218,7 +218,10 @@ role PDF::DAO::Tie {
 	    ?? $ind-ref.value[2]
 	    !! $.reader;
 
-	$reader && $reader.auto-deref
+        die "indirect reference without associated reader: $obj-num $gen-num R"
+            unless $reader;
+
+	$reader.auto-deref
 	    ?? $reader.ind-obj( $obj-num, $gen-num ).object
 	    !! $ind-ref;
     }

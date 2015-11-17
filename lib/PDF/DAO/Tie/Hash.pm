@@ -64,9 +64,9 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
 	Proxy.new( 
 	    FETCH => sub ($) {
-		my $val := $object{$key};
-		$val := inherit($object, $key)
-		    if !$val.defined && $att.tied.is-inherited;
+		my $val := $att.tied.is-inherited
+		    ?? inherit($object, $key)
+		    !! $object{$key};
 		type-check($val, $att.tied.type);
 	    },
 	    STORE => sub ($, $val is copy) {

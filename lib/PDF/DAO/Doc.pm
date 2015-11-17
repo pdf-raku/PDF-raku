@@ -29,7 +29,7 @@ class PDF::DAO::Doc
     method open($spec, |c) {
 	require ::('PDF::Reader');
         my $reader = ::('PDF::Reader').new;
-        my $doc = self.new;
+        my $doc = self.new( :$reader );
         $reader.install-trailer( $doc );
         $reader.open($spec, |c);
         $doc;

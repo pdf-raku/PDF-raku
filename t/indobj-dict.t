@@ -7,10 +7,13 @@ use PDF::Storage::IndObj;
 use PDF::DAO::Util :to-ast;
 use PDF::DAO::Dict;
 use PDF::Grammar::Test :is-json-equiv;
-use lib '.';
+
+my $reader = class {
+    has Bool $.auto-deref = False
+}.new;
 
 sub ind-obj-tests( :$ind-obj!, :$class!, :$to-json) {
-    my $dict-obj = PDF::Storage::IndObj.new( :$ind-obj );
+    my $dict-obj = PDF::Storage::IndObj.new( :$ind-obj, :$reader );
     my $object = $dict-obj.object;
     isa-ok $object, $class;
     is $dict-obj.obj-num, $ind-obj[0], '$.obj-num';

@@ -35,13 +35,12 @@ class PDF::Reader {
         self.ind-obj(0, 0).object;
     }
 
-    method install-trailer(PDF::DAO::Dict $object = PDF::DAO::Doc.new) {
+    method install-trailer(PDF::DAO::Dict $object = PDF::DAO::Doc.new( :reader(self)) ) {
         my $obj-num = 0;
         my $gen-num = 0;
 
         #| install the trailer at index (0,0)
         %!ind-obj-idx{$obj-num}{$gen-num} = do {
-            $object.reader = self;
             my $ind-obj = PDF::Storage::IndObj.new( :$object, :$obj-num, :$gen-num );
             { :type(1), :$ind-obj }
         }
@@ -411,7 +410,7 @@ class PDF::Reader {
                               || &fallback() )
                     or die "unable to parse index: $xref";
                 my Hash $index = $parse.ast;
-                $dict = PDF::DAO.coerce( |%($index<trailer>) );
+                $dict = PDF::DAO.coerce( |%($index<trailer>), :reader(self) );
                 self!set-trailer($dict);
 
                 my $prev-offset;
