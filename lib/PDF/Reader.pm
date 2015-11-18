@@ -81,7 +81,10 @@ class PDF::Reader {
     #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
     method !set-trailer (
         Hash $dict,
-        Array :$keys = [ $dict.keys.grep({ $_ ne 'Prev' | 'Size'}) ],
+        Array :$keys = [ $dict.keys.grep({
+	    $_ ne 'Prev' | 'Size'                    # Recomputed fields
+		| 'Type' | 'DecodeParms' | 'Filter' | 'Index' | 'W' | 'Length' # Unwanted, From XRef Streams
+	}) ],
         ) {
 	temp $.auto-deref = False;
         my $trailer = self.trailer;
