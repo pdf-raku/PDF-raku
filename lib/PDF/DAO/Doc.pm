@@ -91,7 +91,7 @@ class PDF::DAO::Doc
     #| Generate a new document ID.  
     method !generate-id(Str :$type) {
 
-	my $obj = $type eq 'FDF' ?? self<Root> !! self;
+	my $obj = $type eq 'FDF' ?? self<Root><FDF> !! self;
 
 	my uint8 @id-chars = (1 .. 16).map: { (^256).pick }
 	my Str $hex-string = Buf.new(@id-chars).decode("latin-1");
