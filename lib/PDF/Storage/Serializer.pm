@@ -17,7 +17,7 @@ class PDF::Storage::Serializer {
     has Str $!type;             #| 'FDF', 'PDF', .. others?
     has $.reader;
 
-    method type { $!type //= $.reader.?type }
+    method type { $!type //= $.reader.?type // 'PDF' }
 
     #| Reference count hashes. Could be derivate class of PDF::DAO::Dict or PDF::DAO::Stream.
     multi method analyse( Hash $dict!) {
@@ -57,7 +57,8 @@ class PDF::Storage::Serializer {
         $.freeze( $trailer, :indirect);
 	my %dict = self!get-trailer(@!objects);
 
-        %dict<Size> = :int($.size);
+        %dict<Size> = :int($.size)
+	    unless $.type eq 'FDF';
 
         [ { :@!objects, :trailer{ :%dict } }, ];
     }
