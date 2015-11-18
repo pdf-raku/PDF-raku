@@ -14,7 +14,10 @@ class PDF::Storage::Serializer {
     has Array %!objects-idx;    #| @objects index, by id
     has UInt %.ref-count;
     has Bool $.renumber is rw = True;
+    has Str $!type;             #| 'FDF', 'PDF', .. others?
     has $.reader;
+
+    method type { $!type //= $.reader.?type }
 
     #| Reference count hashes. Could be derivate class of PDF::DAO::Dict or PDF::DAO::Stream.
     multi method analyse( Hash $dict!) {
@@ -105,7 +108,7 @@ class PDF::Storage::Serializer {
 	my %dict = self!get-trailer(@objects);
         %dict<Prev>:delete;
         %dict<Size> = :int($.reader.size)
-            unless $.reader.type eq 'FDF';
+            unless $.type eq 'FDF';
 
         [ { :@objects, :trailer{ :%dict } }, ]
     }
@@ -255,14 +258,16 @@ class PDF::Storage::Serializer {
     multi method save-as(Str $file-name!,
 			 PDF::DAO $trailer-dict!,
                          Numeric :$version=1.3,
-                         Str :$type='PDF',     #| e.g. 'PDF', 'FDF;
+                         Str :$!type,     #| e.g. 'PDF', 'FDF;
                          Bool :$compress,
 			 :$crypt,
         ) {
+	$!type //= $.reader.?type;
+	$!type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';
         my Array $body = self.body($trailer-dict, :$compress );
 	$crypt.crypt-ast('body', $body)
 	    if $crypt;
-        my Pair $ast = :pdf{ :header{ :$type, :$version }, :$body };
+        my Pair $ast = :pdf{ :header{ :$!type, :$version }, :$body };
         my $writer = PDF::Writer.new( );
         use JSON::Fast;
         $file-name ~~ m:i/'.json' $/

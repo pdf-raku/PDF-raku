@@ -87,9 +87,11 @@ isa-ok $doc<Root><Pages><Kids>[1], PDF::DAO::Dict, 'updated page 2 access';
 
 my $doc2 = PDF::DAO::Doc.open: 't/pdf/pdf-updated.out';
 $reader = $doc2.reader;
+is $reader.type, 'PDF', 'reader type';
 is +$reader.xrefs, 2, 'reader.xrefs - reread';
 
 my $ast = $reader.ast( :rebuild );
+is $ast<pdf><header><type>, 'PDF', 'pdf ast type';
 is +$ast<pdf><body>, 1, 'single body';
 is +$ast<pdf><body>[0]<objects>, 10, 'read-back has object count';
 is-deeply $ast<pdf><body>[0]<objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Length => :int(70)},

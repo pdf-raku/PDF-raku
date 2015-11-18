@@ -1,13 +1,11 @@
 use v6;
 
 use PDF::DAO::Dict;
-use PDF::DAO::Tie::Hash;
 
-#| this class represents the top level node in a PDF document,
+#| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
 class PDF::DAO::Doc
-    is PDF::DAO::Dict
-    does PDF::DAO::Tie::Hash {
+    is PDF::DAO::Dict {
 
     use PDF::Storage::Serializer;
     use PDF::Writer;
@@ -23,7 +21,7 @@ class PDF::DAO::Doc
     has PDF::DAO::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary 
     has Str @.ID is entry(:len(2));  #| (Optional, but strongly recommended; PDF 1.1) An array of two byte-strings constituting a file identifier
 
-    has Hash $.Root is entry( :indirect );
+    has Hash $.Root is entry( :indirect );  #| generic document content, as defined by subclassee, e.g.  PDF::DOM or PDF::FDF
 
     #| open the input file-name or path
     method open($spec, |c) {
@@ -44,12 +42,13 @@ class PDF::DAO::Doc
 	die "PDF has not been opened for indexed read."
 	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
 
-	self!generate-id;
+	my $type = $reader.type;
+	self!generate-id( :$type );
 
         # todo we should be able to leave the input file open and append to it
         my Numeric $offset = $reader.input.codes + 1;
 
-        my $serializer = PDF::Storage::Serializer.new( :$reader );
+        my $serializer = PDF::Storage::Serializer.new( :$reader, :$type );
         my Array $body = $serializer.body( :updates, :$compress );
 	$reader.crypt.crypt-ast('body', $body)
 	    if $reader.crypt;
@@ -69,10 +68,12 @@ class PDF::DAO::Doc
     }
 
     method save-as(Str $file-name!, |c) {
-	self!generate-id;
+	my $type = $.reader.?type;
+	$type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';
+	self!generate-id( :$type );
 	my $serializer = PDF::Storage::Serializer.new;
 	my $crypt = self.reader.?crypt;
-	$serializer.save-as( $file-name, self, :$crypt, |c)
+	$serializer.save-as( $file-name, self, :$type, :$crypt, |c)
     }
 
     # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )
@@ -88,10 +89,11 @@ class PDF::DAO::Doc
     }
 
     #| Generate a new document ID.  
-    method !generate-id {
+    method !generate-id(Str :$type) {
+
+	my $obj = $type eq 'FDF' ?? self<Root> !! self;
 
 	my uint8 @id-chars = (1 .. 16).map: { (^256).pick }
-	my Array $old-id = self.ID;
 	my Str $hex-string = Buf.new(@id-chars).decode("latin-1");
 	my $new-id = PDF::DAO.coerce: :$hex-string;
 
@@ -100,11 +102,11 @@ class PDF::DAO::Doc
 # This section also include a weird and expensive solution for generating the ID.
 # Contrary to this, just generate a random identifier.
 
-	if self.ID {
-	    self.ID[1] = $new-id
+	if $obj<ID> {
+	    $obj<ID>[1] = $new-id
 	}
 	else {
-	    self.ID = [ $new-id, $new-id ];
+	    $obj<ID> = [ $new-id, $new-id ];
 	}
     }
 }
