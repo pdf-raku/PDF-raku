@@ -16,7 +16,7 @@ It does not understand logical PDF document structure. It is however possible to
 perform simple edits by direct manipulation of PDF data structures. You will need some knowledge of how PDF documents are
 structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 
-<a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) is being built on this module with the aim of
+<a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) is being built as an extension module with the aim of
 providing a richer set of classes and methods for high-level manipulation of PDF documents.
 
 Classes in this tool-kit include:
@@ -180,7 +180,7 @@ startxref
 %%EOF
 ```
 
-The PDF is broken down into indirect objects, for example, the first object is:
+The PDF is composed of a series indirect objects, for example, the first object is:
 
 ```
 1 0 obj <<
