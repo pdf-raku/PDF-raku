@@ -7,7 +7,8 @@ use PDF::DAO::Type::Info;
 for 't/pdf/samples'.IO.dir.list {
 
     my Str $pdf-filename = ~$_;
-    next unless $pdf-filename ~~ m:i/ '.' [json|pdf ] $/;
+    my Str $ext = $pdf-filename.IO.extension;
+    next unless $ext ~~ m:i/ [json|pdf|fdf] $/;
 
     for False, True -> Bool $repair {
 	my $desc = "$pdf-filename {:$repair.perl}";
@@ -20,11 +21,17 @@ for 't/pdf/samples'.IO.dir.list {
 
 	ok $doc<Root>, "$desc document has a root";
         isa-ok $doc<Root>, ::('PDF::DAO::Dict'), "$desc document root";
-	ok $doc<Root> && $doc<Root><Pages>, "$desc <Root><Pages> entry";
 
-        does-ok $doc.Info, PDF::DAO::Type::Info, "$desc document info";
-        ok $doc.Info && $doc.Info.CreationDate, "$desc <Info><CreationDate> entry";
-        isa-ok $doc<Info><CreationDate>, DateTime, "$desc CreationDate";
+	if $ext eq 'fdf' {
+	    ok $doc<Root> && $doc<Root><FDF>, "$desc <Root><FDF> entry";
+	}
+	else {
+	    ok $doc<Root> && $doc<Root><Pages>, "$desc <Root><Pages> entry";
+
+	    does-ok $doc.Info, PDF::DAO::Type::Info, "$desc document info";
+	    ok $doc.Info && $doc.Info.CreationDate, "$desc <Info><CreationDate> entry";
+	    isa-ok $doc<Info><CreationDate>, DateTime, "$desc CreationDate";
+        }
     }
 
 }
