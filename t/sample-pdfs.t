@@ -28,9 +28,11 @@ for 't/pdf/samples'.IO.dir.list {
 	else {
 	    ok $doc<Root> && $doc<Root><Pages>, "$desc <Root><Pages> entry";
 
-	    does-ok $doc.Info, PDF::DAO::Type::Info, "$desc document info";
-	    ok $doc.Info && $doc.Info.CreationDate, "$desc <Info><CreationDate> entry";
-	    isa-ok $doc<Info><CreationDate>, DateTime, "$desc CreationDate";
+	    unless $pdf-filename ~~ /'no-pages'/ {
+	        does-ok $doc.Info, PDF::DAO::Type::Info, "$desc document info";
+	        ok $doc.Info && $doc.Info.CreationDate, "$desc <Info><CreationDate> entry";
+	        isa-ok $doc<Info><CreationDate>, DateTime, "$desc CreationDate";
+            }
         }
     }
 
