@@ -3,7 +3,7 @@
     "version"     : "0.1",
     "description" : "Tools for object oriented reading, writing and manipulation of PDFs",
     "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Fast", "Crypt::RC4", "Digest::MD5" ],
-    "source-url"  : "git://github.com/p6-pdf/p6-PDF-Tools.git",
+    "source-url"  : "git://github.com/p6-pdf/perl6-PDF-Tools.git",
     "provides"    : {
 
         "PDF::DAO" : "lib/PDF/DAO.pm",
