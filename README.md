@@ -6,11 +6,11 @@ perl6-PDF-Tools
 perl6-PDF-Tools is an experimental low-level tool-kit for accessing and manipulating data from PDF files.
 
 It presents a high level view of the data in PDF or FDF documents. Behind the scenes it handles
-compression, encryption layers, indexing and fetching of indirect objects and unpacking of object
+compression, encryption, indexing and fetching of indirect objects and unpacking of object
 streams. It is capable of reading, editing and creation or incremental update of PDF files.
 
-This module is primarily intended as base for higher level modules. It can also be used as a general tool for exploring and
-checking the contents of PDF or FDF files.
+This module is primarily intended as base for higher level modules. It can also be used as a general tool for exploring
+or patching the data in PDF or FDF files.
 
 It does not understand logical PDF document structure. It is however possible to construct simple documents and
 perform simple edits by direct manipulation of PDF data structures. You will need some knowledge of how PDF documents are
@@ -92,7 +92,7 @@ $doc.update;
 A PDF file consists of data structures, including dictionarys (hashs) arrays, numbers and strings, plus streams
 for holding data such as images, fonts and general content.
 
-PDF files are also indexed for random access and may also have filters for stream compression and overall encryption.
+PDF files are also indexed for random access and may also have filters for stream compression and encryption of streams and strings.
 
 They have a reasonably well specified structure. The document structure starts from
 `Root` entry in the trailer dictionary, which is the main entry point into a PDF.
