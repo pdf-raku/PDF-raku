@@ -16,7 +16,7 @@ It does not understand logical PDF document structure. It is however possible to
 perform simple edits by direct manipulation of PDF data structures. You will need some knowledge of how PDF documents are
 structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 
-<a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> and <href="https://github.com/p6-pdf/perl6-PDF-FDF">FDF</a> are
+<a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> and <a href="https://github.com/p6-pdf/perl6-PDF-FDF">PDF::FDF</a> are
 both under construction for high-level manipulation of PDF and FDF documents.
 
 Classes in this tool-kit include:
