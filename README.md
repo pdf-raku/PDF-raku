@@ -5,19 +5,19 @@ perl6-PDF-Tools
 
 perl6-PDF-Tools is an experimental low-level tool-kit for accessing and manipulating data from PDF files.
 
-It handles various compression and encryptions layers in a PDF document, including general streams, object streams, and
-indirect objects to present a high level view of the underlying data for the purposes of reading, editing and writing or
-updating of PDF files.
+It presents a high level view of the data in PDF or FDF documents. Behind the scenes it handles
+compression, encryption layers, indexing and fetching of indirect objects and unpacking of object
+streams. It is capable of reading, editing and creation or incremental update of PDF files.
 
 This module is primarily intended as base for higher level modules. It can also be used as a general tool for exploring and
-checking the contents of a PDF.
+checking the contents of PDF or FDF files.
 
 It does not understand logical PDF document structure. It is however possible to construct simple documents and
 perform simple edits by direct manipulation of PDF data structures. You will need some knowledge of how PDF documents are
 structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 
-<a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction) is being built as an extension module with the aim of
-providing a richer set of classes and methods for high-level manipulation of PDF documents.
+<a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> and < href="https://github.com/p6-pdf/perl6-PDF-FDF"></a> are
+both under construction for high-level manipulation of PDF and FDF documents.
 
 Classes in this tool-kit include:
 
