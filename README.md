@@ -3,17 +3,17 @@ perl6-PDF-Tools
 
 ## Overview
 
-perl6-PDF-Tools is an experimental low-level tool-kit for accessing and manipulating data from PDF files.
+perl6-PDF-Tools is an experimental low-level tool-kit for reading and manipulating data from PDF files.
 
-It presents a high level view of the data in PDF or FDF documents. Behind the scenes it handles
-compression, encryption, indexing and fetching of indirect objects and unpacking of object
+It presents a unified view of the data in PDF or FDF documents. Behind the scenes it handles
+compression, encryption, fetching of indirect objects and unpacking of object
 streams. It is capable of reading, editing and creation or incremental update of PDF files.
 
-This module is primarily intended as base for higher level modules. It can also be used as a general tool for exploring
-or patching the data in PDF or FDF files.
+This module is primarily intended as base for higher level modules. It can also be used to explore
+patch data in PDF or FDF files.
 
 It does not understand logical PDF document structure. It is however possible to construct simple documents and
-perform simple edits by direct manipulation of PDF data structures. You will need some knowledge of how PDF documents are
+perform simple edits by direct manipulation of PDF data. You will need some knowledge of how PDF documents are
 structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 
 <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> and <a href="https://github.com/p6-pdf/perl6-PDF-FDF">PDF::FDF</a> are
@@ -62,7 +62,7 @@ $page<Parent> = $pages;
 $page<Contents> = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
 
 my $info = $doc.Info = {};
-$info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
+$info.CreationDate = DateTime.now;
 $info.Author = 'PDF-Tools/t/helloworld.t';
 
 $doc.save-as: 't/helloworld.pdf';
