@@ -83,7 +83,7 @@ class PDF::DAO::Doc
 	    if self.reader.?is-owner;
 
 	my $perms = self.Encrypt.?P
-	    // return False;
+	    // return True;
 
 	return $perms.flag-is-set( $flag );
     }
