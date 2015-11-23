@@ -1,7 +1,7 @@
 use v6;
 use Test;
 
-plan 25;
+plan 27;
 
 use PDF::Storage::IndObj;
 use PDF::DAO::Util :to-ast;
@@ -53,28 +53,35 @@ ind-obj-tests(
 use PDF::DAO::Tie;
 use PDF::DAO::Tie::Hash;
 use PDF::DAO::Dict;
+role ResourceRole does PDF::DAO::Tie::Hash {method foo {42}}
 role KidRole does PDF::DAO::Tie::Hash {method bar {42}}
 role MyPages does PDF::DAO::Tie::Hash {
     multi sub coerce(Hash $h is rw, KidRole) { $h does KidRole }
+    multi sub coerce(Hash $h is rw, ResourceRole) { $h does ResourceRole }
     has KidRole @.Kids is entry(:required, :indirect, :&coerce );
+    has ResourceRole %.Resources is entry( :&coerce );
 }
 
 class MyCat
     is PDF::DAO::Dict {
-    multi sub coerce(Hash $h is rw, MyPages) {die 42; $h does MyPages }
     has MyPages $.Pages is entry(:required, :indirect);
     has Bool $.NeedsRendering is entry;
 }
 
-my $cat = MyCat.new( :dict{ :Pages{ :Kids[ { :Type( :name<Page> ) }, ] } } );
+my $cat = MyCat.new( :dict{ :Pages{ :Kids[ { :Type( :name<Page> ) }, ], :Resources{ :ExtGState{} }, } } );
 
 isa-ok $cat, MyCat, 'root object';
 does-ok $cat<Pages>, MyPages, '<Pages> role';
 does-ok $cat.Pages, MyPages, '.Pages role';
+
 isa-ok $cat<Pages><Kids>, Array, '<Pages><Kids>';
 is-json-equiv $cat<Pages><Kids>, [ { :Type<Page> }, ], '<Pages><Kids>';
 isa-ok $cat.Pages.Kids, Array, '.Pages.Kids';
 is-json-equiv $cat.Pages.Kids, [{ :Type<Page> }, ], '.Pages.Kids';
+
+isa-ok $cat<Pages><Resources>, Hash, '<Pages><Resources>';
+does-ok $cat.Pages.Resources<ExtGState>, ResourceRole, 'Hash Instance role';
+
 lives-ok { $cat.NeedsRendering = True }, 'valid assignment';
 dies-ok { $cat.NeedsRendering = 42 }, 'typechecking';
 is-json-equiv $cat.NeedsRendering, True, 'typechecking';
@@ -89,11 +96,14 @@ my $doc = PDF::DAO::Doc.new( { :Root($cat) } );
 my $serializer = PDF::Storage::Serializer.new;
 my $body = $serializer.body( $doc );
 
-is-json-equiv $body[0], {:objects($[
-			       :ind-obj($[1, 0, :dict(${:NeedsRendering(:bool),
-							:Pages(:ind-ref($[2, 0]))})]),
-                               :ind-obj($[2, 0, :dict(${:Kids(:array($[:ind-ref($[3, 0])]))})]),
-                               :ind-obj($[3, 0, :dict(${:Type(:name("Page"))})])
-                              ]),
-                       :trailer(${:dict(${:Root(:ind-ref($[1, 0])), :Size(:int(4))})})
+is-json-equiv $body[0], {:objects[
+			       :ind-obj($[1, 0, :dict{ :NeedsRendering(:bool),
+							 :Pages(:ind-ref($[2, 0]))}
+                                                      ]),
+                               :ind-obj($[2, 0, :dict{ :Kids(:array($[:ind-ref($[3, 0])])),
+                                                         :Resources{ :dict{ :ExtGState{ :dict{} } } },
+                                                      }]),
+                               :ind-obj($[3, 0, :dict{ :Type(:name("Page"))}])
+                              ],
+                       :trailer{ :dict{:Root(:ind-ref($[1, 0])), :Size(:int(4))}} 
                      }, 'body serialization';

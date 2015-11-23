@@ -18,7 +18,22 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 		    if $att.tied.length && +$val != $att.tied.length;
 		my $of-type = $type.of;
 		type-check($_, $of-type)
-		for $val.list;
+		for $val.values;
+	    }
+	    else {
+		die "missing required field: $key"
+		    if $att.tied.is-required;
+		return Nil
+	    }
+	    $val;
+	}
+
+	multi sub type-check($val, Associative[Mu] $type) {
+	    type-check($val, Hash);
+	    if $val.defined {
+		my $of-type = $type.of;
+		type-check($_, $of-type)
+		for $val.values;
 	    }
 	    else {
 		die "missing required field: $key"
@@ -44,7 +59,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 		  if $att.tied.is-required;
 	      return Nil
 	  }
-	  die "{$object.WHAT.^name}.$key: {$val.perl} - not of type: {$type.gist}"
+	  die "{$object.WHAT.^name}.$key: {$val.WHAT.gist} - not of type: {$type.gist}"
 	      unless $val ~~ $type
 	      || $val ~~ Pair;	#| undereferenced - don't know it's type yet
 	  $val;
@@ -115,7 +130,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
         $val := $.deref(:$key, $val)
 	    if $val ~~ Pair | Array | Hash;
 
-	my $att = $.entries{$key};
+	my $att = $.entries{$key} // $.item-att;
 	$att.apply($val)
 	    if $att.defined;
 
@@ -126,7 +141,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
     method ASSIGN-KEY($key, $val) {
 	my $lval = $.lvalue($val);
 
-	my $att = $.entries{$key};
+	my $att = $.entries{$key} // $.item-att;
 	$att.apply($lval)
 	    if $att.defined;
 

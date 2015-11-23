@@ -36,6 +36,7 @@ role PDF::DAO::Tie {
     has $.reader is rw;
     has Int $.obj-num is rw;
     has Int $.gen-num is rw;
+    has Attribute $.item-att is rw;      #| default attribute
 
     method is-indirect is rw returns Bool {
 	Proxy.new(
@@ -104,11 +105,14 @@ role PDF::DAO::Tie {
 		    my $obj-num = $lval.?obj-num;
 		    my $gen-num = $lval.?gen-num;
 
-		    if $type ~~ Positional[Mu] && $lval ~~ Array {
-			# positional array declaration, e.g.:
+		    if ($type ~~ Positional[Mu] && $lval ~~ Array)
+                    || ($type ~~ Associative[Mu] && $lval ~~ Hash) {
+			# item-att array declaration, e.g.:
 			# has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
+                        # or, associative hash declarations, e.g.:
+                        # has PDF::DOM::Type::ExtGState %.ExtGState is entry;
 			my $of-type = $type.of;
-			my $att = $lval.positional;
+			my $att = $lval.item-att;
 			if $att {
 			    die "conflicting types for {$att.name} {$att.type.gist} {$of-type.gist}"
 				unless $of-type ~~ $att.type;
@@ -118,10 +122,10 @@ role PDF::DAO::Tie {
 			    $att does TiedIndex;
 			    $att.tied = $.clone;
 			    $att.tied.type = $of-type;
-			    $lval.positional = $att;
+			    $lval.item-att = $att;
 			}
 			
-			for $lval.list {
+			for $lval.values {
 			    next if $_ ~~ Pair | $att.tied.type;
 			    ($att.tied.coerce)($_, $att.tied.type);
 			     .reader //= $reader if $reader && .can('reader');
@@ -179,6 +183,11 @@ role PDF::DAO::Tie {
 		# assert that rakudo has interpreted this as Positional[SomeType]
 		die "internal error. expecting Positional role, got {$type.gist}"
 		    unless $type ~~ Positional;
+	    }
+	    when '%' {
+		# assert that rakudo has interpreted this as Positional[SomeType]
+		die "internal error. expecting Associative role, got {$type.gist}"
+		    unless $type ~~Associative;
 	    }
 	    default {
 		warn "ignoring '$sigil' sigil";

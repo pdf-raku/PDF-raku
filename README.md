@@ -361,8 +361,7 @@ Note that the `:compress` and `:rebuild` options are a trade-off. The document m
 
 - `$doc.save-as("mydoc.json", :compress, :rebuild); my $doc2 = $doc.open("mydoc.json")`
 Documents can also be saved and restored from an intermediate `JSON` representation. This can
-be handy for debugging, analysis and/or ad-hoc patching of PDF files. Beware that
-saving and restoring to `JSON` is somewhat slower than save/restore to `PDF`.
+be handy for debugging, analysis and/or ad-hoc patching of PDF files.
 
 ### See also:
 - `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] [--password=Xxx] <pdf-or-json-file-in> <pdf-or-json-file-out>`
@@ -370,7 +369,7 @@ This script is a thin wrapper for the `PDF::DAO::Doc` `.open` and `.save-as` met
 
 ### Reading PDF Files
 
-The `PDF::Reader` `.open` method oads a PDF index (cross reference table and/or stream). The document can then be access randomly via the
+The `PDF::Reader` `.open` method loads a PDF index (cross reference table and/or stream). The document can then be access randomly via the
 `.ind.obj(...)` method.
 
 The document can be traversed by dereferencing Array and Hash objects. The reader will load indirect objects via the index, as needed. 

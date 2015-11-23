@@ -5,7 +5,6 @@ use PDF::DAO::Tie;
 role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 
     has Attribute @.index is rw;    #| for typed indices
-    has Attribute $.positional is rw;      #| default attribute
     has Bool $!composed;
 
     sub tie-att-array($object, UInt $idx, Attribute $att) is rw {
@@ -76,7 +75,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
         $val := $.deref(:$pos, $val)
 	    if $val ~~ Pair | Array | Hash;
 
-	my $att = $.index[$pos] // $.positional;
+	my $att = $.index[$pos] // $.item-att;
 	$att.apply($val)
 	    if $att.defined;
 
@@ -87,7 +86,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
     method ASSIGN-POS($pos, $val) {
 	my $lval = $.lvalue($val);
 
-	my $att = $.index[$pos] // $.positional;
+	my $att = $.index[$pos] // $.item-att;
 	$att.apply($lval)
 	    if $att.defined;
 
