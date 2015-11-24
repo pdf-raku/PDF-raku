@@ -6,7 +6,7 @@ use PDF::DAO::Tie::Hash;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 class PDF::DAO::Stream
-    is PDF::DAO
+    does PDF::DAO
     is Hash
     does PDF::DAO::Type 
     does PDF::DAO::Tie::Hash {

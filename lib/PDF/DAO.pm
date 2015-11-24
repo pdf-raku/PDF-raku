@@ -1,6 +1,8 @@
 use v6;
 
-class PDF::DAO {
+our $delegator;
+
+role PDF::DAO {
 
     multi method coerce(Mu $obj is rw, Mu $type ) {
 	$.delegator.coerce( $obj, $type )
@@ -39,7 +41,11 @@ class PDF::DAO {
     }
 
     multi method coerce( Bool :$bool!) {
+	use nqp;
         $.add-role($bool, "PDF::DAO::Bool");
+	$.add-role($bool, 'PDF::DAO')
+	    if nqp::isrwcont($bool);
+	$bool;
     }
 
     multi method coerce( Array :$ind-ref!) {
@@ -97,7 +103,6 @@ class PDF::DAO {
 
     multi method coerce($val) is default { $val }
 
-    our $delegator;
     method delegator is rw {
 	unless $delegator.can('delegate') {
 	    require ::('PDF::DAO::Delegator');

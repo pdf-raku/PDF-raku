@@ -7,7 +7,7 @@ use PDF::DAO::Tie::Hash;
 
 #| Dict - base class for dictionary objects, e.g. Catalog Page ...
 class PDF::DAO::Dict
-    is PDF::DAO
+    does PDF::DAO
     is Hash
     does PDF::DAO::Type
     does PDF::DAO::Tie::Hash {

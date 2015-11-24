@@ -4,7 +4,7 @@ use PDF::DAO;
 use PDF::DAO::Tie::Array;
 
 class PDF::DAO::Array
-    is PDF::DAO
+    does PDF::DAO
     is Array
     does PDF::DAO::Tie::Array {
 

@@ -3,7 +3,7 @@ use v6;
 use PDF::DAO;
 
 class PDF::DAO::DateString
-    is PDF::DAO
+    does PDF::DAO
     is DateTime {
 
 =begin pod

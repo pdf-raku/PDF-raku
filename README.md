@@ -5,11 +5,11 @@ perl6-PDF-Tools
 
 perl6-PDF-Tools is an experimental low-level tool-kit for reading and manipulating data from PDF files.
 
-It presents a unified view of the data in PDF or FDF documents. Behind the scenes it handles
+It presents a seamless view of the data in PDF or FDF documents; behind the scenes handling
 compression, encryption, fetching of indirect objects and unpacking of object
 streams. It is capable of reading, editing and creation or incremental update of PDF files.
 
-This module is primarily intended as base for higher level modules. It can also be used to explore
+This module is primarily intended as base for higher level modules. It can also be used to explore or
 patch data in PDF or FDF files.
 
 It does not understand logical PDF document structure. It is however possible to construct simple documents and
@@ -19,10 +19,11 @@ structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> and <a href="https://github.com/p6-pdf/perl6-PDF-FDF">PDF::FDF</a> are
 both under construction for high-level manipulation of PDF and FDF documents.
 
-Classes in this tool-kit include:
+Classes/roles in this tool-kit include:
 
 - `PDF::Reader` - for indexed random access to PDFs
 - `PDF::Storage::Filter` - a collection of standard PDF decoding and encoding tools for PDF data streams
+- `PDF::Storage::IndObj` - base class for indirect objects
 - `PDF::Storage::Serializer` - data marshalling utilities for the preparation of full or incremental updates
 - `PDF::Storage::Crypt` - decryption / encryption (V 2 & 3 RC4 only at this stage)
 - `PDF::Writer` - for the creation or update of PDFs
@@ -250,7 +251,7 @@ The page `Contents` is a PDF stream which contains graphical instructions. In th
 
 ## Datatypes and Coercian
 
-The `PDF::DAO` namespace provides basic data-type classes for the representation and manipulation of PDF Objects.
+The `PDF::DAO` namespace provides roles and classes for the representation and manipulation of PDF objects.
 
 ```
 use PDF::DAO::Stream;

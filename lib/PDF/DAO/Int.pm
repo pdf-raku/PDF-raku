@@ -2,7 +2,7 @@ use v6;
 use PDF::DAO;
 
 role PDF::DAO::Int
-    is PDF::DAO {
+    does PDF::DAO {
 
     method flag-is-set(UInt $flag-num) returns Bool {
 	my Int $i = self;

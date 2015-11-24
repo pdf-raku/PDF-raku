@@ -3,7 +3,7 @@ use v6;
 use PDF::DAO;
 
 class PDF::DAO::TextString
-    is PDF::DAO
+    does PDF::DAO
     is Str {
 
     has Str $.type is rw = 'literal';
