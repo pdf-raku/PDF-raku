@@ -36,7 +36,7 @@ role PDF::DAO::Tie {
     has $.reader is rw;
     has Int $.obj-num is rw;
     has Int $.gen-num is rw;
-    has Attribute $.item-att is rw;      #| default attribute
+    has Attribute $.of-att is rw;      #| default attribute
 
     method is-indirect is rw returns Bool {
 	Proxy.new(
@@ -107,12 +107,12 @@ role PDF::DAO::Tie {
 
 		    if ($type ~~ Positional[Mu] && $lval ~~ Array)
                     || ($type ~~ Associative[Mu] && $lval ~~ Hash) {
-			# item-att array declaration, e.g.:
+			# of-att array declaration, e.g.:
 			# has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
                         # or, associative hash declarations, e.g.:
                         # has PDF::DOM::Type::ExtGState %.ExtGState is entry;
 			my $of-type = $type.of;
-			my $att = $lval.item-att;
+			my $att = $lval.of-att;
 			if $att {
 			    die "conflicting types for {$att.name} {$att.type.gist} {$of-type.gist}"
 				unless $of-type ~~ $att.type;
@@ -122,7 +122,7 @@ role PDF::DAO::Tie {
 			    $att does TiedIndex;
 			    $att.tied = $.clone;
 			    $att.tied.type = $of-type;
-			    $lval.item-att = $att;
+			    $lval.of-att = $att;
 			}
 			
 			for $lval.values {
@@ -249,31 +249,5 @@ role PDF::DAO::Tie {
 
     #| simple native type. no need to coerce
     multi method deref($value) is default { $value }
-
-    #| return a raw untied object. suitible for perl dump etc.
-    method raw {
-
-        return self
-            if self !~~ Hash | Array
-            || ! self.reader || ! self.reader.auto-deref;
-
-        temp self.reader.auto-deref = False;
-
-        my $raw;
-
-        given self {
-            when Hash {
-                $raw := {};
-                $raw{.key} = .value
-                    for self.pairs;
-            }
-            when Array {
-                $raw = [];
-                $raw[.key] = .value
-                    for self.pairs;
-            }
-        }
-        $raw;
-    }
 
 }
