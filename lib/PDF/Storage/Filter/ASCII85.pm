@@ -63,7 +63,7 @@ class PDF::Storage::Filter::ASCII85 {
         }
 
         die "invalid ASCII85 encoded character: {(~$0).perl}"
-            if $str ~~ /(.**0..5<-[\!..\u\z]>)/;
+            if $str ~~ /(<-[\!..\u\z]>)/;
 
         my $padding = 'u' x (-$str.chars % 5);
         my $buf = ($str ~ $padding).encode('latin-1');
