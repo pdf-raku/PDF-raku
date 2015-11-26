@@ -100,6 +100,6 @@ is-deeply $ast<pdf><body>[0]<objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Leng
 
 # do a full rewrite of the updated PDF. Output should be cleaned up, with a single body and
 # cleansed of old object versions.
-ok $doc2.save-as('t/pdf/pdf-updated-and-rebuilt.out', :rebuild), 'save-as :rebuild';
+ok $doc2.save-as('t/pdf/pdf-updated-and-rebuilt.pdf', :rebuild), 'save-as :rebuild';
 
 done-testing;
