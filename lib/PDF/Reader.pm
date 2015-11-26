@@ -210,7 +210,9 @@ class PDF::Reader {
             else {
                 die "unable to locate 'endstream' marker after consuming /Length $length bytes: $obj-num $gen-num R \@$offset {synopsis($tail)}"
             }
-            $input.substr( $offset + $start, $length );
+	    $length
+		?? $input.substr( $offset + $start, $length )
+		!! '';
         };
     }
 
