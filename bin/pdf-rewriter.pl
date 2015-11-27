@@ -19,8 +19,9 @@ sub MAIN (
     Bool :$dom = False,          #| require PDF::DOM
     ) {
 
-    require ::('PDF::DOM')
-	if $dom;
+    if $dom {
+	require ::('PDF::DOM')
+    }
 
     die "conflicting arguments: --compress --uncompress"
         if $compress && $uncompress;
