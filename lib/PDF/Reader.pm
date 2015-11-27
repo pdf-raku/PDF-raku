@@ -56,12 +56,12 @@ class PDF::Reader {
 
 	for %!ind-obj-idx.pairs {
 
-	    my $obj-num = +.key
+	    my UInt $obj-num = +.key
 		or next;
 
 	    for .value.pairs {
-		my $gen-num = +.key;
-		my $idx = .value;
+		my UInt $gen-num = +.key;
+		my Hash $idx = .value;
 
 		next if $obj-num == $enc.obj-num
 		    && $gen-num == $enc.gen-num;
@@ -87,7 +87,7 @@ class PDF::Reader {
 	}) ],
         ) {
 	temp $.auto-deref = False;
-        my $trailer = self.trailer;
+        my Hash $trailer = self.trailer;
 
         for $keys.sort {
             $trailer{$_} = from-ast $dict{$_}
@@ -111,7 +111,7 @@ class PDF::Reader {
             for .<objects>.list.reverse {
                 next unless .<ind-obj>:exists;
                 my $ind-obj = .<ind-obj>;
-                my ($obj-num, $gen-num, $object) = @( $ind-obj );
+                (my UInt $obj-num, my UInt $gen-num, my $object) = @( $ind-obj );
 
                 %!ind-obj-idx{$obj-num}{$gen-num} //= {
                     :type(1),
@@ -121,7 +121,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my $dict = PDF::DAO.coerce( |%(.<trailer>) );
+                my Hash $dict = PDF::DAO.coerce( |%(.<trailer>) );
                 self!set-trailer( $dict.content<dict> );
 		self!setup-crypt(|c);
             }
@@ -135,11 +135,11 @@ class PDF::Reader {
         @!xrefs.push: $!prev;
 
         for @entries -> Hash $entry {
-	    my $obj-num = $entry<obj-num>
+	    my UInt $obj-num = $entry<obj-num>
 	        or next;
 
-            my $gen-num = $entry<gen-num>;
-            my $type = $entry<type>;
+            my UInt $gen-num = $entry<gen-num>;
+            my UInt $type = $entry<type>;
 
 	    given $type {
 	        when 0 { # freed
@@ -188,19 +188,19 @@ class PDF::Reader {
                               UInt :$max-end,     #| upper bound for the end of the stream
         )
     {
-        my ($obj-num, $gen-num, $obj-raw) = @$ind-obj;
+        (my UInt $obj-num, my UInt $gen-num, my $obj-raw) = @$ind-obj;
 
         $obj-raw.value<encoded> //= do {
             die "stream mandatory /Length field is missing: $obj-num $gen-num R \@$offset "
                 unless $obj-raw.value<dict><Length>;
 
-            my $length = $.deref( $obj-raw.value<dict><Length> );
-            my $start = $obj-raw.value<start>:delete;
+            my UInt $length = $.deref( $obj-raw.value<dict><Length> );
+            my UInt $start = $obj-raw.value<start>:delete;
             die "stream Length $length appears too large (> {$max-end - $start}): $obj-num $gen-num R \@$offset"
                 if $max-end && $length > $max-end - $start;
 
             # ensure stream is followed by an 'endstream' marker
-            my $tail = $input.substr( $offset + $start + $length, 20 );
+            my Str $tail = $input.substr( $offset + $start + $length, 20 );
             if $tail ~~ m{^ (.*?) <PDF::Grammar::PDF::stream-tail>} {
                 if $0.codes {
                     # hmm some unprocessed bytes
@@ -276,7 +276,7 @@ class PDF::Reader {
                     Bool :$eager = True,     #| fetch object, if not already loaded
         ) {
 
-        my $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
+        my Hash $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
             // die "unable to find object: $obj-num $gen-num R";
 
         my $ind-obj = $idx<ind-obj> //= do {
@@ -367,7 +367,7 @@ class PDF::Reader {
         my UInt $tail-bytes = min(1024, $.input.codes);
         my Str $tail = $.input.substr(* - $tail-bytes);
 
-        my %offsets-seen;
+        my UInt %offsets-seen;
         @!xrefs = [];
 
         PDF::Grammar::PDF.parse($tail, :$.actions, :rule<postamble>)
@@ -376,8 +376,8 @@ class PDF::Reader {
         my UInt:_ $xref-offset = $!prev;
         my UInt $input-bytes = $.input.codes;
 
-        my @obj-idx;
-        my $dict;
+        my Hash @obj-idx;
+        my Hash $dict;
 
         while $xref-offset.defined {
 	    @!xrefs.unshift: $xref-offset;
@@ -419,11 +419,11 @@ class PDF::Reader {
                 $dict = PDF::DAO.coerce( |%($index<trailer>), :reader(self) );
                 self!set-trailer($dict);
 
-                my $prev-offset;
+                my UInt $prev-offset;
 
                 if $index<xref>:exists {
                     for $index<xref>.list {
-                        my $obj-num = .<obj-first-num>;
+                        my UInt $obj-num = .<obj-first-num>;
                         for @( .<entries> ) {
                             my UInt $type = .<type>;
                             my UInt $gen-num = .<gen-num>;
@@ -508,9 +508,9 @@ class PDF::Reader {
             for .<objects>.list.reverse {
                 next unless .key eq 'ind-obj';
                 my $ind-obj = .value;
-                my ($obj-num, $gen-num, $object, $offset) = @( $ind-obj );
+                (my UInt $obj-num, my UInt $gen-num, my $object, my UInt $offset) = @( $ind-obj );
 
-                my $dict;
+                my Hash $dict;
                 my $stream-type;
                 my $value := $object.value;
 
@@ -528,10 +528,6 @@ class PDF::Reader {
 			# discard existing /Type /XRef stream objects. These are specific to the input PDF
 			next;
 		    }
-
-                }
-                else {
-                    $dict = $value;
                 }
 
                 %!ind-obj-idx{$obj-num}{$gen-num} //= {
@@ -547,9 +543,9 @@ class PDF::Reader {
                     my UInt $index = 0;
 
                     for $type2-objects.list {
-                        my $ref-obj-num = $obj-num;
-                        my $obj-num2 = .[0];
-                        my $gen-num2 = 0;
+                        my UInt $ref-obj-num = $obj-num;
+                        my UInt $obj-num2 = .[0];
+                        my UInt $gen-num2 = 0;
                         %!ind-obj-idx{$obj-num2}{$gen-num2} //= {
                             :type(2),
                             :$index,
@@ -561,7 +557,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my $dict = PDF::DAO.coerce( |%(.<trailer>) );
+                my Hash $dict = PDF::DAO.coerce( |%(.<trailer>) );
                 self!set-trailer( $dict.content<dict> );
 		self!setup-crypt(|c);
             }
@@ -618,7 +614,7 @@ class PDF::Reader {
                         # type 2 embedded object
                         next unless $unpack;
 
-                        my $parent = $entry<ref-obj-num>;
+                        my UInt $parent = $entry<ref-obj-num>;
                         $offset = %!ind-obj-idx{ $parent }{0}<offset>;
                         $seq = $entry<index>;
                     }
@@ -692,7 +688,7 @@ class PDF::Reader {
             next unless $type eq 'ind-obj';
             my ($obj-type, $obj-raw) = $ind-obj[2].kv;
             if $obj-type eq 'stream' {
-                my $is-compressed = $obj-raw<dict><Filter>:exists;
+                my Bool $is-compressed = $obj-raw<dict><Filter>:exists;
                 next if $compress == $is-compressed;
                 my Int $obj-num = $ind-obj[0];
                 my Int $gen-num = $ind-obj[1];
