@@ -1,14 +1,17 @@
 use v6;
 use Test;
 
-plan 8;
+plan 9;
 
 use PDF::Storage::IndObj;
-
+use PDF::DAO::Name;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 use lib '.';
+
+my subset MyName of PDF::DAO::Name where 'Foo' | 'Bar';
+lives-ok {PDF::DAO.delegator.coerce( 'Foo', MyName)}, 'coerce to name subset';
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 

@@ -51,7 +51,7 @@ class PDF::DAO::Delegator {
     }
 
     multi method coerce( Str $obj, $role where PDF::DAO::Name ) {
-	$obj does $role
+	$obj does PDF::DAO::Name
     }
 
     multi method coerce( $obj, $role) is default {
