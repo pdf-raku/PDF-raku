@@ -43,24 +43,24 @@ use PDF::DAO::Doc;
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
 my $doc = PDF::DAO::Doc.new;
-my $catalog  = $doc.Root          = { :Type(/'Catalog') };
-my $outlines = $catalog<Outlines> = { :Type(/'Outlines'), :Count(0) };
-my $pages    = $catalog<Pages>    = { :Type(/'Pages'), :MediaBox[0, 0, 420, 595] };
+my $root     = $doc.Root       = { :Type(/'Catalog') };
+my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
+my $pages    = $root<Pages>    = { :Type(/'Pages'), :Kids[], :Count(0) };
 
-$pages<Resources><Procset> = [ /'PDF', /'Text'];
-$pages<Resources><Font><F1> = {
-        :Type(/'Font'),
-        :Subtype(/'Type1'),
-        :BaseFont(/'Helvetica'),
-        :Encoding(/'MacRomanEncoding'),
-    };
+my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) });
+my @MediaBox = 0, 0, 420, 595;
+my %Resources = :Procset[ /'PDF', /'Text'],
+                :Font{
+		  :F1{
+		    :Type(/'Font'),
+		    :Subtype(/'Type1'),
+		    :BaseFont(/'Helvetica'),
+		    :Encoding(/'MacRomanEncoding'),
+                  },
+                };
 
-$pages<Kids> = [ { :Type(/'Page') }, ];
-$pages<Count> = + $pages<Kids>;
-my $page = $pages<Kids>[0];
-$page<Parent> = $pages;
-
-$page<Contents> = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) } );
+$pages<Kids>.push: { :Type(/'Page'), :Parent($pages), :@MediaBox, :$Contents, :%Resources };
+$pages<Count>++;
 
 my $info = $doc.Info = {};
 $info.CreationDate = DateTime.now;
