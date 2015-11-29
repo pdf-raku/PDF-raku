@@ -205,7 +205,7 @@ class PDF::Writer {
                 unless .chars == 1;
             die "illegal non-latin hex character: U+" ~ .ord.base(16)
                 unless 0 <= .ord <= 0xFF;
-            sprintf '#%02X', .ord
+            sprintf '#%02x', .ord
         }
     }
 
@@ -213,7 +213,7 @@ class PDF::Writer {
         [~] flat '<', $hex-string.comb.map({ 
             die "illegal non-latin character in string: U+" ~ .ord.base(16)
                 unless 0 <= .ord <= 0xFF;
-            sprintf '%02X', .ord;
+            sprintf '%02x', .ord;
         }), '>';
     }
 
