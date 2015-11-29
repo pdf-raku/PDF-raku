@@ -6,7 +6,7 @@ use PDF::DAO::Stream;
 # /Type /XRef - cross reference stream
 # introduced with PDF 1.5
 # see [PDF 1.7 Section 3.4.7 Cross-Reference Streams]
-our class PDF::DAO::Type::XRef
+class PDF::DAO::Type::XRef
     is PDF::DAO::Stream {
 
     use PDF::Storage::Util :resample;

@@ -10,12 +10,12 @@ use PDF::Writer;
 sub MAIN (
     Str $pdf-or-json-file-in,    #| input PDF, FDF or JSON file (.json extension)
     Str $pdf-or-json-file-out,   #| output PDF, FDF or JSON file (.json extension)
-    Bool :$repair = False,       #| bypass and repair index. recompute stream lengths. Handy when
+    Str  :$password = '';        #| password for encrypted documents
+    Bool :$repair    = False,    #| bypass and repair index. recompute stream lengths. Handy when
                                  #| PDF files have been hand-edited.
     Bool :$rebuild    = False,   #| rebuild object tree (renumber, garbage collect and deduplicate objects)
-    Bool :$compress   = False,   #| uncompress streams
-    Bool :$uncompress = False,   #| compress streams
-    Str  :$password = '';        #| password for encrypted documents
+    Bool :$compress   = False,   #| compress streams
+    Bool :$uncompress = False,   #| uncompress streams
     Bool :$dom = False,          #| require PDF::DOM
     ) {
 

@@ -51,11 +51,11 @@ my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hel
 my @MediaBox = 0, 0, 420, 595;
 my %Resources = :Procset[ /'PDF', /'Text'],
                 :Font{
-		  :F1{
-		    :Type(/'Font'),
-		    :Subtype(/'Type1'),
-		    :BaseFont(/'Helvetica'),
-		    :Encoding(/'MacRomanEncoding'),
+                  :F1{
+                    :Type(/'Font'),
+                    :Subtype(/'Type1'),
+                    :BaseFont(/'Helvetica'),
+                    :Encoding(/'MacRomanEncoding'),
                   },
                 };
 
