@@ -237,9 +237,9 @@ The trailer `Root` entry references the document catalog, which contains the act
 further; the catalog potentially contains a number of pages, each with content.
 ```
 > $doc<Root><Pages>
-Count => 1, Kids => [ind-ref => [5 0]], Type => Pages
+Count => 1, Kids => [ind-ref => [5 0]], MediaBox => [0 0 420 595], Resources => Font => F1 => ind-ref => [7 0], Type => Pages
 > $doc<Root><Pages><Kids>[0]
-Contents => ind-ref => [6 0], MediaBox => [0 0 420 595], Parent => ind-ref => [4 0], Resources => Font => F1 => ind-ref => [7 0], Procset => [PDF Text], Type => Page
+Contents => ind-ref => [6 0], Parent => ind-ref => [4 0], Procset => [PDF Text], Type => Page
 > $doc<Root><Pages><Kids>[0]<Contents>
 Length => 46
 > $doc<Root><Pages><Kids>[0]<Contents>.decoded
