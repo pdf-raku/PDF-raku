@@ -6,7 +6,7 @@ role PDF::DAO {
 
     has $.reader is rw;
     has Int $.obj-num is rw;
-    has Int $.gen-num is rw;
+    has UInt $.gen-num is rw;
 
     method is-indirect is rw returns Bool {
         my $obj = self;
