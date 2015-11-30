@@ -4,6 +4,27 @@ our $delegator;
 
 role PDF::DAO {
 
+    has $.reader is rw;
+    has Int $.obj-num is rw;
+    has Int $.gen-num is rw;
+
+    method is-indirect is rw returns Bool {
+        my $obj = self;
+	Proxy.new(
+	    FETCH => method { ?$obj.obj-num },
+	    STORE => method (Bool $val) {
+		if $val {
+		    # Ensure this object is indirect. Serializer will renumber
+		    $obj.obj-num //= -1;
+		}
+		else {
+		    $obj.obj-num = Nil;
+		}
+		$val
+	    },
+	    );
+    }
+
     multi method coerce(Mu $obj is rw, Mu $type ) {
 	$.delegator.coerce( $obj, $type )
     }

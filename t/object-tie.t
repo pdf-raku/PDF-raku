@@ -36,6 +36,12 @@ my $Pages := $root-obj<Pages>;
 is $Pages<Type>, 'Pages', 'Pages<Type>';
 is-deeply $Pages.reader, $reader, 'root has deref - stickyness';
 
+# force an object to indirect
+$Pages<Count>.is-indirect = True;
+is $Pages<Count>.obj-num, -1, 'set .is-indirect = True';
+$Pages<Count>.is-indirect = False;
+ok !($Pages<Count>.obj-num), 'set .is-indirect = False';
+
 my $Kids = $Pages<Kids>;
 isa-ok $Kids, Array;
 isa-ok $Kids, PDF::DAO::Array;

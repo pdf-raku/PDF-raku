@@ -33,26 +33,7 @@ PDF::DAO::Tie also provides the `entry` trait (hashes) and `index` (arrays) trai
 
 role PDF::DAO::Tie {
 
-    has $.reader is rw;
-    has Int $.obj-num is rw;
-    has Int $.gen-num is rw;
     has Attribute $.of-att is rw;      #| default attribute
-
-    method is-indirect is rw returns Bool {
-	Proxy.new(
-	    FETCH => method { ?$.obj-num },
-	    STORE => method (Bool $val) {
-		if $val {
-		    # Ensure this object is indirect. Serializer will renumber
-		    $.obj-num //= -1;
-		}
-		else {
-		    $.obj-num = Nil;
-		}
-		$val
-	    },
-	    );
-    }
 
     #| generate an indirect reference to ourselves
     method ind-ref {
