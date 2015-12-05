@@ -66,7 +66,7 @@ my $info = $doc.Info = {};
 $info.CreationDate = DateTime.now;
 $info.Author = 'PDF-Tools/t/helloworld.t';
 
-$doc.save-as: 't/helloworld.pdf';
+$doc.save-as: 't/example.pdf';
 ```
 
 Then to update the PDF, adding another page:
@@ -80,7 +80,7 @@ my $doc = PDF::DAO::Doc.open: 't/helloworld.pdf';
 my $catalog = $doc<Root>;
 my $Parent = $catalog<Pages>;
 my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  90 250 Td (Goodbye for now!) Tj ET" ) } );
-$Parent<Kids>.push: { :Type(/'Page'), :$Parent, :$Contents };
+$Parent<Kids>.push: { :Type( :name<Page> ), :$Parent, :$Contents };
 $Parent<Count>++;
 
 my $info = $doc.Info //= {};
@@ -191,9 +191,7 @@ The PDF is composed of a series indirect objects, for example, the first object 
 endobj
 ```
 
-It's an indirect object with object number `1` and generation number `0`, containing the author and the date that the document was created.
-
-This is a PDF dictionary object which is roughly equivalent to a Perl 6 hash:
+It's an indirect object with object number `1` and generation number `0`, containing the author and the date that the document was created. PDF dictionary objects are roughly equivalent to Perl 6 hashes:
 
 ``` { :Author("PDF-Tools/t/helloworld.t"), :CreationDate("D:20151225000000Z00'00'") } ```
 
@@ -202,7 +200,7 @@ The bottom of the PDF contains
 ```
 trailer
 <<
-  /ID [ <4386DC7BC3489E418B44434E3A168843> <4386DC7BC3489E418B44434E3A168843> ]
+  /ID [ <4386dc7bc3489e418b44434e3a168843> <4386dc7bc3489e418b44434e3a168843> ]
   /Info 1 0 R
   /Root 2 0 R
   /Size 8
@@ -228,7 +226,7 @@ Author => PDF-Tools/t/helloworld.t, CreationDate => D:20151225000000Z00'00'
 ```
 That's the document information entry, commonly used to store basic meta-data about the document.
 
-(PDF Tools has conveniantly fetched indirect object 1 from the PDF, when we dereferenced this entry).
+(PDF Tools has conveniently fetched indirect object 1 from the PDF, when we dereferenced this entry).
 ```
 > $doc<Root>
 Outlines => ind-ref => [3 0], Pages => ind-ref => [4 0], Type => Catalog
@@ -259,8 +257,8 @@ my %dict = :Filter( :name<ASCIIHexDecode> );
 my $obj-num = 123;
 my $gen-num = 4;
 my $decoded = "100 100 Td (Hello, world!) Tj";
-my $stream-obj = PDF::DAO::Stream.new( :$obj-num, :$gen-num, :$dict, :$decoded );
-say $stream.obj.encoded;
+my $stream-obj = PDF::DAO::Stream.new( :$obj-num, :$gen-num, :%dict, :$decoded );
+say $stream-obj.encoded;
 ```
 
 `PDF::DAO.coerce` is a method for the construction of objects.
@@ -275,12 +273,13 @@ use PDF::DAO;
 my $actions = PDF::Grammar::Doc::Actions.new;
 PDF::Grammar::Doc.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :rule<object>, :$actions)
     or die "parse failed";
-my $ast = $/.ast;
+my %ast = $/.ast;
 
-say '#'~$ast.perl;
+say '#'~%ast.perl;
 #:dict({:Count(:int(1)), :Kids(:array([:ind-ref([4, 0])])), :Type(:name("Pages"))})
 
-my $object = PDF::DAO.coerce( %$ast );
+my $reader = class { has $.auto-deref = False }.new; # dummy reader
+my $object = PDF::DAO.coerce( %ast, :$reader );
 
 say '#'~$object.WHAT.gist;
 #(PDF::DAO::Dict)
@@ -299,14 +298,19 @@ The `PDF::DAO.coerce` method is also used to construct new objects from applicat
 In many cases, AST tags will coerce if omitted. E.g. we can use `1`, instead of `:int(1)`:
 ```
 # using explicit AST tags
+use PDF::DAO;
+my $reader = class { has $.auto-deref = False }.new; # dummy reader
+
 my $object2 = PDF::DAO.coerce({ :Type( :name<Pages> ),
                                 :Count(:int(1)),
-                                :Kids( :array[ :ind-ref[4, 0] ) ] });
+                                :Kids[ :array[ :ind-ref[4, 0] ] ], },
+				:$reader);
 
 # same but with a casting from native typs
 my $object3 = PDF::DAO.coerce({ :Type( :name<Pages> ),
                                 :Count(1),
-                                :Kids[ :ind-ref[4, 0] ] });
+                                :Kids[ :ind-ref[4, 0],  ] },
+				:$reader);
 say '#'~$object2.perl;
 
 ```
@@ -376,18 +380,21 @@ The `PDF::Reader` `.open` method loads a PDF index (cross reference table and/or
 The document can be traversed by dereferencing Array and Hash objects. The reader will load indirect objects via the index, as needed. 
 
 ```
-use PDF
+use PDF::Reader;
+use PDF::DAO;
+
+my $reader = PDF::Reader.new;
 $reader.open( 't/helloworld.pdf' );
 
 # objects can be directly fetched by object-number and generation-number:
-$page1 = $reader.ind-obj(4, 0).object;
+my $page1 = $reader.ind-obj(4, 0).object;
 
 # Hashs and arrays are tied. This is usually more conveniant for navigating
 my $doc = $reader.trailer<Root>;
-my $page1 = $doc<Pages><Kids>[0];
+$page1 = $doc<Pages><Kids>[0];
 
 # Tied objects can also be updated directly.
-$pdf<Info><Creator> = PDF::DAO.coerce( :name<t/helloworld.t> );
+$reader.trailer<Info><Creator> = PDF::DAO.coerce( :name<t/helloworld.t> );
 ```
 
 ### Decode Filters
@@ -411,10 +418,10 @@ Input to all filters is strings, with characters in the range \x0 ... \0xFF. lat
 
 Each file has `encode` and `decode` methods. Both return latin-1 encoded strings.
 
- ```
- my $encoded = PDF::Storage::Filter.encode( :dict{ :Filter<RunLengthEncode> },
+```
+my $encoded = PDF::Storage::Filter.encode( :dict{ :Filter<RunLengthDecode> },
                                             "This    is waaay toooooo loooong!");
- say $encoded.chars;
+say $encoded.codes;
  ```
 
 ### Serialization
@@ -423,66 +430,11 @@ PDF::Storage::Serializer constructs AST for output by PDF::Writer. It can create
 
 In place edits are particularly effective for making small changes to large PDF's, when we can avoid loading large unmodified portions of the PDF.
 
-````
-my $serializer = PDF::Storage::Serializer.new;
-my $body = $serializer.body( $reader, :updates );
-```
-
-PDF::Writer then converts the AST back to a PDF byte image, with a rebulilt cross reference index.
-
-```
-my $offset = $reader.input.codes + 1;
-my $prev = $body<trailer><dict><Prev>.value;
-my $writer = PDF::Writer.new( :$offset, :$prev );
-my $new-body = "\n" ~ $writer.write( :$body );
-
-```
 ## Data Access Objects
 
 `PDF::DAO` is roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
 
-It's subclasses and used by `PDF::DOM` to build the extenstive library of document specific classes in the `PDF::DOM::Type` namespace.
-
-The following outlines the setup, from scratch, of document mapped classes with root `MyPDF::Catalog`.
-```
-use PDF::DAO::Tie;
-use PDF::DAO::Type;
-use PDF::DAO::Dict;
-
-class My::Delegator is PDF::DAO::Delegator {
-    method class-paths {<MyPDF PDF::DAO::Type>}
-}
-
-PDF::DAO.delegator = My::Delegator;
-
-class MyPDF::Pages
-    is PDF::DAO::Dict
-    does PDF::Oject::Type {
-
-    has MyPDF::Page @.Kids is entry(:required, :indirect);
-}
-
-class MyPDF::Catalog
-    is PDF::DAO::Dict
-    does PDF::DAO::Type {
-
-    # see [PDF 1.7 TABLE 3.25 Entries in the catalog dictionary]
-    use PDF::DAO::Name;
-    has PDF::DAO::Name $.Version is entry;        #| (Optional; PDF 1.4) The version of the PDF specification to which the document conforms (for example, /1.4) 
-    has MyPDF::Pages $.Pages is entry(:required, :indirect); #| (Required; must be an indirect reference) The page tree node
-    # ... etc
-}
-```
-if we then say
-```
-my $Catalog = PDF::DAO.coerce: { :Type( :name<Catalog> ),
-                                 :Version( :name<PDF>),
-                                 :Pages{ :Type{ :name<Pages> }, :Kids[], :Count(0) } };
-
-```
-`$Catalog` is coerced to type `MyPDF::Catalog`.
-- `$Catalog.Pages` will autoload and Coerce to type `MyPDF::Pages`
-- If that should fail (and there's no `PDF::DAO::Type::Pages` class), it falls-back to a plain `PDF::DAO::Dict` object.
+It's subclasses and used by `PDF::DOM` to build the extensive library of document specific classes in the `PDF::DOM::Type` namespace.
 
 ## Further Reading
 
