@@ -182,13 +182,13 @@ class PDF::Reader {
     }
 
     #| load the data for a stream object. Cross check actual size versus expected /Length
-    method !fetch-stream-data(Array $ind-obj,     #| primary object
+    method !fetch-stream-data(@ind-obj,           #| primary object
                               $input,             #| associated input stream
                               UInt :$offset,      #| offset of the object in the input stream
                               UInt :$max-end,     #| upper bound for the end of the stream
         )
     {
-        (my UInt $obj-num, my UInt $gen-num, my $obj-raw) = @$ind-obj;
+        (my UInt $obj-num, my UInt $gen-num, my $obj-raw) = @ind-obj;
 
         $obj-raw.value<encoded> //= do {
             die "stream mandatory /Length field is missing: $obj-num $gen-num R \@$offset "

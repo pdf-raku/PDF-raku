@@ -45,8 +45,8 @@ role PDF::DAO {
     multi method coerce(DateTime $dt, |c) {
 	$.delegator.coerce( $dt, DateTime, |c)
     }
-    multi method coerce(Pair $_!, |c) {
-	$.coerce( |%$_, |c)
+    multi method coerce(Pair %_!, |c) {
+	$.coerce( |%_, |c)
     }
     method add-role($obj, Str $role) {
 	require ::($role);

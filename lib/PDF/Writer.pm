@@ -217,8 +217,8 @@ class PDF::Writer {
         }), '>';
     }
 
-    multi method write(Array :$ind-obj! ) {
-        my (UInt $obj-num, UInt $gen-num, $object where Pair | Hash) = @$ind-obj;
+    multi method write(:@ind-obj! ) {
+        my (UInt $obj-num, UInt $gen-num, $object where Pair | Hash) = @ind-obj;
 
         [~] (sprintf('%d %d obj ', $obj-num, $gen-num),
 	     $.write( $object ),
