@@ -35,7 +35,7 @@ To create a one page PDF that displays 'Hello, World!'.
 
 ```
 #!/usr/bin/env perl6
-# creates t/helloworld.pdf
+# creates t/example.pdf
 use v6;
 use PDF::DAO;
 use PDF::DAO::Doc;
@@ -64,7 +64,7 @@ $pages<Count>++;
 
 my $info = $doc.Info = {};
 $info.CreationDate = DateTime.now;
-$info.Author = 'PDF-Tools/t/helloworld.t';
+$info.Producer = 'PDF-Tools';
 
 $doc.save-as: 't/example.pdf';
 ```
@@ -75,7 +75,7 @@ Then to update the PDF, adding another page:
 use v6;
 use PDF::DAO::Doc;
 
-my $doc = PDF::DAO::Doc.open: 't/helloworld.pdf';
+my $doc = PDF::DAO::Doc.open: 't/example.pdf';
 
 my $catalog = $doc<Root>;
 my $Parent = $catalog<Pages>;
@@ -106,7 +106,7 @@ This is put to work in the companion module <a href="https://github.com/p6-pdf/p
 
 ## The Basics
 
-PDF files are serialized as numbered indirect objects. The `t/helloworld.pdf` file that we just wrote contains:
+PDF files are serialized as numbered indirect objects. The `t/example.pdf` file that we just wrote contains:
 ```
 %PDF-1.3
 %...(control chars)

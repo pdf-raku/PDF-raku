@@ -1,6 +1,9 @@
 use Test;
 use PDF::Grammar::PDF;
 
+# ensure consistant document ID generation
+srand(123456);
+
 my $read-me = "README.md".IO.slurp;
 
 $read-me ~~ /^ $<waffle>=.*? +%% ["```" \n? $<code>=.*? "```" \n?] $/
@@ -14,7 +17,7 @@ for @<code> {
 		or warn "unable to parse as PDF: $_"
 	}
 	when /^ \d+ / {
-	    ok PDF::Grammar::PDF.parse($_, :rule<ind-obj>), 'is valid PDF object'
+	    ok PDF::Grammar::PDF.parse($_, :rule<ind-obj>), 'is valid PDF indirect object'
 		or warn "unable to parse as PDF indirect object: $_"
 	}
 	when /^ '<<' / {
@@ -22,13 +25,15 @@ for @<code> {
 		or warn "unable to parse as PDF object: $_"
 	}
 	when /^ 'trailer' / {
-	    ok PDF::Grammar::PDF.parse($_, :rule<trailer>), 'is valid PDF object'
+	    ok PDF::Grammar::PDF.parse($_, :rule<trailer>), 'is valid PDF trailer'
 		or warn "unable to parse as PDF trailer: $_"
 	}
         when /^ ['>' | 'snoopy'] / { } # REPL
 	default {
 	    # assume anything else is code.
-	    lives-ok {EVAL $snippet}, $snippet.substr(0,80) ~ ' ...'
+	    $snippet = $snippet.subst('DateTime.now;', 'DateTime.new( :year(2015), :month(12), :day(25) );' );
+
+	    lives-ok {EVAL $snippet}, 'code sample'
 		or die "eval error: $snippet";
 	}
     }
