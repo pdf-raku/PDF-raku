@@ -349,9 +349,7 @@ class PDF::Reader {
     #| Use full-scan mode, as these are not indexed.
     multi method load('FDF') {
         use PDF::Grammar::FDF;
-        use PDF::Grammar::FDF::Actions;
-        my $actions = PDF::Grammar::FDF::Actions.new;
-        self!full-scan( PDF::Grammar::FDF, $actions);
+        self!full-scan( PDF::Grammar::FDF, $.actions);
     }
 
     #| scan the entire PDF, bypass any indices. Populate index with
