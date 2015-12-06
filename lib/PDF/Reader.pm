@@ -621,27 +621,17 @@ class PDF::Reader {
                     default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
                 }
 
-                my $ast;
+		my Bool $eager = ! $incremental;
+                my $ast = $.ind-obj($obj-num, $gen-num, :get-ast, :$eager)
+		    or next;
+
                 if $incremental {
-
-		    # preparing incremental updates. only need to consider fetched objects
-		    $ast = $.ind-obj($obj-num, $gen-num, :get-ast, :!eager);
-
-		    # the object hasn't been fetched. It cannot have been updated!
-		    next unless $ast;
-
 		    if $offset && $obj-num {
 			# check updated vs original PDF value.
 			my $original-ast = self!fetch-ind-obj(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
 			# discard, if not updated
 			next if $original-ast eqv $ast.value;
 		    }
-                }
-                else {
-                    # renegerating PDF. need to eagerly copy updates + unaltered entries
-                    # from the full object tree.
-                    $ast = $.ind-obj($obj-num, $gen-num, :get-ast, :eager)
-                        or next;
                 }
 
                 my $ind-obj = $ast.value[2];
