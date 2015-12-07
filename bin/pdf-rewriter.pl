@@ -4,7 +4,6 @@ use v6;
 # Simple round trip read and rewrite a PDF
 use v6;
 use PDF::Reader;
-use PDF::Writer;
 
 #| rewrite a PDF or FDF and/or convert to/from JSON
 sub MAIN (
