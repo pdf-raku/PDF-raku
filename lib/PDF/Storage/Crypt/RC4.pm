@@ -105,7 +105,7 @@ class PDF::Storage::Crypt::RC4
 	for 1..$reps {
 	    $key = Digest::MD5::md5($key);
 	    $key = $key.subbuf(0, $n)
-		unless +$key == $n;
+		unless +$key <= $n;
 	}
 
 	$key;
@@ -113,7 +113,7 @@ class PDF::Storage::Crypt::RC4
 
     method !auth-user-pass(@pass) {
 	# Algorithm 3.6
-	my $key = self!compute-user( @pass )[0 .. 15];
+	my $key = self!compute-user( @pass );
 	my $pass = [ @Padding.list ];
 	my uint8 @computed;
 	my uint8 @expected;
@@ -130,8 +130,7 @@ class PDF::Storage::Crypt::RC4
 	}
 	else {
 	    # Algorithm 3.4
-	    $pass = Crypt::RC4::RC4($key, @Padding);
-	    @computed = @$pass;
+	    @computed = Crypt::RC4::RC4($key, @Padding);
 	    @expected = @!U;
 	}
 
