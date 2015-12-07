@@ -5,6 +5,7 @@ plan 1;
 
 use PDF::Storage::IndObj;
 use PDF::Writer;
+use PDF::DAO::Stream;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;

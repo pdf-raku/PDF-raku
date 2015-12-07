@@ -7,14 +7,15 @@ use PDF::Storage::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
+use PDF::DAO::Stream;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
 my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
-my $ast = $/.ast;
-my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
+my %ast = $/.ast;
+my $ind-obj = PDF::Storage::IndObj.new( |%ast, :$input );
 isa-ok $ind-obj.object, ::('PDF::DAO::Type')::('ObjStm');
 
 my $objstm;
@@ -37,7 +38,7 @@ my $ind-obj2 = PDF::Storage::IndObj.new( |%$ast2 );
 my $objstm-roundtrip = $ind-obj2.object.decode( $objstm-recompressed );
 
 is-deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';
-lives-ok {::('PDF::DAO::Type')::('ObjStm').new(:dict{ :N(1), :First(1) }, :decoded[[10, '<< /Foo (bar) >>']])};
+lives-ok {::('PDF::DAO::Type')::('ObjStm').new(:dict{ :N(1), :First(1) }, :decoded[[10, '<< /Foo (bar) >>']])}, 'ObjStm.new';
 my $objstm-new = ::('PDF::DAO::Type')::('ObjStm').new(:dict{ :N(1), :First(1) }, :decoded[[10, '<< /Foo (bar) >>'], [11, '[ 42 true ]']] );
 lives-ok {$objstm-new.encode( :check )}, '$.encode( :check ) - with valid data lives';
 is $objstm-new.Type, 'ObjStm', '$objstm.new .Name auto-setup';
