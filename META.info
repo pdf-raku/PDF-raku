@@ -1,12 +1,13 @@
 {
     "name"        : "PDF",
-    "version"     : "0.1",
+    "version"     : "0.01.1",
     "description" : "Low level tools for reading, writing and manipulation of PDF files",
     "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Fast", "Crypt::RC4", "Digest::MD5" ],
     "source-url"  : "git://github.com/p6-pdf/perl6-PDF-Tools.git",
     "provides"    : {
 
         "PDF::DAO" : "lib/PDF/DAO.pm",
+        "PDF::DAO::Delegator" : "lib/PDF/DAO/Delegator.pm",
         "PDF::DAO::Doc" : "lib/PDF/DAO/Doc.pm",
         "PDF::DAO::Array" : "lib/PDF/DAO/Array.pm",
         "PDF::DAO::Bool" : "lib/PDF/DAO/Bool.pm",
@@ -30,7 +31,6 @@
         "PDF::DAO::Type::ObjStm" : "lib/PDF/DAO/Type/ObjStm.pm",
         "PDF::DAO::Type::XRef" : "lib/PDF/DAO/Type/XRef.pm",
 
-        "PDF::DAO::Delegator" : "lib/PDF/DAO/Delegator.pm",
         "PDF::DAO::Util" : "lib/PDF/DAO/Util.pm",
 
         "PDF::Reader" : "lib/PDF/Reader.pm",
@@ -43,7 +43,7 @@
         "PDF::Storage::Filter::ASCIIHex" : "lib/PDF/Storage/Filter/ASCIIHex.pm",
         "PDF::Storage::Filter::Flate" : "lib/PDF/Storage/Filter/Flate.pm",
         "PDF::Storage::Filter::LZW" : "lib/PDF/Storage/Filter/LZW.pm",
-        "PDF::Storage::Filter::Role::Predictors" : "lib/PDF/Storage/Filter/Role/Predictors.pm",
+        "PDF::Storage::Filter::Predictors" : "lib/PDF/Storage/Filter/Predictors.pm",
         "PDF::Storage::Filter::RunLength" : "lib/PDF/Storage/Filter/RunLength.pm",
         "PDF::Storage::IndObj" : "lib/PDF/Storage/IndObj.pm",
         "PDF::Storage::Input" : "lib/PDF/Storage/Input.pm",
