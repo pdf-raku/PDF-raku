@@ -1,17 +1,5 @@
 use v6;
 
-=begin pod
-
-This forms the basis for `PDF::DOM`'s extensive library of document object classes. It
-includes classes and roles for object construction, validation and serialization.
-
-- The `PDF::DAO` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::DAO::Delegator`.
-
-- The delegator may be subclassed. For example, the upstream module `PDF::DOM` subclasses `PDF::DAO::Delegator` with
-`PDF::DOM::Delegator`.
-
-=end pod
-
 class PDF::DAO::Delegator {
 
     use PDF::DAO;
@@ -98,3 +86,15 @@ class PDF::DAO::Delegator {
 	$fallback;
     }
 }
+
+=begin pod
+
+This forms the basis for `PDF::DOM`'s extensive library of document object classes. It
+includes classes and roles for object construction, validation and serialization.
+
+- The `PDF::DAO` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::DAO::Delegator`.
+
+- The delegator may be subclassed. For example, the upstream module `PDF::DOM` subclasses `PDF::DAO::Delegator` with
+`PDF::DOM::Delegator`.
+
+=end pod

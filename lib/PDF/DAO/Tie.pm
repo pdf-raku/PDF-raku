@@ -1,36 +1,6 @@
 use v6;
 use PDF::DAO;
 
-=begin pod
-
-
-This is a role used by PDF::DAO. It makes the PDF object tree appear as a seamless
-structure comprised of nested hashs (PDF dictionarys) and arrays.
-
-PDF::DAO::Tie::Hash and PDF::DAO::Tie::Array encapsulate Hash and Array accces.
-
-- If the object has an associated  `reader` property, indirect references are resolved lazily and transparently
-as elements in the structure are dereferenced.
-- Hashs and arrays automaticaly coerced to objects on assignment to a parent object. For example:
-
-```
-sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
-my $catalog = PDF::DAO.coerce({ :Type(/'Catalog') });
-$catalog<Outlines> = PDF::DAO.coerce( { :Type(/'Outlines'), :Count(0) } );
-```
-
-is equivalent to:
-
-```
-sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
-my $catalog = PDF::DAO.coerce({ :Type(/'Catalog') });
-$catalog<Outlines> = { :Type(/'Outlines'), :Count(0) };
-```
-
-PDF::DAO::Tie also provides the `entry` trait (hashes) and `index` (arrays) trait for declaring accessors.
-
-=end pod
-
 role PDF::DAO::Tie {
 
     has Attribute $.of-att is rw;      #| default attribute
@@ -99,7 +69,7 @@ role PDF::DAO::Tie {
 				unless $of-type ~~ $att.type;
 			}
 			else {
-			    $att = Attribute.new( :name('@!' ~ $.accessor-name), :type($type.of), :package<?> );
+			    $att = Attribute.new( :name('@!' ~ $.accessor-name), :type($of-type), :package<?> );
 			    $att does TiedIndex;
 			    $att.tied = $.clone;
 			    $att.tied.type = $of-type;
@@ -166,9 +136,9 @@ role PDF::DAO::Tie {
 		    unless $type ~~ Positional;
 	    }
 	    when '%' {
-		# assert that rakudo has interpreted this as Positional[SomeType]
+		# assert that rakudo has interpreted this as Associative[SomeType]
 		die "internal error. expecting Associative role, got {$type.gist}"
-		    unless $type ~~Associative;
+		    unless $type ~~ Associative;
 	    }
 	    default {
 		warn "ignoring '$sigil' sigil";
@@ -201,15 +171,10 @@ role PDF::DAO::Tie {
 
     #| indirect reference
     multi method deref(Pair $ind-ref! where {.key eq 'ind-ref'}) {
-	my $ref = $ind-ref.value;
-        my Int $obj-num = $ref[0];
-        my Int $gen-num = $ref[1];
-	my $reader      = $ref > 2
-	    ?? $ind-ref.value[2]
-	    !! $.reader;
+	(my Int $obj-num, my Int $gen-num, my $reader) = $ind-ref.value.list;
 
-        die "indirect reference without associated reader: $obj-num $gen-num R"
-            unless $reader;
+	$reader //= $.reader
+	    // die "indirect reference without associated reader: $obj-num $gen-num R";
 
 	$reader.auto-deref
 	    ?? $reader.ind-obj( $obj-num, $gen-num ).object
@@ -232,3 +197,32 @@ role PDF::DAO::Tie {
     multi method deref($value) is default { $value }
 
 }
+
+=begin pod
+
+This is a role used by PDF::DAO. It makes the PDF object tree appear as a seamless
+structure comprised of nested hashs (PDF dictionarys) and arrays.
+
+PDF::DAO::Tie::Hash and PDF::DAO::Tie::Array encapsulate Hash and Array accces.
+
+- If the object has an associated  `reader` property, indirect references are resolved lazily and transparently
+as elements in the structure are dereferenced.
+- Hashs and arrays automaticaly coerced to objects on assignment to a parent object. For example:
+
+```
+sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
+my $catalog = PDF::DAO.coerce({ :Type(/'Catalog') });
+$catalog<Outlines> = PDF::DAO.coerce( { :Type(/'Outlines'), :Count(0) } );
+```
+
+is equivalent to:
+
+```
+sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
+my $catalog = PDF::DAO.coerce({ :Type(/'Catalog') });
+$catalog<Outlines> = { :Type(/'Outlines'), :Count(0) };
+```
+
+PDF::DAO::Tie also provides the `entry` trait (hashes) and `index` (arrays) trait for declaring accessors.
+
+=end pod

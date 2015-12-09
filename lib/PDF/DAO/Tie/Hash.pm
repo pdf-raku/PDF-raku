@@ -5,7 +5,6 @@ use PDF::DAO::Tie;
 role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
     has Attribute %.entries is rw;
-    has Bool $!composed;
 
     sub tie-att-hash(Hash $object, Str $key, Attribute $att) is rw {
 
@@ -95,12 +94,13 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	tie-att-hash(self, $key, $att);
     }
 
-    method compose returns Bool {
+    method tie-init returns Bool {
 	my $class = self.WHAT;
 	my $class-name = $class.^name;
 
 	for $class.^attributes.grep({.name !~~ /descriptor/ && .can('entry') }) -> $att {
 	    my $key = $att.tied.accessor-name;
+	    next if %!entries{$key}:exists;
 	    %!entries{$key} = $att;
 
 	    my &meth = method { self.rw-accessor( $key, $att ) };
@@ -115,12 +115,6 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 		    unless $class.^declares_method($alias)
 	    }
 	}
-
-	True
-    }
-
-    method tie-init {
-	$!composed ||= self.compose;
     }
 
     #| for hash lookups, typically $foo<bar>

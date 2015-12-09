@@ -5,7 +5,6 @@ use PDF::DAO::Tie;
 role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 
     has Attribute @.index is rw;    #| for typed indices
-    has Bool $!composed;
 
     sub tie-att-array($object, UInt $idx, Attribute $att) is rw {
 
@@ -37,14 +36,13 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	tie-att-array(self, $idx, $att);
     }
 
-    method compose( --> Bool) {
+    method tie-init( --> Bool) {
 	my $class = self.WHAT;
 	my $class-name = $class.^name;
 
 	for $class.^attributes.grep({.name !~~ /descriptor/ && .can('index') }) -> $att {
 	    my $pos = $att.index;
-	    die "redefinition of trait index($pos)"
-		if @!index[$pos];
+	    next if @!index[$pos];
 	    @!index[$pos] = $att;
 
 	    my &meth = method { self.rw-accessor( $pos, $att ) };
@@ -62,10 +60,6 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	}
 
 	True;
-    }
-
-    method tie-init {
-	$!composed ||= self.compose;
     }
 
     #| for array lookups, typically $foo[42]
