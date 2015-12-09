@@ -109,10 +109,10 @@ This is put to work in the companion module <a href="https://github.com/p6-pdf/p
 PDF files are serialized as numbered indirect objects. The `t/example.pdf` file that we just wrote contains:
 ```
 %PDF-1.3
-%...(control chars)
+%...(control characters)
 1 0 obj <<
-  /Author (PDF-Tools/t/helloworld.t)
   /CreationDate (D:20151225000000Z00'00')
+  /Producer (PDF-Tools)
 >>
 endobj
 2 0 obj <<
@@ -163,12 +163,12 @@ xref
 0 8
 0000000000 65535 f 
 0000000014 00000 n 
-0000000114 00000 n 
-0000000185 00000 n 
-0000000235 00000 n 
-0000000413 00000 n 
-0000000482 00000 n 
-0000000580 00000 n 
+0000000101 00000 n 
+0000000172 00000 n 
+0000000222 00000 n 
+0000000400 00000 n 
+0000000469 00000 n 
+0000000567 00000 n 
 trailer
 <<
   /ID [ <4386dc7bc3489e418b44434e3a168843> <4386dc7bc3489e418b44434e3a168843> ]
@@ -177,7 +177,7 @@ trailer
   /Size 8
 >>
 startxref
-686
+673
 %%EOF
 ```
 
@@ -185,17 +185,18 @@ The PDF is composed of a series indirect objects, for example, the first object 
 
 ```
 1 0 obj <<
-  /Author (PDF-Tools/t/helloworld.t)
   /CreationDate (D:20151225000000Z00'00')
+  /Producer (PDF-Tools)
 >>
 endobj
 ```
 
-It's an indirect object with object number `1` and generation number `0`, containing the author and the date that the document was created. PDF dictionary objects are roughly equivalent to Perl 6 hashes:
+It's an indirect object with object number `1` and generation number `0`, with a `>>` ... `<<` delimited dictionary containing the
+author and the date that the document was created. This PDF dictionary is roughly equivalent to a Perl 6 hash:
 
-``` { :Author("PDF-Tools/t/helloworld.t"), :CreationDate("D:20151225000000Z00'00'") } ```
+``` { :CreationDate("D:20151225000000Z00'00'"), :Producer("PDF-Tools"), } ```
 
-The bottom of the PDF contains
+The bottom of the PDF contains:
 
 ```
 trailer
@@ -205,16 +206,19 @@ trailer
   /Root 2 0 R
   /Size 8
 >>
+startxref
+673
+%%EOF
 ```
 
-This is the trailer dictionary and the main entry point into the document. The dictionary entry `/Info 1 0 R`
+The `>>` ... `<<` delimited section is the trailer dictionary and the main entry point into the document. The entry `/Info 1 0 R`
 is an indirect reference to the first object (object number 1, generation 0) described above.
 
 We can quickly put PDF Tools to work using a Perl 6 REPL, to better explore the document:
 
 ```
 snoopy: ~/git/perl6-PDF-Tools $ perl6 -MPDF::DAO::Doc
-> my $doc = PDF::DAO::Doc.open: "t/helloworld.pdf"
+> my $doc = PDF::DAO::Doc.open: "t/example.pdf"
 ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
 > $doc.keys
 (Root Info ID)
@@ -222,7 +226,7 @@ ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref =
 This is the root of the PDF, loaded from the trailer dictionary
 ```
 > $doc<Info>
-Author => PDF-Tools/t/helloworld.t, CreationDate => D:20151225000000Z00'00'
+CreationDate => D:20151225000000Z00'00', Producer => PDF-Tools;
 ```
 That's the document information entry, commonly used to store basic meta-data about the document.
 
@@ -245,7 +249,7 @@ BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
 > 
 ```
 
-The page `Contents` is a PDF stream which contains graphical instructions. In the above example, to output the text `Hello, world!` at coordinates 100, 250.
+The page `/Contents` entry is a PDF stream which contains graphical instructions. In the above example, to output the text `Hello, world!` at coordinates 100, 250.
 
 ## Datatypes and Coercian
 
@@ -384,7 +388,7 @@ use PDF::Reader;
 use PDF::DAO;
 
 my $reader = PDF::Reader.new;
-$reader.open( 't/helloworld.pdf' );
+$reader.open( 't/example.pdf' );
 
 # objects can be directly fetched by object-number and generation-number:
 my $page1 = $reader.ind-obj(4, 0).object;

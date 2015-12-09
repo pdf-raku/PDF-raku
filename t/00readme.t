@@ -25,7 +25,7 @@ for @<code> {
 		or warn "unable to parse as PDF object: $_"
 	}
 	when /^ 'trailer' / {
-	    ok PDF::Grammar::PDF.parse($_, :rule<trailer>), 'is valid PDF trailer'
+	    ok PDF::Grammar::PDF.subparse($_, :rule<trailer>), 'is valid PDF trailer'
 		or warn "unable to parse as PDF trailer: $_"
 	}
         when /^ ['>' | 'snoopy'] / { } # REPL
