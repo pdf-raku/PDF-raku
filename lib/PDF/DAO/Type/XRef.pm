@@ -2,12 +2,14 @@ use v6;
 
 use PDF::DAO;
 use PDF::DAO::Stream;
+use PDF::DAO::Tie::Hash;
 
 # /Type /XRef - cross reference stream
 # introduced with PDF 1.5
 # see [PDF 1.7 Section 3.4.7 Cross-Reference Streams]
-class PDF::DAO::Type::XRef
-    is PDF::DAO::Stream {
+role PDF::DAO::Type::XRef
+    is PDF::DAO::Stream
+    does PDF::DAO::Tie::Hash {
 
     use PDF::Storage::Util :resample;
     use PDF::Storage::Blob;

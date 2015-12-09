@@ -14,10 +14,10 @@ my $actions = PDF::Grammar::PDF::Actions.new;
 my $input = 't/pdf/ind-obj-XRef.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
-my %ast = %( $/.ast );
+my %ast = $/.ast;
 my $ind-obj = PDF::Storage::IndObj.new( |%ast, :$input );
 my $xref-obj = $ind-obj.object;
-isa-ok $xref-obj, ::('PDF::DAO::Type')::('XRef');
+does-ok $xref-obj, ::('PDF::DAO::Type')::('XRef');
 is-json-equiv $xref-obj.W, [ 1, 2, 1], '$xref.new .W';
 is $xref-obj.Size, 251, '$xref.new .Size';
 is-json-equiv $xref-obj.Index, [ 214, 37], '$xref.new .Index';

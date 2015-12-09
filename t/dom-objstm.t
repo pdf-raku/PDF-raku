@@ -16,7 +16,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
 my $ind-obj = PDF::Storage::IndObj.new( |%ast, :$input );
-isa-ok $ind-obj.object, ::('PDF::DAO::Type')::('ObjStm');
+does-ok $ind-obj.object, ::('PDF::DAO::Type')::('ObjStm');
 
 my $objstm;
 lives-ok { $objstm = $ind-obj.object.decode }, 'basic content decode - lives';

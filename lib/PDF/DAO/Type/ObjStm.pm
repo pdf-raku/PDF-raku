@@ -2,12 +2,14 @@ use v6;
 
 use PDF::DAO;
 use PDF::DAO::Stream;
+use PDF::DAO::Tie::Hash;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
 # See [PDF 1.7 Section 3.4.6 Object Streams]
-class PDF::DAO::Type::ObjStm
-    is PDF::DAO::Stream {
+role PDF::DAO::Type::ObjStm
+    is PDF::DAO::Stream
+    does PDF::DAO::Tie::Hash {
 
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
