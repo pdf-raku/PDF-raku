@@ -6,6 +6,45 @@ class PDF::DAO::DateString
     does PDF::DAO
     is DateTime {
 
+    use PDF::DAO::Util :date-time-formatter;
+    BEGIN our &formatter = &date-time-formatter;
+
+    multi method new(Str $pdf-date!) {
+	constant DateRx = rx/^ 'D:'? $<year>=\d**4 [$<dd>=\d**2]**0..5
+	    [ $<tz-sign>=< + - Z > $<tz-hour>=\d**2 \' $<tz-min>=\d**2 \']? /;
+
+	$pdf-date ~~ DateRx
+	    or die "Date $pdf-date not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
+
+        my UInt $year  = +$<year>;
+        my UInt $month = +( @<dd>[0] // 1 );
+        my UInt $day   = +( @<dd>[1] // 1 );
+        my UInt $hour  = +( @<dd>[2] // 0 );
+        my UInt $min   = +( @<dd>[3] // 0 );
+        my UInt $sec   = +( @<dd>[4] // 0 );
+        my Str $tz = $<tz-sign> && $<tz-sign> ne 'Z'
+            ?? sprintf '%s%02d%02d', $<tz-sign>, $<tz-hour>, $<tz-min>
+	    !! '';
+
+        my Str $iso-date = sprintf "%04d-%02d-%02dT%02d:%02d:%02d%s", $year, $month, $day, $hour, $min, $sec, $tz;
+
+	nextwith( $iso-date, :&formatter );
+    }
+
+    multi method new(DateTime $dt!) {
+        my %args = <year month day hour minute second timezone>.map({ $_ => $dt."$_"() });
+        $.new( |%args, :&formatter);
+    }
+
+    multi method new(UInt :$year!, |c) {
+        callwith( :&formatter, :$year, |c);
+    }
+
+    method content {
+	my Str $literal = formatter( self );
+	:$literal;
+    }
+
 =begin pod
 
 see [PDF 1.7 Section 3.8.3 Dates ]
@@ -29,35 +68,4 @@ The apostrophe character (') after HH and mm is part of the syntax. All fields a
 
 =end pod
 
-    use PDF::DAO::Util :date-time-formatter;
-    BEGIN our &formatter = &date-time-formatter;
-
-    multi method new(Str $pdf-date!) {
-	my \DateRx = rx/^ 'D:'? $<year>=\d**4 [$<month>=\d**2 [$<day>=\d**2 [$<hour>=\d**2 [$<min>=\d**2 [$<sec>=\d**2]? ]? ]? ]? ]?
-			      [ $<tz-sign>=< + - Z > $<tz-hour>=\d**2 \' $<tz-min>=\d**2 \']? /;
-
-	$pdf-date ~~ DateRx
-	    or die "Date $pdf-date not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
-
-	my Str $iso-date = sprintf("%04d-%02d-%02dT%02d:%02d:%02d", $<year>, $<month>//1, $<day>//1, $<hour>//0, $<min>//0, $<sec>//0 )
-	    ~ (!$<tz-sign> || $<tz-sign> eq 'Z'
-	       ?? ''
-	       !! sprintf '%s%02d%02d', $<tz-sign>//'+', $<tz-hour>//0, $<tz-min>//0 );
-
-	nextwith( $iso-date, :&formatter );
-    }
-
-    multi method new(DateTime $dt!) {
-        my %args = <year month day hour minute second timezone>.map({ $_ => $dt."$_"() });
-        $.new( |%args, :&formatter);
-    }
-
-    multi method new(UInt :$year!, |c) {
-        callwith( :&formatter, :$year, |c);
-    }
-
-    method content {
-	my Str $literal = formatter( self );
-	:$literal;
-    }
 }
