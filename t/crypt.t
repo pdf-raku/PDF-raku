@@ -14,10 +14,10 @@ my $test1 = do {
       :O("É\$\"h\x[7f]¬îhn7?\x[10]µÇÐG8\x[5]1R÷âî0á\x[1c]iìD\%v«"),
     };
 
-    my $stream = "åFðë)\x[8a]ø\x[6]}ðFî\x[3]\x[1a]7«Á\x[8b]7\"?^/l\x[a0]Áºqíp\x[13]H\x[3]7êß?ê\x[17]ÒGÉi/¡\x[89]";
+    my $crypt = "åFðë)\x[8a]ø\x[6]}ðFî\x[3]\x[1a]7«Á\x[8b]7\"?^/l\x[a0]Áºqíp\x[13]H\x[3]7êß?ê\x[17]ÒGÉi/¡\x[89]";
     my Str $doc-id = "0\x[8a]Ú\x[1a]D\x[7f]'Ë7äþÙÌ\x[94]»§";
     
-    { :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass(''), :owner-pass<owner>, :$stream }
+    { :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass(''), :owner-pass<owner>, :$crypt }
 }
 
 my $test2 = do {
@@ -32,10 +32,10 @@ my $test2 = do {
 	:R(3),
     };
 
-    my $stream = "(\x[c2]B<r\x[97]\x[b3]\x[17]\x[fd]A@/Ps\x[1b]\x[c6]t\x[f2]\x[f2]\x[06]O\x[fb]\x[a2]\x[ed]3\x[10]M\x[12]\x[16]_W\n\x[99]\x[1d]\x[85]\x[fa]\x[b5]\x[fb]\x[b4]*\x[ff]V\x[a2]\x[93]3\x[9f]";
+    my $crypt = "(\x[c2]B<r\x[97]\x[b3]\x[17]\x[fd]A@/Ps\x[1b]\x[c6]t\x[f2]\x[f2]\x[06]O\x[fb]\x[a2]\x[ed]3\x[10]M\x[12]\x[16]_W\n\x[99]\x[1d]\x[85]\x[fa]\x[b5]\x[fb]\x[b4]*\x[ff]V\x[a2]\x[93]3\x[9f]";
     my Str $doc-id = "0Þ\x[14]}÷9´ªik`\x[90]g=\x[90]à";
     
-    { :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass<test2>, :owner-pass<test1>, :$stream }
+    { :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass<test2>, :owner-pass<test1>, :$crypt }
 }
 
 for $test1,
@@ -44,7 +44,7 @@ for $test1,
     my $doc = PDF::DAO::Doc.new: .<doc>;
     my $owner-pass  = .<owner-pass>;
     my $user-pass   = .<user-pass>;
-    my $cipher-text = .<stream>;
+    my $cipher-text = .<crypt>;
     my $crypt-delegate = PDF::Storage::Crypt.delegate-class( :$doc );
 
     isa-ok $crypt-delegate, ::('PDF::Storage::Crypt::RC4'), "/V {$doc.Encrypt.V}.{$doc.Encrypt.R} crypt delegate";
