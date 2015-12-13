@@ -41,8 +41,7 @@ class PDF::Storage::Crypt::RC4
 	@!doc-id = $doc.ID[0].ords;
 	@!O = $encrypt.O.ords;
 	@!U = $encrypt.U.ords;
-	my uint32 @p32 = [ $encrypt.P, ];
-	my uint8 @p8 = resample(@p32, 32, 8).reverse;
+	my uint8 @p8 = resample([ $encrypt.P, ], 32, 8).reverse;
 	@!P = @p8;
 	$!R = $encrypt.R;
 	$!EncryptMetadata = $encrypt.EncryptMetadata // False;
@@ -100,9 +99,9 @@ class PDF::Storage::Crypt::RC4
 	    $reps = 51;
 	}
 
-	my $key = [ @input ];
+	my $key = @input;
 
-	for 1..$reps {
+	for 1 .. $reps {
 	    $key = Digest::MD5::md5($key);
 	    $key = $key.subbuf(0, $n)
 		unless +$key <= $n;
@@ -151,7 +150,7 @@ class PDF::Storage::Crypt::RC4
 	    $reps = 51;
 	}
 
-	my $key = [ @input ];
+	my $key = @input;
 
 	for 1..$reps {
 	    $key = Digest::MD5::md5($key);
