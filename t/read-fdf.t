@@ -3,7 +3,6 @@ use Test;
 
 use PDF::Reader;
 use PDF::DAO::Dict;
-use PDF::DAO::Stream;
 
 my $pdf-in = PDF::Reader.new();
 

@@ -7,7 +7,6 @@ use PDF::Storage::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::DAO::Stream;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
