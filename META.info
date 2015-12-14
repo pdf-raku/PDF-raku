@@ -1,4 +1,4 @@
-{
+{   "perl"        : "v6",
     "name"        : "PDF",
     "version"     : "0.01.1",
     "description" : "Low level tools for reading, writing and manipulation of PDF files",
