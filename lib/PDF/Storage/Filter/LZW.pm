@@ -15,7 +15,7 @@ class PDF::Storage::Filter::LZW
     multi method encode(Blob $buf is copy, Bool :$eod, :$Predictor, |c --> Blob) {
 
         my $dict-size = 256;
-        my %dictionary = (.chr => .chr for ^$dict-size);
+        my %dictionary = (^$dict-size).map: { .chr => .chr };
 
         $buf = $.prediction( $buf, :$Predictor, |c )
             if $Predictor;
