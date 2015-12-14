@@ -124,6 +124,7 @@ role PDF::DAO::Tie {
 
     multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {
 	my $type = $att.type;
+	my Bool $gen-accessor = $att.has_accessor;
 	$att does TiedEntry;
 	my $name = $att.name;
 	$att.tied.accessor-name = $name.subst(/^(\$|\@|\%)'!'/, '');
@@ -145,12 +146,13 @@ role PDF::DAO::Tie {
 	    }
 	}
 	$att.tied.type = $type;
-	$att.tied.gen-accessor = $att.has-accessor;
+	$att.tied.gen-accessor = $gen-accessor;
 	process-args($entry, $att);
     }
 
     multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
 	my $type = $att.type;
+	my Bool $gen-accessor = $att.has_accessor;
 	$att does TiedIndex;
 	$att.tied.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
 	my $sigil = $0 && ~ $0;
@@ -159,7 +161,7 @@ role PDF::DAO::Tie {
 	    unless @args && @args[0] ~~ UInt;
 	$att.index = @args.shift;
 	$att.tied.type = $type;
-	$att.tied.gen-accessor = $att.has-accessor;
+	$att.tied.gen-accessor = $gen-accessor;
 	process-args(@args, $att);
     }
 
