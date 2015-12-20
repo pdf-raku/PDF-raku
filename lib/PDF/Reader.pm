@@ -498,8 +498,8 @@ class PDF::Reader {
         temp $actions.get-offsets = True;
         $grammar.parse(~$.input, :$actions)
             or die "unable to parse document";
-        my $ast = $/.ast;
-        my Array $body = $ast<body>;
+        my %ast = $/.ast;
+        my Array $body = %ast<body>;
 
         for $body.list.reverse {
 
@@ -561,7 +561,7 @@ class PDF::Reader {
             }
         }
 
-        $ast;
+        %ast;
     }
 
     #| - sift /XRef objects

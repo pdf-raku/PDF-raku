@@ -100,6 +100,66 @@ role PDF::DAO::Tie {
 	multi method apply($lval is copy ) is default {
 	    $.apply($lval);
 	}
+
+        multi method type-check($val is copy, :$*key) is rw {
+	    $.type-check($val, $.type)
+	}
+
+	multi method type-check($val is copy, Positional[Mu] $type) {
+	    if $val.defined {
+		$.type-check($val, Array);
+		die "array not of length: {$.length}"
+		    if $.length && +$val != $.length;
+		my $of-type = $type.of;
+		$.type-check($_, $of-type)
+		    for $val.values;
+	    }
+	    else {
+		die "missing required field: $*key"
+		    if $.is-required;
+		$val = Nil;
+	    }
+	    $val;
+	}
+
+	multi method type-check($val is copy, Associative[Mu] $type) is rw {
+	    if $val.defined {
+		$.type-check($val, Hash);
+		my $of-type = $type.of;
+		$.type-check($_, $of-type)
+		    for $val.values;
+	    }
+	    else {
+		die "missing required field: $*key"
+		    if $.is-required;
+		$val = Nil
+	    }
+	    $val;
+	}
+
+	#| untyped attribute
+	multi method type-check($val is copy, Mu $type) is rw {
+	    if !$val.defined {
+		die "missing required field: $*key"
+		    if $.is-required;
+		$val = Nil
+	    }
+	    $val
+	}
+	#| type attribute
+	multi method type-check($val is copy, $type = $.type) is rw is default {
+	    if $val.defined {
+		die "{$val.WHAT.^name}.$*key: {$val.WHAT.gist} - not of type: {$type.gist}"
+		    unless $val ~~ $type || $val ~~ Pair;	#| undereferenced - don't know it's type yet
+	    }
+	    else {
+	      die "{$val.WHAT.^name}: missing required field: $*key"
+		  if $.is-required;
+	      $val = Nil;
+	    }
+	    $val;
+	}
+
     }
 
     multi sub process-args(True, Attribute $att) {}
@@ -110,13 +170,14 @@ role PDF::DAO::Tie {
 		warn "ignoring entry trait  argument: {$arg.perl}";
 		next;
 	    }
+	    my $val = $arg.value;
 	    given $arg.key {
-		when 'alias'    { $att.tied.aliases      = $arg.value.list }
-		when 'inherit'  { $att.tied.is-inherited = $arg.value }
-		when 'required' { $att.tied.is-required  = $arg.value }
-		when 'indirect' { $att.tied.is-indirect  = $arg.value }
-		when 'coerce'   { $att.tied.coerce = $arg.value }
-                when 'len'      { $att.tied.length = $arg.value }
+		when 'alias'    { $att.tied.aliases      = $val.list }
+		when 'inherit'  { $att.tied.is-inherited = $val }
+		when 'required' { $att.tied.is-required  = $val }
+		when 'indirect' { $att.tied.is-indirect  = $val }
+		when 'coerce'   { $att.tied.coerce       = $val }
+                when 'len'      { $att.tied.length       = $val }
 		default         { warn "ignoring entry attribute: $_" }
 	    }
 	}

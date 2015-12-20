@@ -10,59 +10,6 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
 	#| array of type, declared with '@' sigil, e.g.
         #| has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
-	multi sub type-check($val, Positional[Mu] $type) {
-	    type-check($val, Array);
-	    if $val.defined {
-		die "array not of length: {$att.tied.length}"
-		    if $att.tied.length && +$val != $att.tied.length;
-		my $of-type = $type.of;
-		type-check($_, $of-type)
-		for $val.values;
-	    }
-	    else {
-		die "missing required field: $key"
-		    if $att.tied.is-required;
-		return Nil
-	    }
-	    $val;
-	}
-
-	multi sub type-check($val, Associative[Mu] $type) {
-	    type-check($val, Hash);
-	    if $val.defined {
-		my $of-type = $type.of;
-		type-check($_, $of-type)
-		for $val.values;
-	    }
-	    else {
-		die "missing required field: $key"
-		    if $att.tied.is-required;
-		return Nil
-	    }
-	    $val;
-	}
-
-	#| untyped attribute
-	multi sub type-check($val is copy, Mu $type) is rw {
-	    if !$val.defined {
-		die "missing required field: $key"
-		    if $att.tied.is-required;
-		return Nil
-	    }
-	    $val
-	}
-	#| type attribute
-	multi sub type-check($val is copy, $type) is rw is default {
-	    if !$val.defined {
-	      die "{$object.WHAT.^name}: missing required field: $key"
-		  if $att.tied.is-required;
-	      return Nil
-	  }
-	  die "{$object.WHAT.^name}.$key: {$val.WHAT.gist} - not of type: {$type.gist}"
-	      unless $val ~~ $type
-	      || $val ~~ Pair;	#| undereferenced - don't know it's type yet
-	  $val;
-	}
 
 	#| resolve a heritable property by dereferencing /Parent entries
 	proto sub inehrit(Hash $, Str $, Int :$hops) {*}
@@ -81,12 +28,12 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 		my $val := $att.tied.is-inherited
 		    ?? inherit($object, $key)
 		    !! $object{$key};
-		type-check($val, $att.tied.type);
+		$att.tied.type-check($val, :$key);
 	    },
 	    STORE => sub ($, $val is copy) {
 		my $lval = $object.lvalue($val);
 		$att.apply($lval);
-		$object{$key} := type-check($lval, $att.tied.type);
+		$object{$key} := $att.tied.type-check($lval, :$key);
 	    });
     }
 

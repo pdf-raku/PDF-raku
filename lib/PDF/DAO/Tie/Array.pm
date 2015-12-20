@@ -6,29 +6,17 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 
     has Attribute @.index is rw;    #| for typed indices
 
-    sub tie-att-array($object, UInt $idx, Attribute $att) is rw {
-
-	sub type-check($val is copy, Mu $type) is rw is default {
-	  if !$val.defined {
-	      die "{$object.WHAT.^name}: missing required index: $idx"
-		  if $att.tied.is-required;
-	      return Nil
-	  }
-	  die "{$object.WHAT.^name}.[$idx]: {$val.perl} - not of type: {$type.gist}"
-	      unless $val ~~ $type
-	      || $val ~~ Pair;	#| undereferenced - don't know it's type yet
-	  $val;
-	}
+    sub tie-att-array($object, UInt $key, Attribute $att) is rw {
 
 	Proxy.new(
 	    FETCH => sub ($) {
-		my $val := $object[$idx];
-		type-check($val, $att.tied.type);
+		my $val := $object[$key];
+		$att.tied.type-check($val, :$key);
 	    },
 	    STORE => sub ($, $val is copy) {
 		my $lval = $object.lvalue($val);
 		$att.apply($lval);
-		$object[$idx] := type-check($lval, $att.tied.type);
+		$object[$key] := $att.tied.type-check($lval, :$key);
 	    });
     }
 
