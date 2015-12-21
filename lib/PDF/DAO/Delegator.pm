@@ -2,7 +2,6 @@ use v6;
 
 class PDF::DAO::Delegator {
 
-    use PDF::DAO;
     use PDF::DAO::Util :from-ast;
 
     use PDF::DAO::Array;

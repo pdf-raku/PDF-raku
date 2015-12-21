@@ -31,7 +31,7 @@ role PDF::Storage::Filter::Predictors {
             }
         }
 
-        return buf8.new: resample( @output, $BitsPerComponent, 8);
+	buf8.new: resample( @output, $BitsPerComponent, 8);
     }
 
     multi method prediction($encoded where Blob | Buf,
@@ -77,7 +77,8 @@ role PDF::Storage::Filter::Predictors {
                 @output.push: ($encoded[$ptr++] - $nearest) % 256;
             }
         }
-        return buf8.new: @output;
+
+        buf8.new: @output;
     }
 
     # prediction filters, see PDF 1.7 sepc table 3.8
@@ -115,11 +116,11 @@ role PDF::Storage::Filter::Predictors {
             }
         }
 
-        return buf8.new: resample( @output, $BitsPerComponent, 8);
+        buf8.new: resample( @output, $BitsPerComponent, 8);
     }
 
-    multi method post-prediction($decoded where Blob | Buf,  #| input stream
-                                 UInt :$Predictor! where { $_ >= 10 and $_ <= 15}, #| predictor function
+    multi method post-prediction($decoded,  #| input stream
+                                 UInt :$Predictor! where { 10 <= $_ <= 15}, #| predictor function
                                  UInt :$Columns = 1,          #| number of samples per row
                                  UInt :$Colors = 1,           #| number of colors per sample
                                  UInt :$BitsPerComponent = 8, #| number of bits per color
@@ -199,12 +200,11 @@ role PDF::Storage::Filter::Predictors {
             @up = @out;
             @output.append: @out;
         }
-        return buf8.new: @output;
+
+        buf8.new: @output;
     }
 
-    multi method post-prediction($decoded where Blob | Buf,
-                                 UInt :$Predictor=1, #| predictor function 
-        ) {
+    multi method post-prediction($decoded, UInt :$Predictor = 1, ) is default {
         die "Unknown Flate/LZW predictor function: $Predictor"
             unless $Predictor == 1;
         $decoded;

@@ -30,10 +30,10 @@ my $expected-objstm = [
 is-deeply $objstm, $expected-objstm, 'decoded index as expected';
 my $objstm-recompressed = $ind-obj.object.encode;
 
-my $ast2;
-lives-ok { $ast2 = $ind-obj.ast }, '$.ast - lives';
+my %ast2;
+lives-ok { %ast2 = $ind-obj.ast }, '$.ast - lives';
 
-my $ind-obj2 = PDF::Storage::IndObj.new( |%$ast2 );
+my $ind-obj2 = PDF::Storage::IndObj.new( |%ast2 );
 my $objstm-roundtrip = $ind-obj2.object.decode( $objstm-recompressed );
 
 is-deeply $objstm, $objstm-roundtrip, 'encode/decode round-trip';
