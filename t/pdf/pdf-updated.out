@@ -32,8 +32,7 @@ endobj
 endobj
 5 0 obj <<
   /Length 45
->>
-stream
+>> stream
 BT
 /F1 24 Tf
 100 100 Td (Hello, world!) Tj
@@ -96,8 +95,7 @@ endobj
 endobj
 11 0 obj <<
   /Length 70
->>
-stream
+>> stream
 BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET
 endstream
 endobj

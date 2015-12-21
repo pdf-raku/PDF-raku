@@ -9,7 +9,7 @@
             "int" : 68
           }
         },
-	"encoded" : "BT\n  /F1 24 Tf  % useless comment\n  100 100 Td (Hello, world!) Tj\nET\ne"
+	"encoded" : "BT\n  /F1 24 Tf  % useless comment\n  100 100 Td (Hello, world!) Tj\nET"
       }
     }
   ]

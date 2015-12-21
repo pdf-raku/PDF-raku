@@ -296,11 +296,7 @@ class PDF::Writer {
         my $data = $stream<encoded> // $.input.stream-data( :$stream ),
         %dict<Length> //= :int($data.codes);
 
-        ($.write( :%dict ),
-         "stream",
-         $data,
-         "endstream",
-        ).join: "\n";
+        [~] $.write( :%dict ), " stream\n", $data, "\nendstream";
     }
 
     multi method write( Hash :$trailer!, :$prev, :$size ) {

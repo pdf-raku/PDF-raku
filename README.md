@@ -147,8 +147,7 @@ endobj
 endobj
 6 0 obj <<
   /Length 46
->>
-stream
+>> stream
 BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
 endstream
 endobj

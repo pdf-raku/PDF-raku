@@ -25,6 +25,7 @@ lives-ok { $doc.update }, 'doc.update lives';
 
 lives-ok {$doc = PDF::DAO::Doc.open: "t/update-encrypted.pdf"}, 'doc re-open lives';
 
+ok $doc<Encrypt><O>, 'document is encrypted';
 is +$doc<Root><Pages><Kids>, 2, 'document has two pages';
 is $doc<Root><Pages><Kids>[1]<Contents>.decoded, $decoded, 'decryption of new content';
 
