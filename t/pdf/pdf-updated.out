@@ -4,19 +4,16 @@
   /Type /Catalog
   /Outlines 2 0 R
   /Pages 3 0 R
->>
-endobj
+>> endobj
 2 0 obj <<
   /Type /Outlines
   /Count 0
->>
-endobj
+>> endobj
 3 0 obj <<
   /Type /Pages
   /Count 1
   /Kids [ 4 0 R ]
->>
-endobj
+>> endobj
 4 0 obj <<
   /Type /Page
   /Contents 5 0 R
@@ -28,8 +25,7 @@ endobj
     >>
     /ProcSet 6 0 R
   >>
->>
-endobj
+>> endobj
 5 0 obj <<
   /Length 45
 >> stream
@@ -37,20 +33,16 @@ BT
 /F1 24 Tf
 100 100 Td (Hello, world!) Tj
 ET
-endstream
-endobj
-6 0 obj [ /PDF /Text ]
-endobj
+endstream endobj
+6 0 obj [ /PDF /Text ] endobj
 7 0 obj <<
   /Type /Font
   /Subtype /Type1
   /BaseFont /Helvetica
   /Encoding /MacRomanEncoding
   /Name /F1
->>
-endobj
-8 0 obj 45
-endobj
+>> endobj
+8 0 obj 45 endobj
 xref
 0 9
 0000000000 65535 f 
@@ -72,14 +64,12 @@ startxref
 %%EOF
 9 0 obj <<
   /ModDate (D:20151226000000Z00'00')
->>
-endobj
+>> endobj
 3 0 obj <<
   /Type /Pages
   /Count 2
   /Kids [ 4 0 R 10 0 R ]
->>
-endobj
+>> endobj
 10 0 obj <<
   /Type /Page
   /Contents 11 0 R
@@ -91,14 +81,12 @@ endobj
     >>
     /ProcSet 6 0 R
   >>
->>
-endobj
+>> endobj
 11 0 obj <<
   /Length 70
 >> stream
 BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET
-endstream
-endobj
+endstream endobj
 xref
 0 1
 0000000000 65535 f 

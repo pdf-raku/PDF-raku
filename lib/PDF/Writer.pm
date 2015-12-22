@@ -222,7 +222,7 @@ class PDF::Writer {
 
         [~] (sprintf('%d %d obj ', $obj-num, $gen-num),
 	     $.write( $object ),
-	     "\nendobj");
+	     " endobj");
     }
 
     multi method write(Array :$ind-ref!) {

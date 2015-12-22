@@ -2,8 +2,7 @@
   /Type /Catalog
   /Outlines 2 0 R
   /Pages 3 0 R
->>
-endobj
+>> endobj
 5 0 obj <<
   /Length 68
 >> stream
@@ -11,15 +10,12 @@ BT
   /F1 24 Tf  % useless comment
   100 100 Td (Hello, world!) Tj
 ET
-endstream
-endobj
+endstream endobj
 3 0 obj <<
   /Type /Outlines
   /Count 0
->>
-endobj
-4 2 obj [ /PDF /Text ]
-endobj
+>> endobj
+4 2 obj [ /PDF /Text ] endobj
 xref
 0 2
 0000000000 65535 f 

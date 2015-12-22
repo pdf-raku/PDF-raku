@@ -4,27 +4,23 @@
   /Type /Catalog
   /Outlines 2 0 R
   /Pages 3 0 R
->>
-endobj
+>> endobj
 2 0 obj <<
   /Type /Outlines
   /Count 0
->>
-endobj
+>> endobj
 3 0 obj <<
   /Type /Pages
   /Count 2
   /Kids [ 4 0 R 9 0 R ]
->>
-endobj
+>> endobj
 4 0 obj <<
   /Type /Page
   /Contents 5 0 R
   /MediaBox [ 0 0 420 595 ]
   /Parent 3 0 R
   /Resources 6 0 R
->>
-endobj
+>> endobj
 5 0 obj <<
   /Length 45
 >> stream
@@ -32,39 +28,33 @@ BT
 /F1 24 Tf
 100 100 Td (Hello, world!) Tj
 ET
-endstream
-endobj
+endstream endobj
 6 0 obj <<
   /Font <<
     /F1 7 0 R
   >>
   /ProcSet 8 0 R
->>
-endobj
+>> endobj
 7 0 obj <<
   /Type /Font
   /Subtype /Type1
   /BaseFont /Helvetica
   /Encoding /MacRomanEncoding
   /Name /F1
->>
-endobj
-8 0 obj [ /PDF /Text ]
-endobj
+>> endobj
+8 0 obj [ /PDF /Text ] endobj
 9 0 obj <<
   /Type /Page
   /Contents 10 0 R
   /MediaBox [ 0 0 420 595 ]
   /Parent 3 0 R
   /Resources 6 0 R
->>
-endobj
+>> endobj
 10 0 obj <<
   /Length 45
 >> stream
 BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET
-endstream
-endobj
+endstream endobj
 xref
 0 11
 0000000000 65535 f 

@@ -113,19 +113,16 @@ PDF files are serialized as numbered indirect objects. The `t/example.pdf` file 
 1 0 obj <<
   /CreationDate (D:20151225000000Z00'00')
   /Producer (PDF-Tools)
->>
-endobj
+>> endobj
 2 0 obj <<
   /Type /Catalog
   /Outlines 3 0 R
   /Pages 4 0 R
->>
-endobj
+>> endobj
 3 0 obj <<
   /Type /Outlines
   /Count 0
->>
-endobj
+>> endobj
 4 0 obj <<
   /Type /Pages
   /Count 1
@@ -137,27 +134,23 @@ endobj
     >>
     /Procset [ /PDF /Text ]
   >>
->>
-endobj
+>> endobj
 5 0 obj <<
   /Type /Page
   /Contents 6 0 R
   /Parent 4 0 R
->>
-endobj
+>> endobj
 6 0 obj <<
   /Length 46
 >> stream
 BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
-endstream
-endobj
+endstream endobj
 7 0 obj <<
   /Type /Font
   /Subtype /Type1
   /BaseFont /Helvetica
   /Encoding /MacRomanEncoding
->>
-endobj
+>> endobj
 xref
 0 8
 0000000000 65535 f 

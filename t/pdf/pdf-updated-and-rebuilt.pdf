@@ -2,25 +2,21 @@
 %¥±ë
 1 0 obj <<
   /ModDate (D:20151226000000Z00'00')
->>
-endobj
+>> endobj
 2 0 obj <<
   /Type /Catalog
   /Outlines 3 0 R
   /Pages 4 0 R
->>
-endobj
+>> endobj
 3 0 obj <<
   /Type /Outlines
   /Count 0
->>
-endobj
+>> endobj
 4 0 obj <<
   /Type /Pages
   /Count 2
   /Kids [ 5 0 R 9 0 R ]
->>
-endobj
+>> endobj
 5 0 obj <<
   /Type /Page
   /Contents 6 0 R
@@ -32,8 +28,7 @@ endobj
     >>
     /ProcSet 8 0 R
   >>
->>
-endobj
+>> endobj
 6 0 obj <<
   /Length 45
 >> stream
@@ -41,18 +36,15 @@ BT
 /F1 24 Tf
 100 100 Td (Hello, world!) Tj
 ET
-endstream
-endobj
+endstream endobj
 7 0 obj <<
   /Type /Font
   /Subtype /Type1
   /BaseFont /Helvetica
   /Encoding /MacRomanEncoding
   /Name /F1
->>
-endobj
-8 0 obj [ /PDF /Text ]
-endobj
+>> endobj
+8 0 obj [ /PDF /Text ] endobj
 9 0 obj <<
   /Type /Page
   /Contents 10 0 R
@@ -64,14 +56,12 @@ endobj
     >>
     /ProcSet 8 0 R
   >>
->>
-endobj
+>> endobj
 10 0 obj <<
   /Length 70
 >> stream
 BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET
-endstream
-endobj
+endstream endobj
 xref
 0 11
 0000000000 65535 f 
