@@ -179,11 +179,10 @@ The PDF is composed of a series indirect objects, for example, the first object 
 1 0 obj <<
   /CreationDate (D:20151225000000Z00'00')
   /Producer (PDF-Tools)
->>
-endobj
+>> endobj
 ```
 
-It's an indirect object with object number `1` and generation number `0`, with a `>>` ... `<<` delimited dictionary containing the
+It's an indirect object with object number `1` and generation number `0`, with a `<<` ... `>>` delimited dictionary containing the
 author and the date that the document was created. This PDF dictionary is roughly equivalent to a Perl 6 hash:
 
 ``` { :CreationDate("D:20151225000000Z00'00'"), :Producer("PDF-Tools"), } ```
