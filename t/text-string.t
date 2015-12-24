@@ -19,6 +19,6 @@ $str = PDF::DAO::TextString.new(:value($encoded));
 
 isa-ok $str, PDF::DAO::TextString;
 is $str, $name, 'simple string value';
-is-deeply $str.content, (:literal($encoded)), 'simple string content';
+is-deeply $str.content, (:literal($expected)), 'simple string content';
 
 done-testing;

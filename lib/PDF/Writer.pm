@@ -31,29 +31,30 @@ class PDF::Writer {
 	('[', $array.map({ $.write($_) }), ']').join: ' ';
     }
 
-    multi method write( Array :$body!, Str :$type='PDF' ) {
+    multi method write( Array :$body!, Bool :$write-xref = True ) {
         temp $!prev = Nil;
-        $body.map({ $.write( :body($_), :$type )}).join: "\n";
+        $body.map({ $.write( :body($_), :$write-xref )}).join: "\n";
     }
 
-    multi method write( Hash :$body!, Str :$type = 'PDF' ) {
-	my Hash @entries;
-	$.build-index( $body, @entries, :$type);
+    multi method write( Hash :$body!,  Bool :$write-xref = True ) {
+	$.write-body( $body, :$write-xref);
     }
 
-    method build-index( Hash $body!, @entries!, Str :$type = 'PDF' --> Str ) {
-        @entries = [{ :type(0), :offset(0), :gen-num(65535), :obj-num(0) }, ];
+    method write-body( Hash $body!, @entries = [], Bool :$write-xref = True --> Str ) {
         my @out;
+	@entries = [{ :type(0), :offset(0), :gen-num(65535), :obj-num(0) }, ];
 
         for $body<objects>.list -> $obj {
 
             if my $ind-obj = $obj<ind-obj> {
-                my UInt $obj-num = $ind-obj[0];
-                my UInt $gen-num = $ind-obj[1];
-
-                @entries.push: { :type(1), :$.offset, :$gen-num, :$obj-num, :$ind-obj };
                 @out.push: $.write( :$ind-obj );
 
+		if $write-xref {
+		    my UInt $obj-num = $ind-obj[0];
+		    my UInt $gen-num = $ind-obj[1];
+
+		    @entries.push( { :type(1), :$.offset, :$gen-num, :$obj-num, :$ind-obj } );
+		}
             }
             elsif my $comment = $obj<comment> {
                 @out.push: $.write( :$comment );
@@ -68,13 +69,7 @@ class PDF::Writer {
         my Hash $trailer = $body<trailer>
             // {};
 
-        if $type eq 'FDF' {
-            # don't write an index
-            @out.push: [~] (
-                $.write( :$trailer ),
-                '%%EOF');
-        }
-        else {
+        if $write-xref {
 
             @entries = @entries.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
@@ -102,6 +97,12 @@ class PDF::Writer {
 
             $!offset += $xref-str.codes;
             $!prev = $startxref;
+        }
+        else {
+            # don't write an index
+            @out.push: [~] (
+                $.write( :$trailer ),
+                '%%EOF');
         }
 
         $!offset += @out[*-1].codes + 2;
@@ -267,7 +268,8 @@ class PDF::Writer {
         $!offset = $header.codes + $comment.codes + 2;  # since format is byte orientated
         # Form Definition Format is normally written without an xref
         my Str $type = $pdf<header><type> // 'PDF';
-        my $body = $.write( :body($pdf<body>), :$type );
+	my Bool $write-xref = $type ne 'FDF';
+        my $body = $.write( :body($pdf<body>), :$write-xref );
         [~] ($header, "\n", $comment, "\n", $body);
     }
 
