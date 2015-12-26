@@ -14,9 +14,9 @@ my $actions = PDF::Grammar::PDF::Actions.new;
 my $input = 't/pdf/ind-obj.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
-my $ast = $/.ast;
+my %ast = $/.ast;
 
-my $ind-obj = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
+my $ind-obj = PDF::Storage::IndObj.new( :$input, |%ast );
 
 my $pdf-out = PDF::Writer.new( :$input );
 
@@ -24,8 +24,8 @@ my $pdf-out = PDF::Writer.new( :$input );
 $input = $pdf-out.write( $ind-obj.ast );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "reparse failed";
-$ast = $/.ast;
+%ast = $/.ast;
 
-my $ind-obj2 = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
+my $ind-obj2 = PDF::Storage::IndObj.new( :$input, |%ast );
 
 is-deeply $ind-obj.object.decoded, $ind-obj2.object.decoded, 'writer round trip';

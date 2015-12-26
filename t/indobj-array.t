@@ -14,8 +14,8 @@ my $actions = PDF::Grammar::PDF::Actions.new;
 my $input = '42 5 obj [0.9505 1.0000 1.0890 [1 2 (abc)]] endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
-my $ast = $/.ast;
-my $ind-obj = PDF::Storage::IndObj.new( |%$ast, :$input );
+my %ast = $/.ast;
+my $ind-obj = PDF::Storage::IndObj.new( |%ast, :$input );
 my $object = $ind-obj.object;
 isa-ok $object, Array;
 is-json-equiv $object, [0.9505e0, 1e0, 1.089e0, [1, 2, "abc"]], '$.content';
@@ -27,7 +27,7 @@ is-json-equiv $content, ( :array[:real(0.9505e0), :real(1e0), :real(1.089e0),
                              :array[:int(1), :int(2), :literal<abc>],
                      ]), '$.content';
 
-is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';
+is-json-equiv $ind-obj.ast, %ast, 'ast regeneration';
 
 use PDF::DAO::Array;
 use PDF::DAO::Tie;

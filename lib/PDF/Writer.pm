@@ -40,21 +40,16 @@ class PDF::Writer {
 	$.write-body( $body, :$write-xref);
     }
 
-    method write-body( Hash $body!, @entries = [], Bool :$write-xref = True --> Str ) {
-        my @out;
-	@entries = [{ :type(0), :offset(0), :gen-num(65535), :obj-num(0) }, ];
-
-        for $body<objects>.list -> $obj {
+    method make-objects( @objects, @out = [], @idx = [] ) {
+        for @objects -> $obj {
 
             if my $ind-obj = $obj<ind-obj> {
                 @out.push: $.write( :$ind-obj );
 
-		if $write-xref {
-		    my UInt $obj-num = $ind-obj[0];
-		    my UInt $gen-num = $ind-obj[1];
+		my UInt $obj-num = $ind-obj[0];
+		my UInt $gen-num = $ind-obj[1];
 
-		    @entries.push( { :type(1), :$.offset, :$gen-num, :$obj-num, :$ind-obj } );
-		}
+		@idx.push: { :type(1), :$.offset, :$gen-num, :$obj-num, :$ind-obj };
             }
             elsif my $comment = $obj<comment> {
                 @out.push: $.write( :$comment );
@@ -65,45 +60,54 @@ class PDF::Writer {
 
             $!offset += @out[*-1].codes + 1;
         }
+	@out;
+    }
 
-        my Hash $trailer = $body<trailer>
-            // {};
+    method make-xref( Hash $trailer, @out, @idx, Bool :$write-xref ) {
 
-        if $write-xref {
+	@idx = @idx.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
-            @entries = @entries.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
+	my Hash @xref;
 
-            my Hash @xref;
+	for @idx {
+	    # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
+	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
+	    my $contigous = +@xref && .<obj-num> && .<obj-num> == $!size;
+	    @xref.push: %( obj-first-num => .<obj-num>, entries => [] )
+		unless $contigous;
+	    @xref[*-1]<entries>.push: $_;
+	    @xref[*-1]<obj-count>++;
+	    $!size = .<obj-num> + 1;
+	}
 
-            for @entries {
-                # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
-                # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
-                my $contigous = +@xref && .<obj-num> && .<obj-num> == $!size;
-                @xref.push: %( obj-first-num => .<obj-num>, entries => [] )
-                    unless $contigous;
-                @xref[*-1]<entries>.push: $_;
-                @xref[*-1]<obj-count>++;
-                $!size = .<obj-num> + 1;
-            }
+	my Str $xref-str = $.write( :@xref );
+	my UInt $startxref = $.offset;
 
-            my Str $xref-str = $.write( :@xref );
-            my UInt $startxref = $.offset;
+	@out.push: [~] (
+	    $xref-str,
+	    $.write( :$trailer, :$!prev, :$!size ),
+	    $.write( :$startxref ),
+	    '%%EOF');
 
-            @out.push: [~] (
-                $xref-str,
-                $.write( :$trailer, :$!prev, :$!size ),
-                $.write( :$startxref ),
-                '%%EOF');
+	$!offset += $xref-str.codes;
+	$!prev = $startxref;
+    }
 
-            $!offset += $xref-str.codes;
-            $!prev = $startxref;
-        }
-        else {
-            # don't write an index
-            @out.push: [~] (
-                $.write( :$trailer ),
-                '%%EOF');
-        }
+    method write-body( Hash $body!, @idx = [], Bool :$write-xref = True --> Str ) {
+        my @out;
+	@idx.unshift: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
+
+	$.make-objects( $body<objects>, @out, @idx );
+
+	my $trailer = $body<trailer> // {};
+
+	if $write-xref {
+	    $.make-xref( $trailer, @out, @idx );
+	}
+	else {
+            # simple trailer, no xref
+            @out.push: [~] ( $.write( :$trailer ), '%%EOF' );
+	}
 
         $!offset += @out[*-1].codes + 2;
 

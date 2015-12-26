@@ -46,7 +46,7 @@ class PDF::Storage::Serializer {
     proto method body(|c --> Array) {*}
 
     #| rebuild document body from root
-    multi method body( PDF::DAO $trailer!, Bool:_ :$*compress) {
+    multi method body( PDF::DAO $trailer!, Bool:_ :$*compress, UInt :$!size = 1) {
 
 	temp $trailer.obj-num = 0;
 	temp $trailer.gen-num = 0;
