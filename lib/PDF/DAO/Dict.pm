@@ -14,7 +14,7 @@ class PDF::DAO::Dict
 
     use PDF::DAO::Util :from-ast, :to-ast-native;
 
-    our %obj-cache = (); #= to catch circular references
+    our %seen = (); #= to catch circular references
 
     multi method new(Hash $dict!, |c) {
 	self.new( :$dict, |c );
@@ -22,9 +22,9 @@ class PDF::DAO::Dict
 
     multi method new(Hash :$dict = {}, *%etc) is default {
         my Str $id = ~$dict.WHICH;
-        my $obj = %obj-cache{$id};
+        my $obj = %seen{$id};
         unless $obj.defined {
-            temp %obj-cache{$id} = $obj = self.bless(|%etc);
+            temp %seen{$id} = $obj = self.bless(|%etc);
 	    $obj.tie-init;
             # this may trigger cascading PDF::DAO::Tie coercians
             # e.g. native Array to PDF::DAO::Array

@@ -1,0 +1,13 @@
+    Release 0.0.3
+    - [PDF::DAO::Util] from-ast() sub now handles cyclical hashes and arrays
+
+    Release 0.0.2
+    - [META.info] Correct PDF::Storage::Filter::Predictors entry
+    - [PDF::Writer]
+      -- improved formatting of PDF output. Reduced number of new-lines in output.
+         --- '>> stream' are now cuddled together on a line
+         --- as are 'endstream endobj'
+      -- added $.make-body and $.make-xref methods
+
+    Release 0.0.1
+    - Initial release

@@ -13,15 +13,27 @@ module PDF::DAO::Util {
     proto sub to-ast-native(|) is export(:to-ast-native) {*};
     multi sub to-ast-native(Int $int!) {:$int}
     multi sub to-ast-native(Numeric $real!) {:$real}
-    multi sub to-ast-native(Hash $_dict!) {
-        my %dict = %( $_dict.pairs.map( -> $kv { $kv.key => to-ast($kv.value) } ) );
-        :%dict;
-    }
-    multi sub to-ast-native(Array $_array!) {
-        my @array = $_array.map({ to-ast( $_ ) });
-        :@array;
-    }
     multi sub to-ast-native(Str $literal!) {:$literal}
+
+    our %seen;
+
+    multi sub to-ast-native(Hash $_dict!) {
+	my Str $id = ~ $_dict.WHICH;
+	my $dict = %seen{$id};
+	unless $dict {
+	    $dict = temp %seen{$id} = %( $_dict.pairs.map( -> $kv { $kv.key => to-ast($kv.value) } ) );
+	}
+	:$dict;
+    }
+
+    multi sub to-ast-native(Array $_array!) {
+	my Str $id = ~ $_array.WHICH;
+	my $array = %seen{$id};
+	unless $array {
+	    $array = temp %seen{$id} = [ $_array.map({ to-ast( $_ ) }) ];
+	}
+        :$array;
+    }
 
     sub date-time-formatter(DateTime $dt) returns Str is export(:date-time-formatter) {
 	my Int $offset-min = $dt.offset div 60;
