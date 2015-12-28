@@ -72,7 +72,7 @@ class PDF::DAO::Doc
 	$type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';
 	self!generate-id( :$type );
 	my $serializer = PDF::Storage::Serializer.new;
-	my $crypt = self.reader.?crypt;
+	my Bool $crypt = ? self.reader.?crypt;
 	$serializer.save-as( $file-name, self, :$type, :$crypt, |c)
     }
 

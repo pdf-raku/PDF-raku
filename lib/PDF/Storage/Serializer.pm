@@ -35,12 +35,12 @@ class PDF::Storage::Serializer {
     multi method analyse( $other! ) is default {
     }
 
-    method !get-trailer(@objects) {
-	my subset TrailerIndObj of Pair where {.key eq 'ind-obj'
+    method !get-root(@objects) {
+	my subset DictIndObj of Pair where {.key eq 'ind-obj'
 					       && .value[2] ~~ Pair
 					       && .value[2].key eq 'dict'}
-	my TrailerIndObj $trailer-ind-obj = @objects.shift; # first object is trailer dict
-	$trailer-ind-obj.value[2]<dict>.list;
+	my DictIndObj $root-ind-obj = @objects.shift; # first object is trailer dict
+	$root-ind-obj.value[2]<dict>;
     }
 
     proto method body(|c --> Array) {*}
@@ -55,7 +55,7 @@ class PDF::Storage::Serializer {
 	@!objects = ();
         $.analyse( $trailer );
         $.freeze( $trailer, :indirect);
-	my %dict = self!get-trailer(@!objects);
+	my %dict = self!get-root(@!objects);
 
         %dict<Size> = :int($.size)
 	    unless $.type eq 'FDF';
@@ -81,8 +81,9 @@ class PDF::Storage::Serializer {
         %!ref-count = ();
 	@!objects = ();
 	my $trailer = $.reader.trailer;
-        temp $trailer.obj-num = 0;
-        temp $trailer.gen-num = 0;
+
+	temp $trailer.obj-num = 0;
+	temp $trailer.gen-num = 0;
 
         my @updated-objects = $.reader.get-updates.list;
 
@@ -95,7 +96,7 @@ class PDF::Storage::Serializer {
 	    $.freeze( $object, :indirect )
 	}
 
-	my %dict = self!get-trailer(@!objects);
+	my %dict = self!get-root(@!objects);
 
         %dict<Prev> = :int($prev);
         %dict<Size> = :int($.size);
@@ -106,7 +107,7 @@ class PDF::Storage::Serializer {
     #| return objects without renumbering existing objects. requires a PDF reader
     multi method body( Bool:_ :$*compress ) is default {
         my @objects = @( $.reader.get-objects );
-	my %dict = self!get-trailer(@objects);
+	my %dict = self!get-root(@objects);
         %dict<Prev>:delete;
         %dict<Size> = :int($.reader.size)
             unless $.type eq 'FDF';
@@ -176,7 +177,7 @@ class PDF::Storage::Serializer {
     #| allow anything else to inline
     multi method is-indirect($) is default                                {False}
 
-    #| prepare and object for output.
+    #| prepare an object for output.
     #| - if already encountered, return an indirect reference
     #| - produce an AST from the object content
     #| - determine if the object is indirect, if so index it,
@@ -204,9 +205,10 @@ class PDF::Storage::Serializer {
 	my $dict;
 
         if $is-stream {
+	    my $encoded = $object.encoded;
             $ind-obj = :stream{
                 :$dict,
-                :encoded($object.encoded),
+                :$encoded,
             };
             $slot := $ind-obj.value<dict>;
         }
@@ -259,9 +261,9 @@ class PDF::Storage::Serializer {
     multi method save-as(Str $file-name!,
 			 PDF::DAO $trailer-dict!,
                          Numeric :$version=1.3,
-                         Str :$!type,     #| e.g. 'PDF', 'FDF;
-                         Bool :$compress,
-			 :$crypt,
+                         Str     :$!type,     #| e.g. 'PDF', 'FDF;
+                         Bool    :$compress,
+			 Bool    :$crypt,
         ) {
 	$!type //= $.reader.?type;
 	$!type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';
