@@ -24,6 +24,9 @@ $doc<Root>[2] := $doc<Root>;
 # cycle back from hash to array
 $doc<Root>[0]<Parent> := $doc<Root>;
 
+my $doc-ast = to-ast($doc);
+is $doc-ast<dict><Root><array>[1]<dict><ID><int>, 2, 'ast dereference';
+
 # our serializer should create indirect refs to resolve the above
 my $body = PDF::Storage::Serializer.new.body( $doc )[0];
 is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';

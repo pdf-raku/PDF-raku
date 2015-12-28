@@ -20,18 +20,24 @@ module PDF::DAO::Util {
     multi sub to-ast-native(Hash $_dict!) {
 	my Str $id = ~ $_dict.WHICH;
 	my $dict = %seen{$id};
-	unless $dict {
-	    $dict = temp %seen{$id} = %( $_dict.pairs.map( -> $kv { $kv.key => to-ast($kv.value) } ) );
+
+	unless $dict.defined {
+	    $dict = temp %seen{$id} = {};
+	    $dict{.key} = to-ast(.value) for $_dict.pairs;
 	}
+
 	:$dict;
     }
 
     multi sub to-ast-native(Array $_array!) {
 	my Str $id = ~ $_array.WHICH;
 	my $array = %seen{$id};
-	unless $array {
-	    $array = temp %seen{$id} = [ $_array.map({ to-ast( $_ ) }) ];
+
+	unless $array.defined {
+	    $array = temp %seen{$id} = [ ];
+	    $array.push( to-ast( $_ ) ) for $_array.values;
 	}
+
         :$array;
     }
 
