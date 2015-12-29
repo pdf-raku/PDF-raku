@@ -112,8 +112,8 @@ class PDF::DAO::Stream
 
     method edit-stream( Str :$prepend = '', Str :$append = '' ) {
         for $prepend, $append {
-            for .codes {
-                die "illegal non-latin hex byte: U+" ~ .base(16)
+            for .ords {
+                die "illegal non-latin hex byte in stream-edit: U+" ~ .base(16)
                     unless 0 <= $_ <= 0xFF;
             }
         }

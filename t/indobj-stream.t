@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 23;
+plan 24;
 
 use PDF::DAO::Stream;
 use PDF::Storage::IndObj;
@@ -25,6 +25,8 @@ is $ind-obj.obj-num, 123, '$.obj-num';
 is $ind-obj.gen-num, 1, '$.gen-num';
 
 stream_tests( $ind-obj.object, 'indirect object' );
+
+dies-ok {$ind-obj.object.edit-stream( :append(0xABC.chr))}, 'illelal character in edit - dies';
 
 $ind-obj.object.edit-stream( :prepend('q '), :append(' Q'));
 is $ind-obj.object.decoded, "q $decoded Q", '.edit';
