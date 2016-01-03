@@ -138,15 +138,18 @@ class PDF::Writer {
     #| BI <dict> - BeginImage
     multi method write-op('BI', $arg = :dict{}) {
         my Hash $entries = $arg<dict>;
-        my @lines = flat 'BI', $entries.pairs.sort.map( {
-            [~] $.write( :name( .key )), ' ', $.write( .value ),
-        });
-        @lines.join: "\n";
+        my @lines;
+	"BI\n" ~
+	  $.indented({
+	      $entries.pairs.sort.map({
+		  [~] $.indent, $.write( :name( .key )), ' ', $.write( .value ),
+	      }).join: "\n"
+	 });
     }
 
     #| ID <bytes> - ImageData
     multi method write-op('ID', $image-data) {
-        ('ID', $image-data<encoded>).join: "\n";
+        "ID\n" ~ $image-data<encoded>;
     }
 
     multi method write-op(Str $op, *@args) is default {
