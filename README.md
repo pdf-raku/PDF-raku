@@ -21,12 +21,12 @@ both under construction for high-level manipulation of PDF and FDF documents.
 
 Classes/roles in this tool-kit include:
 
-- `PDF::Reader` - for indexed random access to PDFs
+- `PDF::Reader` - for indexed random access to PDF files
 - `PDF::Storage::Filter` - a collection of standard PDF decoding and encoding tools for PDF data streams
 - `PDF::Storage::IndObj` - base class for indirect objects
 - `PDF::Storage::Serializer` - data marshalling utilities for the preparation of full or incremental updates
 - `PDF::Storage::Crypt` - decryption / encryption (V 2 & 3 RC4 only at this stage)
-- `PDF::Writer` - for the creation or update of PDFs
+- `PDF::Writer` - for the creation or update of PDF files
 - `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures. Base classes for PDF::DOM
 
 ## Example Usage
@@ -90,7 +90,7 @@ $doc.update;
 
 ## Description
 
-A PDF file consists of data structures, including dictionarys (hashs) arrays, numbers and strings, plus streams
+A PDF file consists of data structures, including dictionaries (hashes) arrays, numbers and strings, plus streams
 for holding data such as images, fonts and general content.
 
 PDF files are also indexed for random access and may also have filters for stream compression and encryption of streams and strings.
@@ -202,7 +202,7 @@ startxref
 %%EOF
 ```
 
-The `>>` ... `<<` delimited section is the trailer dictionary and the main entry point into the document. The entry `/Info 1 0 R`
+The `<<` ... `>>` delimited section is the trailer dictionary and the main entry point into the document. The entry `/Info 1 0 R`
 is an indirect reference to the first object (object number 1, generation 0) described above.
 
 We can quickly put PDF Tools to work using a Perl 6 REPL, to better explore the document:
@@ -242,9 +242,9 @@ BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
 
 The page `/Contents` entry is a PDF stream which contains graphical instructions. In the above example, to output the text `Hello, world!` at coordinates 100, 250.
 
-## Datatypes and Coercian
+## Data-types and Coercion
 
-The `PDF::DAO` namespace provides roles and classes for the representation and manipulation of PDF objects.
+The `PDF::DAO` name-space provides roles and classes for the representation and manipulation of PDF objects.
 
 ```
 use PDF::DAO::Stream;
@@ -301,7 +301,7 @@ my $object2 = PDF::DAO.coerce({ :Type( :name<Pages> ),
                                 :Kids[ :array[ :ind-ref[4, 0] ] ], },
 				:$reader);
 
-# same but with a casting from native typs
+# same but with a casting from native types
 my $object3 = PDF::DAO.coerce({ :Type( :name<Pages> ),
                                 :Count(1),
                                 :Kids[ :ind-ref[4, 0],  ] },
@@ -312,7 +312,7 @@ say '#'~$object2.perl;
 
 A table of Object types and coercements follows:
 
-*AST Tag* | Object Role/Class | *Perl 6 Type Coercian | PDF Example | Description |
+*AST Tag* | Object Role/Class | *Perl 6 Type Coercion | PDF Example | Description |
 --- | --- | --- | --- | --- |
  `array` | PDF::DAO::Array | Array | `[ 1 (foo) /Bar ]` | array objects
 `bool` | PDF::DAO::Bool | Bool | `true`
@@ -354,12 +354,12 @@ small updates to a large existing PDF document.
 - `$doc.save-as("mydoc-2.pdf", :compress, :rebuild)`
 Saves a new document, including any updates. Options:
   - `:compress` - compress objects for minimal size
-  - `:!compress` - uncompress objects for human redability
-  - `:rebuild` - discard any unreferenced objects. reunumber remaining objects. It may be a good idea to rebuild a PDF Document, that's been incrementally updated a number of times.
+  - `:!compress` - uncompress objects for human readability
+  - `:rebuild` - discard any unreferenced objects. renumber remaining objects. It may be a good idea to rebuild a PDF Document, that's been incrementally updated a number of times.
 
 Note that the `:compress` and `:rebuild` options are a trade-off. The document may take longer to save, however file-sizes and the time needed to reopen the document may improve.
 
-- `$doc.save-as("mydoc.json", :compress, :rebuild); my $doc2 = $doc.open("mydoc.json")`
+- `$doc.save-as("mydoc.json", :compress, :rebuild); my $doc2 = $doc.open: "mydoc.json"`
 Documents can also be saved and restored from an intermediate `JSON` representation. This can
 be handy for debugging, analysis and/or ad-hoc patching of PDF files.
 
@@ -379,12 +379,12 @@ use PDF::Reader;
 use PDF::DAO;
 
 my $reader = PDF::Reader.new;
-$reader.open( 't/example.pdf' );
+$reader.open: 't/example.pdf';
 
 # objects can be directly fetched by object-number and generation-number:
 my $page1 = $reader.ind-obj(4, 0).object;
 
-# Hashs and arrays are tied. This is usually more conveniant for navigating
+# Hashes and arrays are tied. This is usually more convenient for navigating
 my $doc = $reader.trailer<Root>;
 $page1 = $doc<Pages><Kids>[0];
 
@@ -429,7 +429,7 @@ In place edits are particularly effective for making small changes to large PDF'
 
 `PDF::DAO` is roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
 
-It's subclasses and used by `PDF::DOM` to build the extensive library of document specific classes in the `PDF::DOM::Type` namespace.
+It's subclasses and used by `PDF::DOM` to build the extensive library of document specific classes in the `PDF::DOM::Type` name-space.
 
 ## Further Reading
 
