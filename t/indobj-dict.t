@@ -83,7 +83,9 @@ isa-ok $cat<Pages><Resources>, Hash, '<Pages><Resources>';
 does-ok $cat.Pages.Resources<ExtGState>, ResourceRole, 'Hash Instance role';
 
 lives-ok { $cat.NeedsRendering = True }, 'valid assignment';
-dies-ok { $cat.NeedsRendering = 42 }, 'typechecking';
+quietly {
+    dies-ok { $cat.NeedsRendering = 42 }, 'typechecking';
+}
 is-json-equiv $cat.NeedsRendering, True, 'typechecking';
 is $cat.Pages.Kids[0]<Type>, 'Page', '.Pages.Kids[0]<Type>';
 does-ok $cat.Pages.Kids[0], KidRole, 'Array Instance role';
