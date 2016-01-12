@@ -2,25 +2,21 @@
 %¥±ë
 1 0 obj <<
   /CreationDate (D:20150905194954Z00'00')
->>
-endobj
+>> endobj
 2 0 obj <<
   /Type /Catalog
   /Outlines 3 0 R
   /Pages 4 0 R
->>
-endobj
+>> endobj
 3 0 obj <<
   /Type /Outlines
   /Count 0
->>
-endobj
+>> endobj
 4 0 obj <<
   /Type /Pages
   /Count 1
   /Kids [ 5 0 R ]
->>
-endobj
+>> endobj
 5 0 obj <<
   /Type /Page
   /Contents 6 0 R
@@ -32,23 +28,19 @@ endobj
     >>
     /Procset [ /PDF /Text ]
   >>
->>
-endobj
+>> endobj
 6 0 obj <<
   /Length 46
->>
-stream
+>> stream
 BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
-endstream
-endobj
+endstream endobj
 7 0 obj <<
   /Type /Font
   /Subtype /Type1
   /BaseFont /Helvetica
   /Encoding /MacRomanEncoding
   /Name /F1
->>
-endobj
+>> endobj
 xref
 0 8
 0000000000 65535 f 
