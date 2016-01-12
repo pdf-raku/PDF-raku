@@ -16,7 +16,7 @@ It does not understand logical PDF document structure. It is however possible to
 perform simple edits by direct manipulation of PDF data. You will need some knowledge of how PDF documents are
 structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 
-<a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> and <a href="https://github.com/p6-pdf/perl6-PDF-FDF">PDF::FDF</a> are
+<a href="https://github.com/p6-pdf/perl6-PDF-Doc">PDF::Doc</a> and <a href="https://github.com/p6-pdf/perl6-PDF-FDF">PDF::FDF</a> are
 both under construction for high-level manipulation of PDF and FDF documents.
 
 Classes/roles in this tool-kit include:
@@ -27,7 +27,7 @@ Classes/roles in this tool-kit include:
 - `PDF::Storage::Serializer` - data marshalling utilities for the preparation of full or incremental updates
 - `PDF::Storage::Crypt` - decryption / encryption (V 2 & 3 RC4 only at this stage)
 - `PDF::Writer` - for the creation or update of PDF files
-- `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures. Base classes for PDF::DOM
+- `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures. Base classes for PDF::Doc and PDF::FDF
 
 ## Example Usage
 
@@ -102,7 +102,7 @@ This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/d
 
 `PDF::DAO` provides a set of class builder utilities to enable higher level classes for general application development.
 
-This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-DOM">PDF::DOM</a> (under construction), which contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
+This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-Doc">PDF::Doc</a> (under construction), which contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
 
 ## The Basics
 
@@ -429,7 +429,7 @@ In place edits are particularly effective for making small changes to large PDF'
 
 `PDF::DAO` is roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
 
-It's subclasses and used by `PDF::DOM` to build the extensive library of document specific classes in the `PDF::DOM::Type` name-space.
+It's subclasses and used by `PDF::Doc` to build the extensive library of document specific classes in the `PDF::Doc::Type` name-space.
 
 ## Further Reading
 
@@ -439,5 +439,5 @@ It's subclasses and used by `PDF::DOM` to build the extensive library of documen
 ## See also
 
 - [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing
-- [PDF::DOM](https://github.com/p6-pdf/perl6-PDF-DOM) - PDF Document Object Model (under construction)
+- [PDF::Doc](https://github.com/p6-pdf/perl6-PDF-Doc) - PDF Document Object Model (under construction)
 

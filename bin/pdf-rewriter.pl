@@ -1,6 +1,4 @@
 #!/usr/bin/env perl6
-use v6;
-
 # Simple round trip read and rewrite a PDF
 use v6;
 use PDF::Reader;
@@ -15,11 +13,11 @@ sub MAIN (
     Bool :$rebuild    = False,   #| rebuild object tree (renumber, garbage collect and deduplicate objects)
     Bool :$compress   = False,   #| compress streams
     Bool :$uncompress = False,   #| uncompress streams
-    Bool :$dom = False,          #| require PDF::DOM
+    Bool :$doc = False,          #| require PDF::Doc
     ) {
 
-    if $dom {
-	require ::('PDF::DOM')
+    if $doc {
+	require ::('PDF::Doc')
     }
 
     die "conflicting arguments: --compress --uncompress"
