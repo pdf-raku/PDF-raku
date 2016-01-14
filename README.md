@@ -419,11 +419,16 @@ my $encoded = PDF::Storage::Filter.encode( :dict{ :Filter<RunLengthDecode> },
 say $encoded.codes;
  ```
 
-### Serialization
+### Encryption
 
-PDF::Storage::Serializer constructs AST for output by PDF::Writer. It can create full PDF bodies, or just changes for in-place incremental update to a PDF.
+PDF::Tools supports basic RC4 encryption (revisions /R 2 - 4 and versions /V 1 - 2 of PDF Encryption).
 
-In place edits are particularly effective for making small changes to large PDF's, when we can avoid loading large unmodified portions of the PDF.
+To open an encrypt PDF document, specify either the user or owner password: `PDF::DAO::Doc.open( "enc.pdf", :password<ssh!>)`
+
+A document can be encrypted using the `encyrpt` method: `$doc.encrypt( :owner-pass<ssh1>, :user-pass<abc> )`
+
+Note that it's quite commont to leave the user-password blank. This indicates that the document is readable by anyone, but has restrictions
+on update, printing or copying of the PDF.
 
 ## Data Access Objects
 

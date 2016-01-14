@@ -8,6 +8,7 @@ class PDF::DAO::Doc
     is PDF::DAO::Dict {
 
     use PDF::Storage::Serializer;
+    use PDF::Storage::Crypt;
     use PDF::Writer;
     use PDF::DAO::Tie;
     use PDF::DAO::Type::Encrypt :PermissionsFlag;
@@ -22,6 +23,7 @@ class PDF::DAO::Doc
     has Str @.ID is entry(:len(2));  #| (Optional, but strongly recommended; PDF 1.1) An array of two byte-strings constituting a file identifier
 
     has Hash $.Root is entry( :indirect );  #| generic document content, as defined by subclassee, e.g.  PDF::DOM or PDF::FDF
+    has PDF::Storage::Crypt $.crypt is rw;
 
     #| open the input file-name or path
     method open($spec, |c) {
@@ -30,7 +32,15 @@ class PDF::DAO::Doc
         my $doc = self.new( :$reader );
         $reader.install-trailer( $doc );
         $reader.open($spec, |c);
+        $doc.crypt = $reader.crypt
+            if $reader.crypt;
         $doc;
+    }
+
+    method encrypt( Str :$owner-pass!, Str :$user-pass = '', |c ) {
+        # only RC4 ATM
+        require ::('PDF::Storage::Crypt::RC4');
+        $!crypt = ::('PDF::Storage::Crypt::RC4').new( :doc(self), :$owner-pass, :$user-pass, |c);
     }
 
     #| perform an incremental save back to the opened input file
@@ -43,15 +53,15 @@ class PDF::DAO::Doc
 	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
 
 	my $type = $reader.type;
-	self!generate-id( :$type );
+	self.generate-id( :$type );
 
         # todo we should be able to leave the input file open and append to it
         my Numeric $offset = $reader.input.codes + 1;
 
         my $serializer = PDF::Storage::Serializer.new( :$reader, :$type );
         my Array $body = $serializer.body( :updates, :$compress );
-	$reader.crypt.crypt-ast('body', $body)
-	    if $reader.crypt;
+	$!crypt.crypt-ast('body', $body)
+	    if $!crypt;
 
 	my Hash $trailer = $body[0]<trailer><dict>;
 	my UInt $prev = $trailer<Prev>.value;
@@ -70,17 +80,16 @@ class PDF::DAO::Doc
     method save-as(Str $file-name!, |c) {
 	my $type = $.reader.?type;
 	$type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';
-	self!generate-id( :$type );
+	self.generate-id( :$type );
 	my $serializer = PDF::Storage::Serializer.new;
-	my Bool $crypt = ? self.reader.?crypt;
-	$serializer.save-as( $file-name, self, :$type, :$crypt, |c)
+	$serializer.save-as( $file-name, self, :$type, :$!crypt, |c)
     }
 
     # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )
     method permitted(UInt $flag --> Bool) {
 
 	return True
-	    if self.reader.?is-owner;
+	    if $!crypt.?is-owner;
 
 	my $perms = self.Encrypt.?P
 	    // return True;
@@ -89,7 +98,7 @@ class PDF::DAO::Doc
     }
 
     #| Generate a new document ID.  
-    method !generate-id(Str :$type) {
+    method generate-id(Str :$type = 'PDF') {
 
 	my $obj = $type eq 'FDF' ?? self<Root><FDF> !! self;
 

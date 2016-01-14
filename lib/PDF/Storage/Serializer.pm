@@ -263,7 +263,7 @@ class PDF::Storage::Serializer {
                          Numeric :$version=1.3,
                          Str     :$!type,     #| e.g. 'PDF', 'FDF;
                          Bool    :$compress,
-			 Bool    :$crypt,
+			         :$crypt,
         ) {
 	$!type //= $.reader.?type;
 	$!type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';

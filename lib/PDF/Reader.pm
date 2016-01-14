@@ -63,7 +63,9 @@ class PDF::Reader {
 		my UInt $gen-num = +.key;
 		my Hash $idx = .value;
 
-		next if $obj-num == $enc.obj-num
+                # skip the encryption dictionary, if it's an indirect object
+		next if $enc.obj-num
+                    && $obj-num == $enc.obj-num
 		    && $gen-num == $enc.gen-num;
 
 		if my $ind-obj := $idx<ind-obj> {
