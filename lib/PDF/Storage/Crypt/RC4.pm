@@ -18,7 +18,7 @@ class PDF::Storage::Crypt::RC4
     has UInt @!O;  #| computed owner password
     has UInt @!U;  #| computed user password
     has UInt $!R;  #| encryption revision
-    has UInt @!P;
+    has UInt @!P;  #| permissions, unpacked as uint8
     has Bool $!EncryptMetadata;
 
     # Taken from [PDF 1.7 Algorithm 3.2 - Standard Padding string]
@@ -44,7 +44,6 @@ class PDF::Storage::Crypt::RC4
                        Str  :$user-pass = '',
                        UInt :$!R = 3,  #| revision (2 is faster)
                        UInt :$V = 2,
-                       Str  :$Filter = 'Standard',
                        Bool :$!EncryptMetadata = False,
                        UInt :$Length = $V > 1 ?? 128 !! 40,
                        Int  :$P = -64,  #| permissions mask
@@ -75,11 +74,12 @@ class PDF::Storage::Crypt::RC4
         my $key;
         $!auth = self!compute-user( @user-pass, :$key );
 	@!U = $!auth.list;
+        $!is-owner = True;
 
         my $O = hex-string => [~] @!O.map: *.chr;
         my $U = hex-string => [~] @!U.map: *.chr;
 
-        my %dict = :$O, :$U, :$P, :$!R, :$V, :$Filter;
+        my %dict = :$O, :$U, :$P, :$!R, :$V, :Filter<Standard>;
 
         %dict<Length> = $Length unless $V == 1;
         %dict<EncryptMetadata> = True
@@ -89,8 +89,6 @@ class PDF::Storage::Crypt::RC4
 
         # make it indirect. keep the trailer size to a minumum
         $enc.is-indirect = True;
-
-        $enc;
     }
 
     #| open a previously encrypted document
@@ -235,8 +233,7 @@ class PDF::Storage::Crypt::RC4
 	    @owner = Crypt::RC4::RC4($key, @owner);
 	}
 	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
-	    @owner = self!do-iter-crypt($key, @owner,
-                                    :steps(0..19) );
+	    @owner = self!do-iter-crypt($key, @owner, :steps(0..19) );
 	}
 
         @owner;
@@ -250,8 +247,7 @@ class PDF::Storage::Crypt::RC4
 	    $user-pass = Crypt::RC4::RC4($key, $user-pass);
 	}
 	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
-	    $user-pass = self!do-iter-crypt($key, $user-pass.list,
-					    :steps(19, 18 ... 0) );
+	    $user-pass = self!do-iter-crypt($key, $user-pass, :steps(19, 18 ... 0) );
 	}
 	$!is-owner = True;
 	self!auth-user-pass($user-pass.list);          # 3
