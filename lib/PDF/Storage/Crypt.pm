@@ -4,11 +4,10 @@ class PDF::Storage::Crypt {
 
     method delegate-class( Hash :$doc! ) {
 	return Nil
-	    unless ($doc<Encrypt>:exists)
-	    && ($doc<Encrypt><V>:exists);
+	    unless $doc<Encrypt>:exists;
 
-	my $class = do given $doc.Encrypt.V {
-	    when 1 | 2 | 3 {
+	my $class = do given $doc.Encrypt.R {
+	    when 1..4 {
 		require ::('PDF::Storage::Crypt::RC4');
 		::('PDF::Storage::Crypt::RC4');
 	    }

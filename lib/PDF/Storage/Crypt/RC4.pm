@@ -11,15 +11,15 @@ class PDF::Storage::Crypt::RC4
     use Digest::MD5;
     use Crypt::RC4;
 
-    has UInt $!key-bytes;
-    has $!auth;
-    has Bool $.is-owner is rw;
+    has $!key;     #| encryption key
+    has UInt $!key-bytes; #| encryption key length
     has UInt @!doc-id;
     has UInt @!O;  #| computed owner password
     has UInt @!U;  #| computed user password
     has UInt $!R;  #| encryption revision
     has UInt @!P;  #| permissions, unpacked as uint8
     has Bool $!EncryptMetadata;
+    has Bool $.is-owner is rw;
 
     # Taken from [PDF 1.7 Algorithm 3.2 - Standard Padding string]
     BEGIN my uint8 @Padding = 
@@ -71,9 +71,7 @@ class PDF::Storage::Crypt::RC4
 
 	@!O = self!compute-owner( @owner-pass, @user-pass );
 
-        my $key;
-        $!auth = self!compute-user( @user-pass, :$key );
-	@!U = $!auth.list;
+        @!U = self!compute-user( @user-pass, :$!key );
         $!is-owner = True;
 
         my $O = hex-string => [~] @!O.map: *.chr;
@@ -256,7 +254,7 @@ class PDF::Storage::Crypt::RC4
     method authenticate(Str $pass, Bool :$owner) {
 	$!is-owner = False;
 	my @pass = format-pass( $pass );
-	$!auth = (!$owner && self!auth-user-pass( @pass ))
+	$!key = (!$owner && self!auth-user-pass( @pass ))
 	    || self!auth-owner-pass( @pass )
 	    || die "unable to decrypt this PDF with the given password";
     }
@@ -269,11 +267,11 @@ class PDF::Storage::Crypt::RC4
 	# Algorithm 3.1
 
 	die "encyption has not been authenticated"
-	    unless $!auth;
+	    unless $!key;
 
 	my uint8 @obj-bytes = resample([ $obj-num, ], 32, 8).reverse;
 	my uint8 @gen-bytes = resample([ $gen-num, ], 32, 8).reverse;
-	my uint8 @obj-key = flat $!auth.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
+	my uint8 @obj-key = flat $!key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
 
 	my UInt $size = +@obj-key;
 	my $key = Digest::MD5::md5( @obj-key );
