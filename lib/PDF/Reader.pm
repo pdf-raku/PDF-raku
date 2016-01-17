@@ -431,7 +431,10 @@ class PDF::Reader {
 
                             given $type {
                                 when 0  {} # ignore free objects
-                                when 1  { @obj-idx.push: { :$type, :$obj-num, :$gen-num, :$offset } }
+                                when 1  {
+                                    @obj-idx.push({ :$type, :$obj-num, :$gen-num, :$offset })
+                                        if $offset;
+                                }
                                 default { die "unhandled type: $_" }
                             }
                             $obj-num++;
