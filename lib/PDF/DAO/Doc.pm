@@ -55,9 +55,6 @@ class PDF::DAO::Doc
 	my $type = $reader.type;
 	self.generate-id( :$type );
 
-        # todo we should be able to leave the input file open and append to it
-        my Numeric $offset = $reader.input.codes + 1;
-
         my $serializer = PDF::Storage::Serializer.new( :$reader, :$type );
         my Array $body = $serializer.body( :updates, :$compress );
 	$!crypt.crypt-ast('body', $body)
@@ -65,16 +62,25 @@ class PDF::DAO::Doc
 
 	my Hash $trailer = $body[0]<trailer><dict>;
 	my UInt $prev = $trailer<Prev>.value;
+
+        constant Preamble = "\n\n";
+        my Numeric $offset = $reader.input.codes + Preamble.codes;
         my $writer = PDF::Writer.new( :$offset, :$prev );
 	my @entries;
-        my Str $new-body = "\n" ~ $writer.write-body( $body[0], @entries, :$prev, :$trailer );
+        my Str $new-body = $writer.write-body( $body[0], @entries, :$prev, :$trailer );
+
 	# merge the updated entries in the index
 	$prev = $writer.prev;
         my UInt $size = $writer.size;
 	$reader.update( :@entries, :$prev, :$size);
 	$.Size = $size;
 	@entries = [];
-        $reader.file-name.IO.open(:a).write( $new-body.encode('latin-1') );
+
+        # todo we should be able to leave the input file open and append to it
+        my $fh = $reader.file-name.IO.open(:a);
+        $fh.write: Preamble.encode('latin-1');
+        $fh.write: $new-body.encode('latin-1');
+        $fh.close;
     }
 
     method save-as(Str $file-name!, |c) {

@@ -4,20 +4,24 @@
   /Author (PDF-Tools/t/helloworld.t)
   /CreationDate (D:20151225000000Z00'00')
 >> endobj
+
 2 0 obj <<
   /Type /Catalog
   /Outlines 3 0 R
   /Pages 4 0 R
 >> endobj
+
 3 0 obj <<
   /Type /Outlines
   /Count 0
 >> endobj
+
 4 0 obj <<
   /Type /Pages
   /Count 1
   /Kids [ 5 0 R ]
 >> endobj
+
 5 0 obj <<
   /Type /Page
   /Contents 6 0 R
@@ -30,27 +34,30 @@
     /Procset [ /PDF /Text ]
   >>
 >> endobj
+
 6 0 obj <<
   /Length 46
 >> stream
 BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
 endstream endobj
+
 7 0 obj <<
   /Type /Font
   /Subtype /Type1
   /BaseFont /Helvetica
   /Encoding /MacRomanEncoding
 >> endobj
+
 xref
 0 8
 0000000000 65535 f 
 0000000014 00000 n 
-0000000114 00000 n 
-0000000185 00000 n 
-0000000235 00000 n 
-0000000300 00000 n 
-0000000482 00000 n 
-0000000580 00000 n 
+0000000115 00000 n 
+0000000187 00000 n 
+0000000238 00000 n 
+0000000304 00000 n 
+0000000487 00000 n 
+0000000586 00000 n 
 trailer
 <<
   /ID [ <4386dc7bc3489e418b44434e3a168843> <4386dc7bc3489e418b44434e3a168843> ]
@@ -59,5 +66,5 @@ trailer
   /Size 8
 >>
 startxref
-686
+693
 %%EOF

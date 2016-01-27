@@ -51,7 +51,7 @@ class PDF::DAO::Stream
             $obj{.key} = from-ast(.value) for $dict.pairs;
             $obj.?cb-init;
 
-	    if my $required = set $obj.entries.pairs.grep({.value.tied.is-required}).map({.key}) {
+	    if my $required = set $obj.entries.pairs.grep(*.value.tied.is-required).map: *.key {
 		my $missing = $required (-) $obj.keys;
 		die "{self.WHAT.^name}: missing required field(s): $missing"
 		    if $missing;

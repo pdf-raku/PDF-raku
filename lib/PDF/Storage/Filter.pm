@@ -73,7 +73,7 @@ class PDF::Storage::Filter {
 
     method filter-class( Str $filter-name is copy ) {
 
-        BEGIN my %Filters =
+        constant %Filters = %(
             ASCIIHexDecode => PDF::Storage::Filter::ASCIIHex,
             ASCII85Decode  => PDF::Storage::Filter::ASCII85,
             CCITTFaxDecode => Mu,
@@ -84,9 +84,10 @@ class PDF::Storage::Filter {
             JBIG2Decode    => Mu,
             JPXDecode      => Mu,
             RunLengthDecode => PDF::Storage::Filter::RunLength,
-            ;
+            );
 
-        BEGIN my %FilterAbbreviations =
+        # See [PDF 1.7 Table H.1 Abbreviations for standard filter names]
+        constant %FilterAbbreviations = %(
             AHx => 'ASCIIHexDecode',
             A85 => 'ASCII85Decode',
             LZW => 'LZWDecode',
@@ -94,7 +95,7 @@ class PDF::Storage::Filter {
             RL  => 'RunLengthDecode',
             CCF => 'CCITTFaxDecode',
             DCT => 'DCTDecode',
-            ;
+            );
 
         $filter-name = %FilterAbbreviations{$filter-name}
             if %FilterAbbreviations{$filter-name}:exists;

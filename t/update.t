@@ -34,7 +34,7 @@ my $body = $serializer.body( :updates )[0];
 
 is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
 is-deeply $body<trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';
-is-deeply $body<trailer><dict><Prev>, (:int(636)), 'body trailer dict - Prev';
+is-deeply $body<trailer><dict><Prev>, (:int(644)), 'body trailer dict - Prev';
 my $updated-objects = $body<objects>;
 is +$updated-objects, 3, 'number of updates';
 is-json-equiv $updated-objects[0], (

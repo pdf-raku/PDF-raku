@@ -1,6 +1,8 @@
     Release 0.0.4
-    - encryption generation is now supported. RC4 (Encryption revisions 1-4)
+    - encrypted document creation is now supported. RC4 (Encryption revisions 1-4)
       only at this stage. 
+    - [PDF::Writer]
+      -- add extra new-line after each indirect object - readability improvement
 
     Release 0.0.3
     - [PDF::DAO::Util] from-ast() sub now handles cyclical hashes and arrays
