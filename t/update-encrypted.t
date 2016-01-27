@@ -5,7 +5,7 @@ use PDF::DAO::Doc;
 # ensure consistant document ID generation
 srand(123456);
 
-'t/pdf/samples/encrypt-40bit.pdf'.IO.copy('t/update-encrypted.pdf');
+'t/encrypt.pdf'.IO.copy('t/update-encrypted.pdf');
 
 my $doc = PDF::DAO::Doc.open: "t/update-encrypted.pdf";
 
