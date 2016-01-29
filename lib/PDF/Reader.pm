@@ -1,5 +1,57 @@
 use v6;
 
+my sub synopsis($input) {
+    my $desc = ($input.chars < 60
+                ?? $input
+                !! [~] $input.substr(0, 32), ' ... ', $input.substr(*-20))\
+                .subst(/\n+/, ' ', :g);
+    $desc.perl;
+}
+
+class X::PDF::BadDump is Exception {
+    has Str $.input-file is required;
+    method message {"File doesn't contain a top-level 'pdf' struct: $!input-file"}
+}
+
+class X::PDF::BadHeader is Exception {
+    has Str $.preamble is required;
+    method message {"expected file header '%XXX-n.m', got: {synopsis($!preamble)}"}
+}
+
+class X::PDF::BadTrailer is Exception {
+    has Str $.tail is required;
+    method message {"expected file trailer 'startxref ... \%\%EOF', got: {synopsis($!tail)}"}
+}
+
+class X::PDF::BadXRef is Exception {
+    has Str $.xref is required;
+    method message {"unable to parse index: {synopsis($!xref)}"}
+}
+
+class X::PDF::ParseError is Exception {
+    has Str $.input is required;
+    method message {"unable to parse PDF document: {synopsis($!input)}"}
+}
+
+class X::PDF::BadIndirectObject is Exception {
+    has UInt $.obj-num;
+    has UInt $.gen-num;
+    has UInt $.offset  is required;
+    has Str  $.details is rw;
+    method message {
+        my Str $ind-ref = $!obj-num ?? "$!obj-num $!gen-num R " !! "";
+        "Error processing indirect object {$ind-ref}at byte offset $!offset:\n$!details"
+    }
+}
+
+class X::PDF::BadIndirectObject::Parse is X::PDF::BadIndirectObject {
+    has Str $.input is required;
+    method message {
+        $.details = "unable to parse indirect object: " ~ synopsis($.input);
+        nextsame;
+    }
+}
+
 class PDF::Reader {
 
     use PDF::Grammar::PDF;
@@ -103,7 +155,7 @@ class PDF::Reader {
     multi method open( Str $input-file  where m:i/'.json' $/, |c ) {
         use JSON::Fast;
         my $ast = from-json( $input-file.IO.slurp );
-        die "doesn't contain a pdf struct: $input-file"
+        die X::PDF::BadDump.new( :$input-file )
             unless $ast.isa(Hash) && ($ast<pdf>:exists);
         $!type = $ast<pdf><header><type> // 'PDF';
         $!version = $ast<pdf><header><version> // 1.2;
@@ -175,14 +227,6 @@ class PDF::Reader {
         $.load( $.type, |c );
     }
 
-    sub synopsis($input) {
-        my $desc = ($input.chars < 60
-                    ?? $input
-                    !! [~] $input.substr(0, 32), ' ... ', $input.substr(*-20))\
-                    .subst(/\n+/, ' ', :g);
-        $desc.perl;
-    }
-
     #| load the data for a stream object. Cross check actual size versus expected /Length
     method !fetch-stream-data(@ind-obj,           #| primary object
                               $input,             #| associated input stream
@@ -193,25 +237,34 @@ class PDF::Reader {
         (my UInt $obj-num, my UInt $gen-num, my $obj-raw) = @ind-obj;
 
         $obj-raw.value<encoded> //= do {
-            die "stream mandatory /Length field is missing: $obj-num $gen-num R \@$offset "
-                unless $obj-raw.value<dict><Length>;
+            die X::PDF::BadIndirectObject.new(
+                :$obj-num, :$gen-num, :$offset,
+                :details("stream mandatory /Length field is missing")
+                ) unless $obj-raw.value<dict><Length>;
 
             my UInt $length = $.deref( $obj-raw.value<dict><Length> );
             my UInt $start = $obj-raw.value<start>:delete;
-            die "stream Length $length appears too large (> {$max-end - $start}): $obj-num $gen-num R \@$offset"
-                if $max-end && $length > $max-end - $start;
+
+            die X::PDF::BadIndirectObject.new(
+                :$obj-num, :$gen-num, :$offset,
+                :details("stream Length $length appears too large (> {$max-end - $start})"),
+                ) if $max-end && $length > $max-end - $start;
 
             # ensure stream is followed by an 'endstream' marker
             my Str $tail = $input.substr( $offset + $start + $length, 20 );
             if $tail ~~ m{^ (.*?) <PDF::Grammar::PDF::stream-tail>} {
-                if $0.codes {
-                    # hmm some unprocessed bytes
-                    warn "ignoring {$0.codes} bytes before 'endstream' marker: $obj-num $gen-num R \@$offset {synopsis($tail)}"
-                }
+                warn X::PDF::BadIndirectObject.new(
+                    :$obj-num, :$gen-num, :$offset,
+                    :details("ignoring {$0.codes} bytes before 'endstream' marker")
+                    ) if $0.codes;
             }
             else {
-                die "unable to locate 'endstream' marker after consuming /Length $length bytes: $obj-num $gen-num R \@$offset {synopsis($tail)}"
+                die X::PDF::BadIndirectObject.new(
+                    :$obj-num, :$gen-num, :$offset,
+                    :details("unable to locate 'endstream' marker after consuming /Length $length bytes")
+                    );
             }
+
 	    $length
 		?? $input.substr( $offset + $start, $length )
 		!! '';
@@ -235,7 +288,7 @@ class PDF::Reader {
                 my $max-end = $end - $offset - 1;
                 my $input = $.input.substr( $offset, $max-end );
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
-                    or die "unable to parse indirect object: $obj-num $gen-num R \@$offset {synopsis($input)}";
+                    or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
 
                 $ind-obj = $/.ast.value;
 
@@ -260,7 +313,7 @@ class PDF::Reader {
                 my $input = $ind-obj-ref[1];
 
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<object> )
-                    or die "unable to parse indirect object: $obj-num $gen-num R {synopsis($input)}";
+                    or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$input);
                 $ind-obj = [ $actual-obj-num, $actual-gen-num, $/.ast ];
             }
             default {die "unhandled index type: $_"};
@@ -341,7 +394,7 @@ class PDF::Reader {
         my Str $preamble = $.input.substr(0, 8);
 
         PDF::Grammar::Doc.subparse($preamble, :$.actions, :rule<header>)
-            or die "expected file header '%XXX-n.m', got: {synopsis($preamble)}";
+            or die X::PDF::BadHeader.new( :$preamble );
 
         $.version = $/.ast<version>;
         $.type = $/.ast<type>;
@@ -371,40 +424,41 @@ class PDF::Reader {
         @!xrefs = [];
 
         PDF::Grammar::PDF.parse($tail, :$.actions, :rule<postamble>)
-            or die "expected file trailer 'startxref ... \%\%EOF', got: {synopsis($tail)}";
+            or die X::PDF::BadTrailer.new( :$tail );
+
         $!prev = $/.ast<startxref>;
-        my UInt:_ $xref-offset = $!prev;
+        my UInt:_ $offset = $!prev;
         my UInt $input-bytes = $.input.codes;
 
         my Hash @obj-idx;
         my Hash $dict;
 
-        while $xref-offset.defined {
-	    @!xrefs.unshift: $xref-offset;
-            die "xref '/Prev' cycle detected \@$xref-offset"
-                if %offsets-seen{$xref-offset}++;
+        while $offset.defined {
+	    @!xrefs.unshift: $offset;
+            die "xref '/Prev' cycle detected \@$offset"
+                if %offsets-seen{$offset}++;
             # see if our cross reference table is already contained in the current tail
             my Str $xref;
             my &fallback = sub {};
             constant SIZE = 4096;       # big enough to usually contain xref
 
-            if $xref-offset >= $input-bytes - $tail-bytes {
-                $xref = $.input.substr( $xref-offset, $tail-bytes )
+            if $offset >= $input-bytes - $tail-bytes {
+                $xref = $.input.substr( $offset, $tail-bytes )
             }
-            elsif $input-bytes - $tail-bytes - $xref-offset <= SIZE {
+            elsif $input-bytes - $tail-bytes - $offset <= SIZE {
                 # xref abuts currently read $tail
-                my UInt $lumbar-bytes = min(SIZE, $input-bytes - $tail-bytes - $xref-offset);
-                $xref = $.input.substr( $xref-offset, $lumbar-bytes) ~ $tail;
+                my UInt $lumbar-bytes = min(SIZE, $input-bytes - $tail-bytes - $offset);
+                $xref = $.input.substr( $offset, $lumbar-bytes) ~ $tail;
             }
             else {
-                my UInt $xref-len = min(SIZE, $input-bytes - $xref-offset);
-                $xref = $.input.substr( $xref-offset, $xref-len );
+                my UInt $xref-len = min(SIZE, $input-bytes - $offset);
+                $xref = $.input.substr( $offset, $xref-len );
                 &fallback = sub {
-                    if $input-bytes - $xref-offset > SIZE {
+                    if $input-bytes - $offset > SIZE {
                         constant SIZE2 = SIZE * 16;
                         # xref not contained in SIZE bytes? subparse a much bigger chunk to make sure
-                        $xref-len = min( SIZE2, $input-bytes - $xref-offset - SIZE );
-                        $xref ~= $.input.substr( $xref-offset + SIZE, $xref-len );
+                        $xref-len = min( SIZE2, $input-bytes - $offset - SIZE );
+                        $xref ~= $.input.substr( $offset + SIZE, $xref-len );
                         PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
                     }
                 };
@@ -414,7 +468,8 @@ class PDF::Reader {
                 # PDF 1.4- xref table followed by trailer
                 my $parse = ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
                               || &fallback() )
-                    or die "unable to parse index: $xref";
+                    or die X::PDF::BadXRef.new( :$xref );
+
                 my Hash $index = $parse.ast;
                 $dict = PDF::DAO.coerce( |%($index<trailer>), :reader(self) );
                 self!set-trailer($dict);
@@ -445,7 +500,7 @@ class PDF::Reader {
             else {
                 # PDF 1.5+ XRef Stream
                 PDF::Grammar::PDF.subparse($xref, :$.actions, :rule<ind-obj>)
-                    or die "ind-obj parse failed \@$xref-offset {synopsis($xref)}";
+                    or die X::PDF::BadIndirectObject::Parse.new( :$offset, :input($xref));
 
                 my %ast = %( $/.ast );
                 my $ind-obj = PDF::Storage::IndObj.new( |%ast, :input($xref), :reader(self) );
@@ -455,7 +510,7 @@ class PDF::Reader {
                 @obj-idx.append: $xref-obj.decode-to-stage2.list;
             }
 
-            $xref-offset = $dict<Prev>:exists
+            $offset = $dict<Prev>:exists
                 ?? $dict<Prev>
                 !! Nil;
 
@@ -502,7 +557,8 @@ class PDF::Reader {
     method !full-scan( $grammar, $actions, Bool :$repair, |c) {
         temp $actions.get-offsets = True;
         $grammar.parse(~$.input, :$actions)
-            or die "unable to parse document";
+            or die X::PDF::ParseError.new( :input(~$.input) );
+
         my %ast = $/.ast;
         my Array $body = %ast<body>;
 
@@ -730,4 +786,3 @@ class PDF::Reader {
     }
 
 }
-

@@ -1,3 +1,7 @@
+    Release 0.0.5
+    - added reader exception classes, e.g. X::PDF::BadXRef
+    - renamed META.info => META6.json
+
     Release 0.0.4
     - encrypted document creation is now supported. RC4 (Encryption revisions 1-4)
       only at this stage. 
