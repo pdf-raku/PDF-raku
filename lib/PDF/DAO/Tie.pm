@@ -150,7 +150,7 @@ role PDF::DAO::Tie {
 	multi method type-check($val is copy, $type = $.type) is rw is default {
 	    if $val.defined {
 		die "{$val.WHAT.^name}.$*key: {$val.WHAT.gist} - not of type: {$type.gist}"
-		    unless $val ~~ $type || $val ~~ Pair;	#| undereferenced - don't know it's type yet
+		    unless $val ~~ $type | Pair;	#| undereferenced - don't know it's type yet
 	    }
 	    else {
 	      die "{$val.WHAT.^name}: missing required field: $*key"

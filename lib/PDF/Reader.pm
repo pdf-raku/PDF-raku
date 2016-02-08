@@ -129,7 +129,6 @@ class PDF::Reader {
 		}
 	    }
 	}
-
     }
 
     #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
@@ -520,7 +519,7 @@ class PDF::Reader {
 
         }
 
-        my %obj-entries-of-type = @obj-idx.classify({.<type>});
+        my %obj-entries-of-type = @obj-idx.classify: *.<type>;
 
         my @type1-obj-entries = %obj-entries-of-type<1>.list.sort({ $^a<offset> })
             if %obj-entries-of-type<1>:exists;
@@ -548,9 +547,9 @@ class PDF::Reader {
         }
 
         #| don't entirely trust /Size entry in trailer dictionary
-        my UInt $max-obj-num = max( %!ind-obj-idx.keys>>.Int );
-        $.size = $max-obj-num + 1
-            if $.size <= $max-obj-num;
+        my UInt $actual-size = max( %!ind-obj-idx.keys>>.Int );
+        $.size = $actual-size + 1
+            if $.size <= $actual-size;
     }
 
     #| bypass any indices. directly parse and reconstruct index fromn objects.
@@ -560,14 +559,15 @@ class PDF::Reader {
             or die X::PDF::ParseError.new( :input(~$.input) );
 
         my %ast = $/.ast;
-        my Array $body = %ast<body>;
+        my Hash @body = %ast<body>.list;
 
-        for $body.list.reverse {
+        for @body.reverse {
+	    my Pair @objects = .<objects>.list;
 
-            for .<objects>.list.reverse {
+            for @objects.reverse {
                 next unless .key eq 'ind-obj';
-                my $ind-obj = .value;
-                (my UInt $obj-num, my UInt $gen-num, my $object, my UInt $offset) = @( $ind-obj );
+                my @ind-obj = .value.list;
+                (my UInt $obj-num, my UInt $gen-num, my $object, my UInt $offset) = @ind-obj;
 
                 my Hash $dict;
                 my $stream-type;
@@ -591,7 +591,7 @@ class PDF::Reader {
 
                 %!ind-obj-idx{$obj-num}{$gen-num} //= {
                     :type(1),
-                    :$ind-obj,
+                    :@ind-obj,
                     :$offset,
                 };
 

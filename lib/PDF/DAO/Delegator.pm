@@ -54,11 +54,14 @@ class PDF::DAO::Delegator {
         %handler{$subclass} = $class-def;
     }
 
-    multi method find-delegate( Str $subclass! where { %handler{$_}:exists } ) {
-        %handler{$subclass}
-    }
+    method find-delegate( Str $type!, $subtype?, :$fallback! ) is default {
 
-    multi method find-delegate( Str $subclass!, :$fallback! ) is default {
+	my $subclass = $type;
+	$subclass ~= '::' ~ $subtype
+	    if $subtype.defined;
+
+	return %handler{$subclass}
+	if %handler{$subclass}:exists;
 
 	my $handler-class = $fallback;
 
@@ -75,10 +78,9 @@ class PDF::DAO::Delegator {
     }
 
     multi method delegate( Hash :$dict! where {$dict<Type>:exists}, :$fallback) {
-	my $subclass = from-ast($dict<Type>);
+	my $type = from-ast($dict<Type>);
 	my $subtype = from-ast($dict<Subtype> // $dict<S>);
-	$subclass ~= '::' ~ $subtype if $subtype.defined;
-	my $delegate = $.find-delegate( $subclass, :$fallback );
+	my $delegate = $.find-delegate( $type, $subtype, :$fallback );
 	$delegate;
     }
 
