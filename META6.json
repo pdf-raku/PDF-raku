@@ -25,7 +25,6 @@
         "PDF::DAO::Tie::Array" : "lib/PDF/DAO/Tie/Array.pm",
         "PDF::DAO::Tie::Hash" : "lib/PDF/DAO/Tie/Hash.pm",
 
-        "PDF::DAO::Type" : "lib/PDF/DAO/Type.pm",
         "PDF::DAO::Type::Encrypt" : "lib/PDF/DAO/Type/Encrypt.pm",
         "PDF::DAO::Type::Info" : "lib/PDF/DAO/Type/Info.pm",
         "PDF::DAO::Type::ObjStm" : "lib/PDF/DAO/Type/ObjStm.pm",

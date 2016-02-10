@@ -1,6 +1,5 @@
 use v6;
 
-use PDF::DAO::Tie;
 use PDF::DAO::Tie::Hash;
 
 # /Encrypt - trailer encryption info
@@ -10,6 +9,7 @@ role PDF::DAO::Type::Encrypt
 
 # See [PDF 1.7 TABLE 3.18 Entries common to all encryption dictionaries]
 
+    use PDF::DAO::Tie;
     use PDF::DAO::Name;
     has PDF::DAO::Name $.Filter is entry(:required);    #| (Required) The name of the preferred security handler for this document. Typically, it is the name of the security handler that was used to encrypt the document. If SubFilter is not present, only this security handler should be used when opening the document. If it is present, consumer applications can use any security handler that implements the format specified by SubFilter.
                                                            #| 'Standard' is the name of the built-in password-based security handler.

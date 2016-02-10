@@ -10,6 +10,9 @@ class PDF::DAO::Delegator {
     use PDF::DAO::Dict;
     use PDF::DAO::Tie::Hash;
 
+    use PDF::DAO::Name;
+    use PDF::DAO::DateString;
+
     multi method coerce( $obj, $role where {$obj ~~ $role}) {
 	# already does it
 	$obj
@@ -24,7 +27,6 @@ class PDF::DAO::Delegator {
     }
 
     # adds the DateTime 'object' rw accessor
-    use PDF::DAO::DateString;
     multi method coerce( Str $obj is rw, PDF::DAO::DateString $class, |c) {
 	$obj = $class.new( $obj, |c );
     }

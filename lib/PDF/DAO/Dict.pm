@@ -1,7 +1,6 @@
 use v6;
 
 use PDF::DAO;
-use PDF::DAO::Type;
 use PDF::DAO::Tie;
 use PDF::DAO::Tie::Hash;
 
@@ -9,7 +8,6 @@ use PDF::DAO::Tie::Hash;
 class PDF::DAO::Dict
     does PDF::DAO
     is Hash
-    does PDF::DAO::Type
     does PDF::DAO::Tie::Hash {
 
     use PDF::DAO::Util :from-ast, :to-ast-native;

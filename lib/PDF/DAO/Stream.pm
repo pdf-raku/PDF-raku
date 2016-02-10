@@ -1,14 +1,12 @@
 use v6;
 
 use PDF::DAO;
-use PDF::DAO::Type;
 use PDF::DAO::Tie::Hash;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 class PDF::DAO::Stream
     does PDF::DAO
     is Hash
-    does PDF::DAO::Type 
     does PDF::DAO::Tie::Hash {
 
     use PDF::DAO::Tie;

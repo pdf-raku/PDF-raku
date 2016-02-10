@@ -14,8 +14,12 @@ role PDF::DAO::Type::XRef
     use PDF::Storage::Util :resample;
     use PDF::Storage::Blob;
     use PDF::DAO::Tie;
+    use PDF::DAO::Name;
 
 #| See [PDF 1.7 TABLE 3.15 Additional entries specific to a cross-reference stream dictionary]
+    my subset Name-XRef of PDF::DAO::Name where 'XRef';
+    has Name-XRef $.Type is entry( :required );
+
     has UInt $.Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
     # rakudo 2015.07.1-12-g174049f; Index is a reserved attribute
     has UInt @.Index is entry;            #| (Optional) An array containing a pair of integers for each subsection in this section. The first integer is the first object number in the subsection; the second integer is the number of entries in the subsection
