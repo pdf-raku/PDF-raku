@@ -18,14 +18,6 @@ class PDF::DAO::Delegator {
 	$obj
     }
 
-    multi method coerce( PDF::DAO::Dict $obj, PDF::DAO::Tie::Hash $role) {
-	$obj does $role; $obj.?tie-init;
-    }
-
-    multi method coerce( PDF::DAO::Array $obj, PDF::DAO::Tie::Array $role) {
-	$obj does $role; $obj.?tie-init;
-    }
-
     # adds the DateTime 'object' rw accessor
     multi method coerce( Str $obj is rw, PDF::DAO::DateString $class, |c) {
 	$obj = $class.new( $obj, |c );
@@ -44,7 +36,14 @@ class PDF::DAO::Delegator {
     }
 
     multi method coerce( $obj, $role) is default {
-	warn "unable to coerce object $obj of type {$obj.WHAT.gist} to role {$role.WHAT.gist}"
+	if $role.does($role) {
+	    $obj does $role;
+	    $obj.?tie-init
+		if $role.does(PDF::DAO::Tie);
+	}
+	else {
+	    warn "unable to coerce object $obj of type {$obj.WHAT.gist} to role {$role.WHAT.gist}"
+	}
     }
 
     method class-paths { <PDF::DAO::Type> }
