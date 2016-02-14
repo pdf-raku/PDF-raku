@@ -46,6 +46,10 @@ class PDF::DAO::Doc
     #| perform an incremental save back to the opened input file
     method update(:$compress) {
 
+	self.?cb-init
+	    unless self<Root>:exists;
+	self<Root>.?cb-finish;
+
         my $reader = $.reader
             // die "PDF is not associated with an input source";
 
@@ -84,6 +88,11 @@ class PDF::DAO::Doc
     }
 
     method save-as(Str $file-name!, |c) {
+
+	self<Root>:exists
+	    ?? self<Root>.?cb-finish
+	    !! die "no top-level Root entry";
+
 	my $type = $.reader.?type;
 	$type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';
 	self.generate-id( :$type );
