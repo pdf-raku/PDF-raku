@@ -9,6 +9,7 @@ class PDF::DAO::Doc
 
     use PDF::Storage::Serializer;
     use PDF::Storage::Crypt;
+    use PDF::Reader;
     use PDF::Writer;
     use PDF::DAO::Tie;
     use PDF::DAO::Type::Encrypt :PermissionsFlag;
@@ -27,9 +28,9 @@ class PDF::DAO::Doc
 
     #| open the input file-name or path
     method open($spec, |c) {
-	require ::('PDF::Reader');
-        my $reader = ::('PDF::Reader').new;
+        my $reader = PDF::Reader.new;
         my $doc = self.new( :$reader );
+
         $reader.install-trailer( $doc );
         $reader.open($spec, |c);
         $doc.crypt = $reader.crypt

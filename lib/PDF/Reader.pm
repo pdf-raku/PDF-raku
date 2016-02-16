@@ -59,7 +59,7 @@ class PDF::Reader {
     use PDF::Storage::IndObj;
     use PDF::Storage::Serializer;
     use PDF::DAO;
-    use PDF::DAO::Doc;
+    use PDF::DAO::Dict;
     use PDF::DAO::Util :from-ast, :to-ast;
     use PDF::Writer;
     use PDF::Storage::Input;
@@ -87,7 +87,7 @@ class PDF::Reader {
         self.ind-obj(0, 0).object;
     }
 
-    method install-trailer(PDF::DAO::Dict $object = PDF::DAO::Doc.new( :reader(self)) ) {
+    method install-trailer(PDF::DAO::Dict $object = PDF::DAO::Dict.new( :reader(self) ) ) {
         my $obj-num = 0;
         my $gen-num = 0;
 
@@ -99,12 +99,12 @@ class PDF::Reader {
     }
 
     method !setup-crypt( Str :$password = '') {
-	my PDF::DAO::Doc $doc = self.trailer;
+	my Hash $doc = self.trailer;
 	return unless $doc<Encrypt>:exists;
-	my $enc = $doc<Encrypt>;
 
 	$!crypt = PDF::Storage::Crypt.delegate-class( :$doc ).new( :$doc );
 	$!crypt.authenticate( $password );
+	my $enc = $doc<Encrypt>;
 
 	for %!ind-obj-idx.pairs {
 
