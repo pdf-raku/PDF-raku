@@ -42,7 +42,6 @@ role PDF::DAO::Tie {
 	has Str $.accessor-name is rw;
 	has Bool $.gen-accessor is rw;
 	has Code $.coerce is rw = sub ($lval is rw, Mu:U $type) { PDF::DAO.coerce($lval, $type) };
-        has Str @.aliases is rw;
         has UInt $.length is rw;
 
 	use nqp;
@@ -172,7 +171,6 @@ role PDF::DAO::Tie {
 	    }
 	    my $val = $arg.value;
 	    given $arg.key {
-		when 'alias'    { $att.tied.aliases      = $val.list }
 		when 'inherit'  { $att.tied.is-inherited = $val }
 		when 'required' { $att.tied.is-required  = $val }
 		when 'indirect' { $att.tied.is-indirect  = $val }

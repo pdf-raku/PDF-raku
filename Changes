@@ -5,6 +5,8 @@
     - removed PDF::DAO::Type
     - [PDF::DAO::Delegator]
       -- simplied and more general coercement to roles
+    - [PDF::DAO::Tie]
+      -- removed support for method aliases
 
     Release 0.0.4
     - encrypted document creation is now supported. RC4 (Encryption revisions 1-4)

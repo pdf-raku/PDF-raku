@@ -40,11 +40,6 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 		$att.set_rw;
 		$class.^add_method( $key, &meth );
 	    }
-
-	    for $att.tied.aliases -> $alias {
-		$class.^add_method( $alias, &meth )
-		    unless $class.^declares_method($alias)
-	    }
 	}
 
 	True;
