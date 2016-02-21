@@ -28,7 +28,7 @@ class PDF::DAO::Doc
 
     #| open the input file-name or path
     method open($spec, |c) {
-        my $reader = PDF::Reader.new;
+        my PDF::Reader $reader .= new;
         my $doc = self.new( :$reader );
 
         $reader.install-trailer( $doc );
@@ -60,7 +60,7 @@ class PDF::DAO::Doc
 	my $type = $reader.type;
 	self.generate-id( :$type );
 
-        my $serializer = PDF::Storage::Serializer.new( :$reader, :$type );
+        my PDF::Storage::Serializer $serializer .= new( :$reader, :$type );
         my Array $body = $serializer.body( :updates, :$compress );
 	$!crypt.crypt-ast('body', $body)
 	    if $!crypt;
@@ -70,7 +70,7 @@ class PDF::DAO::Doc
 
         constant Preamble = "\n\n";
         my Numeric $offset = $reader.input.codes + Preamble.codes;
-        my $writer = PDF::Writer.new( :$offset, :$prev );
+        my PDF::Writer $writer .= new( :$offset, :$prev );
 	my @entries;
         my Str $new-body = $writer.write-body( $body[0], @entries, :$prev, :$trailer );
 
@@ -97,7 +97,7 @@ class PDF::DAO::Doc
 	my $type = $.reader.?type;
 	$type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';
 	self.generate-id( :$type );
-	my $serializer = PDF::Storage::Serializer.new;
+	my PDF::Storage::Serializer $serializer .= new;
 	$serializer.save-as( $file-name, self, :$type, :$!crypt, |c)
     }
 

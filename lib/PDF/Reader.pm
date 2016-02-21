@@ -93,7 +93,7 @@ class PDF::Reader {
 
         #| install the trailer at index (0,0)
         %!ind-obj-idx{$obj-num}{$gen-num} = do {
-            my $ind-obj = PDF::Storage::IndObj.new( :$object, :$obj-num, :$gen-num );
+            my PDF::Storage::IndObj $ind-obj .= new( :$object, :$obj-num, :$gen-num );
             { :type(1), :$ind-obj }
         }
     }
@@ -505,7 +505,7 @@ class PDF::Reader {
                     or die X::PDF::BadIndirectObject::Parse.new( :$offset, :input($xref));
 
                 my %ast = %( $/.ast );
-                my $ind-obj = PDF::Storage::IndObj.new( |%ast, :input($xref), :reader(self) );
+                my PDF::Storage::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
                 my $xref-obj = $ind-obj.object;
                 $dict = $xref-obj;
                 self!set-trailer($dict);
@@ -784,7 +784,7 @@ class PDF::Reader {
                           :$ast is copy, |c ) is default {
         $ast //= $.ast(|c);
         note "saving {$output-path}...";
-        my $pdf-writer = PDF::Writer.new( :$.input );
+        my PDF::Writer $pdf-writer .= new( :$.input );
         $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
     }
 
