@@ -1,6 +1,6 @@
 use Test;
 
-plan 44;
+plan 60;
 
 use PDF::Storage::Filter;
 
@@ -23,6 +23,8 @@ for 'ASCIIHexDecode', 'FlateDecode', 'RunLengthDecode', ['FlateDecode', 'RunLeng
 
         my $output;
         lives-ok { $output = PDF::Storage::Filter.encode($input, :%dict) }, $filter-name ~' encoding - lives';
+	isnt $input, $output, $filter-name ~' is encoded'
+	     unless $input eq '';
 
         is PDF::Storage::Filter.decode($output, :%dict), $input, "$filter-name roundtrip: $name"
             or diag :$input.perl;
