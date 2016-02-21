@@ -1,6 +1,6 @@
 use Test;
 
-plan 12;
+plan 15;
 
 use PDF::Storage::Filter::Predictors;
 use PDF::Storage::Filter;
@@ -69,6 +69,18 @@ for None => 1, TIFF => 2, PNG => 10 {
                                                                      :$Predictor, );
 
     is-deeply $post-prediction, $rand-data, "$desc predictor ($Predictor) - appears lossless";
+
+    my $prediction2c = PDF::Storage::Filter::Predictors.prediction( $rand-data,
+								     :Columns(4),
+								     :Colors(2),
+								     :$Predictor, );
+    
+    my $post-prediction2c = PDF::Storage::Filter::Predictors.post-prediction( $prediction2c,
+									 :Columns(4),
+									 :Colors(2),
+									 :$Predictor, );
+
+    is-deeply $post-prediction2c, $rand-data, "$desc predictor ($Predictor) multi-channel - appears lossless";
 }
 
 my $flate-dict = { :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) } };

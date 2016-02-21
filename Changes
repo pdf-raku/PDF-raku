@@ -1,5 +1,5 @@
     Release 0.0.5
-    - added reader exception classes, e.g. X::PDF::BadXRef
+    - added some reader exception classes, e.g. X::PDF::BadXRef
     - renamed META.info => META6.json
     - changed $.delegator.find-delegate method
     - removed PDF::DAO::Type
@@ -7,6 +7,8 @@
       -- simplied and more general coercement to roles
     - [PDF::DAO::Tie]
       -- removed support for method aliases
+    - [PDF::Storage::Filter::Predictors]
+      -- fixed multi-channel (color) PNG prediction
 
     Release 0.0.4
     - encrypted document creation is now supported. RC4 (Encryption revisions 1-4)

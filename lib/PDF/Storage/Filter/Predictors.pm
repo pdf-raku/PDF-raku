@@ -35,13 +35,13 @@ role PDF::Storage::Filter::Predictors {
     }
 
     multi method prediction($encoded where Blob | Buf,
-			    UInt :$Predictor! where { $_ >= 10 and $_ <= 15}, #| predictor function
+			    UInt :$Predictor! where { 10 <= $_ <= 15}, #| predictor function
 			    UInt :$Columns = 1,          #| number of samples per row
 			    UInt :$Colors = 1,           #| number of colors per sample
 			    UInt :$BitsPerComponent = 8, #| number of bits per color
         ) {
 
-        my UInt $bytes-per-col = ($Colors * $BitsPerComponent  +  7) div 8;
+        my UInt $bytes-per-col = ceiling($Colors * $BitsPerComponent / 8);
         my UInt $bytes-per-row = $bytes-per-col * $Columns;
         my UInt $ptr = 0;
         my UInt $row = 0;
@@ -49,13 +49,12 @@ role PDF::Storage::Filter::Predictors {
 
         while $ptr < +$encoded {
 
-            $row++;
             @output.push: 4; # Paeth indicator
 
             for 1 .. $bytes-per-row -> $i {
                 my UInt $left-byte = $i <= $bytes-per-col ?? 0 !! $encoded[$ptr - $bytes-per-col];
-                my UInt $up-byte = $row > 1 ?? $encoded[$ptr - $bytes-per-row] !! 0;
-                my UInt $up-left-byte = $row > 1 && $i > $bytes-per-col ?? $encoded[$ptr - $bytes-per-row -1] !! 0;
+                my UInt $up-byte = $row ?? $encoded[$ptr - $bytes-per-row] !! 0;
+                my UInt $up-left-byte = $row && $i > $bytes-per-col ?? $encoded[$ptr - $bytes-per-row - $bytes-per-col] !! 0;
 
                 my Int $p = $left-byte + $up-byte - $up-left-byte;
 
@@ -76,6 +75,8 @@ role PDF::Storage::Filter::Predictors {
 
                 @output.push: ($encoded[$ptr++] - $nearest) % 256;
             }
+
+            $row++;
         }
 
         buf8.new: @output;
@@ -106,7 +107,7 @@ role PDF::Storage::Filter::Predictors {
 
             my @pixels = 0 xx $Colors;
 
-            for 1  .. $Columns {
+            for 1 .. $Columns {
 
                 for 0 ..^ $Colors {
                     @pixels[$_] = (@pixels[$_] + $nums[ $ptr++ ]) +& $bit-mask;
@@ -126,7 +127,7 @@ role PDF::Storage::Filter::Predictors {
                                  UInt :$BitsPerComponent = 8, #| number of bits per color
         ) {
 
-        my UInt $bytes-per-col = ($Colors * $BitsPerComponent  +  7) div 8;
+        my UInt $bytes-per-col = ceiling($Colors * $BitsPerComponent / 8);
         my UInt $bytes-per-row = $bytes-per-col * $Columns;
         my UInt $ptr = 0;
         my uint8 @output;
