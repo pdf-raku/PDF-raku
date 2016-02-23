@@ -1,5 +1,14 @@
 use v6;
 
+class X::PDF::Coerce
+    is Exception {
+	has $.obj is required;
+	has $.role is required;
+	method message {
+	    "unable to coerce object $!obj of type {$!obj.WHAT.gist} to role {$!role.WHAT.gist}"
+	}
+}
+
 class PDF::DAO::Delegator {
 
     use PDF::DAO::Util :from-ast;
@@ -35,14 +44,27 @@ class PDF::DAO::Delegator {
 	$obj does PDF::DAO::Name
     }
 
+    multi method coerce( PDF::DAO::Array $obj, $role where PDF::DAO::Tie::Array ) {
+	$obj does $role;
+	$obj.?tie-init;
+    }
+
+    multi method coerce( PDF::DAO::Dict $obj, $role where PDF::DAO::Tie::Hash ) {
+	$obj does $role;
+	$obj.?tie-init;
+    }
+
+    multi method coerce( $obj, $role where PDF::DAO::Tie ) {
+	warn X::PDF::Coerce.new( :$obj, :$role );
+    }
+
     multi method coerce( $obj, $role) is default {
-	if $role.does($role) {
-	    $obj does $role;
-	    $obj.?tie-init
-		if $role.does(PDF::DAO::Tie);
+
+	if $role.does($role) && !$role.isa($role) {
+	    $obj does $role
 	}
 	else {
-	    warn "unable to coerce object $obj of type {$obj.WHAT.gist} to role {$role.WHAT.gist}"
+	    warn X::PDF::Coerce.new( :$obj, :$role );
 	}
     }
 

@@ -7,6 +7,7 @@
       -- simplied and more general coercement to roles
     - [PDF::DAO::Tie]
       -- removed support for method aliases
+      -- added X::PDF::Coerce warning
     - [PDF::Storage::Filter::Predictors]
       -- fixed multi-channel (color) PNG prediction
 

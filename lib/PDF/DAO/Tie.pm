@@ -68,17 +68,18 @@ role PDF::DAO::Tie {
 				unless $of-type ~~ $att.type;
 			}
 			else {
+			    # init
 			    $att = Attribute.new( :name('@!' ~ $.accessor-name), :type($of-type), :package<?> );
 			    $att does TiedIndex;
 			    $att.tied = $.clone;
 			    $att.tied.type = $of-type;
 			    $lval.of-att = $att;
-			}
 			
-			for $lval.values {
-			    next if $_ ~~ Pair | $att.tied.type;
-			    ($att.tied.coerce)($_, $att.tied.type);
-			     .reader //= $reader if $reader && .can('reader');
+			    for $lval.values {
+				next if $_ ~~ Pair | $att.tied.type;
+				($att.tied.coerce)($_, $att.tied.type);
+				.reader //= $reader if $reader && .can('reader');
+			    }
 			}
 		    }
 		    else {
