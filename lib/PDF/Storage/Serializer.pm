@@ -258,12 +258,12 @@ class PDF::Storage::Serializer {
     }
 
     #| do a full save to the named file
-    multi method save-as(Str $file-name!,
-			 PDF::DAO $trailer-dict!,
-                         Numeric :$version=1.3,
-                         Str     :$!type,     #| e.g. 'PDF', 'FDF;
-                         Bool    :$compress,
-			         :$crypt,
+    method save-as(Str $file-name!,
+		   PDF::DAO $trailer-dict!,
+		   Numeric :$version=1.3,
+		   Str     :$!type,     #| e.g. 'PDF', 'FDF;
+		   Bool    :$compress,
+		           :$crypt,
         ) {
 	$!type //= $.reader.?type;
 	$!type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';

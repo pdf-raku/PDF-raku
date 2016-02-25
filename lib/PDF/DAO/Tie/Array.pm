@@ -33,11 +33,10 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	    next if @!index[$pos];
 	    @!index[$pos] = $att;
 
-	    my &meth = method { self.rw-accessor( $pos, $att ) };
-
 	    my $key = $att.tied.accessor-name;
 	    if $att.tied.gen-accessor && ! $class.^declares_method($key) {
 		$att.set_rw;
+		my &meth = method { self.rw-accessor( $pos, $att ) };
 		$class.^add_method( $key, &meth );
 	    }
 	}

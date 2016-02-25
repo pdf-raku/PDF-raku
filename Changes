@@ -1,10 +1,24 @@
+    Release 0.06
+    [PDF::DAO::Doc]
+    - added $.update( :patch-file ) option.
+      This allows the update body to be saved separate 'patch file', as an alternative
+      to appending to the original PDF.
+      
+      Useful in a mail-merge scenario where multiple documents are being produced
+      from a common template and each can be reconstituted by appending the
+      update patch-file to the original template.
+
+      Possible further work:
+      -- JSON output of patch files
+      -- add `$doc.open( $file, :patch-file)` option - load a base pdf, then apply a patch-file.
+
     Release 0.0.5
     - added some reader exception classes, e.g. X::PDF::BadXRef
     - renamed META.info => META6.json
     - changed $.delegator.find-delegate method
     - removed PDF::DAO::Type
     - [PDF::DAO::Delegator]
-      -- simplied and more general coercement to roles
+      -- simplified and more general coercement to roles
       -- added X::PDF::Coerce warning
     - [PDF::DAO::Tie]
       -- removed support for method aliases

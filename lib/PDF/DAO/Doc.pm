@@ -44,8 +44,9 @@ class PDF::DAO::Doc
         $!crypt = ::('PDF::Storage::Crypt::RC4').new( :doc(self), :$owner-pass, :$user-pass, |c);
     }
 
-    #| perform an incremental save back to the opened input file
-    method update(:$compress) {
+    #| perform an incremental save back to the opened input file, or to the
+    #| specified "patch-file"
+    method update(:$compress, Str :$patch-file) {
 
 	self.?cb-init
 	    unless self<Root>:exists;
@@ -57,8 +58,12 @@ class PDF::DAO::Doc
 	die "PDF has not been opened for indexed read."
 	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
 
+	die "patch file and input PDF are the same: $patch-file"
+	    if $patch-file && $patch-file eq $reader.file-name;
+
 	my $type = $reader.type;
-	self.generate-id( :$type );
+	self.generate-id( :$type )
+	    unless $patch-file;
 
         my PDF::Storage::Serializer $serializer .= new( :$reader, :$type );
         my Array $body = $serializer.body( :updates, :$compress );
@@ -74,15 +79,22 @@ class PDF::DAO::Doc
 	my @entries;
         my Str $new-body = $writer.write-body( $body[0], @entries, :$prev, :$trailer );
 
-	# merge the updated entries in the index
-	$prev = $writer.prev;
-        my UInt $size = $writer.size;
-	$reader.update( :@entries, :$prev, :$size);
-	$.Size = $size;
-	@entries = [];
+	my $fh;
+	if $patch-file {
+	    # saving updates as a PDF patch fragment elsewhere.
+	    $fh = $patch-file.IO.open(:w)
+	}
+	else {
+	    # in-place update. merge the updated entries in the index
+	    # todo: we should be able to leave the input file open and append to it
+	    $prev = $writer.prev;
+	    my UInt $size = $writer.size;
+	    $reader.update( :@entries, :$prev, :$size);
+	    $.Size = $size;
+	    @entries = [];
+	    $fh = $reader.file-name.IO.open(:a);
+	}
 
-        # todo we should be able to leave the input file open and append to it
-        my $fh = $reader.file-name.IO.open(:a);
         $fh.write: Preamble.encode('latin-1');
         $fh.write: $new-body.encode('latin-1');
         $fh.close;
@@ -90,9 +102,10 @@ class PDF::DAO::Doc
 
     method save-as(Str $file-name!, |c) {
 
-	self<Root>:exists
-	    ?? self<Root>.?cb-finish
-	    !! die "no top-level Root entry";
+	die "no top-level Root entry"
+	    unless self<Root>:exists;
+	
+	self<Root>.?cb-finish;
 
 	my $type = $.reader.?type;
 	$type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';

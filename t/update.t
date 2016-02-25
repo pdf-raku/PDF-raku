@@ -5,7 +5,8 @@ use PDF::Reader;
 use PDF::Writer;
 use PDF::DAO;
 use PDF::DAO::Doc;
-use PDF::Storage::Serializer;
+use PDF::Grammar::PDF;
+use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
@@ -29,13 +30,18 @@ my $catalog = $doc<Root>;
     $Parent<Count>++;
 }
 
-my $serializer = PDF::Storage::Serializer.new( :$reader );
-my $body = $serializer.body( :updates )[0];
+# firstly, write and anlalse just the updates
+lives-ok { $doc.update(:patch-file<t/pdf/pdf.in.patch>) }, 'update to PDF patch-file - lives';
 
-is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
-is-deeply $body<trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';
-is-deeply $body<trailer><dict><Prev>, (:int(644)), 'body trailer dict - Prev';
-my $updated-objects = $body<objects>;
+my $actions = PDF::Grammar::PDF::Actions.new;
+my Str $body-str = "t/pdf/pdf.in.patch".IO.slurp( :enc<latin-1> );
+ok PDF::Grammar::PDF.subparse( $body-str.trim, :rule<body>, :$actions), "can reparse update-body";
+my $ast = $/.ast;
+
+is-deeply $ast<body><trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
+is-deeply $ast<body><trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';
+is-deeply $ast<body><trailer><dict><Prev>, (:int(644)), 'body trailer dict - Prev';
+my $updated-objects = $ast<body><objects>;
 is +$updated-objects, 3, 'number of updates';
 is-json-equiv $updated-objects[0], (
     :ind-obj[3, 0, :dict{ Kids => :array[ :ind-ref[4, 0], :ind-ref[9, 0]],
@@ -90,7 +96,7 @@ $reader = $doc2.reader;
 is $reader.type, 'PDF', 'reader type';
 is +$reader.xrefs, 2, 'reader.xrefs - reread';
 
-my $ast = $reader.ast( :rebuild );
+$ast = $reader.ast( :rebuild );
 is $ast<pdf><header><type>, 'PDF', 'pdf ast type';
 is +$ast<pdf><body>, 1, 'single body';
 is +$ast<pdf><body>[0]<objects>, 10, 'read-back has object count';

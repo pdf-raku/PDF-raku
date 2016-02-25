@@ -50,10 +50,9 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	    next if %!entries{$key}:exists;
 	    %!entries{$key} = $att;
 
-	    my &meth = method { self.rw-accessor( $key, $att ) };
-
 	    if $att.tied.gen-accessor &&  ! $class.^declares_method($key) {
 		$att.set_rw;
+		my &meth = method { self.rw-accessor( $key, $att ) };
 		$class.^add_method( $key, &meth );
 	    }
 	}
