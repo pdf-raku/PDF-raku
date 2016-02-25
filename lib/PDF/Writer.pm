@@ -37,6 +37,7 @@ class PDF::Writer {
     }
 
     multi method write( Hash :$body!,  Bool :$write-xref = True ) {
+	$!offset //= 0;
 	$.write-body( $body, :$write-xref);
     }
 
@@ -112,11 +113,6 @@ class PDF::Writer {
         $!offset += @out[*-1].codes + 2;
 
         @out.join: "\n";
-    }
-
-    multi method write( :$body! ) {
-        $!offset = 0;
-        $.write( :$body );
     }
 
     multi method write( Bool :$bool! ) {
