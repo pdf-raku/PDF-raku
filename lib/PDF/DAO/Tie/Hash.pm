@@ -41,7 +41,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	tie-att-hash(self, $key, $att);
     }
 
-    method tie-init returns Bool {
+    method tie-init {
 	my $class = self.WHAT;
 	my $class-name = $class.^name;
 

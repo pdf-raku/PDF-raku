@@ -24,7 +24,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	tie-att-array(self, $idx, $att);
     }
 
-    method tie-init( --> Bool) {
+    method tie-init {
 	my $class = self.WHAT;
 	my $class-name = $class.^name;
 
@@ -40,8 +40,6 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 		$class.^add_method( $key, &meth );
 	    }
 	}
-
-	True;
     }
 
     #| for array lookups, typically $foo[42]
