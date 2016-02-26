@@ -16,8 +16,9 @@ It does not understand logical PDF document structure. It is however possible to
 perform simple edits by direct manipulation of PDF data. You will need some knowledge of how PDF documents are
 structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 
-<a href="https://github.com/p6-pdf/perl6-PDF-Struct">PDF::Struct</a> and <a href="https://github.com/p6-pdf/perl6-PDF-FDF">PDF::FDF</a> are
-both under construction for high-level manipulation of PDF and FDF documents.
+<a href="https://github.com/p6-pdf/perl6-PDF-Graphics">PDF::Graphics</a> 
+(under construction) can perform basic manipulation of text, images and
+general graphics.
 
 Classes/roles in this tool-kit include:
 
@@ -27,7 +28,7 @@ Classes/roles in this tool-kit include:
 - `PDF::Storage::Serializer` - data marshalling utilities for the preparation of full or incremental updates
 - `PDF::Storage::Crypt` - decryption / encryption (V 2 & 3 RC4 only at this stage)
 - `PDF::Writer` - for the creation or update of PDF files
-- `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>) to PDF data structures. Base classes for PDF::Struct and PDF::FDF
+- `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>)
 
 ## Example Usage
 
@@ -101,8 +102,6 @@ They have a reasonably well specified structure. The document structure starts f
 This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf'>PDF Reference version 1.7<a> specification. It implements syntax, basic data-types, serialization and encryption rules as described in the first four chapters of the specification. Read and write access to data structures is via direct manipulation of tied arrays and hashes.
 
 `PDF::DAO` provides a set of class builder utilities to enable higher level classes for general application development.
-
-This is put to work in the companion module <a href="https://github.com/p6-pdf/perl6-PDF-Struct">PDF::Struct</a> (under construction), which contains a much more detailed set of classes to implement much of the remainder of the PDF specification.
 
 ## The Basics
 
@@ -258,13 +257,13 @@ The page `/Contents` entry is a PDF stream which contains graphical instructions
   - `:!repair` causes the read to load only the trailer dictionary and cross reference tables from the tail of the PDF (Cross Reference Table or a PDF 1.5+ Stream). Remaining objects will be lazily loaded on demand.
   - `:repair` causes the reader to perform a full scan, ignoring and recalculating the cross reference stream/index and stream lengths. This can be handy if the PDF document has been hand-edited.
 
-- `$doc.update( :patch-file("path") )`
+- `$doc.update( :annex("path") )`
 This performs an incremental update to the input pdf, which must be indexed `PDF` (not applicable to
 PDF's opened with `:repair`, FDF or JSON files). A new section is appended to the PDF that
 contains only updated and newly created objects. This method can be used as a fast and efficient way to make
 small updates to a large existing PDF document.
-    - `:patch-file` - saves just the update section to a separate file. This may be useful in a mail-merge scenario, where
-    multiple PDF's are being produced from a common base PDF template. Each can be reconstituted by appending the patch-file
+    - `:annex` - saves just an update section to a separate file. This may be useful in a mail-merge scenario, where
+    multiple PDF's are being produced from a common base PDF template. Each can be reconstituted by appending the annex file
     to the base PDF.
 
 - `$doc.save-as("mydoc-2.pdf", :compress, :rebuild)`
@@ -345,12 +344,6 @@ A document can be encrypted using the `encyrpt` method: `$doc.encrypt( :owner-pa
 
 Note that it's quite commont to leave the user-password blank. This indicates that the document is readable by anyone, but has restrictions
 on update, printing or copying of the PDF.
-
-## Data Access Objects
-
-`PDF::DAO` is roughly equivalent to an <a href="https://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a> in that it provides the ability to define and map Perl 6 classes to PDF structures whilst hiding details of serialization and internal representations.
-
-It's subclasses and used by `PDF::Struct` to build the extensive library of document specific classes.
 
 ## Data-types and Coercion
 
@@ -453,7 +446,7 @@ PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 
 ## See also
 
-- [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing
-- [PDF::Graphics](https://github.com/p6-pdf/perl6-PDF-Graphics) - Utilities for working with content. Includes images, fonts, text and content operators (under construction) 
-- [PDF::Struct](https://github.com/p6-pdf/perl6-PDF-Structure) - PDF Document Data Structures (under construction)
+- [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing (released)
+- [PDF::Graphics](https://github.com/p6-pdf/perl6-PDF-Graphics) - Utilities for working with content; including images, fonts, text and general graphics (under construction) 
+- [PDF::Struct](https://github.com/p6-pdf/perl6-PDF-Struct) - PDF Document Data Structures (experimental, under construction)
 
