@@ -1,16 +1,17 @@
     Release 0.06
     [PDF::DAO::Doc]
-    - added $.update( :patch-file ) option.
-      This allows the update body to be saved separate 'patch file', as an alternative
-      to appending to the original PDF.
+    - added $.update( :annex(...) ) option.
+      This allows the update body to be saved to separate 'annex' file, as an
+      alternative to appending to the original PDF.
       
       Useful in a mail-merge scenario where multiple documents are being produced
       from a common template and each can be reconstituted by appending the
-      update patch-file to the original template.
+      annex file to the original template.
 
       Possible further work:
-      -- JSON output of patch files
-      -- add `$doc.open( $file, :patch-file)` option - load a base pdf, then apply a patch-file.
+      -- JSON output of annex files
+      -- add `$doc.open( $file, :annex)` option - load a base pdf, then apply
+         an annex file.
 
     Release 0.0.5
     - added some reader exception classes, e.g. X::PDF::BadXRef

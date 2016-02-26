@@ -45,8 +45,8 @@ class PDF::DAO::Doc
     }
 
     #| perform an incremental save back to the opened input file, or to the
-    #| specified "patch-file"
-    method update(:$compress, Str :$patch-file) {
+    #| specified annex file
+    method update(:$compress, Str :$annex) {
 
 	self.?cb-init
 	    unless self<Root>:exists;
@@ -58,12 +58,12 @@ class PDF::DAO::Doc
 	die "PDF has not been opened for indexed read."
 	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
 
-	die "patch file and input PDF are the same: $patch-file"
-	    if $patch-file && $patch-file eq $reader.file-name;
+	die "annex file and input PDF are the same: $annex"
+	    if $annex && $annex eq $reader.file-name;
 
 	my $type = $reader.type;
 	self.generate-id( :$type )
-	    unless $patch-file;
+	    unless $annex;
 
         my PDF::Storage::Serializer $serializer .= new( :$reader, :$type );
         my Array $body = $serializer.body( :updates, :$compress );
@@ -80,9 +80,9 @@ class PDF::DAO::Doc
         my Str $new-body = $writer.write-body( $body[0], @entries, :$prev, :$trailer );
 
 	my $fh;
-	if $patch-file {
-	    # saving updates as a PDF patch fragment elsewhere.
-	    $fh = $patch-file.IO.open(:w)
+	if $annex {
+	    # saving updates as a PDF annex fragment elsewhere.
+	    $fh = $annex.IO.open(:w)
 	}
 	else {
 	    # in-place update. merge the updated entries in the index

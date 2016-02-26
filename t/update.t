@@ -31,7 +31,7 @@ my $catalog = $doc<Root>;
 }
 
 # firstly, write and anlalse just the updates
-lives-ok { $doc.update(:patch-file<t/pdf/pdf.in.patch>) }, 'update to PDF patch-file - lives';
+lives-ok { $doc.update(:annex<t/pdf/pdf.in.patch>) }, 'update to PDF annex file - lives';
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 my Str $body-str = "t/pdf/pdf.in.patch".IO.slurp( :enc<latin-1> );
