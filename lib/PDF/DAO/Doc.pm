@@ -61,6 +61,9 @@ class PDF::DAO::Doc
 	die "annex file and input PDF are the same: $annex"
 	    if $annex && $annex eq $reader.file-name;
 
+        die "JSON annex files are NYI"
+	    if $annex && $annex ~~ m:i/'.json' $/;
+
 	my $type = $reader.type;
 	self.generate-id( :$type )
 	    unless $annex;

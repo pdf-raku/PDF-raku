@@ -30,7 +30,8 @@ my $catalog = $doc<Root>;
     $Parent<Count>++;
 }
 
-# firstly, write and anlalse just the updates
+# firstly, write and anlayse just the updates
+dies-ok { $doc.update(:annex<t/pdf/pdf.in.patch.json>) }, 'update to JSON annex file - NYI';
 lives-ok { $doc.update(:annex<t/pdf/pdf.in.patch>) }, 'update to PDF annex file - lives';
 
 my $actions = PDF::Grammar::PDF::Actions.new;
