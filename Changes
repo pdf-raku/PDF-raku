@@ -12,6 +12,8 @@
       -- JSON output of annex files
       -- add `$doc.open( $file, :annex)` option - load a base pdf, then apply
          an annex file.
+     [PDF::Reader]
+     - Bug-fix; avoid reencryption of encryption dictionary
 
     Release 0.0.5
     - added some reader exception classes, e.g. X::PDF::BadXRef

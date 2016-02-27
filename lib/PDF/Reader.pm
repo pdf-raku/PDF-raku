@@ -119,16 +119,20 @@ class PDF::Reader {
 		my Hash $idx = .value;
 
                 # skip the encryption dictionary, if it's an indirect object
-		next if $enc.obj-num
-                    && $obj-num == $enc.obj-num
-		    && $gen-num == $enc.gen-num;
+		if $enc.obj-num
+		    && $obj-num == $enc.obj-num
+		    && $gen-num == $enc.gen-num {
+			$idx<is-enc-dict> = True;
+		}
+		else {
 
-		if my $ind-obj := $idx<ind-obj> {
-		    die "too late to setup encryption: $obj-num $gen-num R"
-			if $idx<type> != 0 | 1
-			|| $ind-obj.isa(PDF::Storage::IndObj);
+		    if my $ind-obj := $idx<ind-obj> {
+			die "too late to setup encryption: $obj-num $gen-num R"
+			    if $idx<type> != 0 | 1
+			    || $ind-obj.isa(PDF::Storage::IndObj);
 
-		    $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num );
+			$!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num );
+		    }
 		}
 	    }
 	}
@@ -301,7 +305,7 @@ class PDF::Reader {
                     if $ind-obj[2].key eq 'stream';
 
                 $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num )
-                    if $!crypt;
+                    if $!crypt && ! $idx<is-enc-dict>;
             }
             when 2 {
                 # type 2 embedded object
