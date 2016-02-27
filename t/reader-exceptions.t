@@ -100,6 +100,5 @@ throws-like  { test-case( :repair, :endobj('bye!') ) }, ::('X::PDF::ParseError')
 
 throws-like { PDF::Reader.new.open("META6.json") }, ::("X::PDF::BadDump");
 
-
 done-testing;
  

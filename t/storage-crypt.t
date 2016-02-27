@@ -52,7 +52,9 @@ for $test1,
     my $crypt = $crypt-delegate.new( :$doc );
     dies-ok  { $crypt.authenticate( 'blah' ) }, 'bad password';
     lives-ok { $crypt.authenticate( $user-pass ) }, 'user password';
+    ok ! $crypt.is-owner, 'is not owner';
     lives-ok { $crypt.authenticate( $owner-pass, :owner) }, 'owner password';
+    ok $crypt.is-owner, 'is owner';
 
     my $obj-num = 6;
     my $gen-num = 0;

@@ -45,6 +45,6 @@ is $objstm-new.N, 2, '$objstm.new .N auto-setup';
 is $objstm-new.First, 11, '$objstm.new .First auto-setup';
 
 my $invalid-decoding =  [[10, '<< /Foo wtf!! (bar) >>'], [11, '[ 42 true ]']];
-lives-ok {$objstm-new.encode( $invalid-decoding) }, 'encoding invalid data without :check (lives)';
-dies-ok {$objstm-new.encode( $invalid-decoding, :check) }, 'encoding invalid data without :check (dies)';
+lives-ok {$objstm-new.encode( $invalid-decoding) }, 'encoding invalid data without :check - lives';
+dies-ok {$objstm-new.encode( $invalid-decoding, :check) }, 'encoding invalid data with :check - dies';
 
