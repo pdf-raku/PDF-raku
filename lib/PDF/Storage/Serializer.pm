@@ -35,12 +35,23 @@ class PDF::Storage::Serializer {
     multi method analyse( $other! ) is default {
     }
 
+    my subset DictIndObj of Pair where {.key eq 'ind-obj'
+					    && .value[2] ~~ Pair
+					    && .value[2].key eq 'dict'}
+    
+    #| remove and return the root object (trailer dictionary)
     method !get-root(@objects) {
-	my subset DictIndObj of Pair where {.key eq 'ind-obj'
-					       && .value[2] ~~ Pair
-					       && .value[2].key eq 'dict'}
 	my DictIndObj $root-ind-obj = @objects.shift; # first object is trailer dict
 	$root-ind-obj.value[2]<dict>;
+    }
+
+    #| Discard Linearization aka "Fast Web View"
+    method !discard-linearization(@objects) {
+    	if @objects && @objects[0] ~~ DictIndObj {
+	    my $first-ind-obj = @objects[0].value[2];
+	    @objects.shift
+		if $first-ind-obj<dict><Linearized>:exists;
+	}
     }
 
     proto method body(|c --> Array) {*}
@@ -107,7 +118,10 @@ class PDF::Storage::Serializer {
     #| return objects without renumbering existing objects. requires a PDF reader
     multi method body( Bool:_ :$*compress ) is default {
         my @objects = @( $.reader.get-objects );
+
 	my %dict = self!get-root(@objects);
+	self!discard-linearization(@objects);
+
         %dict<Prev>:delete;
         %dict<Size> = :int($.reader.size)
             unless $.type eq 'FDF';

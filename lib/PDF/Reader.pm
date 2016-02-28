@@ -715,15 +715,7 @@ class PDF::Reader {
         # preserve input order
         my @objects = @object-refs.list.sort(*.key).map: *.value;
 
-        if !$incremental && +@objects {
-            # Discard Linearization aka "Fast Web View"
-            my $first-ind-obj = @objects[0].value[2];
-            @objects.shift
-                if ($first-ind-obj<dict>:exists)
-                && ($first-ind-obj<dict><Linearized>:exists);
-        }
-
-        return @objects;
+        @objects;
     }
 
     #| get just updated objects. return as objects

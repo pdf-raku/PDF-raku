@@ -1,6 +1,5 @@
     Release 0.06
-    [PDF::DAO::Doc]
-    - added $.update( :annex(...) ) option.
+    - [PDF::DAO::Doc] added $.update( :annex(...) ) option.
       This allows the update body to be saved to separate 'annex' file, as an
       alternative to appending to the original PDF.
       
@@ -12,8 +11,9 @@
       -- JSON output of annex files
       -- add `$doc.open( $file, :annex)` option - load a base pdf, then apply
          an annex file.
-     [PDF::Reader]
-     - Bug-fix; avoid reencryption of encryption dictionary
+    - [PDF::Reader] Bug-fixes:
+      -- avoid encrypting the encryption dictionary
+      -- fixed de-Linearization. Now handled by PDF::Storage::Serializer
 
     Release 0.0.5
     - added some reader exception classes, e.g. X::PDF::BadXRef
