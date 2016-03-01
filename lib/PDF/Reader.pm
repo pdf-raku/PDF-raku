@@ -420,6 +420,83 @@ class PDF::Reader {
         self!full-scan( PDF::Grammar::PDF, $.actions, :repair, |c );
     }
 
+    method !locate-xref($input-bytes, $tail-bytes, $offset, $tail, $fallback is rw) {
+	my Str $xref;
+	$fallback = sub {};
+	constant SIZE = 4096;       # big enough to usually contain xref
+
+	if $offset >= $input-bytes - $tail-bytes {
+	    $xref = $.input.substr( $offset, $tail-bytes )
+	}
+	elsif $input-bytes - $tail-bytes - $offset <= SIZE {
+	    # xref abuts currently read $tail
+	    my UInt $lumbar-bytes = min(SIZE, $input-bytes - $tail-bytes - $offset);
+	    $xref = $.input.substr( $offset, $lumbar-bytes) ~ $tail;
+	}
+	else {
+	    my UInt $xref-len = min(SIZE, $input-bytes - $offset);
+	    $xref = $.input.substr( $offset, $xref-len );
+	    $fallback = sub {
+		if $input-bytes - $offset > SIZE {
+		    constant SIZE2 = SIZE * 16;
+		    # xref not contained in SIZE bytes? subparse a much bigger chunk to make sure
+		    $xref-len = min( SIZE2, $input-bytes - $offset - SIZE );
+		    $xref ~= $.input.substr( $offset + SIZE, $xref-len );
+		}
+		$xref;
+	    };
+	}
+	$xref;
+    }
+
+    #| load PDF 1.4- xref table followed by trailer
+    method !load-xref-table(Str $xref, $dict is rw, :$offset, :&fallback) {
+	my $parse = ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
+		      || PDF::Grammar::PDF.subparse( &fallback(), :rule<index>, :$.actions ) )
+	    or die X::PDF::BadXRef.new( :$offset, :$xref );
+
+	my $index = $parse.ast;
+	my @idx;
+
+	if ($index<xref>:exists) {
+	    for $index<xref>.list {
+		my UInt $obj-num = .<obj-first-num>;
+		for @( .<entries> ) {
+		    my UInt $type = .<type>;
+		    my UInt $gen-num = .<gen-num>;
+		    my UInt $offset = .<offset>;
+
+		    given $type {
+			when 0  {} # ignore free objects
+			when 1  {
+			    @idx.push({ :$type, :$obj-num, :$gen-num, :$offset })
+				if $offset;
+			}
+			default { die "unhandled type: $_" }
+		    }
+		    $obj-num++;
+		}
+	    }
+	}
+
+	$dict = PDF::DAO.coerce( |%($index<trailer>), :reader(self) );
+
+	@idx;
+    }
+
+    #| load a PDF 1.5+ XRef Stream
+    method !load-xref-stream(Str $xref, $dict is rw, UInt :$offset, :&fallback) {
+	( PDF::Grammar::PDF.subparse($xref, :$.actions, :rule<ind-obj>)
+	  || PDF::Grammar::PDF.subparse(&fallback(), :$.actions, :rule<ind-obj>) )
+	    or die X::PDF::BadIndirectObject::Parse.new( :$offset, :input($xref));
+
+	my %ast = %( $/.ast );
+	my PDF::Storage::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
+	my $xref-obj = $ind-obj.object;
+	$dict = $xref-obj;
+	$xref-obj.decode-to-stage2.list;
+    }
+
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
     #| via the $.ind-obj() method.
     multi method load('PDF', |c) is default {
@@ -444,77 +521,13 @@ class PDF::Reader {
             die "xref '/Prev' cycle detected \@$offset"
                 if %offsets-seen{$offset}++;
             # see if our cross reference table is already contained in the current tail
-            my Str $xref;
-            my &fallback = sub {};
-            constant SIZE = 4096;       # big enough to usually contain xref
+	    my Str $xref = self!locate-xref($input-bytes, $tail-bytes, $offset, $tail, my &fallback);
 
-            if $offset >= $input-bytes - $tail-bytes {
-                $xref = $.input.substr( $offset, $tail-bytes )
-            }
-            elsif $input-bytes - $tail-bytes - $offset <= SIZE {
-                # xref abuts currently read $tail
-                my UInt $lumbar-bytes = min(SIZE, $input-bytes - $tail-bytes - $offset);
-                $xref = $.input.substr( $offset, $lumbar-bytes) ~ $tail;
-            }
-            else {
-                my UInt $xref-len = min(SIZE, $input-bytes - $offset);
-                $xref = $.input.substr( $offset, $xref-len );
-                &fallback = sub {
-                    if $input-bytes - $offset > SIZE {
-                        constant SIZE2 = SIZE * 16;
-                        # xref not contained in SIZE bytes? subparse a much bigger chunk to make sure
-                        $xref-len = min( SIZE2, $input-bytes - $offset - SIZE );
-                        $xref ~= $.input.substr( $offset + SIZE, $xref-len );
-                        PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
-                    }
-                };
-            }
+	    @obj-idx.append: $xref ~~ /^'xref'/
+		?? self!load-xref-table( $xref, $dict, :&fallback, :$offset)
+		!! self!load-xref-stream($xref, $dict, :&fallback, :$offset);
 
-            if $xref ~~ /^'xref'/ {
-                # PDF 1.4- xref table followed by trailer
-                my $parse = ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
-                              || &fallback() )
-                    or die X::PDF::BadXRef.new( :$xref );
-
-                my Hash $index = $parse.ast;
-                $dict = PDF::DAO.coerce( |%($index<trailer>), :reader(self) );
-                self!set-trailer($dict);
-
-                my UInt $prev-offset;
-
-                if $index<xref>:exists {
-                    for $index<xref>.list {
-                        my UInt $obj-num = .<obj-first-num>;
-                        for @( .<entries> ) {
-                            my UInt $type = .<type>;
-                            my UInt $gen-num = .<gen-num>;
-                            my UInt $offset = .<offset>;
-
-                            given $type {
-                                when 0  {} # ignore free objects
-                                when 1  {
-                                    @obj-idx.push({ :$type, :$obj-num, :$gen-num, :$offset })
-                                        if $offset;
-                                }
-                                default { die "unhandled type: $_" }
-                            }
-                            $obj-num++;
-                        }
-                    }
-                }
-            }
-            else {
-                # PDF 1.5+ XRef Stream
-                PDF::Grammar::PDF.subparse($xref, :$.actions, :rule<ind-obj>)
-                    or die X::PDF::BadIndirectObject::Parse.new( :$offset, :input($xref));
-
-                my %ast = %( $/.ast );
-                my PDF::Storage::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
-                my $xref-obj = $ind-obj.object;
-                $dict = $xref-obj;
-                self!set-trailer($dict);
-                @obj-idx.append: $xref-obj.decode-to-stage2.list;
-            }
+	    self!set-trailer: $dict;
 
             $offset = $dict<Prev>:exists
                 ?? $dict<Prev>
@@ -523,7 +536,6 @@ class PDF::Reader {
             $.size = $dict<Size>:exists
                 ?? $dict<Size>
                 !! 1; # fix it up later
-
         }
 
         my %obj-entries-of-type = @obj-idx.classify: *.<type>;
@@ -531,12 +543,10 @@ class PDF::Reader {
         my @type1-obj-entries = %obj-entries-of-type<1>.list.sort({ $^a<offset> })
             if %obj-entries-of-type<1>:exists;
 
-        for @type1-obj-entries.kv -> $k, $v {
-            my UInt $obj-num = $v<obj-num>;
-            my UInt $gen-num = $v<gen-num>;
-            my UInt $offset = $v<offset>;
+        for @type1-obj-entries.kv -> $k, $_ {
+            my UInt $offset = .<offset>;
             my UInt $end = $k + 1 < +@type1-obj-entries ?? @type1-obj-entries[$k + 1]<offset> !! $input-bytes;
-            %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(1), :$offset, :$end };
+            %!ind-obj-idx{ .<obj-num> }{ .<gen-num> } = { :type(1), :$offset, :$end };
         }
 
 	self!setup-crypt(|c);
@@ -679,8 +689,9 @@ class PDF::Reader {
                     when 2 {
                         # type 2 embedded object
                         next unless $unpack;
-
                         my UInt $parent = $entry<ref-obj-num>;
+			die "unable to find object: $parent 0 R"
+			    unless %!ind-obj-idx{ $parent }{0}:exists;
                         $offset = %!ind-obj-idx{ $parent }{0}<offset>;
                         $seq = $entry<index>;
                     }
@@ -747,12 +758,12 @@ class PDF::Reader {
         }
     }
 
-    method ast( Bool :$rebuild = False ) {
+    method ast( Bool :$rebuild ) {
         my $serializer = PDF::Storage::Serializer.new( :reader(self) );
 
         my Array $body = $rebuild
             ?? $serializer.body( self.trailer )
-            !! $serializer.body( :$rebuild );
+            !! $serializer.body( );
 
         self.crypt.crypt-ast('body', $body)
             if self.crypt;
