@@ -4,7 +4,7 @@ use Test;
 use PDF::DAO::Doc;
 use PDF::DAO::Type::Info;
 
-for 't/pdf/samples'.IO.dir.list {
+for 't/pdf/samples'.IO.dir.sort {
 
     my Str $pdf-filename = ~$_;
     my Str $ext = $pdf-filename.IO.extension;
