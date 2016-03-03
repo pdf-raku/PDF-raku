@@ -12,17 +12,16 @@ class PDF::DAO::Dict
 
     use PDF::DAO::Util :from-ast, :to-ast-native;
 
-    our %seen = (); #= to catch circular references
+    my %seen{Any} = (); #= to catch circular references
 
     multi method new(Hash $dict!, |c) {
 	self.new( :$dict, |c );
     }
 
     multi method new(Hash :$dict = {}, *%etc) is default {
-        my Str $id = ~$dict.WHICH;
-        my $obj = %seen{$id};
+        my $obj = %seen{$dict};
         unless $obj.defined {
-            temp %seen{$id} = $obj = self.bless(|%etc);
+            temp %seen{$dict} = $obj = self.bless(|%etc);
 	    $obj.tie-init;
             # this may trigger cascading PDF::DAO::Tie coercians
             # e.g. native Array to PDF::DAO::Array

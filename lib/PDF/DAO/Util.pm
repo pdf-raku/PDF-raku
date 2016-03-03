@@ -15,14 +15,13 @@ module PDF::DAO::Util {
     multi sub to-ast-native(Numeric $real!) {:$real}
     multi sub to-ast-native(Str $literal!) {:$literal}
 
-    our %seen;
+    my %seen{Any};
 
     multi sub to-ast-native(Hash $_dict!) {
-	my Str $id = ~ $_dict.WHICH;
-	my $dict = %seen{$id};
+	my $dict = %seen{$_dict};
 
 	unless $dict.defined {
-	    $dict = temp %seen{$id} = {};
+	    $dict = temp %seen{$_dict} = {};
 	    $dict{.key} = to-ast(.value) for $_dict.pairs;
 	}
 
@@ -30,11 +29,10 @@ module PDF::DAO::Util {
     }
 
     multi sub to-ast-native(Array $_array!) {
-	my Str $id = ~ $_array.WHICH;
-	my $array = %seen{$id};
+	my $array = %seen{$_array};
 
 	unless $array.defined {
-	    $array = temp %seen{$id} = [ ];
+	    $array = temp %seen{$_array} = [ ];
 	    $array.push( to-ast( $_ ) ) for $_array.values;
 	}
 

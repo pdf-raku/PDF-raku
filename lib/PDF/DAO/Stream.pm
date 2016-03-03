@@ -33,17 +33,16 @@ class PDF::DAO::Stream
 
     has UInt $.DL is entry;                         #| (Optional; PDF 1.5) A non-negative integer representing the number of bytes in the decoded (defiltered) stream.
 
-    our %obj-cache = (); #= to catch circular references
+    my %obj-cache{Any} = (); #= to catch circular references
 
     multi method new(Hash $dict!, |c) {
 	self.new( :$dict, |c );
     }
 
     multi method new(Hash :$dict = {}, :$decoded, :$encoded, *%etc) {
-        my Str $id = ~$dict.WHICH;
-        my $obj = %obj-cache{$id};
+        my $obj = %obj-cache{$dict};
         unless $obj.defined {
-            temp %obj-cache{$id} = $obj = self.bless(|%etc);
+            temp %obj-cache{$dict} = $obj = self.bless(|%etc);
 	    $obj.tie-init;
             # this may trigger cascading PDF::DAO::Tie coercians
             $obj{.key} = from-ast(.value) for $dict.pairs;

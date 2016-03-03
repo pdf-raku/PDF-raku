@@ -135,7 +135,4 @@ role PDF::DAO {
 	$.delegator.delegate(|c);
     }
 
-    #| unique identifier for this object instance
-    method id { ~ self.WHICH }
-
 }
