@@ -422,7 +422,7 @@ class PDF::Reader {
 
     method !locate-xref($input-bytes, $tail-bytes, $offset, $tail, $fallback is rw) {
 	my Str $xref;
-	$fallback = sub {};
+	$fallback = sub ($_) {$_};
 	constant SIZE = 4096;       # big enough to usually contain xref
 
 	if $offset >= $input-bytes - $tail-bytes {
@@ -450,7 +450,7 @@ class PDF::Reader {
     }
 
     #| load PDF 1.4- xref table followed by trailer
-    method !load-xref-table(Str $xref, $dict is rw, :$offset, :&fallback) {
+    method !load-xref-table(Str $xref is copy, $dict is rw, :$offset, :&fallback) {
 	my $parse = ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
 		      || PDF::Grammar::PDF.subparse( &fallback($xref), :rule<index>, :$.actions ) )
 	    or die X::PDF::BadXRef.new( :$offset, :$xref );
@@ -485,12 +485,12 @@ class PDF::Reader {
     }
 
     #| load a PDF 1.5+ XRef Stream
-    method !load-xref-stream(Str $xref, $dict is rw, UInt :$offset, :&fallback) {
+    method !load-xref-stream(Str $xref is copy, $dict is rw, UInt :$offset, :&fallback) {
 	( PDF::Grammar::PDF.subparse($xref, :$.actions, :rule<ind-obj>)
 	  || PDF::Grammar::PDF.subparse(&fallback($xref), :$.actions, :rule<ind-obj>) )
 	    or die X::PDF::BadIndirectObject::Parse.new( :$offset, :input($xref));
 
-	my %ast = %( $/.ast );
+	my %ast = $/.ast;
 	my PDF::Storage::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
 	my $xref-obj = $ind-obj.object;
 	$dict = $xref-obj;
