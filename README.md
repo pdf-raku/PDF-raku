@@ -16,7 +16,7 @@ It does not understand logical PDF document structure. It is however possible to
 perform simple edits by direct manipulation of PDF data. You will need some knowledge of how PDF documents are
 structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 
-<a href="https://github.com/p6-pdf/perl6-PDF-Graphics">PDF::Graphics</a> 
+<a href="https://github.com/p6-pdf/perl6-PDF-Content">PDF::Content</a> 
 (under construction) can perform basic manipulation of text, images and
 general graphics.
 
@@ -338,12 +338,12 @@ say $encoded.codes;
 
 PDF::Tools supports basic RC4 encryption (revisions /R 2 - 4 and versions /V 1 - 2 of PDF Encryption).
 
-To open an encrypt PDF document, specify either the user or owner password: `PDF::DAO::Doc.open( "enc.pdf", :password<ssh!>)`
+To open an encrypted PDF document, specify either the user or owner password: `PDF::DAO::Doc.open( "enc.pdf", :password<ssh!>)`
 
-A document can be encrypted using the `encyrpt` method: `$doc.encrypt( :owner-pass<ssh1>, :user-pass<abc> )`
+A document can be encrypted using the `encrypt` method: `$doc.encrypt( :owner-pass<ssh1>, :user-pass<abc> )`
 
-Note that it's quite commont to leave the user-password blank. This indicates that the document is readable by anyone, but has restrictions
-on update, printing or copying of the PDF.
+Note that it's quite commont to leave the user-password blank. This indicates that the document is readable by anyone, but may have
+restrictions on update, printing or copying of the PDF.
 
 ## Data-types and Coercion
 
@@ -447,6 +447,6 @@ PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 ## See also
 
 - [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing (released)
-- [PDF::Graphics](https://github.com/p6-pdf/perl6-PDF-Graphics) - Utilities for working with content; including images, fonts, text and general graphics (under construction) 
+- [PDF::Content](https://github.com/p6-pdf/perl6-PDF-Content) - Utilities for working with content; including images, fonts, text and general graphics (under construction) 
 - [PDF::Struct](https://github.com/p6-pdf/perl6-PDF-Struct) - PDF Document Data Structures (experimental, under construction)
 
