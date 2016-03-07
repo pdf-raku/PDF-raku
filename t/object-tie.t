@@ -79,6 +79,8 @@ is $contents.Length, 41, '$stream<Length> is tied to $stream.Length';
 $contents<Length>:delete;
 ok !$contents.Length.defined, '$stream<Length>:delete propagates to $stream.Length';
 
+$contents = Nil;
+
 my $doc = PDF::DAO.coerce: { :Root{ :Type(/'Catalog') } };
 $doc<Root><Outlines> = $root-obj<Outlines>;
 $doc<Root><Pages> = $root-obj<Pages>;
@@ -125,7 +127,7 @@ my role GenRole {
 }
 
 my $h1 = PDF::DAO.coerce: {};
-lives-ok { PDF::DAO.coerce($h1, HashRole) }, 'tied hash role applicaton';
+lives-ok { PDF::DAO.coerce($h1, HashRole) }, 'tied hash role application';
 does-ok $h1, HashRole, 'Hash/Hash application';
 $h1.Foo = 42;
 is $h1<Foo>, 42, 'tied hash';
@@ -136,7 +138,7 @@ warns-like { PDF::DAO.coerce($h2, ArrayRole) }, ::('X::PDF:Coerce'), 'Hash/Array
 ok !$h2.does(ArrayRole), 'Hash/Array misapplication';
 
 my $a1 = PDF::DAO.coerce: [];
-lives-ok { PDF::DAO.coerce($a1, ArrayRole) }, 'tied array role applicaton';
+lives-ok { PDF::DAO.coerce($a1, ArrayRole) }, 'tied array role application';
 does-ok $a1, ArrayRole, 'Hash/Hash application';
 $a1.Bar = 69;
 is $a1[1], 69, 'tied array accessor';
@@ -147,11 +149,11 @@ warns-like { PDF::DAO.coerce($a2, HashRole) }, ::('X::PDF:Coerce'), 'Array/Hash 
 ok !$a2.does(HashRole), 'Array/Hash misapplication';
 
 my $h3 = PDF::DAO.coerce: {};
-lives-ok { PDF::DAO.coerce($h3, GenRole) }, 'general hash role applicaton';
+lives-ok { PDF::DAO.coerce($h3, GenRole) }, 'general hash role application';
 does-ok $h3, GenRole, 'Hash/Gen application';
 
 my $a3 = PDF::DAO.coerce: [];
-lives-ok { PDF::DAO.coerce($a3, GenRole) }, 'general array role applicaton';
+lives-ok { PDF::DAO.coerce($a3, GenRole) }, 'general array role application';
 does-ok $a3, GenRole, 'Array/Gen application';
 
 done-testing;
