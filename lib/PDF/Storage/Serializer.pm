@@ -7,7 +7,6 @@ class PDF::Storage::Serializer {
     use PDF::DAO::Dict;
     use PDF::DAO::Stream;
     use PDF::DAO::Util :to-ast;
-    use PDF::Writer;
 
     has UInt $.size is rw = 1;      #| first free object number
     has Pair  @!objects;            #| renumbered objects
@@ -260,24 +259,41 @@ class PDF::Storage::Serializer {
 	to-ast $other
     }
 
+    multi sub save-to(Str $file-name where m:i/'.json' $/, Pair $ast) {
+        use JSON::Fast;
+	$file-name.IO.spurt( to-json( $ast ))
+    }
+
+    multi sub save-to(Str $file-name, Pair $ast) {
+	save-to($file-name.IO, $ast);
+    }
+
+    multi sub save-to(IO::Path $iop, Pair $ast) {
+	save-to($iop.open(:w), $ast);
+    }
+
+    multi sub save-to(IO::Handle $ioh, Pair $ast) is default {
+	use PDF::Writer;
+        my PDF::Writer $writer .= new;
+	$ioh.write: $writer.write( $ast ).encode('latin-1')
+    }
+
     #| do a full save to the named file
-    method save-as(Str $file-name!,
-		   PDF::DAO $trailer-dict!,
+    method save-as($target! where Str | IO::Handle | IO::Path,
+		   PDF::DAO $trailer!,
 		   Numeric :$version=1.3,
 		   Str     :$!type,     #| e.g. 'PDF', 'FDF;
 		   Bool    :$compress,
 		           :$crypt,
         ) {
 	$!type //= $.reader.?type;
-	$!type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';
-        my Array $body = self.body($trailer-dict, :$compress );
+	$!type //= (($trailer<Root>:exists) && ($trailer<Root><FDF>:exists)
+		    ?? 'FDF'
+		    !! 'PDF');
+        my Array $body = self.body($trailer, :$compress );
 	$crypt.crypt-ast('body', $body)
 	    if $crypt;
         my Pair $ast = :pdf{ :header{ :$!type, :$version }, :$body };
-        my $writer = PDF::Writer.new( );
-        use JSON::Fast;
-        $file-name ~~ m:i/'.json' $/
-            ?? $file-name.IO.spurt( to-json( $ast ))
-            !! $file-name.IO.spurt( $writer.write( $ast ), :enc<latin-1> );
+        save-to($target, $ast);
     }
 }

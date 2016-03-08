@@ -1,7 +1,8 @@
     Release 0.06
     - [PDF::Storage::Serializer][PDF::DAO::{Array|Dict|Stream}] use Perl 6 object hashes
       -- Refactored `my %h; ...; %hash{$object.WHICH}` with `my %h{Any}; ...; %hash{$object}` 
-      -- See http://doc.perl6.org/type/Hash#Object_hashes_and_type_constraints
+         (See http://doc.perl6.org/type/Hash#Object_hashes_and_type_constraints)
+      -- serializer.save-as($target); # can now be file-name, io-path, or io-handle
       
     - [PDF::DAO::Doc] added $.update( :annex(...) ) option.
       This allows the update body to be saved to separate 'annex' file, as an
