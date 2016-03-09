@@ -12,9 +12,9 @@ my $actions = PDF::Grammar::PDF::Actions.new;
 my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed: $input";
-my $ast = $/.ast;
+my %ast = $/.ast;
 
-my $ind-obj = PDF::Storage::IndObj.new( :$input, |%( $ast.kv ) );
+my $ind-obj = PDF::Storage::IndObj.new( :$input, |%ast );
 is $ind-obj.obj-num, 5, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $object = $ind-obj.object;

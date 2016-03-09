@@ -16,10 +16,6 @@ It does not understand logical PDF document structure. It is however possible to
 perform simple edits by direct manipulation of PDF data. You will need some knowledge of how PDF documents are
 structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 
-<a href="https://github.com/p6-pdf/perl6-PDF-Content">PDF::Content</a> 
-(under construction) can perform basic manipulation of text, images and
-general graphics.
-
 Classes/roles in this tool-kit include:
 
 - `PDF::Reader` - for indexed random access to PDF files
@@ -96,12 +92,10 @@ for holding data such as images, fonts and general content.
 
 PDF files are also indexed for random access and may also have filters for stream compression and encryption of streams and strings.
 
-They have a reasonably well specified structure. The document structure starts from
+They have a reasonably well specified structure. The document starts from
 `Root` entry in the trailer dictionary, which is the main entry point into a PDF.
 
 This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf'>PDF Reference version 1.7<a> specification. It implements syntax, basic data-types, serialization and encryption rules as described in the first four chapters of the specification. Read and write access to data structures is via direct manipulation of tied arrays and hashes.
-
-`PDF::DAO` provides a set of class builder utilities to enable higher level classes for general application development.
 
 ## The Basics
 
@@ -275,7 +269,7 @@ Saves a new document, including any updates. Options:
 Note that the `:compress` and `:rebuild` options are a trade-off. The document may take longer to save, however file-sizes and the time needed to reopen the document may improve.
 
 - `$doc.save-as("mydoc.json", :compress, :rebuild); my $doc2 = $doc.open: "mydoc.json"`
-Documents can also be saved and restored from an intermediate `JSON` representation. This can
+Documents can also be saved and opened from an intermediate `JSON` representation. This can
 be handy for debugging, analysis and/or ad-hoc patching of PDF files.
 
 ### See also:
@@ -448,5 +442,5 @@ PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 
 - [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing (released)
 - [PDF::Content](https://github.com/p6-pdf/perl6-PDF-Content) - Utilities for working with content; including images, fonts, text and general graphics (under construction) 
-- [PDF::Struct](https://github.com/p6-pdf/perl6-PDF-Struct) - PDF Document Data Structures (experimental, under construction)
+- [PDF::Struct](https://github.com/p6-pdf/perl6-PDF-Struct) - Structured access to PDF Documents (experimental, under construction)
 

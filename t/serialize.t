@@ -106,7 +106,7 @@ my $stream = $objects-compressed[*-2].value[2]<stream>;
 is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'compressed dict';
 is $stream<encoded>.codes, 54, 'compressed stream length';
 
-# just to define current behaviour. blows up during final write.
+# just to define current behaviour wrt to non-latin chars; blows up during write.
 my $obj-with-bad-byte-string = PDF::DAO.coerce: { :Root{ :Name("Heydər Əliyev") } };
 $objects = PDF::Storage::Serializer.new.body($obj-with-bad-byte-string)<objects>;
 dies-ok {$writer.write( :ind-obj($objects[0].value) )}, 'out-of-range byte-string dies during write';
