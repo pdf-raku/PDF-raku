@@ -134,7 +134,7 @@ is $h1<Foo>, 42, 'tied hash';
 is $h1.Foo, 42, 'tied hash accessor';
 
 my $h2 = PDF::DAO.coerce: {};
-warns-like { PDF::DAO.coerce($h2, ArrayRole) }, ::('X::PDF:Coerce'), 'Hash/Array misapplication';
+warns-like { PDF::DAO.coerce($h2, ArrayRole) }, ::('X::PDF::Coerce'), 'Hash/Array misapplication';
 ok !$h2.does(ArrayRole), 'Hash/Array misapplication';
 
 my $a1 = PDF::DAO.coerce: [];
@@ -145,7 +145,7 @@ is $a1[1], 69, 'tied array accessor';
 is $a1.Bar, 69, 'tied array accessor';
 
 my $a2 = PDF::DAO.coerce: [];
-warns-like { PDF::DAO.coerce($a2, HashRole) }, ::('X::PDF:Coerce'), 'Array/Hash misapplication';
+warns-like { PDF::DAO.coerce($a2, HashRole) }, ::('X::PDF::Coerce'), 'Array/Hash misapplication';
 ok !$a2.does(HashRole), 'Array/Hash misapplication';
 
 my $h3 = PDF::DAO.coerce: {};
