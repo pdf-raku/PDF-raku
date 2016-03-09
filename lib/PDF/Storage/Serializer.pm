@@ -259,32 +259,13 @@ class PDF::Storage::Serializer {
 	to-ast $other
     }
 
-    multi sub save-to(Str $file-name where m:i/'.json' $/, Pair $ast) {
-        use JSON::Fast;
-	$file-name.IO.spurt( to-json( $ast ))
-    }
-
-    multi sub save-to(Str $file-name, Pair $ast) {
-	save-to($file-name.IO, $ast);
-    }
-
-    multi sub save-to(IO::Path $iop, Pair $ast) {
-	save-to($iop.open(:w), $ast);
-    }
-
-    multi sub save-to(IO::Handle $ioh, Pair $ast) is default {
-	use PDF::Writer;
-        my PDF::Writer $writer .= new;
-	$ioh.write: $writer.write( $ast ).encode('latin-1')
-    }
-
     #| do a full save to the named file
-    method save-as($target! where Str | IO::Handle | IO::Path,
-		   PDF::DAO $trailer!,
-		   Numeric :$version=1.3,
-		   Str     :$!type,     #| e.g. 'PDF', 'FDF;
-		   Bool    :$compress,
-		           :$crypt,
+    method ast(
+	PDF::DAO $trailer!,
+	Numeric :$version=1.3,
+	Str     :$!type,     #| e.g. 'PDF', 'FDF;
+	Bool    :$compress,
+	:$crypt,
         ) {
 	$!type //= $.reader.?type;
 	$!type //= (($trailer<Root>:exists) && ($trailer<Root><FDF>:exists)
@@ -293,7 +274,6 @@ class PDF::Storage::Serializer {
         my Array $body = self.body($trailer, :$compress );
 	$crypt.crypt-ast('body', $body)
 	    if $crypt;
-        my Pair $ast = :pdf{ :header{ :$!type, :$version }, :$body };
-        save-to($target, $ast);
+        :pdf{ :header{ :$!type, :$version }, :$body };
     }
 }

@@ -103,18 +103,41 @@ class PDF::DAO::Doc
         $fh.close;
     }
 
-    method save-as(Str $file-name!, |c) {
-
+    method ast(|c) {
 	die "no top-level Root entry"
 	    unless self<Root>:exists;
 	
 	self<Root>.?cb-finish;
 
 	my $type = $.reader.?type;
-	$type //= $file-name ~~ /:i '.fdf' $/  ?? 'FDF' !! 'PDF';
+	$type //= self<Root><FDF>:exists ?? 'FDF' !! 'PDF';
 	self.generate-id( :$type );
 	my PDF::Storage::Serializer $serializer .= new;
-	$serializer.save-as( $file-name, self, :$type, :$!crypt, |c)
+	$serializer.ast( self, :$type, :$!crypt, |c);
+    }
+
+    method save-as($target! where Str | IO::Handle | IO::Path, |c) {
+
+	multi sub save-to(Str $file-name where m:i/'.json' $/, Pair $ast) {
+            use JSON::Fast;
+	    $file-name.IO.spurt( to-json( $ast ))
+	}
+
+	multi sub save-to(Str $file-name, Pair $ast) {
+	    save-to($file-name.IO, $ast);
+	}
+
+	multi sub save-to(IO::Path $iop, Pair $ast) {
+	    save-to($iop.open(:w), $ast);
+	}
+
+	multi sub save-to(IO::Handle $ioh, Pair $ast) is default {
+	    use PDF::Writer;
+            my PDF::Writer $writer .= new;
+	    $ioh.write: $writer.write( $ast ).encode('latin-1')
+	}
+
+	save-to($target, $.ast(|c) );
     }
 
     # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )
