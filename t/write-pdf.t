@@ -11,7 +11,7 @@ use PDF::Writer;
 
 my $actions = PDF::Grammar::Doc::Actions.new();
 
-for 't/pdf'.IO.dir.list {
+for 't/pdf'.IO.dir.list.sort {
 
     next unless / [\w|'-']*? '.json'$/;
     my $json-file = ~$_;

@@ -42,7 +42,7 @@
                     "literal": "D:20151225000000Z00'00'"
                   },
                   "Author": {
-                    "literal": "PDF-Tools/t/helloworld.t"
+                    "literal": "PDF-Tools/t/dao-doc.t"
                   }
                 }
               }

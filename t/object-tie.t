@@ -64,18 +64,21 @@ ET
 # demonstrate low level construction of a PDF. First page is copied from an
 # input PDF. Second page is constructed from scratch.
 
+my Str $decoded = "BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET";
+my UInt $Length = $decoded.codes;
+
 lives-ok {
     my $Resources = $Pages<Kids>[0]<Resources>;
     my $new-page = PDF::DAO.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
-    my $contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET" ), :dict{ :Length(46) } } );
+    my $contents = PDF::DAO.coerce( :stream{ :$decoded, :dict{ :$Length } } );
     $new-page<Contents> = $contents;
     $new-page<Parent> = $Pages;
     $Pages<Kids>.push: $new-page;
     $Pages<Count> = $Pages<Count> + 1;
     }, 'page addition';
 
-$contents<Length> = 41;
-is $contents.Length, 41, '$stream<Length> is tied to $stream.Length';
+is $contents<Length>, $Length, '$stream<Length> dereference';
+is $contents.Length, $Length, '$stream.Length accessor';
 $contents<Length>:delete;
 ok !$contents.Length.defined, '$stream<Length>:delete propagates to $stream.Length';
 

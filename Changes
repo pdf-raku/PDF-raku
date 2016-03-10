@@ -4,8 +4,9 @@
          (See http://doc.perl6.org/type/Hash#Object_hashes_and_type_constraints)
       
     - [PDF::DAO::Doc]
-      -- $doc.save-as($target); # can now be file-name, io-path, or io-handle
       -- added $doc.ast method. factored out from $doc.save-as
+      -- Added $doc.Str method; for in-memory serialization
+      -- $doc.save-as($target); # can now be file-name, io-path, or io-handle
       -- added $.update( :annex(...) ) option.
       This allows the update body to be saved to separate 'annex' file, as an
       alternative to appending to the original PDF.

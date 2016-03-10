@@ -132,12 +132,17 @@ class PDF::DAO::Doc
 	}
 
 	multi sub save-to(IO::Handle $ioh, Pair $ast) is default {
-	    use PDF::Writer;
             my PDF::Writer $writer .= new;
 	    $ioh.write: $writer.write( $ast ).encode('latin-1')
 	}
 
 	save-to($target, $.ast(|c) );
+    }
+
+    #| stringify to the serialized PDF
+    method Str {
+        my PDF::Writer $writer .= new;
+	$writer.write( $.ast )
     }
 
     # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )

@@ -11,7 +11,7 @@ my $doc = PDF::DAO::Doc.open: "t/helloworld.pdf";
 my $user-pass = '';
 my $owner-pass = 'ssh!';
 my $expected-contents = 'BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET';
-my $expected-author = 'PDF-Tools/t/helloworld.t';
+my $expected-author = 'PDF-Tools/t/dao-doc.t';
 
 lives-ok { $doc.encrypt( :$owner-pass, :$user-pass, :R(2), :V(1), ) }, '$doc.encrypt (R2.1) - lives';
 is $doc.crypt.is-owner, True, 'newly encrypted pdf - is-owner';

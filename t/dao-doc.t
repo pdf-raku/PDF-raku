@@ -3,6 +3,7 @@ use Test;
 
 use PDF::DAO;
 use PDF::DAO::Doc;
+use PDF::Grammar::PDF;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
@@ -31,7 +32,7 @@ $pages<Count>++;
 
 my $info = $doc.Info = {};
 $info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
-$info.Author = 'PDF-Tools/t/helloworld.t';
+$info.Author = 'PDF-Tools/t/dao-doc.t';
 
 lives-ok {$doc.save-as("t/helloworld.pdf")}, 'save-as pdf';
 ok $doc.ID, 'doc ID generated';
@@ -41,4 +42,5 @@ is $upd-id, $doc-id, 'initial document ID';
 lives-ok {$doc.save-as("t/pdf/samples/helloworld.json")}, 'save-as json';
 is $doc.ID[0], $doc-id, 'document ID[0] - post update';
 isnt $doc.ID[1], $doc-id, 'document ID[1] - post update';
+ok PDF::Grammar::PDF.parse( $doc.Str ), '$doc.Str serialization';
 done-testing;
