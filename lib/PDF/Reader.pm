@@ -102,10 +102,7 @@ class PDF::Reader {
 	my Hash $doc = self.trailer;
 	return unless $doc<Encrypt>:exists;
 
-	## todo dynamic load of encryption class
-	## $!crypt = PDF::Storage::Crypt.delegate-class( :$doc ).new( :$doc );
-	use PDF::Storage::Crypt::RC4;  # help rakudo
-	$!crypt = PDF::Storage::Crypt::RC4.new( :$doc );
+	$!crypt = PDF::Storage::Crypt.delegate-class( :$doc ).new( :$doc );
 	$!crypt.authenticate( $password );
 	my $enc = $doc<Encrypt>;
 

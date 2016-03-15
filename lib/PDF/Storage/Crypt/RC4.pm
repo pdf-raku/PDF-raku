@@ -5,6 +5,7 @@ use PDF::Storage::Crypt;
 class PDF::Storage::Crypt::RC4
     is PDF::Storage::Crypt {
 
+    use PDF::DAO::Doc;
     use PDF::Storage::Blob;
     use PDF::Storage::Util :resample;
     use Digest::MD5;
@@ -89,7 +90,7 @@ class PDF::Storage::Crypt::RC4
     }
 
     #| open a previously encrypted document
-    submethod load(Hash :$doc!) is default {
+    submethod load(PDF::DAO::Doc :$doc!) is default {
 	my $encrypt = $doc.Encrypt
 	    or die "this document is not encrypted";
 
