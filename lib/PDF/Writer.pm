@@ -298,9 +298,10 @@ class PDF::Writer {
     multi method write( Hash :$stream! ) {
 
         my %dict = %( $stream<dict> );
-        my $data = $stream<encoded> // $.input.stream-data( :$stream ),
+        my $data = $stream<encoded> // $.input.stream-data( :$stream );
+        $data = $data.decode("latin-1")
+            unless $data.isa(Str);
         %dict<Length> //= :int($data.codes);
-
         [~] $.write( :%dict ), " stream\n", $data, "\nendstream";
     }
 

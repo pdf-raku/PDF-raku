@@ -1,4 +1,5 @@
     Release 0.06
+    - [bin/pdf-rewriter.pl] unbust rewriting/recompression of encrypted PDFs
     - [PDF::Storage::Serializer][PDF::DAO::{Array|Dict|Stream}] use Perl 6 object hashes
       -- Refactored `my %h; ...; %hash{$object.WHICH}` with `my %h{Any}; ...; %hash{$object}` 
          (See http://doc.perl6.org/type/Hash#Object_hashes_and_type_constraints)

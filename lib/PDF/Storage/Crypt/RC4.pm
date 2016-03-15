@@ -5,7 +5,7 @@ use PDF::Storage::Crypt;
 class PDF::Storage::Crypt::RC4
     is PDF::Storage::Crypt {
 
-    use PDF::DAO::Doc;
+    use PDF::DAO::Dict;
     use PDF::Storage::Blob;
     use PDF::Storage::Util :resample;
     use Digest::MD5;
@@ -90,28 +90,28 @@ class PDF::Storage::Crypt::RC4
     }
 
     #| open a previously encrypted document
-    submethod load(PDF::DAO::Doc :$doc!) is default {
-	my $encrypt = $doc.Encrypt
+    submethod load(PDF::DAO::Dict :$doc!) is default {
+	my $encrypt = $doc<Encrypt>
 	    or die "this document is not encrypted";
 
 	die 'This PDF lacks an ID.  The document cannot be decrypted'
-	    unless $doc.ID;
+	    unless $doc<ID>;
 
-	@!doc-id = $doc.ID[0].ords;
-	my uint8 @p8 = resample([ $encrypt.P, ], 32, 8).reverse;
+	@!doc-id = $doc<ID>[0].ords;
+	my uint8 @p8 = resample([ $encrypt<P>, ], 32, 8).reverse;
 	@!P = @p8;
-	$!R = $encrypt.R;
-	$!EncryptMetadata = $encrypt.EncryptMetadata // False;
-	@!O = $encrypt.O.ords;
-	@!U = $encrypt.U.ords;
+	$!R = $encrypt<R>;
+	$!EncryptMetadata = $encrypt<EncryptMetadata> // False;
+	@!O = $encrypt<O>.ords;
+	@!U = $encrypt<U>.ords;
 
-	my UInt $v = $encrypt.V;
-	my Str $filter = $encrypt.Filter;
+	my UInt $v = $encrypt<V>;
+	my Str $filter = $encrypt<Filter>;
 
 	die "Only Version 1 and 2 of the Standard encryption filter are supported"
 	    unless $v == 1 | 2 && $filter eq 'Standard';
 
-	my UInt $key-bits = $v == 1 ?? 40 !! $encrypt.Length // 40;
+	my UInt $key-bits = $v == 1 ?? 40 !! $encrypt<Length> // 40;
 	die "invalid encryption key length: $key-bits"
 	    unless 40 <= $key-bits <= 128
 	    && $key-bits %% 8;

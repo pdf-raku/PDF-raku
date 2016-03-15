@@ -6,7 +6,7 @@ class PDF::Storage::Crypt {
 	return Nil
 	    unless $doc<Encrypt>:exists;
 
-	my $class = do given $doc.Encrypt.R {
+	my $class = do given $doc<Encrypt><R> {
 	    when 1..4 {
 		require ::('PDF::Storage::Crypt::RC4');
 		::('PDF::Storage::Crypt::RC4');
