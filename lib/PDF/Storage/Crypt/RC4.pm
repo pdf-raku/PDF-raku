@@ -161,7 +161,7 @@ class PDF::Storage::Crypt::RC4
 
 	for 1 .. $reps {
 	    $key = Digest::MD5::md5($key);
-	    $key = $key.subbuf(0, $n)
+	    $key.reallocate($n)
 		unless +$key <= $n;
 	}
 
@@ -214,7 +214,7 @@ class PDF::Storage::Crypt::RC4
 
 	for 1..$reps {
 	    $key = Digest::MD5::md5($key);
-	    $key = $key.subbuf(0, $n)
+	    $key.reallocate($n)
 		unless +$key <= $n;
 	}
 
@@ -275,7 +275,7 @@ class PDF::Storage::Crypt::RC4
 
 	my UInt $size = +@obj-key;
 	my $key = Digest::MD5::md5( @obj-key );
-	$key = $key.subbuf(0, $size)
+	$key.reallocate($size)
 	    if $size < 16;
 
 	Crypt::RC4::RC4( $key, $bytes );
