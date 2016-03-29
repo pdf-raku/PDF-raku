@@ -27,7 +27,7 @@ is $ind-obj.gen-num, 1, '$.gen-num';
 
 stream_tests( $ind-obj.object, 'indirect object' );
 
-dies-ok {$ind-obj.object.edit-stream( :append(0xABC.chr))}, 'illelal character in edit - dies';
+dies-ok {$ind-obj.object.edit-stream( :append(0xABC.chr))}, 'illegal character in edit - dies';
 
 $ind-obj.object.edit-stream( :prepend('q '), :append(' Q'));
 is $ind-obj.object.decoded, "q $decoded Q", '.edit';

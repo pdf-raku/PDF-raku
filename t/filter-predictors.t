@@ -17,8 +17,7 @@ my $prediction-in = buf8.new: [
 my $tiff-post-prediction = buf8.new: [
     0x02, 0x01, 0x00, 0x12, 0x01, 0x02, 0x12, 0x03, 0xCF, 0x12, 0x05,
     0xCF, 0x01, 0x51, 0x00, 0x02, 0x51, 0x01, 0x72, 0x51, 0x04, 0x72,
-    0x56, 0x7E, 0x00, 0x00, 0x01, 0x02, 0x03, 0x05, 0x02, 0x03, 0x05,
-    0x02, 0x03, 0x05
+    0x56, 0x7E,
     ];
 
 my $png-post-prediction = buf8.new: [
@@ -37,7 +36,8 @@ is-deeply PDF::Storage::Filter::Predictors.post-prediction( $prediction-in,
     $prediction-in,
     "NOOP predictive filter sanity";
 
-is-deeply PDF::Storage::Filter::Predictors.post-prediction( $prediction-in,
+my $tiff-in = buf8.new: $prediction-in.head(24);
+is-deeply PDF::Storage::Filter::Predictors.post-prediction( $tiff-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(2), ),
