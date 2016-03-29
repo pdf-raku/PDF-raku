@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 24;
+plan 20;
 
 use PDF::DAO::Stream;
 use PDF::Storage::IndObj;
@@ -17,8 +17,6 @@ my $encoded = '31303020313030205464202848656c6c6f2c20776f726c64212920546a';
 lives-ok { $stream-obj = PDF::DAO.coerce( :$decoded, :stream{ :%dict } ) }, 'basic stream object construction';
 stream_tests( $stream-obj, 'stream object' );
 %dict<Length> = 58;
-todo "support clone on latest rakudo?", 4;
-stream_tests( $stream-obj.clone, 'stream object cloned' );
 
 my $ind-obj;
 lives-ok { $ind-obj = PDF::Storage::IndObj.new( :ind-obj[123, 1, $stream-obj.content] ); }, 'stream object rebuilt';
