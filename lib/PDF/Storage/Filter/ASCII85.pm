@@ -12,8 +12,7 @@ class PDF::Storage::Filter::ASCII85 {
 	$.encode( $input.encode("latin-1"), |c);
     }
 
-    multi method encode(Blob $buf is copy, Bool :$eod --> Blob) {
-
+    multi method encode(Blob $buf is copy, Bool :$eod = True --> Blob) {
 	my UInt $padding = -$buf % 4;
 	my uint8 @buf = $buf.list;
 	@buf.push: 0 for 1..$padding;

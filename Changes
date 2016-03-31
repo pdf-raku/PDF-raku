@@ -23,6 +23,8 @@
     - [PDF::Reader] Bug-fixes:
       -- avoid encrypting the encryption dictionary
       -- fixed de-Linearization. Now handled by PDF::Storage::Serializer
+    - [PDF::Storage::Filter::ASCII85
+      -- fixed encoding to add '~>' eod marker
 
     Release 0.0.5
     - added some reader exception classes, e.g. X::PDF::BadXRef
