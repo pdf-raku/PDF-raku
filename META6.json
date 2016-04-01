@@ -41,7 +41,6 @@
         "PDF::Storage::Filter::ASCII85" : "lib/PDF/Storage/Filter/ASCII85.pm",
         "PDF::Storage::Filter::ASCIIHex" : "lib/PDF/Storage/Filter/ASCIIHex.pm",
         "PDF::Storage::Filter::Flate" : "lib/PDF/Storage/Filter/Flate.pm",
-        "PDF::Storage::Filter::LZW" : "lib/PDF/Storage/Filter/LZW.pm",
         "PDF::Storage::Filter::Predictors" : "lib/PDF/Storage/Filter/Predictors.pm",
         "PDF::Storage::Filter::RunLength" : "lib/PDF/Storage/Filter/RunLength.pm",
         "PDF::Storage::IndObj" : "lib/PDF/Storage/IndObj.pm",

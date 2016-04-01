@@ -1,6 +1,6 @@
 use Test;
 
-plan 15;
+plan 12;
 
 use PDF::Storage::Filter::Predictors;
 use PDF::Storage::Filter;
@@ -83,18 +83,15 @@ for None => 1, TIFF => 2, PNG => 10 {
     is-deeply $post-prediction2c, $rand-data, "$desc predictor ($Predictor) multi-channel - appears lossless";
 }
 
-my $flate-dict = { :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) } };
-my $lzw-dict   = { :Filter<LZWDecode>, :DecodeParms{ :Predictor(12), :Columns(4) } };
+my $dict = { :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) } };
 
 my $rand-chrs = [~] $rand-data.list.grep({ $_ <= 0xFF }).map: { .chr };
 
-for $flate-dict, $lzw-dict -> $dict {
+my $encoded;
+lives-ok {$encoded = PDF::Storage::Filter.encode($rand-chrs, :$dict)}, "$dict<Filter> encode with prediction";
 
-    my $encoded;
-    lives-ok {$encoded = PDF::Storage::Filter.encode($rand-chrs, :$dict)}, "$dict<Filter> encode with prediction";
+my $decoded;
+lives-ok {$decoded = PDF::Storage::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with prediction";
 
-    my $decoded;
-    lives-ok {$decoded = PDF::Storage::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with prediction";
+is-deeply ~$decoded, $rand-chrs, "$dict<Filter> round-trip with prediction";
 
-    is-deeply ~$decoded, $rand-chrs, "$dict<Filter> round-trip with prediction";
-}

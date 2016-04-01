@@ -22,9 +22,12 @@ role PDF::Storage::Filter::Predictors {
         my Buf $nums = resample( $decoded, 8, $BitsPerComponent );
 
         while $ptr < +$nums {
-            for 1 .. $Columns -> $i {
+	    for 1 .. $Colors {
+		@output.push: $nums[ $ptr++ ];
+	    }
+            for 2 .. $Columns -> $i {
                 for 1 .. $Colors {
-                    my UInt $prev-color = $i > 1 ?? $nums[ $ptr - $Colors] !! 0;
+                    my UInt $prev-color = $nums[ $ptr - $Colors];
                     my UInt $result = ($nums[ $ptr++ ] - $prev-color) +& $bit-mask;
                     @output.push: $result;
                 }
@@ -136,10 +139,10 @@ role PDF::Storage::Filter::Predictors {
 
         while $ptr < +$decoded {
             # PNG prediction can vary from row to row
-            my $filter-byte = $decoded[$ptr++];
+            my uint8 $tag = $decoded[$ptr++];
             my @out;
 
-            given $filter-byte {
+            given $tag {
                 when 0 {
                     # None
                     @out.push: $decoded[$ptr++]
@@ -194,7 +197,7 @@ role PDF::Storage::Filter::Predictors {
                     }
                 }
                 default {
-                    die "bad predictor byte: $_";
+                    die "bad PNG predictor tag: $_";
                 }
             }
 

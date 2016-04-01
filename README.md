@@ -313,7 +313,7 @@ CCITTFaxDecode  | CCF | _NYI_
 Crypt           |     | _NYI_
 DCTDecode       | DCT | _NYI_
 FlateDecode     | Fl  | PDF::Storage::Filter::Flate
-LZWDecode       | LZW | PDF::Storage::Filter::LZW
+LZWDecode       | LZW | _NYI_
 JBIG2Decode     |     | _NYI_
 JPXDecode       |     | _NYI_
 RunLengthDecode | RL  | PDF::Storage::Filter::RunLength
@@ -441,6 +441,6 @@ PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 ## See also
 
 - [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing (released)
-- [PDF::Content](https://github.com/p6-pdf/perl6-PDF-Content) - Utilities for working with content; including images, fonts, text and general graphics (under construction) 
+- [PDF::Basic](https://github.com/p6-pdf/perl6-PDF-Basic) - Simple content manipulation; including images, fonts, text and general graphics (under construction) 
 - [PDF::Struct](https://github.com/p6-pdf/perl6-PDF-Struct) - Structured access to PDF Documents (experimental, under construction)
 

@@ -49,7 +49,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
         $val := $.deref(:$pos, $val)
 	    if $val ~~ Pair | Array | Hash;
 
-	my $att = $.index[$pos] // $.of-att;
+	my Attribute $att = $.index[$pos] // $.of-att;
 	$att.apply($val)
 	    if $att.defined;
 
@@ -60,7 +60,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
     method ASSIGN-POS($pos, $val) {
 	my $lval = $.lvalue($val);
 
-	my $att = $.index[$pos] // $.of-att;
+	my Attribute $att = $.index[$pos] // $.of-att;
 	$att.apply($lval)
 	    if $att.defined;
 

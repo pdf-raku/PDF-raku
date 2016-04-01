@@ -62,7 +62,7 @@ role PDF::DAO::Tie {
                         # or, associative hash declarations, e.g.:
                         # has PDF::DOM::Type::ExtGState %.ExtGState is entry;
 			my $of-type = $type.of;
-			my $att = $lval.of-att;
+			my Attribute $att = $lval.of-att;
 			if $att {
 			    die "conflicting types for {$att.name} {$att.type.gist} {$of-type.gist}"
 				unless $of-type ~~ $att.type;

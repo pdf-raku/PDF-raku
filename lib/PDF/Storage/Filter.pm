@@ -5,8 +5,8 @@ class PDF::Storage::Filter {
     use PDF::Storage::Filter::ASCIIHex;
     use PDF::Storage::Filter::ASCII85;
     use PDF::Storage::Filter::Flate;
-    use PDF::Storage::Filter::LZW;
     use PDF::Storage::Filter::RunLength;
+    use PDF::Storage::Blob;
 
     # chosen because, should have an underlying uint 8 representation and should stringfy
     # easily via :  ~$blob or $blob.Str
@@ -80,7 +80,7 @@ class PDF::Storage::Filter {
             Crypt          => Mu,
             DCTDecode      => Mu,
             FlateDecode    => PDF::Storage::Filter::Flate,
-            LZWDecode      => PDF::Storage::Filter::LZW,
+            LZWDecode      => Mu,
             JBIG2Decode    => Mu,
             JPXDecode      => Mu,
             RunLengthDecode => PDF::Storage::Filter::RunLength,
