@@ -8,6 +8,12 @@ use PDF::Storage::Filter;
 my $in = 'This is a test string.';
 my $out = '546869732069732061207465737420737472696e672e';
 
+dies-ok { PDF::Storage::Filter::ASCIIHex.decode($out, :eod) },
+    q{ASCIIHex missing eod marker handled};
+
+# Add the end-of-document marker
+$out ~= '>';
+
 is(PDF::Storage::Filter::ASCIIHex.encode($in),
    $out,
    q{ASCIIHex test string is encoded correctly});
@@ -16,21 +22,15 @@ is(PDF::Storage::Filter::ASCIIHex.decode($out),
    $in,
    q{ASCIIHex test string is decoded correctly});
 
-dies-ok { PDF::Storage::Filter::ASCIIHex.decode($out, :eod) },
-    q{ASCIIHex missing eod marker handled};
-
 my %dict = :Filter<ASCIIHexDecode>;
 
 is(PDF::Storage::Filter.decode($out, :%dict),
    $in,
    q{ASCIIHex test string is decoded correctly});
 
-is(PDF::Storage::Filter.encode($in, :%dict),
+is(PDF::Storage::Filter.encode($in, :%dict).Str.lc,
    $out,
    q{ASCIIHex test string is encoded correctly});
-
-# Add the end-of-document marker
-$out ~= '>';
 
 is(PDF::Storage::Filter::ASCIIHex.encode($in, :eod),
    $out,
@@ -39,7 +39,6 @@ is(PDF::Storage::Filter::ASCIIHex.encode($in, :eod),
 is(PDF::Storage::Filter::ASCIIHex.decode($out),
    $in,
    q{ASCIIHex test string with EOD marker is decoded correctly});
-
 
 # Ensure the filter is case-insensitive
 $out = uc($out);

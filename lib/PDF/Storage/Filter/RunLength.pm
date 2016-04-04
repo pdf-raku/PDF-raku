@@ -11,7 +11,7 @@ class PDF::Storage::Filter::RunLength {
 	$.encode( $input.decode("latin-1"), |c);
     }
 
-    multi method encode(Str $input, Bool :$eod --> PDF::Storage::Blob) {
+    multi method encode(Str $input, --> PDF::Storage::Blob) {
         my @chunks;
 
         for $input.comb(/(.)$0**0..127/) -> $/ {
@@ -38,7 +38,7 @@ class PDF::Storage::Filter::RunLength {
             }
         }
 
-        @chunks.push: $[128] if $eod;
+        @chunks.push: $[128];
 
         PDF::Storage::Blob.new: flat @chunks.map: { @$_ };
     }
@@ -46,7 +46,7 @@ class PDF::Storage::Filter::RunLength {
     multi method decode(Blob $input, |c) {
 	$.decode( $input.decode("latin-1"), |c);
     }
-    multi method decode(Str $input, Bool :$eod --> PDF::Storage::Blob) {
+    multi method decode(Str $input, Bool :$eod = True --> PDF::Storage::Blob) {
 
         my UInt $idx = 0;
         my uint8 @in = $input.ords;

@@ -20,11 +20,12 @@
       -- JSON output of annex files
       -- add `$doc.open( $file, :annex)` option - load a base pdf, then apply
          an annex file.
-    - [PDF::Reader] Bug-fixes:
+    - [PDF::Reader] bug-fixes:
       -- avoid encrypting the encryption dictionary
       -- fixed de-Linearization. Now handled by PDF::Storage::Serializer
-    - [PDF::Storage::Filter}
-      -- fixed ascii-85 encoding to add '~>' eod marker
+    - [PDF::Storage::Filter] bug fixes:
+      -- fixed ascii-85, ascii-hex and run-length encoders to add
+         end-of-data markers
       -- withdrew LZW encoding
 
     Release 0.0.5

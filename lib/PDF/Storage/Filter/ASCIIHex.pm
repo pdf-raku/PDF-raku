@@ -10,7 +10,7 @@ class PDF::Storage::Filter::ASCIIHex {
     multi method encode(Blob $input, |c) {
 	$.encode( $input.decode("latin-1"), |c);
     }
-    multi method encode(Str $input, Bool :$eod --> PDF::Storage::Blob) {
+    multi method encode(Str $input --> PDF::Storage::Blob) {
 
 	BEGIN my uint8 @Hex = map *.ord, flat '0' .. '9', 'a' .. 'f';
 
@@ -20,7 +20,7 @@ class PDF::Storage::Filter::ASCIIHex {
 	    @Hex[$ord div 16], @Hex[$ord % 16];
 	}
 
-	@buf.push: '>'.ord if $eod;
+	@buf.push: '>'.ord;
 
 	PDF::Storage::Blob.new( @buf );
     }
@@ -28,7 +28,7 @@ class PDF::Storage::Filter::ASCIIHex {
     multi method decode(Blob $input, |c) {
 	$.decode( $input.decode("latin-1"), |c);
     }
-    multi method decode(Str $input, Bool :$eod --> PDF::Storage::Blob) {
+    multi method decode(Str $input, Bool :$eod = True --> PDF::Storage::Blob) {
 
         my Str $str = $input.subst(/\s/, '', :g);
 

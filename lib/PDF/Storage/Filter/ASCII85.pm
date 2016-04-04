@@ -12,7 +12,7 @@ class PDF::Storage::Filter::ASCII85 {
 	$.encode( $input.encode("latin-1"), |c);
     }
 
-    multi method encode(Blob $buf is copy, Bool :$eod = True --> Blob) {
+    multi method encode(Blob $buf is copy --> Blob) {
 	my UInt $padding = -$buf % 4;
 	my uint8 @buf = $buf.list;
 	@buf.push: 0 for 1..$padding;
@@ -41,7 +41,7 @@ class PDF::Storage::Filter::ASCII85 {
             @a85.pop for 1 .. $padding;
         }
 
-        @a85.append: EOD if $eod;
+        @a85.append: EOD;
 
         PDF::Storage::Blob.new( @a85 );
     }
@@ -49,15 +49,15 @@ class PDF::Storage::Filter::ASCII85 {
     multi method decode(Blob $buf, |c) {
 	$.decode($buf.Str, |c);
     }
-    multi method decode(Str $input, Bool :$eod --> PDF::Storage::Blob) {
+    multi method decode(Str $input, Bool :$eod = True --> PDF::Storage::Blob) {
 
         my Str $str = $input.subst(/\s/, '', :g).subst(/z/, '!!!!', :g);
 
-        if $str.chars && $str.substr(*-2) eq '~>' {
+        if $str.codes && $str.substr(*-2) eq '~>' {
             $str = $str.substr(0, *-2);
         }
         else {
-           die "missing end-of-data marker '>' at end of hexidecimal encoding"
+           die "missing end-of-data marker '~>' at end of hexidecimal encoding"
                if $eod
         }
 
