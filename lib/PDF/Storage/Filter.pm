@@ -8,8 +8,21 @@ class PDF::Storage::Filter {
     use PDF::Storage::Filter::RunLength;
     use PDF::Storage::Blob;
 
-    # chosen because, should have an underlying uint 8 representation and should stringfy
-    # easily via :  ~$blob or $blob.Str
+    #| set P6_PDF_FILTER_CLASS to enable experimental/alternate backends
+    #| aka LibGnuPDF::Filter
+    method filter-backend is rw {
+	state $filter-backend;
+    }
+    method have-backend {
+	state Bool $have-backend //= ? do {
+	    my $filter-name = %*ENV<P6_PDF_FILTER_CLASS>;
+	    $filter-name && try {
+		require ::($filter-name);
+		$.filter-backend = ::($filter-name);
+		# ping the library, just to make sure it's operational
+		$.filter-backend.ping;
+	    }};
+    }
 
     proto method decode($, Hash :$dict!) {*}
     proto method encode($, Hash :$dict!) returns PDF::Storage::Blob {*}
@@ -19,9 +32,12 @@ class PDF::Storage::Filter {
         $input;
     }
 
+    multi method decode( $data, Hash :$dict! where $.have-backend) {
+       PDF::Storage::Blob.new: $.filter-backend.decode( $data, :$dict);
+    }
+
     # object may have an array of filters PDF 1.7 spec Table 3.4 
     multi method decode( $data is copy, Hash :$dict! where .<Filter>.isa(List)) {
-
         if $dict<DecodeParms>:exists {
             die "Filter array {.<Filter>} does not have a corresponding DecodeParms array"
                 if $dict<DecodeParms>:exists
@@ -43,6 +59,15 @@ class PDF::Storage::Filter {
         my %params = %( $dict<DecodeParms> )
             if $dict<DecodeParms>:exists; 
         $.filter-class( $dict<Filter> ).decode( $input, |%params);
+    }
+
+    multi method encode( $input, Hash :$dict! where !.<Filter>.defined) {
+        # nothing to do
+        $input;
+    }
+
+    multi method encode( $data, Hash :$dict! where $.have-backend) {
+       PDF::Storage::Blob.new: $.filter-backend.encode( $data, :$dict);
     }
 
     # object may have an array of filters PDF 1.7 spec Table 3.4 
