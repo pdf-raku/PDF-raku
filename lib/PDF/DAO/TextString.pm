@@ -20,26 +20,23 @@ using either PDFDocEncoding or UTF-16BE with a leading byte-order marker
 
     method new( Str :$value! is copy, Bool :$bom is copy = False, |c ) {
         if $value ~~ s/^ $<bom>=[\xFE \xFF]// {
-            $bom = True;
-            $value = $value.ords.map( -> $b1, $b2 {
-            chr($b1 +< 8  +  $b2)
-           }).join: '';
+	    # utf-16be is big endian
+	    # rakudo doesn't support this encoding yet
+	    my @be = flat $value.ords.map: -> $a, $b { ($b, $a) };
+            $value = Buf.new(@be).decode('utf-16');
         }
         nextwith( :$value, :$bom, |c );
     }
 
     our sub utf16-encode(Str $str --> Str) {
          constant BOM = "\xFE\xFF";
-         constant OverflowChar = "\xFF\xFD";
-	 my Str $utf16 = $str.ords.map( -> $ord {
+	 my Str $byte-string = $str.encode("utf-16").map( -> $ord {
                    my $lo = $ord mod 0x100;
                    my $hi = $ord div 0x100;
-                   my $ch = $hi < 0x100
-		       ?? $hi.chr ~ $lo.chr
-		       !! OverflowChar; # � for overflpw
+		   $hi.chr ~ $lo.chr;
 	 }).join('');
 
-	 BOM ~ $utf16;
+	 BOM ~ $byte-string;
     }
 
     method content {
