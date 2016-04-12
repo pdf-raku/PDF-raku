@@ -11,6 +11,7 @@ class X::PDF::Coerce
 
 class PDF::DAO::Delegator {
 
+    use PDF::DAO;
     use PDF::DAO::Util :from-ast;
 
     use PDF::DAO::Array;
@@ -89,7 +90,7 @@ class PDF::DAO::Delegator {
 	my $handler-class = $fallback;
 
 	for self.class-paths -> $class-path {
-	    require ::($class-path)::($subclass);
+	    PDF::DAO.required($class-path, $subclass);
 	    $handler-class = ::($class-path)::($subclass);
 	    last;
 	    CATCH {
@@ -114,12 +115,12 @@ class PDF::DAO::Delegator {
 
 =begin pod
 
-This forms the basis for `PDF::DOM`'s extensive library of document object classes. It
+This forms the basis for upstream modules such as `PDF::Struct`; an extensive library of document object classes. It
 includes classes and roles for object construction, validation and serialization.
 
 - The `PDF::DAO` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::DAO::Delegator`.
 
-- The delegator may be subclassed. For example, the upstream module `PDF::DOM` subclasses `PDF::DAO::Delegator` with
-`PDF::DOM::Delegator`.
+- The delegator may be subclassed. For example, `PDF::Struct` subclasses `PDF::DAO::Delegator` with
+`PDF::Struct::Doc::Delegator`.
 
 =end pod
