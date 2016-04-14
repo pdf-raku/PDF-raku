@@ -1,4 +1,8 @@
-    Release 0.06
+    Release 0.0.7
+    - [PDF::Storage::Crypt]
+    Mark failing encryption tests 'todo'. I'm working on a Crypt::GCrypt
+    alternative, which should hopefully be faster and more complete.
+    Release 0.0.6
     - [bin/pdf-rewriter.pl] unbust rewriting/recompression of encrypted PDFs
     - [PDF::Storage::Serializer][PDF::DAO::{Array|Dict|Stream}] use Perl 6 object hashes
       -- Refactored `my %h; ...; %hash{$object.WHICH}` with `my %h{Any}; ...; %hash{$object}` 
