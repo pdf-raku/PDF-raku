@@ -31,8 +31,7 @@ my $catalog = $doc<Root>;
 }
 
 # firstly, write and anlayse just the updates
-dies-ok { $doc.update(:annex<t/pdf/pdf.in.patch.json>) }, 'update to JSON annex file - NYI';
-lives-ok { $doc.update(:annex<t/pdf/pdf.in.patch>) }, 'update to PDF annex file - lives';
+lives-ok { $doc.update(:to("t/pdf/pdf.in.patch".IO.open(:w)) ) }, 'update to PDF file - lives';
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 my Str $body-str = "t/pdf/pdf.in.patch".IO.slurp( :enc<latin-1> );

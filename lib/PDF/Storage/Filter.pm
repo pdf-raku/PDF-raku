@@ -15,13 +15,15 @@ class PDF::Storage::Filter {
     }
     method have-backend {
 	state Bool $have-backend //= ? do {
-	    my $filter-name = %*ENV<P6_PDF_FILTER_CLASS>;
-	    $filter-name && try {
-		require ::($filter-name);
-		$.filter-backend = ::($filter-name);
-		# ping the library, just to make sure it's operational
-		$.filter-backend.ping;
-	    }};
+	    with %*ENV<P6_PDF_FILTER_CLASS> -> $filter-name {
+		try {
+		    require ::($filter-name);
+		    $.filter-backend = ::($filter-name);
+		    # ping the library, just to make sure it's operational
+		    $.filter-backend.ping;
+		}
+	    }
+	}
     }
 
     proto method decode($, Hash :$dict!) {*}

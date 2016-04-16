@@ -46,7 +46,7 @@ class PDF::DAO::Doc
 
     #| perform an incremental save back to the opened input file, or to the
     #| specified annex file
-    method update(:$compress, Str :$annex) {
+    method update(:$compress, IO::Handle :$to) {
 
 	self.?cb-init
 	    unless self<Root>:exists;
@@ -58,15 +58,9 @@ class PDF::DAO::Doc
 	die "PDF has not been opened for indexed read."
 	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
 
-	die "annex file and input PDF are the same: $annex"
-	    if $annex && $annex eq $reader.file-name;
-
-        die "JSON annex files are NYI"
-	    if $annex && $annex ~~ m:i/'.json' $/;
-
 	my $type = $reader.type;
 	self.generate-id( :$type )
-	    unless $annex;
+	    unless $to;
 
         my PDF::Storage::Serializer $serializer .= new( :$reader, :$type );
         my Array $body = $serializer.body( :updates, :$compress );
@@ -81,11 +75,19 @@ class PDF::DAO::Doc
         my PDF::Writer $writer .= new( :$offset, :$prev );
 	my @entries;
         my Str $new-body = $writer.write-body( $body[0], @entries, :$prev, :$trailer );
+	my IO::Handle $fh;
 
-	my $fh;
-	if $annex {
-	    # saving updates as a PDF annex fragment elsewhere.
-	    $fh = $annex.IO.open(:w)
+	if $to {
+	    # saving updates elsewhere
+	    my Str $path = ~ $to.path;
+
+	    die "to file and input PDF are the same: $path"
+               if $path eq $reader.file-name;
+
+            die "update to JSON NYI"
+	        if $path ~~ m:i/'.json' $/;
+
+	    $fh = $to;
 	}
 	else {
 	    # in-place update. merge the updated entries in the index
@@ -116,27 +118,28 @@ class PDF::DAO::Doc
 	$serializer.ast( self, :$type, :$!crypt, |c);
     }
 
-    method save-as($target! where Str | IO::Handle | IO::Path, |c) {
+    multi method save-as(Str $file-name, |c) {
+	$.save-as($file-name.IO, |c );
+    }
 
-	multi sub save-to(Str $file-name where m:i/'.json' $/, Pair $ast) {
+    multi method save-as(IO::Path $iop, Bool :$update, |c) {
+	when $iop.path ~~  m:i/'.json' $/ {
             use JSON::Fast;
-	    $file-name.IO.spurt( to-json( $ast ))
+	    $iop.spurt( to-json( $.ast(|c) ));
 	}
-
-	multi sub save-to(Str $file-name, Pair $ast) {
-	    save-to($file-name.IO, $ast);
+	when $update && $.reader.defined {
+	    $.reader.file-name.IO.copy( $iop );
+	    $.update( :to($iop.open(:a)), |c);
 	}
-
-	multi sub save-to(IO::Path $iop, Pair $ast) {
-	    save-to($iop.open(:w), $ast);
+	default {
+	    my $ioh = $iop.open(:w);
+	    $.save-as($ioh, |c);
 	}
+    }
 
-	multi sub save-to(IO::Handle $ioh, Pair $ast) is default {
-            my PDF::Writer $writer .= new;
-	    $ioh.write: $writer.write( $ast ).encode('latin-1')
-	}
-
-	save-to($target, $.ast(|c) );
+    multi method save-as(IO::Handle $ioh, |c) is default {
+        my PDF::Writer $writer .= new;
+	$ioh.write: $writer.write( $.ast(|c) ).encode('latin-1')
     }
 
     #| stringify to the serialized PDF

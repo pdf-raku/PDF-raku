@@ -15,7 +15,7 @@ for 't/pdf'.IO.dir.list.sort {
 
     next unless / [\w|'-']*? '.json'$/;
     my $json-file = ~$_;
-    my %ast = %( from-json( $json-file.IO.slurp ) );
+    my %ast = from-json( $json-file.IO.slurp );
 
     my $pdf-input-file = $json-file.subst( /'.json'$/, '.in' );
     next unless $pdf-input-file.IO.e;
