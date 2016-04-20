@@ -18,6 +18,23 @@ class PDF::Storage::Crypt {
 	$class;
     }
 
+    use Digest::MD5;
+    my $digest-gcrypt-class;
+    method digest-gcrypt-available {
+	state Bool $have-it //= try {
+	    require ::('Digest::GCrypt');
+	    $digest-gcrypt-class = ::('Digest::GCrypt');
+	    $digest-gcrypt-class.check-version;
+	    True;
+	} // False;
+    }
+	    
+    multi method md5($msg) {
+	$.digest-gcrypt-available
+	    ?? Buf.new: $digest-gcrypt-class.md5($msg)
+	    !! Digest::MD5.md5_buf(Buf.new($msg).decode('latin-1'));
+    }
+
     #| encrypt/decrypt all strings/streams in a PDF body
     multi method crypt-ast('body', Array $body) {
 	for $body.values {

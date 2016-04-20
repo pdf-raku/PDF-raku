@@ -19,7 +19,6 @@ class PDF::Storage::Crypt::RC4
     has UInt @!P;  #| permissions, unpacked as uint8
     has Bool $!EncryptMetadata;
     has Bool $.is-owner is rw;
-    has $!crypter;
 
     # Taken from [PDF 1.7 Algorithm 3.2 - Standard Padding string]
     BEGIN my uint8 @Padding = 
@@ -36,16 +35,6 @@ class PDF::Storage::Crypt::RC4
         $owner-pass
             ?? self.generate( :$doc, :$owner-pass, |c)
             !! self.load( :$doc, |c)
-    }
-
-     #| setup encryption backend
-    submethod !crypter {
-	use Digest::MD5;
-	class {
-	    method md5($msg) {
-		Digest::MD5.md5_buf(Buf.new($msg).decode('latin-1'));
-	    }
-	}
     }
 
     #| perform initial document encryption
@@ -68,7 +57,6 @@ class PDF::Storage::Crypt::RC4
 	    && $Length %% 8;
 
 	$!key-bytes = $Length +> 3;
-	$!crypter = self!crypter;
 	$doc.generate-id
 	    unless $doc.ID;
 
@@ -107,7 +95,6 @@ class PDF::Storage::Crypt::RC4
 	die 'This PDF lacks an ID.  The document cannot be decrypted'
 	    unless $doc<ID>;
 
-	$!crypter = self!crypter;
 	@!doc-id = $doc<ID>[0].ords;
 	my uint8 @p8 = resample([ $encrypt<P>, ], 32, 8).reverse;
 	@!P = @p8;
@@ -171,9 +158,9 @@ class PDF::Storage::Crypt::RC4
 	$key = @input;
 
 	for 1 .. $reps {
-	    $key = $!crypter.md5($key);
-	    $key.reallocate($n)
-		unless +$key <= $n;
+	    $key = $.md5($key);
+	    $key = $key[0 ..^ $n]
+		unless $key.elems <= $n;
 	}
 
 	my uint8 @computed;
@@ -182,7 +169,7 @@ class PDF::Storage::Crypt::RC4
 	if $!R >= 3 {
 	    # Algorithm 3.5 steps 1 .. 5
 	    $pass.append: @!doc-id;
-	    $pass = $!crypter.md5( $pass );
+	    $pass = $.md5( $pass );
 	    $pass = Crypt::RC4::RC4($key, $pass);
 	    $pass = self!do-iter-crypt($key, $pass.list);
 	    $pass.append( @Padding[0 .. 15] );
@@ -224,9 +211,9 @@ class PDF::Storage::Crypt::RC4
 	my $key = @input;
 
 	for 1..$reps {
-	    $key = $!crypter.md5($key);
-	    $key.reallocate($n)
-		unless +$key <= $n;
+	    $key = $.md5($key);
+	    $key = $key[0 ..^ $n]
+		unless $key.elems <= $n;
 	}
 
 	$key;                               # 4
@@ -285,8 +272,8 @@ class PDF::Storage::Crypt::RC4
 	my uint8 @obj-key = flat $!key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
 
 	my UInt $size = +@obj-key;
-	my $key = $!crypter.md5( @obj-key );
-	$key.reallocate($size)
+	my $key = $.md5( @obj-key );
+	$key = $key[0 ..^ $size]
 	    if $size < 16;
 
 	Crypt::RC4::RC4( $key, $bytes );
