@@ -12,11 +12,11 @@ class PDF::Storage::Crypt::RC4
 
     has $!key;     #| encryption key
     has UInt $!key-bytes; #| encryption key length
-    has UInt @!doc-id;
-    has UInt @!O;  #| computed owner password
-    has UInt @!U;  #| computed user password
+    has uint8 @!doc-id;
+    has uint8 @!O;  #| computed owner password
+    has uint8 @!U;  #| computed user password
     has UInt $!R;  #| encryption revision
-    has UInt @!P;  #| permissions, unpacked as uint8
+    has uint8 @!P;  #| permissions, unpacked as uint8
     has Bool $!EncryptMetadata;
     has Bool $.is-owner is rw;
 
@@ -64,8 +64,8 @@ class PDF::Storage::Crypt::RC4
 	my uint8 @p8 = resample([ $P, ], 32, 8).reverse;
 	@!P = @p8;
 
-        my @owner-pass = format-pass($owner-pass);
-        my @user-pass = format-pass($user-pass);
+        my uint8 @owner-pass = format-pass($owner-pass);
+        my uint8 @user-pass = format-pass($user-pass);
 
 	@!O = self!compute-owner( @owner-pass, @user-pass );
 
@@ -118,7 +118,7 @@ class PDF::Storage::Crypt::RC4
     }
 
     sub format-pass(Str $pass --> List) {
-	my @pass-padded = flat $pass.NFKC.list, @Padding;
+	my uint8 @pass-padded = flat $pass.NFKC.list, @Padding;
 	@pass-padded[0..31];
     }
 
@@ -138,10 +138,10 @@ class PDF::Storage::Crypt::RC4
 
     method !compute-user(@pass-padded, :$key! is rw) {
 	# Algorithm 3.2
-	my @input = flat @pass-padded,       # 1, 2
-	                 @!O,                # 3
-                         @!P,                # 4
-                         @!doc-id;           # 5
+	my uint8 @input = flat @pass-padded,       # 1, 2
+	                       @!O,                # 3
+                               @!P,                # 4
+                               @!doc-id;           # 5
 
 
 	@input.append: 0xff xx 4             # 6
@@ -198,7 +198,7 @@ class PDF::Storage::Crypt::RC4
 
     method !compute-owner-key(@pass-padded) {
         # Algorithm 3.7 steps 1 .. 4
-	my @input = @pass-padded;           # 1
+	my uint8 @input = @pass-padded;           # 1
 
 	my UInt $n = 5;
 	my UInt $reps = 1;
@@ -223,7 +223,7 @@ class PDF::Storage::Crypt::RC4
         # Algorithm 3.3
 	my $key = self!compute-owner-key( @owner-pass );    # Steps 1..4
 
-        my @owner = @user-pass;
+        my uint8 @owner = @user-pass;
         
 	if $!R == 2 {      # 2 (Revision 2 only)
 	    @owner = Crypt::RC4::RC4($key, @owner);
@@ -251,7 +251,7 @@ class PDF::Storage::Crypt::RC4
 
     method authenticate(Str $pass, Bool :$owner) {
 	$!is-owner = False;
-	my @pass = format-pass( $pass );
+	my uint8 @pass = format-pass( $pass );
 	$!key = (!$owner && self!auth-user-pass( @pass ))
 	    || self!auth-owner-pass( @pass )
 	    || die "unable to decrypt this PDF with the given password";

@@ -4,12 +4,12 @@ module PDF::Storage::Util {
 
     #= resample a buffer as n-bit to m-bit unsigned integers
     proto sub resample( $, $, $ --> Array) is export(:resample) {*};
-    multi sub resample( $nums!, 8, 4)  { flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
-    multi sub resample( $nums!, 4, 8)  { flat $nums.list.map: -> $hi, $lo { $hi +< 4  +  $lo } }
-    multi sub resample( $nums!, 8, 16) { flat $nums.list.map: -> $hi, $lo { $hi +< 8  +  $lo } }
-    multi sub resample( $nums!, 8, 32) { flat $nums.list.map: -> $b1, $b2, $b3, $b4 { $b1 +< 24  +  $b2 +< 16  +  $b3 +< 8  +  $b4 } }
-    multi sub resample( $nums!, 16, 8) { flat $nums.list.map: { ($_ +> 8  +& 255, $_ +& 255) } }
-    multi sub resample( $nums!, 32, 8) { flat $nums.list.map: { ($_ +> 24 +& 255, $_ +> 16 +& 255, $_ +> 8 +& 255, $_ +& 255) } }
+    multi sub resample( $nums!, 8, 4)  { my uint8  @s = flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
+    multi sub resample( $nums!, 4, 8)  { my uint8  @s = flat $nums.list.map: -> $hi, $lo { $hi +< 4  +  $lo } }
+    multi sub resample( $nums!, 8, 16) { my uint16 @s = flat $nums.list.map: -> $hi, $lo { $hi +< 8  +  $lo } }
+    multi sub resample( $nums!, 8, 32) { my uint32 @s = flat $nums.list.map: -> $b1, $b2, $b3, $b4 { $b1 +< 24  +  $b2 +< 16  +  $b3 +< 8  +  $b4 } }
+    multi sub resample( $nums!, 16, 8) { my uint8  @s = flat $nums.list.map: { ($_ +> 8, $_) } }
+    multi sub resample( $nums!, 32, 8) { my uint8  @s = flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
     multi sub resample( $nums!, UInt $n!, UInt $m where $_ == $n) { $nums }
     multi sub resample( $nums!, UInt $n!, UInt $m!) is default {
         warn "unoptimised $n => $m bit sampling";

@@ -62,8 +62,8 @@ role PDF::DAO::Type::XRef
                 if ($.W[$i] // 0) < $max-bytes;
         }
 
-        my uint8 @buf = resample( $xref, $.W, 8 );
-        nextwith( PDF::Storage::Blob.new: @buf );
+        my $buf := resample( $xref, $.W, 8 );
+        nextwith( PDF::Storage::Blob.new: $buf );
     }
 
     #= inverse of $.decode-to-stage2 . handily calculates and sets $.Size and $.Index
@@ -102,7 +102,7 @@ role PDF::DAO::Type::XRef
         my $W = $.W
             // die "missing mandatory /XRef param: /W";
 
-        my Array $xref-array = resample( $buf, 8, $W );
+        my Array $xref-array := resample( $buf, 8, $W );
         my UInt $Size = $.Size
             // die "missing mandatory /XRef param: /Size";
 

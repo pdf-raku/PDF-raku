@@ -16,7 +16,7 @@ class PDF::Storage::Filter::ASCII85 {
 	my UInt $padding = -$buf % 4;
 	my uint8 @buf = $buf.list;
 	@buf.push: 0 for 1..$padding;
-        my uint32 @buf32 = resample( @buf, 8, 32);
+        my uint32 @buf32 := resample( @buf, 8, 32);
 
 	constant NullChar = 'z'.ord;
 	constant PadChar = '!'.ord;
@@ -74,7 +74,7 @@ class PDF::Storage::Filter::ASCII85 {
             @buf32[*-1] += $buf[$_] - 33;
         }
 
-        my uint8 @buf = resample(@buf32, 32, 8);
+        my uint8 @buf := resample(@buf32, 32, 8);
         @buf.pop for 1 .. $padding.chars;
 
         PDF::Storage::Blob.new: @buf;
