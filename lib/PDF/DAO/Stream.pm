@@ -16,7 +16,7 @@ class PDF::DAO::Stream
     has $!encoded;
     has $!decoded;
 
-    # see [PDF 1.7 TABLE 3.4 Entries common to all stream dictionaries]
+    # see [PDF 1.7 TABLE 5 Entries common to all stream dictionaries]
 
     has UInt $.Length is entry;                     #| (Required) The number of bytes from the beginning of the line following the keyword stream to the last byte just before the keyword endstream
 

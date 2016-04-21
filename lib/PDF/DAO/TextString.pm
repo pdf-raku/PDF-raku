@@ -11,10 +11,10 @@ class PDF::DAO::TextString
 
 =begin pod
 
-See [PDF 1.7 TABLE 3.31 PDF data types]
+See [PDF 1.7 TABLE 34 PDF data types]
 
-text-string: Bytes that represent characters encoded
-using either PDFDocEncoding or UTF-16BE with a leading byte-order marker
+text-string: Bytes that represent characters encoded using either
+PDFDocEncoding or UTF-16BE with a leading byte-order marker
 
 =end pod
 

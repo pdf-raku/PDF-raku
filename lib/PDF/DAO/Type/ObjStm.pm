@@ -16,13 +16,12 @@ role PDF::DAO::Type::ObjStm
     use PDF::DAO::Tie;
     use PDF::DAO::Name;
 
-    # see [PDF 1.7 TABLE 3.14 Additional entries specific to an object stream dictionary]
+    # see [PDF 1.7 TABLE 16 Additional entries specific to an object stream dictionary]
     my subset Name-ObjStm of PDF::DAO::Name where 'ObjStm';
-    has Name-ObjStm $.Type is entry( :required );
-
-    has UInt $.N is entry(:required);         #| (Required) The number of compressed objects in the stream.
-    has UInt $.First is entry(:required);     #| (Required) The byte offset (in the decoded stream) of the first compressed object.
-    has PDF::DAO::Stream $.Extends is entry;  #| (Optional) A reference to an object stream, of which the current object stream is considered an extension
+    has Name-ObjStm $.Type is entry( :required ); #| (Required) The type of PDF object that this dictionary describes; shall be ObjStm for an object stream.
+    has UInt $.N is entry(:required);             #| (Required) The number of compressed objects in the stream.
+    has UInt $.First is entry(:required);         #| (Required) The byte offset (in the decoded stream) of the first compressed object.
+    has PDF::DAO::Stream $.Extends is entry;      #| (Optional) A reference to an object stream, of which the current object stream is considered an extension
 
     method cb-init {
         self<Type> //= PDF::DAO.coerce( :name<ObjStm> );

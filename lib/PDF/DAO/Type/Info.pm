@@ -14,7 +14,7 @@ role PDF::DAO::Type::Info
 
 =begin pod
 
-See [PDF 1.7 TABLE 10.2 Entries in the document information dictionary]
+See [PDF 1.7 TABLE 317 Entries in the document information dictionary]
 
 =end pod
 

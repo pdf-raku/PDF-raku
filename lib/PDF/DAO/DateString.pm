@@ -47,7 +47,7 @@ class PDF::DAO::DateString
 
 =begin pod
 
-see [PDF 1.7 Section 3.8.3 Dates ]
+see [PDF 1.7 Section 7.9.4 Dates ]
 
 PDF defines a standard date format, which closely follows that of the international standard ASN.1 (Abstract Syntax Notation One), defined in ISO/IEC 8824. A date is an ASCII string of the form:
  C<(D:YYYYMMDDHHmmSSOHH'mm')>

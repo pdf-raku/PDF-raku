@@ -4,8 +4,7 @@ use PDF::DAO;
 use PDF::DAO::Stream;
 use PDF::DAO::Tie::Hash;
 
-# /Type /XRef - cross reference stream
-# introduced with PDF 1.5
+# /Type /XRef - cross reference stream, introduced with PDF 1.5
 # see [PDF 1.7 Section 3.4.7 Cross-Reference Streams]
 role PDF::DAO::Type::XRef
     is PDF::DAO::Stream
@@ -16,9 +15,9 @@ role PDF::DAO::Type::XRef
     use PDF::DAO::Tie;
     use PDF::DAO::Name;
 
-#| See [PDF 1.7 TABLE 3.15 Additional entries specific to a cross-reference stream dictionary]
-    my subset Name-XRef of PDF::DAO::Name where 'XRef';
-    has Name-XRef $.Type is entry( :required );
+    # See [PDF 1.7 TABLE 17 Additional entries specific to a cross-reference stream dictionary]
+    my subset XRef-Name of PDF::DAO::Name where 'XRef';
+    has XRef-Name $.Type is entry(:required);   #| (Required) The type of PDF object that this dictionary describes; shall be XRef for a cross-reference stream.
 
     has UInt $.Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
     # rakudo 2015.07.1-12-g174049f; Index is a reserved attribute
@@ -26,7 +25,7 @@ role PDF::DAO::Type::XRef
     has UInt $.Prev is entry;             #| (Present only if the file has more than one cross-reference stream; not meaningful in hybrid-reference files) The byte offset from the beginning of the file to the beginning of the previous cross-reference stream. This entry has the same function as the Prev entry in the trailer dictionary (
     has UInt @.W is entry(:required);     #| (Required) An array of integers, each representing the size of the fields in a single cross-reference entry.
 
-#| See [PDF 1.7 TABLE 3.17 Additional entries in a hybrid-reference file’s trailer dictionary]
+    # See [PDF 1.7 TABLE 19 Additional entries in a hybrid-reference file’s trailer dictionary]
     has UInt $.XRefStm is entry;          #| (Optional) The byte offset from the beginning of the file of a cross-reference stream.
 
     method first-obj-num is rw { self<Index>[0] }

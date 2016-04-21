@@ -38,7 +38,7 @@ class PDF::Storage::Filter {
        PDF::Storage::Blob.new: $.filter-backend.decode( $data, :$dict);
     }
 
-    # object may have an array of filters PDF 1.7 spec Table 3.4 
+    # object may have an array of filters [PDF 1.7 spec Table 5]
     multi method decode( $data is copy, Hash :$dict! where .<Filter>.isa(List)) {
         if $dict<DecodeParms>:exists {
             die "Filter array {.<Filter>} does not have a corresponding DecodeParms array"
@@ -113,7 +113,8 @@ class PDF::Storage::Filter {
             RunLengthDecode => PDF::Storage::Filter::RunLength,
             );
 
-        # See [PDF 1.7 Table H.1 Abbreviations for standard filter names]
+	# image object specific abbreviations :-
+        # See [PDF 1.7 Table 94 – Additional Abbreviations in an Inline Image Object]
         constant %FilterAbbreviations = %(
             AHx => 'ASCIIHexDecode',
             A85 => 'ASCII85Decode',

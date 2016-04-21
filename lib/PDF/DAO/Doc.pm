@@ -14,14 +14,14 @@ class PDF::DAO::Doc
     use PDF::DAO::Tie;
     use PDF::DAO::Type::Encrypt :PermissionsFlag;
 
-    # See [PDF 1.7 TABLE 3.13 Entries in the file trailer dictionary]
+    # See [PDF 1.7 TABLE 15 Entries in the file trailer dictionary]
 
-    has Int $.Size is entry;         #| 1 greater than the highest object number used in the file.
-                                     #| (Required; must be an indirect reference) The catalog dictionary for the PDF document contained in the file
+    has Int $.Size is entry;         #| (Required; shall not be an indirect reference) greater than the highest object number defined in the file.
+
     has PDF::DAO::Type::Encrypt $.Encrypt is entry;     #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
     use PDF::DAO::Type::Info;
     has PDF::DAO::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary 
-    has Str @.ID is entry(:len(2));  #| (Optional, but strongly recommended; PDF 1.1) An array of two byte-strings constituting a file identifier
+    has Str @.ID is entry(:len(2));  #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array of two byte-strings constituting a file identifier
 
     has Hash $.Root is entry( :indirect );  #| generic document content, as defined by subclassee, e.g.  PDF::DOM or PDF::FDF
     has PDF::Storage::Crypt $.crypt is rw;
@@ -45,7 +45,7 @@ class PDF::DAO::Doc
     }
 
     #| perform an incremental save back to the opened input file, or to the
-    #| specified annex file
+    #| specified :to file
     method update(:$compress, IO::Handle :$to) {
 
 	self.?cb-init
@@ -169,10 +169,19 @@ class PDF::DAO::Doc
 	my Str $hex-string = Buf.new(@id-chars).decode("latin-1");
 	my $new-id = PDF::DAO.coerce: :$hex-string;
 
-#	From [PDF 1.7 Section 10.3 File Indentifier
-#	File identifiers are defined by the optional ID entry in a PDF file’s trailer dictionary (see Section 3.4.4, “File Trailer”; see also implementation note 162 in Appendix H). The value of this entry is an array of two byte strings. The first byte string is a permanent identifier based on the contents of the file at the time it was originally created and does not change when the file is incrementally updated. The second byte string is a changing identifier based on the file’s contents at the time it was last updated. When a file is first written, both identifiers are set to the same value. If both identifiers match when a file reference is resolved, it is very likely that the correct file has been found. If only the first identifier matches, a different version of the correct file has been found.
-# This section also include a weird and expensive solution for generating the ID.
-# Contrary to this, just generate a random identifier.
+	# From [PDF 1.7 Section 14.4 File Indentifiers:
+	#   "File identifiers shall be defined by the optional ID entry in a PDF file’s trailer dictionary.
+	# The ID entry is optional but should be used. The value of this entry shall be an array of two
+	# byte strings. The first byte string shall be a permanent identifier based on the contents of the
+	# file at the time it was originally created and shall not change when the file is incrementally
+	# updated. The second byte string shall be a changing identifier based on the file’s contents at
+	# the time it was last updated. When a file is first written, both identifiers shall be set to the
+	# same value. If both identifiers match when a file reference is resolved, it is very likely that
+	# the correct and unchanged file has been found. If only the first identifier matches, a different
+	# version of the correct file has been found.
+	#
+	# This section also include a weird and expensive solution for generating the ID.
+	# Contrary to this, just generate a random identifier.
 
 	if $obj<ID> {
 	    $obj<ID>[1] = $new-id
