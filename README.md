@@ -258,11 +258,11 @@ contains only updated and newly created objects. This method can be used as a fa
 small updates to a large existing PDF document.
     - `:to(IO::handle $fh)` - saves just the update section to an alternate location.
 
-- `$doc.save-as("mydoc-2.pdf", :compress, :rebuild)`
+- `$doc.save-as("mydoc-2.pdf", :compress, :rebuild, :update)`
 Saves a new document, including any updates. Options:
   - `:compress` - compress objects for minimal size
   - `:!compress` - uncompress objects for human readability
-  - `:update` - copy the input PDF, then incrementally update (fast).
+  - `:update` - copy the input PDF, then incrementally update. This is generally faster and ensures that any digital signatures are not invalidated,
   - `:rebuild` - discard any unreferenced objects. renumber remaining objects. It may be a good idea to rebuild a PDF Document, that's been incrementally updated a number of times.
 
 Note that the `:compress` and `:rebuild` options are a trade-off. The document may take longer to save, however file-sizes and the time needed to reopen the document may improve.
