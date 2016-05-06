@@ -104,7 +104,9 @@ class PDF::Reader {
 
 	$!crypt = PDF::Storage::Crypt.delegate-class( :$doc ).new( :$doc );
 	$!crypt.authenticate( $password );
-	my $enc = $doc<Encrypt>;
+	my $enc := $doc<Encrypt>;
+        my $enc-obj-num = $enc.obj-num;
+        my $enc-gen-num = $enc.gen-num;
 
 	for %!ind-obj-idx.pairs {
 
@@ -116,10 +118,9 @@ class PDF::Reader {
 		my Hash $idx = .value;
 
                 # skip the encryption dictionary, if it's an indirect object
-		if $enc.obj-num
-		    && $obj-num == $enc.obj-num
-		    && $gen-num == $enc.gen-num {
-			$idx<is-enc-dict> = True;
+		if $obj-num == $enc-obj-num
+		&& $gen-num == $enc-gen-num {
+		    $idx<is-enc-dict> = True;
 		}
 		else {
 

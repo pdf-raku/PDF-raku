@@ -53,7 +53,8 @@ for $test1,
     dies-ok  { $crypt.authenticate( 'blah' ) }, 'bad password';
     lives-ok { $crypt.authenticate( $user-pass ) }, 'user password';
     ok ! $crypt.is-owner, 'is not owner';
-    lives-ok { $crypt.authenticate( $owner-pass, :owner) }, 'owner password';
+##    lives-ok {
+    $crypt.authenticate( $owner-pass, :owner); ## }, 'owner password';
     ok $crypt.is-owner, 'is owner';
 
     my $obj-num = 6;

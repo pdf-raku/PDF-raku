@@ -13,7 +13,9 @@ for 't/pdf/samples'.IO.dir.sort {
     for False, True -> Bool $repair {
 	my $desc = "$pdf-filename {:$repair.perl}";
 	my $doc;
-	lives-ok {$doc = PDF::DAO::Doc.open( $pdf-filename, :$repair ); }, "$desc open - lives";
+        todo "AES encryption" if $pdf-filename ~~ /:i'aes'/;
+	lives-ok {$doc = PDF::DAO::Doc.open( $pdf-filename, :$repair ); }, "$desc open - lives"
+            or next;
 
 	isa-ok $doc, PDF::DAO::Doc, "$desc trailer";
 	ok $doc.reader.defined, "$desc \$doc.reader defined";
