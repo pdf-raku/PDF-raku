@@ -13,8 +13,7 @@ my $owner-pass = 'ssh!';
 my $expected-contents = 'BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET';
 my $expected-author = 'PDF-Tools/t/dao-doc.t';
 
-##lives-ok {
-$doc.encrypt( :$owner-pass, :$user-pass, :R(2), :V(1), ); ## }, '$doc.encrypt (R2.1) - lives';
+lives-ok { $doc.encrypt( :$owner-pass, :$user-pass, :R(2), :V(1), ); }, '$doc.encrypt (R2.1) - lives';
 is $doc.crypt.is-owner, True, 'newly encrypted pdf - is-owner';
 lives-ok {$doc.save-as: "t/encrypt.pdf"}, '$doc.save-as - lives';
 dies-ok { $doc = PDF::DAO::Doc.open: "t/encrypt.pdf", :password<dunno> }, "open encrypted with incorrect password - dies";

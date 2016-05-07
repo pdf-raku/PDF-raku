@@ -1,6 +1,6 @@
 use v6;
 use Test;
-use PDF::Storage::Crypt;
+use PDF::Storage::Crypt::Doc;
 use PDF::DAO::Doc;
 
 my $test1 = do {
@@ -45,16 +45,11 @@ for $test1,
     my $owner-pass  = .<owner-pass>;
     my $user-pass   = .<user-pass>;
     my $cipher-text = .<crypt>;
-    my $crypt-delegate = PDF::Storage::Crypt.delegate-class( :$doc );
-
-    isa-ok $crypt-delegate, ::('PDF::Storage::Crypt::RC4'), "/V {$doc.Encrypt.V}.{$doc.Encrypt.R} crypt delegate";
-
-    my $crypt = $crypt-delegate.new( :$doc );
+    my $crypt = PDF::Storage::Crypt::Doc.new( :$doc );
     dies-ok  { $crypt.authenticate( 'blah' ) }, 'bad password';
     lives-ok { $crypt.authenticate( $user-pass ) }, 'user password';
     ok ! $crypt.is-owner, 'is not owner';
-##    lives-ok {
-    $crypt.authenticate( $owner-pass, :owner); ## }, 'owner password';
+    lives-ok { $crypt.authenticate( $owner-pass, :owner); }, 'owner password';
     ok $crypt.is-owner, 'is owner';
 
     my $obj-num = 6;

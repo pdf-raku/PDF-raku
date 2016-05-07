@@ -1,9 +1,11 @@
 use v6;
 
 use PDF::Storage::Crypt :Padding, :format-pass;
+use PDF::Storage::Crypt::AST;
 
 class PDF::Storage::Crypt::RC4
-    is PDF::Storage::Crypt {
+    is PDF::Storage::Crypt
+    does PDF::Storage::Crypt::AST {
 
     use PDF::Storage::Blob;
     use PDF::Storage::Util :resample;
