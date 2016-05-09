@@ -129,7 +129,7 @@ class PDF::Reader {
 			    if $idx<type> != 0 | 1
 			    || $ind-obj.isa(PDF::Storage::IndObj);
 
-			$!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num );
+			$!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> );
 		    }
 		}
 	    }
@@ -302,7 +302,7 @@ class PDF::Reader {
                 self!fetch-stream-data($ind-obj, $.input, :$offset, :$max-end)
                     if $ind-obj[2].key eq 'stream';
 
-                $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num )
+                $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> )
                     if $!crypt && ! $idx<is-enc-dict>;
             }
             when 2 {
@@ -763,8 +763,8 @@ class PDF::Reader {
             ?? $serializer.body( self.trailer )
             !! $serializer.body( );
 
-        self.crypt.crypt-ast('body', $body)
-            if self.crypt;
+        .crypt-ast('body', $body, :mode<encrypt>)
+            with self.crypt;
 
         :pdf{
             :header{ :$.type, :$.version },

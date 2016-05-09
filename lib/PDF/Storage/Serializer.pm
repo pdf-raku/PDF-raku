@@ -272,7 +272,7 @@ class PDF::Storage::Serializer {
 		    ?? 'FDF'
 		    !! 'PDF');
         my Array $body = self.body($trailer, :$compress );
-	$crypt.crypt-ast('body', $body)
+	$crypt.crypt-ast('body', $body, :mode<encypt>)
 	    if $crypt;
         :pdf{ :header{ :$!type, :$version }, :$body };
     }

@@ -62,7 +62,7 @@ class PDF::DAO::Doc
 
         my PDF::Storage::Serializer $serializer .= new( :$reader, :$type );
         my Array $body = $serializer.body( :updates, :$compress );
-	$!crypt.crypt-ast('body', $body)
+	.crypt-ast('body', $body, :mode<encrypt>)
 	    with $!crypt;
 
 	my Hash $trailer = $body[0]<trailer><dict>;

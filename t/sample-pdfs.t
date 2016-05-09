@@ -3,6 +3,7 @@ use Test;
 
 use PDF::DAO::Doc;
 use PDF::DAO::Type::Info;
+use PDF::Storage::Crypt;
 
 for 't/pdf/samples'.IO.dir.sort {
 
@@ -13,7 +14,8 @@ for 't/pdf/samples'.IO.dir.sort {
     for False, True -> Bool $repair {
 	my $desc = "$pdf-filename {:$repair.perl}";
 	my $doc;
-        todo "AES encryption" if $pdf-filename ~~ /:i'aes'/;
+        todo "Crypt::GCrypt is required for AES encryption"
+            if $pdf-filename ~~ /:i'aes'/  && ! PDF::Storage::Crypt.gcrypt-cipher-available;
 	lives-ok {$doc = PDF::DAO::Doc.open( $pdf-filename, :$repair ); }, "$desc open - lives"
             or next;
 
@@ -32,6 +34,7 @@ for 't/pdf/samples'.IO.dir.sort {
 
 	    unless $pdf-filename ~~ /'no-pages'/ {
 	        does-ok $doc.Info, PDF::DAO::Type::Info, "$desc document info";
+                todo "AES encryption", 2 if $pdf-filename ~~ /:i'aes'/;
 	        ok $doc.Info && $doc.Info.CreationDate, "$desc <Info><CreationDate> entry";
 	        isa-ok $doc<Info><CreationDate>, DateTime, "$desc CreationDate";
             }

@@ -6,6 +6,7 @@ class PDF::Storage::Crypt::Doc
     does PDF::Storage::Crypt::AST {
     use PDF::Storage::Crypt;
     use PDF::Storage::Crypt::RC4;
+    use PDF::Storage::Crypt::AES;
 
     has PDF::Storage::Crypt $!stm-f; #| stream filter (/StmF)
     has PDF::Storage::Crypt $!str-f; #| string filter (/StrF)
@@ -29,7 +30,7 @@ class PDF::Storage::Crypt::Doc
         my Str $CFM = $CF<CFM> // 'None';
         my $class = do given $CF<CFM> {
             when 'V2'    { PDF::Storage::Crypt::RC4 }
-            when 'AESV2' { die "AES encryption NYI" }
+            when 'AESV2' { PDF::Storage::Crypt::AES }
             when 'None' {
                 die "Security handlers are NYI";
             }
@@ -76,11 +77,11 @@ class PDF::Storage::Crypt::Doc
     }
 
     multi method crypt(Str $v, :$key! where 'hex-string' | 'literal', |c) {
-         with $!str-f { .crypt($v, |c) } else { $v }
+        with $!str-f { .crypt($v, |c) } else { $v }
     }
 
     multi method crypt($v, |c) is default {
-         with $!stm-f { .crypt($v, |c) } else { $v }
+        with $!stm-f { .crypt($v, |c) } else { $v }
     }
 
     method authenticate( $pass ) {

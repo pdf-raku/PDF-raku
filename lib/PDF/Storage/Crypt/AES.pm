@@ -3,13 +3,12 @@ use v6;
 use PDF::Storage::Crypt :Padding, :format-pass;
 use PDF::Storage::Crypt::AST;
 
-class PDF::Storage::Crypt::RC4
+class PDF::Storage::Crypt::AES
     is PDF::Storage::Crypt
     does PDF::Storage::Crypt::AST {
 
     use PDF::Storage::Blob;
     use PDF::Storage::Util :resample;
-    use Crypt::RC4;
 
     method !object-key(UInt $obj-num, UInt $gen-num ) {
 	die "encyption has not been authenticated"
@@ -17,7 +16,7 @@ class PDF::Storage::Crypt::RC4
 
 	my uint8 @obj-bytes = resample([ $obj-num ], 32, 8).reverse;
 	my uint8 @gen-bytes = resample([ $gen-num ], 32, 8).reverse;
-	my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
+	my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1], 0x73, 0x41, 0x6C, 0x54; # 'sAIT'
 
 	my UInt $size = +@obj-key;
 	$.md5( @obj-key );
@@ -29,11 +28,26 @@ class PDF::Storage::Crypt::RC4
 	$.crypt( $text.encode("latin-1"), |c ).decode("latin-1");
     }
 
-    multi method crypt( $bytes, UInt :$obj-num!, UInt :$gen-num! ) is default {
+    multi method crypt( $bytes, Str :$mode! where 'encrypt'|'decrypt',
+                        UInt :$obj-num!, UInt :$gen-num! ) is default {
 	# Algorithm 3.1
 
         my $obj-key = self!object-key( $obj-num, $gen-num );
-	Crypt::RC4::RC4( $obj-key, $bytes );
+
+        self."$mode"( $obj-key, $bytes);
+    }
+
+    method encrypt( $key, $bytes --> Buf) {
+        my @iv = (1..16).map: { (0..255).pick };
+        my $enc = Buf.new: @iv;
+        $enc.append: $.aes-crypt($key, $bytes, :@iv);
+        $enc;
+    }
+
+    method decrypt( $key, $bytes) {
+        my @iv = $bytes[0 ..^ 16];
+        my @enc = +$bytes > 16 ?? $bytes[16 .. *] !! [];
+        $.aes-crypt($key, @enc, :@iv);
     }
 
 }

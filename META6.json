@@ -38,6 +38,7 @@
         "PDF::Storage::Crypt" : "lib/PDF/Storage/Crypt.pm",
         "PDF::Storage::Crypt::AST" : "lib/PDF/Storage/Crypt/AST.pm",
         "PDF::Storage::Crypt::Doc" : "lib/PDF/Storage/Crypt/Doc.pm",
+        "PDF::Storage::Crypt::AES" : "lib/PDF/Storage/Crypt/AES.pm",
         "PDF::Storage::Crypt::RC4" : "lib/PDF/Storage/Crypt/RC4.pm",
         "PDF::Storage::Filter" : "lib/PDF/Storage/Filter.pm",
         "PDF::Storage::Filter::ASCII85" : "lib/PDF/Storage/Filter/ASCII85.pm",
