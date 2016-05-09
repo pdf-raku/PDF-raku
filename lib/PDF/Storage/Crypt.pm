@@ -6,15 +6,15 @@ class PDF::Storage::Crypt {
     use PDF::Storage::Util :resample;
     use PDF::DAO::Type::Encrypt;
 
-    has UInt $.R;    #| encryption revision
+    has UInt $.R;         #| encryption revision
     has Bool $.EncryptMetadata;
-    has $.key is rw; #| encryption key
-    has uint8 @.O;   #| computed owner password
+    has $.key is rw;      #| encryption key
+    has uint8 @.O;        #| computed owner password
     has UInt $.key-bytes; #| encryption key length
-    has uint8 @.doc-id;
-    has uint8 @.U;   #| computed user password
-    has uint8 @.P;   #| permissions, unpacked as uint8
-    has Bool $.is-owner is rw;
+    has uint8 @.doc-id;   #| /ID entry in doucment root
+    has uint8 @.U;        #| computed user password
+    has uint8 @.P;        #| permissions, unpacked as uint8
+    has Bool $.is-owner is rw; #| authenticated against, or created by, owner
 
     # Taken from [PDF 1.7 Algorithm 3.2 - Standard Padding string]
      our @Padding is export(:Padding) = 
@@ -63,7 +63,7 @@ class PDF::Storage::Crypt {
 	    unless $doc<ID>;
 
 	@!doc-id = $doc<ID>[0].ords;
-	my uint8 @p8 = resample([ $P, ], 32, 8).reverse;
+	my uint8 @p8 = resample([ $P ], 32, 8).reverse;
 	@!P = @p8;
 
         my uint8 @owner-pass = format-pass($owner-pass);
@@ -90,27 +90,26 @@ class PDF::Storage::Crypt {
         $enc;
     }
 
-    method load(PDF::DAO::Dict :$doc!) {
-	my PDF::DAO::Type::Encrypt $encrypt = $doc<Encrypt>
-	    or die "this document is not encrypted";
-
-	die 'This PDF lacks an ID.  The document cannot be decrypted'
-	    unless $doc<ID>;
+    method load(PDF::DAO::Dict :$doc!,
+                UInt :$!R!,
+                Bool :$!EncryptMetadata = False,
+                UInt :$V!,
+                Int  :$P!,
+                Str  :$O!,
+                Str  :$U!,
+                UInt :$Length = 40,
+                Str  :$Filter = 'Standard',
+               ) {
 
 	@!doc-id = $doc<ID>[0].ords;
-	@!P =  resample([ $encrypt.P, ], 32, 8).reverse;
-	$!R = $encrypt.R;
-	$!EncryptMetadata = $encrypt.EncryptMetadata // False;
-	@!O = $encrypt.O.ords;
-	@!U = $encrypt.U.ords;
+	@!P =  resample([ $P ], 32, 8).reverse;
+	@!O = $O.ords;
+	@!U = $U.ords;
 
-	my UInt $v = $encrypt.V;
-	my Str $filter = $encrypt.Filter;
+	die "Only the Standard encryption filter is supported"
+	    unless $Filter eq 'Standard';
 
-	die "Only Version 1 and 2 of the Standard encryption filter are supported"
-	    unless $v == 1 | 2 && $filter eq 'Standard';
-
-	my UInt $key-bits = $v == 1 ?? 40 !! $encrypt.Length // 40;
+	my UInt $key-bits = $V == 1 ?? 40 !! $Length;
 	die "invalid encryption key length: $key-bits"
 	    unless 40 <= $key-bits <= 128
 	    && $key-bits %% 8;

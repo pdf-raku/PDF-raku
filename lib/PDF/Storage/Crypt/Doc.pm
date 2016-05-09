@@ -6,9 +6,8 @@ class PDF::Storage::Crypt::Doc
     does PDF::Storage::Crypt::AST {
     use PDF::Storage::Crypt;
     use PDF::Storage::Crypt::RC4;
-        
 
-    has PDF::Storage::Crypt $!stm-f handles <is-owner>; #| stream filter (/StmF)
+    has PDF::Storage::Crypt $!stm-f; #| stream filter (/StmF)
     has PDF::Storage::Crypt $!str-f; #| string filter (/StrF)
 
     submethod BUILD(:$doc!, Str :$owner-pass, |c) {
@@ -18,11 +17,27 @@ class PDF::Storage::Crypt::Doc
     }
 
     #| generate encryption
-    submethod generate( Hash :$doc!, :$R = 3, |c ) {
-        die "can't generate encryption with /R > 3 yet"
-            if $R > 3;
-        $!stm-f = PDF::Storage::Crypt::RC4.new( :$doc, :$R, |c );
+    submethod generate( Hash :$doc!, :$V = 3, |c ) {
+        die "can't generate encryption with /V > 3 yet"
+            if $V > 3;
+        $!stm-f = PDF::Storage::Crypt::RC4.new( :$doc, :$V, |c );
         $!str-f := $!stm-f;
+    }
+
+    method !v4-crypt( Hash $doc, PDF::DAO::Type::Encrypt $encrypt, Str $cf-entry, |c) {
+        my Hash $CF = $encrypt.CF{$cf-entry};
+        my Str $CFM = $CF<CFM> // 'None';
+        my $class = do given $CF<CFM> {
+            when 'V2'    { PDF::Storage::Crypt::RC4 }
+            when 'AESV2' { die "AES encryption NYI" }
+            when 'None' {
+                die "Security handlers are NYI";
+            }
+            default {
+                die "Encryption scheme /$cf-entry /CFM is not 'V2', 'AESV2', or 'None': $_";
+            }
+        };
+        $class.new( :$doc, |%$encrypt, |%$CF, |c );
     }
         
     #| read existing encryption
@@ -31,17 +46,28 @@ class PDF::Storage::Crypt::Doc
             unless $doc<Encrypt>:exists;
 
         my $encrypt = $doc<Encrypt>;
+        
+        die 'This PDF lacks an ID.  The document cannot be decrypted'
+	    unless $doc<ID>;
+
+
         PDF::DAO.delegator.coerce($encrypt, PDF::DAO::Type::Encrypt);
         
-	given $encrypt.R {
+	given $encrypt.V {
 	    when 1..3 {
                 # stream and string channels are identical
-                $!stm-f = PDF::Storage::Crypt::RC4.new( :$doc, |c );
+                $!stm-f := PDF::Storage::Crypt::RC4.new( :$doc, |%$encrypt, |c );
                 $!str-f := $!stm-f;
 	    }
             when 4 {
                 # Determined by /CF /StmF and /StrF entries
-                die "V4 encryption is NYI";
+                my $stmf = $encrypt.StmF // 'Identity';
+                my $strf = $encrypt.StrF // 'Identity';
+                $!stm-f = self!v4-crypt( $doc, $encrypt, $stmf, |c)
+                    unless $stmf eq 'Identity';
+                $!str-f = $stmf eqv $strf
+                    ?? $!stm-f
+                    !! self!v4-crypt( $doc, $encrypt, $strf, |c)
             }
 	    default {
 		die "unsupported encryption version: $_";
@@ -49,18 +75,26 @@ class PDF::Storage::Crypt::Doc
 	}
     }
 
-    multi method crypt(:$key! where 'hex-string' | 'literal', |c) {
-        $!str-f.crypt(|c);
+    multi method crypt(Str $v, :$key! where 'hex-string' | 'literal', |c) {
+         with $!str-f { .crypt($v, |c) } else { $v }
     }
 
-    multi method crypt(|c) is default {
-        $!stm-f.crypt(|c);
+    multi method crypt($v, |c) is default {
+         with $!stm-f { .crypt($v, |c) } else { $v }
     }
 
     method authenticate( $pass ) {
-        $!str-f.authenticate($pass);
-        $!stm-f.authenticate($pass)
-            unless $!str-f === $!stm-f;
+        .authenticate($pass) with $!str-f;
+        unless $!str-f === $!stm-f {
+            .authenticate($pass) with $!stm-f
+        }
+    }
+
+    method is-owner {
+        for $!stm-f, $!str-f {
+            return False if .defined && ! .is-owner;
+        }
+        True;
     }
 
 }
