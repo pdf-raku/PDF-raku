@@ -10,8 +10,10 @@ class PDF::Storage::Crypt::AES
     use PDF::Storage::Blob;
     use PDF::Storage::Util :resample;
 
+    method type { 'AESV2' }
+
     method !object-key(UInt $obj-num, UInt $gen-num ) {
-	die "encyption has not been authenticated"
+	die "encryption has not been authenticated"
 	    unless $.key;
 
 	my uint8 @obj-bytes = resample([ $obj-num ], 32, 8).reverse;

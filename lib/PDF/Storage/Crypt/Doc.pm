@@ -18,10 +18,13 @@ class PDF::Storage::Crypt::Doc
     }
 
     #| generate encryption
-    submethod generate( Hash :$doc!, :$V = 3, |c ) {
-        die "can't generate encryption with /V > 3 yet"
-            if $V > 3;
-        $!stm-f = PDF::Storage::Crypt::RC4.new( :$doc, :$V, |c );
+    submethod generate( Hash :$doc!, Bool :$aes, UInt :$V = $aes ?? 4 !! 3, |c ) {
+        my $class = $aes
+            ?? PDF::Storage::Crypt::AES
+            !! PDF::Storage::Crypt::RC4;
+        die "/V 4 is required for AES encryption"
+            if $aes && $V < 4;
+        $!stm-f = $class.new( :$doc, :$V, |c );
         $!str-f := $!stm-f;
     }
 

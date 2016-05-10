@@ -11,8 +11,10 @@ class PDF::Storage::Crypt::RC4
     use PDF::Storage::Util :resample;
     use Crypt::RC4;
 
+    method type { 'V2' }
+
     method !object-key(UInt $obj-num, UInt $gen-num ) {
-	die "encyption has not been authenticated"
+	die "encryption has not been authenticated"
 	    unless $.key;
 
 	my uint8 @obj-bytes = resample([ $obj-num ], 32, 8).reverse;

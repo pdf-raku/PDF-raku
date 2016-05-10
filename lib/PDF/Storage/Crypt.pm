@@ -44,7 +44,7 @@ class PDF::Storage::Crypt {
                     Str  :$owner-pass!,
                     Str  :$user-pass = '',
                     UInt :$!R = 3,  #| revision (2 is faster)
-                    UInt :$V = 2,
+                    UInt :$V = self.type eq 'AESV2' ?? 4 !! 2,
                     Bool :$!EncryptMetadata = True,
                     UInt :$Length = $V > 1 ?? 128 !! 40,
                     Int  :$P = -64,  #| permissions mask
@@ -79,6 +79,16 @@ class PDF::Storage::Crypt {
         my $U = hex-string => [~] @!U.map: *.chr;
 
         my %dict = :$O, :$U, :$P, :$!R, :$V, :Filter<Standard>;
+
+        if $V >= 4 {
+            %dict<CF> = {
+                :StdCF{
+                    :CFM{ :name(self.type) },
+                },
+            };
+            %dict<StmF> = :name<StdCF>;
+            %dict<StrF> = :name<StdCF>;
+        }
 
         %dict<Length> = $Length unless $V == 1;
         %dict<EncryptMetadata> = False
@@ -147,7 +157,7 @@ class PDF::Storage::Crypt {
     }
 	    
     method !aes-crypt($action, $msg, |c) {
-        die "This encyption operation requires the Perl 6 Crypt::GCrypt module. Please install and try again."
+        die "This encryption operation requires the Perl 6 Crypt::GCrypt module. Please install and try again."
 	    unless $.gcrypt-cipher-available;
 	$gcrypt-cipher-class.aes($msg, :$action, :mode<cbc>, |c)
     }

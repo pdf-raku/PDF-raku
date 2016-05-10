@@ -22,7 +22,7 @@ Classes/roles in this tool-kit include:
 - `PDF::Storage::Filter` - a collection of standard PDF decoding and encoding tools for PDF data streams
 - `PDF::Storage::IndObj` - base class for indirect objects
 - `PDF::Storage::Serializer` - data marshalling utilities for the preparation of full or incremental updates
-- `PDF::Storage::Crypt` - decryption / encryption (V 2 & 3 RC4 only at this stage)
+- `PDF::Storage::Crypt` - decryption / encryption
 - `PDF::Writer` - for the creation or update of PDF files
 - `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>)
 
@@ -329,14 +329,17 @@ say $encoded.codes;
 
 ### Encryption
 
-PDF::Tools supports basic RC4 encryption (revisions /R 2 - 4 and versions /V 1 - 2 of PDF Encryption).
+PDF::Tools supports RC4 and AES encryption (revisions /R 2 - 4 and versions /V 1 - 4 of PDF Encryption).
 
 To open an encrypted PDF document, specify either the user or owner password: `PDF::DAO::Doc.open( "enc.pdf", :password<ssh!>)`
 
-A document can be encrypted using the `encrypt` method: `$doc.encrypt( :owner-pass<ssh1>, :user-pass<abc> )`
+A document can be encrypted using the `encrypt` method: `$doc.encrypt( :owner-pass<ssh1>, :user-pass<abc>, :aes )`
+   - `:aes` encrypts the document using stronger V4 AES encryption, introduced with PDF 1.6.
 
-Note that it's quite commont to leave the user-password blank. This indicates that the document is readable by anyone, but may have
+Note that it's quite common to leave the user-password blank. This indicates that the document is readable by anyone, but may have
 restrictions on update, printing or copying of the PDF.
+
+The optional `Crypt::GCrypt` module is required to encrypt, or decrypt documents with AES encryption. This module also boosts performance and is recommended, if you are handling encrypted documents.
 
 ## Data-types and Coercion
 
