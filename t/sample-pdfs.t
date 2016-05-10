@@ -34,9 +34,8 @@ for 't/pdf/samples'.IO.dir.sort {
 
 	    unless $pdf-filename ~~ /'no-pages'/ {
 	        does-ok $doc.Info, PDF::DAO::Type::Info, "$desc document info";
-                todo "AES encryption", 2 if $pdf-filename ~~ /:i'aes'/;
-	        ok $doc.Info && $doc.Info.CreationDate, "$desc <Info><CreationDate> entry";
-	        isa-ok $doc<Info><CreationDate>, DateTime, "$desc CreationDate";
+	        ok $doc.Info && $doc.Info.CreationDate // $doc.Info.ModDate, "$desc <Info><CreationDate> entry";
+	        isa-ok $doc<Info><CreationDate>//$doc<Info><ModDate>, DateTime, "$desc CreationDate";
             }
         }
     }

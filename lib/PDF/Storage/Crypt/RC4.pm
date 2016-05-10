@@ -1,6 +1,6 @@
 use v6;
 
-use PDF::Storage::Crypt :Padding, :format-pass;
+use PDF::Storage::Crypt;
 use PDF::Storage::Crypt::AST;
 
 class PDF::Storage::Crypt::RC4

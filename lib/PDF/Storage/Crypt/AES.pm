@@ -1,6 +1,6 @@
 use v6;
 
-use PDF::Storage::Crypt :Padding, :format-pass;
+use PDF::Storage::Crypt;
 use PDF::Storage::Crypt::AST;
 
 class PDF::Storage::Crypt::AES
@@ -37,17 +37,18 @@ class PDF::Storage::Crypt::AES
         self."$mode"( $obj-key, $bytes);
     }
 
-    method encrypt( $key, $bytes --> Buf) {
+    method encrypt( $key, $dec --> Buf) {
         my @iv = (1..16).map: { (0..255).pick };
-        my $enc = Buf.new: @iv;
-        $enc.append: $.aes-crypt($key, $bytes, :@iv);
-        $enc;
+        my $enc-iv = Buf.new: @iv;
+        $enc-iv.append: $.aes-encrypt($key, $dec, :@iv );
+        $enc-iv;
     }
 
-    method decrypt( $key, $bytes) {
-        my @iv = $bytes[0 ..^ 16];
-        my @enc = +$bytes > 16 ?? $bytes[16 .. *] !! [];
-        $.aes-crypt($key, @enc, :@iv);
+    method decrypt( $key, $enc-iv) {
+        my @iv = $enc-iv[0 ..^ 16];
+        my @enc = +$enc-iv > 16 ?? $enc-iv[16 .. *] !! [];
+        my $dec = $.aes-decrypt($key, @enc, :@iv );
+        $dec;
     }
 
 }
