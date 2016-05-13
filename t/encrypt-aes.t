@@ -2,6 +2,7 @@ use v6;
 use Test;
 
 use PDF::DAO::Doc;
+use PDF::Storage::Crypt;
 
 # ensure consistant document ID generation
 srand(123456);
@@ -13,10 +14,11 @@ my $owner-pass = 'ssh!';
 my $expected-contents = 'BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET';
 my $expected-author = 'PDF-Tools/t/dao-doc.t';
 
+todo "Crypt::GCrypt is required for AES encryption", 8
+    unless PDF::Storage::Crypt.gcrypt-cipher-available;
 lives-ok { $doc.encrypt( :$owner-pass, :$user-pass, :aes ); }, '$doc.encrypt (AES) - lives';
 is $doc.crypt.is-owner, True, 'newly encrypted pdf - is-owner';
-##lives-ok {
-$doc.save-as: "t/encrypt-aes.pdf";##}, '$doc.save-as - lives';
+lives-ok {$doc.save-as: "t/encrypt-aes.pdf";}, '$doc.save-as - lives';
 dies-ok { $doc = PDF::DAO::Doc.open: "t/encrypt-aes.pdf", :password<dunno> }, "open encrypted with incorrect password - dies";
 
 lives-ok { $doc = PDF::DAO::Doc.open("t/encrypt-aes.pdf", :password($user-pass)) }, 'open with user password - lives';
