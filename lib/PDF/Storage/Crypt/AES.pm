@@ -40,7 +40,7 @@ class PDF::Storage::Crypt::AES
     }
 
     method encrypt( $key, $dec --> Buf) {
-        my @iv = (1..16).map: { (0..255).pick };
+        my @iv = (^256).pick xx 16;
         my $enc-iv = Buf.new: @iv;
         $enc-iv.append: $.aes-encrypt($key, $dec, :@iv );
         $enc-iv;

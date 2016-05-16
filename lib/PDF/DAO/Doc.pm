@@ -163,8 +163,7 @@ class PDF::DAO::Doc
 
 	my $obj = $type eq 'FDF' ?? self<Root><FDF> !! self;
 
-	my uint8 @id-chars = (1 .. 16).map: { (^256).pick }
-	my Str $hex-string = Buf.new(@id-chars).decode("latin-1");
+	my Str $hex-string = Buf.new((^256).pick xx 16).decode("latin-1");
 	my $new-id = PDF::DAO.coerce: :$hex-string;
 
 	# From [PDF 1.7 Section 14.4 File Indentifiers:

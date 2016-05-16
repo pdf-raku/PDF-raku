@@ -6,20 +6,16 @@ class PDF::Storage::Filter::ASCIIHex {
     # Maintainer's Note: ASCIIHexDecode is described in the PDF 1.7 spec
     # in section 7.4.2.
     use PDF::Storage::Blob;
+    use PDF::Storage::Util :resample;
 
-    multi method encode(Blob $input, |c) {
-	$.encode( $input.decode("latin-1"), |c);
+    multi method encode(Str $input, |c --> PDF::Storage::Blob) {
+	$.encode( $input.encode("latin-1"), |c)
     }
-    multi method encode(Str $input --> PDF::Storage::Blob) {
+    multi method encode(Blob $input --> PDF::Storage::Blob) {
 
 	BEGIN my uint8 @Hex = map *.ord, flat '0' .. '9', 'a' .. 'f';
 
-	my uint8 @buf = flat $input.ords.map: -> $ord {
-            die 'illegal wide byte: U+' ~ $ord.base(16)
-                if $ord > 0xFF;
-	    @Hex[$ord div 16], @Hex[$ord % 16];
-	}
-
+	my @buf = resample( $input, 8, 4).map: {@Hex[$_]};
 	@buf.push: '>'.ord;
 
 	PDF::Storage::Blob.new( @buf );
@@ -50,7 +46,7 @@ class PDF::Storage::Filter::ASCIIHex {
         die "Illegal character(s) found in ASCII hex-encoded stream"
             if $str ~~ m:i/< -[0..9 A..F]>/;
 
-        my uint8 @ords = $str.comb( /..?/ ).map: { :16($_) };
+        my uint8 @ords = $str.comb( /../ ).map: { :16($_) };
 
 	PDF::Storage::Blob.new( @ords );
     }
