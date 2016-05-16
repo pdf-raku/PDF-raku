@@ -9,7 +9,6 @@ class PDF::Storage::Crypt::RC4
 
     use PDF::Storage::Blob;
     use PDF::Storage::Util :resample;
-    use Crypt::RC4;
 
     method type { 'V2' }
 
@@ -27,7 +26,7 @@ class PDF::Storage::Crypt::RC4
 	$size < 16 ?? $key[0 ..^ $size] !! $key;
     }
 
-    multi method crypt( Str $text, |c) {
+    multi method crypt( Str $text, |c --> Str) {
 	$.crypt( $text.encode("latin-1"), |c ).decode("latin-1");
     }
 
@@ -35,7 +34,7 @@ class PDF::Storage::Crypt::RC4
 	# Algorithm 3.1
 
         my $obj-key = self!object-key( $obj-num, $gen-num );
-	Crypt::RC4::RC4( $obj-key, $bytes );
+	Buf.new: PDF::Storage::Crypt::rc4-crypt( $obj-key, $bytes );
     }
 
 }
