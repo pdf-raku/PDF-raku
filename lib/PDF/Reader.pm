@@ -141,7 +141,7 @@ class PDF::Reader {
         Hash $dict,
         Array :$keys = [ $dict.keys.grep({
 	    $_ ne 'Prev' | 'Size'                    # Recomputed fields
-		| 'Type' | 'DecodeParms' | 'Filter' | 'Index' | 'W' | 'Length' # Unwanted, From XRef Streams
+		| 'Type' | 'DecodeParms' | 'Filter' | 'Index' | 'W' | 'Length' | 'XRefStm' # Unwanted, From XRef Streams
 	}) ],
         ) {
 	temp $.auto-deref = False;
