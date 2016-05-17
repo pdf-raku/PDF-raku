@@ -9,12 +9,12 @@ class PDF::Storage::Crypt {
 
     has UInt $!R;         #| encryption revision
     has Bool $!EncryptMetadata;
-    has $.key is rw;      #| encryption key
     has uint8 @!O;        #| computed owner password
     has UInt $!key-bytes; #| encryption key length
-    has uint8 @.doc-id;   #| /ID entry in doucment root
+    has uint8 @!doc-id;   #| /ID entry in document root
     has uint8 @!U;        #| computed user password
     has uint8 @!P;        #| permissions, unpacked as uint8
+    has $.key is rw;      #| encryption key
     has Bool $.is-owner is rw; #| authenticated against, or created by, owner
 
     # Taken from [PDF 1.7 Algorithm 3.2 - Standard Padding string]
@@ -96,7 +96,7 @@ class PDF::Storage::Crypt {
 
         my $enc = $doc.Encrypt = %dict;
 
-        # make it indirect. keep the trailer size to a minumum
+        # make it indirect. keep the trailer size to a minimum
         $enc.is-indirect = True;
         $enc;
     }
@@ -112,7 +112,12 @@ class PDF::Storage::Crypt {
                 Str  :$Filter = 'Standard',
                ) {
 
-	@!doc-id = $doc<ID>[0].ords;
+        with $doc<ID>[0] {
+	    @!doc-id = .ords;
+        }
+        else {
+            die 'This PDF lacks an ID.  The document cannot be decrypted'
+        }
 	@!P =  resample([ $P ], 32, 8).reverse;
 	@!O = $O.ords;
 	@!U = $U.ords;
@@ -121,7 +126,7 @@ class PDF::Storage::Crypt {
 	    unless $Filter eq 'Standard';
 
 	my UInt $key-bits = $V == 1 ?? 40 !! $Length;
-        $key-bits *= 8 if $key-bits <= 16;
+        $key-bits *= 8 if $key-bits <= 16;  # assume bytes
 	die "invalid encryption key length: $key-bits"
 	    unless 40 <= $key-bits <= 128
 	    && $key-bits %% 8;
@@ -131,17 +136,16 @@ class PDF::Storage::Crypt {
 
     use Digest::MD5;
     my $gcrypt-digest-class;
-    method gcrypt-digest-available {
+    our sub gcrypt-digest-available {
 	state Bool $have-it //= try {
 	    require ::('Crypt::GCrypt::Digest');
 	    $gcrypt-digest-class = ::('Crypt::GCrypt::Digest');
 	    $gcrypt-digest-class.check-version;
-	    True;
 	} // False;
     }
 	    
     multi method md5($msg) {
-	$.gcrypt-digest-available
+	gcrypt-digest-available()
 	    ?? Buf.new: $gcrypt-digest-class.md5($msg)
 	    !! Digest::MD5.md5_buf(Buf.new($msg).decode('latin-1'));
     }
@@ -152,7 +156,6 @@ class PDF::Storage::Crypt {
 	    require ::('Crypt::GCrypt::Cipher');
 	    $gcrypt-cipher-class = ::('Crypt::GCrypt::Cipher');
 	    $gcrypt-cipher-class.check-version;
-	    True;
 	} // False;
     }
 	    
@@ -194,14 +197,14 @@ class PDF::Storage::Crypt {
 	my uint8 @input = flat @pass-padded,       # 1, 2
 	                       @!O,                # 3
                                @!P,                # 4
-                               @.doc-id;           # 5
+                               @!doc-id;           # 5
 
 
 	@input.append: 0xff xx 4             # 6
 	    if $!R >= 4 && ! $!EncryptMetadata;
 
-	my UInt $n = 5;
-	my UInt $reps = 1;
+	my uint $n = 5;
+	my uint $reps = 1;
 
 	if $!R >= 3 {                        # 8
 	    $n = $!key-bytes;
@@ -221,7 +224,7 @@ class PDF::Storage::Crypt {
 
 	if $!R >= 3 {
 	    # Algorithm 3.5 steps 1 .. 5
-	    $pass.append: @.doc-id;
+	    $pass.append: @!doc-id;
 	    $pass = $.md5( $pass );
 	    $pass = rc4-crypt($key, $pass);
 	    $pass = self!do-iter-crypt($key, $pass.list);
