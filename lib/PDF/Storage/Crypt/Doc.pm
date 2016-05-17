@@ -13,12 +13,12 @@ class PDF::Storage::Crypt::Doc
 
     submethod BUILD(:$doc!, Str :$owner-pass, |c) {
         $owner-pass
-            ?? self.generate( :$doc, :$owner-pass, |c)
-            !! self.load( :$doc, |c)
+            ?? self!generate( :$doc, :$owner-pass, |c)
+            !! self!load( :$doc, |c)
     }
 
     #| generate encryption
-    submethod generate( Hash :$doc!, Bool :$aes, UInt :$V = $aes ?? 4 !! 3, |c ) {
+    submethod !generate( Hash :$doc!, Bool :$aes, UInt :$V = $aes ?? 4 !! 3, |c ) {
         my $class = $aes
             ?? PDF::Storage::Crypt::AES
             !! PDF::Storage::Crypt::RC4;
@@ -29,6 +29,9 @@ class PDF::Storage::Crypt::Doc
     }
 
     method !v4-crypt( Hash $doc, PDF::DAO::Type::Encrypt $encrypt, Str $cf-entry, |c) {
+        return Nil
+            if $cf-entry eq 'Identity';
+
         my Hash $CF = $encrypt.CF{$cf-entry};
         my Str $CFM = $CF<CFM> // 'None';
         my $class = do given $CF<CFM> {
@@ -45,7 +48,7 @@ class PDF::Storage::Crypt::Doc
     }
         
     #| read existing encryption
-    submethod load( Hash :$doc!, |c ) is default {
+    submethod !load( Hash :$doc!, |c ) is default {
 	die "document is not encrypted"
             unless $doc<Encrypt>:exists;
 
@@ -53,7 +56,6 @@ class PDF::Storage::Crypt::Doc
         
         die 'This PDF lacks an ID.  The document cannot be decrypted'
 	    unless $doc<ID>;
-
 
         PDF::DAO.delegator.coerce($encrypt, PDF::DAO::Type::Encrypt);
         
@@ -67,8 +69,7 @@ class PDF::Storage::Crypt::Doc
                 # Determined by /CF /StmF and /StrF entries
                 my $stmf = $encrypt.StmF // 'Identity';
                 my $strf = $encrypt.StrF // 'Identity';
-                $!stm-f = self!v4-crypt( $doc, $encrypt, $stmf, |c)
-                    unless $stmf eq 'Identity';
+                $!stm-f = self!v4-crypt( $doc, $encrypt, $stmf, |c);
                 $!str-f = $stmf eqv $strf
                     ?? $!stm-f
                     !! self!v4-crypt( $doc, $encrypt, $strf, |c)

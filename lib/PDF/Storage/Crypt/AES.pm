@@ -20,10 +20,7 @@ class PDF::Storage::Crypt::AES
 	my uint8 @gen-bytes = resample([ $gen-num ], 32, 8).reverse;
 	my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1], 0x73, 0x41, 0x6C, 0x54; # 'sAIT'
 
-	my UInt $size = +@obj-key;
 	$.md5( @obj-key );
-	my $key = $.md5( @obj-key );
-	$size < 16 ?? $key[0 ..^ $size] !! $key;
     }
 
     multi method crypt( Str $text, |c) {
@@ -32,10 +29,8 @@ class PDF::Storage::Crypt::AES
 
     multi method crypt( $bytes, Str :$mode! where 'encrypt'|'decrypt',
                         UInt :$obj-num!, UInt :$gen-num! ) is default {
-	# Algorithm 3.1
 
         my $obj-key = self!object-key( $obj-num, $gen-num );
-
         self."$mode"( $obj-key, $bytes);
     }
 

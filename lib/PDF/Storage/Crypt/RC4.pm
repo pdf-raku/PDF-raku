@@ -21,7 +21,6 @@ class PDF::Storage::Crypt::RC4
 	my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
 
 	my UInt $size = +@obj-key;
-	$.md5( @obj-key );
 	my $key = $.md5( @obj-key );
 	$size < 16 ?? $key[0 ..^ $size] !! $key;
     }
