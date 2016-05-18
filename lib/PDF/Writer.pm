@@ -249,7 +249,7 @@ class PDF::Writer {
            ')';
     }
 
-    BEGIN constant Name-Reg-Chars = set ('!'..'~').grep({/<PDF::Grammar::name-reg-char>/});
+    BEGIN constant Name-Reg-Chars = set ('!'..'~').grep({ $_ !~~ /<PDF::Grammar::char_delimiter>/});
 
     multi method write( Str :$name! ) {
         [~] flat '/', $name.comb.map( {
