@@ -136,31 +136,26 @@ class PDF::Storage::Crypt {
 
     use Digest::MD5;
     my $gcrypt-digest-class;
-    our sub gcrypt-digest-available {
+    my $gcrypt-cipher-class;
+    our sub gcrypt-available {
 	state Bool $have-it //= try {
 	    require ::('Crypt::GCrypt::Digest');
 	    $gcrypt-digest-class = ::('Crypt::GCrypt::Digest');
-	    $gcrypt-digest-class.check-version;
+	    require ::('Crypt::GCrypt::Cipher');
+	    $gcrypt-cipher-class = ::('Crypt::GCrypt::Cipher');
+	    $gcrypt-cipher-class.check-version
+	    && $gcrypt-digest-class.check-version;
 	} // False;
     }
 	    
     multi method md5($msg) {
-	gcrypt-digest-available()
+	gcrypt-available()
 	    ?? Buf.new: $gcrypt-digest-class.md5($msg)
 	    !! Digest::MD5.md5_buf(Buf.new($msg).decode('latin-1'));
     }
 
-    my $gcrypt-cipher-class;
-    our sub gcrypt-cipher-available {
-	state Bool $have-it //= try {
-	    require ::('Crypt::GCrypt::Cipher');
-	    $gcrypt-cipher-class = ::('Crypt::GCrypt::Cipher');
-	    $gcrypt-cipher-class.check-version;
-	} // False;
-    }
-	    
     our sub rc4-crypt($key, $msg) {
-        my @crypt = gcrypt-cipher-available()
+        my @crypt = gcrypt-available()
             ?? $gcrypt-cipher-class.arcfour(:$key, $msg).list
             !! Crypt::RC4::RC4($key, $msg).list;
         @crypt;
@@ -168,7 +163,7 @@ class PDF::Storage::Crypt {
 
     sub aes-crypt($action, $msg, |c) {
         die "This encryption operation requires the Perl 6 Crypt::GCrypt module. Please install and try again."
-	    unless gcrypt-cipher-available;
+	    unless gcrypt-available;
 	$gcrypt-cipher-class.aes($msg, :$action, :mode<cbc>, |c)
     }
     method aes-encrypt($key, $msg, |c --> Buf) {
