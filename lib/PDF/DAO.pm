@@ -120,7 +120,7 @@ role PDF::DAO {
         my %params;
         for <start end encoded decoded> {
             %params{$_} = $stream{$_}
-            if $stream{$_}:exists;
+                if $stream{$_}:exists;
         }
         my Hash $dict = $stream<dict> // {};
         $.required("PDF::DAO::Stream");

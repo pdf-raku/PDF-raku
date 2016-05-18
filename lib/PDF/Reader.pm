@@ -147,9 +147,9 @@ class PDF::Reader {
 	temp $.auto-deref = False;
         my Hash $trailer = self.trailer;
 
-        for $keys.sort {
-            $trailer{$_} = from-ast $dict{$_}
-                 if $dict{$_}:exists;
+        for $keys.sort -> $k {
+            $trailer{$k} = from-ast $_
+                 with $dict{$k};
         }
 
         $trailer;
@@ -311,7 +311,7 @@ class PDF::Reader {
                 my $type2-objects = $container-obj.decoded;
 
                 my $index = $idx<index>;
-                my $ind-obj-ref = $type2-objects[ $index ];
+                my $ind-obj-ref = $type2-objects[$index];
                 $actual-obj-num = $ind-obj-ref[0];
                 $actual-gen-num = 0;
                 my $input = $ind-obj-ref[1];
@@ -456,8 +456,8 @@ class PDF::Reader {
 	my $index = $parse.ast;
 	my @idx;
 
-	if ($index<xref>:exists) {
-	    for $index<xref>.list {
+	with $index<xref> {
+	    for .list {
 		my UInt $obj-num = .<obj-first-num>;
 		for @( .<entries> ) {
 		    my UInt $type = .<type>;
@@ -538,8 +538,8 @@ class PDF::Reader {
 
         my %obj-entries-of-type = @obj-idx.classify: *.<type>;
 
-        my @type1-obj-entries = %obj-entries-of-type<1>.list.sort({ $^a<offset> })
-            if %obj-entries-of-type<1>:exists;
+        my @type1-obj-entries = .list.sort({ $^a<offset> })
+            with %obj-entries-of-type<1>;
 
         for @type1-obj-entries.kv -> $k, $_ {
             my UInt $offset = .<offset>;
@@ -549,8 +549,8 @@ class PDF::Reader {
 
 	self!setup-crypt(|c);
 
-        my @type2-obj-entries = %obj-entries-of-type<2>.list
-        if %obj-entries-of-type<2>:exists;
+        my @type2-obj-entries = .list
+            with %obj-entries-of-type<2>;
 
         for @type2-obj-entries {
             my UInt $obj-num = .<obj-num>;
@@ -582,7 +582,7 @@ class PDF::Reader {
             for @objects.reverse {
                 next unless .key eq 'ind-obj';
                 my @ind-obj = .value.list;
-                (my UInt $obj-num, my UInt $gen-num, my $object, my UInt $offset) = @ind-obj;
+                my (UInt $obj-num, UInt $gen-num, $object, UInt $offset) = @ind-obj;
 
                 my Hash $dict;
                 my $stream-type;
@@ -610,22 +610,21 @@ class PDF::Reader {
                     :$offset,
                 };
 
-                if $stream-type && $stream-type eq 'ObjStm' {
-                    # Object Stream. Index contents as type 2 objects
-                    my $container-obj = $.ind-obj( $obj-num, $gen-num ).object;
-                    my Array $type2-objects = $container-obj.decoded;
-                    my UInt $index = 0;
-
-                    for $type2-objects.list {
-                        my UInt $ref-obj-num = $obj-num;
-                        my UInt $obj-num2 = .[0];
-                        my UInt $gen-num2 = 0;
-                        %!ind-obj-idx{$obj-num2}{$gen-num2} //= {
-                            :type(2),
-                            :$index,
-                            :$ref-obj-num,
-                        };
-                        $index++;
+                with $stream-type {
+                    when 'ObjStm' {
+                        # Object Stream. Index contents as type 2 objects
+                        my $container-obj = $.ind-obj( $obj-num, $gen-num ).object;
+                        my Array $type2-objects = $container-obj.decoded;
+                        for $type2-objects.kv -> $index, $_ {
+                            my UInt $obj-num2 = .[0];
+                            my UInt $ref-obj-num = $obj-num;
+                            my UInt $gen-num2 = 0;
+                            %!ind-obj-idx{$obj-num2}{$gen-num2} //= {
+                                :type(2),
+                                :$index,
+                                :$ref-obj-num,
+                            };
+                        }
                     }
                 }
             }
@@ -681,16 +680,19 @@ class PDF::Reader {
                     }
                     when 1 {
                         # type 1 regular top-level/inuse object
-                        $offset = $entry<offset>
-                            if $entry<offset>:exists
+                        $offset = $_
+                            with $entry<offset>
                     }
                     when 2 {
                         # type 2 embedded object
                         next unless $unpack;
                         my UInt $parent = $entry<ref-obj-num>;
-			die "unable to find object: $parent 0 R"
-			    unless %!ind-obj-idx{ $parent }{0}:exists;
-                        $offset = %!ind-obj-idx{ $parent }{0}<offset>;
+			with %!ind-obj-idx{$parent}{0} {
+                            $offset = .<offset>;
+                        }
+                        else {
+			    die "unable to find object: $parent 0 R"
+                        }
                         $seq = $entry<index>;
                     }
                     default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
