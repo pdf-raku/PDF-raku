@@ -20,8 +20,8 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	    });
     }
 
-    multi method rw-accessor(UInt $idx!, Attribute $att) {
-	tie-att-array(self, $idx, $att);
+    multi method rw-accessor(Str $key!, Attribute $att) {
+	tie-att-array(self, $att.index, $att);
     }
 
     method tie-init {
@@ -30,15 +30,10 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 
 	for $class.^attributes.grep({.name !~~ /descriptor/ && .can('index') }) -> $att {
 	    my $pos = $att.index;
+	    my $key = $att.tied.accessor-name;
 	    next if @!index[$pos];
 	    @!index[$pos] = $att;
-
-	    my $key = $att.tied.accessor-name;
-	    if $att.tied.gen-accessor && ! $class.^declares_method($key) {
-		$att.set_rw;
-		my &meth = method { self.rw-accessor( $pos, $att ) };
-		$class.^add_method( $key, &meth );
-	    }
+            %.entries{$key} = $att;
 	}
     }
 

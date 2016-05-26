@@ -4,24 +4,22 @@ use PDF::DAO::Tie;
 
 role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
-    has Attribute %.entries is rw;
+    #| resolve a heritable property by dereferencing /Parent entries
+    proto sub inehrit(Hash $, Str $, Int :$hops) {*}
+    multi sub inherit(Hash $object, Str $key where { $object{$key}:exists }, :$hops) {
+	$object{$key};
+    }
+    multi sub inherit(Hash $object, Str $key where { $object<Parent>:exists }, Int :$hops is copy = 1) {
+	die "cyclical inheritance hierarchy"
+	    if ++$hops > 100;
+	inherit($object<Parent>, $key, :$hops);
+    }
+    multi sub inherit(Mu $, Str $, :$hops) is default { Nil }
 
     sub tie-att-hash(Hash $object, Str $key, Attribute $att) is rw {
 
 	#| array of type, declared with '@' sigil, e.g.
         #| has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
-
-	#| resolve a heritable property by dereferencing /Parent entries
-	proto sub inehrit(Hash $, Str $, Int :$hops) {*}
-        multi sub inherit(Hash $object, Str $key where { $object{$key}:exists }, :$hops) {
-	    $object{$key};
-	}
-	multi sub inherit(Hash $object, Str $key where { $object<Parent>:exists }, Int :$hops is copy = 1) {
-	    die "cyclical inheritance hierarchy"
-		if ++$hops > 100;
-	    inherit($object<Parent>, $key, :$hops);
-	}
-	multi sub inherit(Mu $, Str $, :$hops) is default { Nil }
 
 	Proxy.new( 
 	    FETCH => sub ($) {
@@ -47,14 +45,8 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
 	for $class.^attributes.grep({.name !~~ /descriptor/ && .can('entry') }) -> $att {
 	    my $key = $att.tied.accessor-name;
-	    next if %!entries{$key}:exists;
-	    %!entries{$key} = $att;
-
-	    if $att.tied.gen-accessor &&  ! $class.^declares_method($key) {
-		$att.set_rw;
-		my &meth = method { self.rw-accessor( $key, $att ) };
-		$class.^add_method( $key, &meth );
-	    }
+	    next if %.entries{$key}:exists;
+	    %.entries{$key} = $att;
 	}
     }
 
@@ -65,7 +57,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
         $val := $.deref(:$key, $val)
 	    if $val ~~ Pair | Array | Hash;
 
-	my Attribute $att = $.entries{$key} // $.of-att;
+	my Attribute $att = %.entries{$key} // $.of-att;
 	$att.apply($val)
 	    if $att.defined;
 
@@ -76,11 +68,11 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
     method ASSIGN-KEY($key, $val) {
 	my $lval = $.lvalue($val);
 
-	my Attribute $att = $.entries{$key} // $.of-att;
+	my Attribute $att = %.entries{$key} // $.of-att;
 	$att.apply($lval)
 	    if $att.defined;
 
 	nextwith($key, $lval )
     }
-    
+
 }

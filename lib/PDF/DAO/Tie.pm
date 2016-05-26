@@ -4,6 +4,7 @@ use PDF::DAO;
 role PDF::DAO::Tie {
 
     has Attribute $.of-att is rw;      #| default attribute
+    has Attribute %.entries;
 
     #| generate an indirect reference to ourselves
     method ind-ref {
@@ -258,6 +259,17 @@ role PDF::DAO::Tie {
     #| simple native type. no need to coerce
     multi method deref($value) is default { $value }
 
+    method cb-init {Nil}
+    method cb-finish {Nil}
+
+    method FALLBACK($key, |c) is rw  {
+        die "unknown method $key" unless %!entries{$key}:exists;
+        my $att = %!entries{$key};
+	$att.set_rw;
+	my &meth = method { self.rw-accessor( $key, $att ) };
+	self.^add_method( $key, &meth );
+        self."$key"(|c);
+    }
 }
 
 =begin pod
