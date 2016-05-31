@@ -10,7 +10,7 @@ module PDF::Storage::Util {
     multi sub resample( $nums!, 8, 32) { my uint32 @s = flat $nums.list.map: -> $b1, $b2, $b3, $b4 { $b1 +< 24  +  $b2 +< 16  +  $b3 +< 8  +  $b4 } }
     multi sub resample( $nums!, 16, 8) { my uint8  @s = flat $nums.list.map: { ($_ +> 8, $_) } }
     multi sub resample( $nums!, 32, 8) { my uint8  @s = flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
-    multi sub resample( $nums!, UInt $n!, UInt $m where $_ == $n) { $nums }
+    multi sub resample( $nums!, UInt $n!, UInt $ where $n) { $nums }
     multi sub resample( $nums!, UInt $n!, UInt $m!) is default {
         warn "unoptimised $n => $m bit sampling";
         flat gather {

@@ -143,8 +143,8 @@ class PDF::Storage::Crypt {
 	    $gcrypt-digest-class = ::('Crypt::GCrypt::Digest');
 	    require ::('Crypt::GCrypt::Cipher');
 	    $gcrypt-cipher-class = ::('Crypt::GCrypt::Cipher');
-	    $gcrypt-cipher-class.check-version
-	    && $gcrypt-digest-class.check-version;
+	    ? ($gcrypt-cipher-class.check-version
+	       && $gcrypt-digest-class.check-version);
 	} // False;
     }
 	    

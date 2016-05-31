@@ -10,16 +10,15 @@ role PDF::DAO {
     has UInt $.gen-num is rw;
 
     method is-indirect is rw returns Bool {
-        my $obj = self;
 	Proxy.new(
-	    FETCH => method { ?$obj.obj-num },
-	    STORE => method (Bool $val) {
+	    FETCH => sub ($) { ? self.obj-num },
+	    STORE => sub ($, Bool $val) {
 		if $val {
 		    # Ensure this object is indirect. Serializer will renumber
-		    $obj.obj-num //= -1;
+		    self.obj-num //= -1;
 		}
 		else {
-		    $obj.obj-num = Nil;
+		    self.obj-num = Nil;
 		}
 		$val
 	    },

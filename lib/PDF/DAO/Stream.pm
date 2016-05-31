@@ -64,25 +64,25 @@ class PDF::DAO::Stream
     method encoded is rw {
 	my $encoded := $!encoded;
 	my $decoded := $!decoded;
-	my $obj := self;
+
 	Proxy.new(
 	    FETCH => sub ($) {
 
-		$encoded //= $obj.encode( $decoded )
+		$encoded //= self.encode( $decoded )
 		    if $decoded.defined;
 
 		if $encoded.can('codes') {
-		    $obj<Length> = $encoded.codes;
+		    self<Length> = $encoded.codes;
 		}
 		else {
-		    $obj<Length>:delete
+		    self<Length>:delete
 		}
 		$encoded;
 	    },
 
 	    STORE => sub ($, $stream) {
 		$decoded = Any;
-		$obj<Length> = $stream.codes
+		self<Length> = $stream.codes
 		    if $stream.can('codes');
 		$encoded = $stream;
 	    },
@@ -92,16 +92,16 @@ class PDF::DAO::Stream
     method decoded is rw {
 	my $encoded := $!encoded;
 	my $decoded := $!decoded;
-	my $obj := self;
+
 	Proxy.new(
 	    FETCH => sub ($) {
-		$decoded //= $obj.decode( $encoded )
+		$decoded //= self.decode( $encoded )
 		    if $encoded.defined;
 		$decoded;
 	    },
 	    STORE => sub ($, $stream) {
 		$encoded = Any;
-		$obj<Length>:delete;
+		self<Length>:delete;
 		$decoded = $stream;
 	    }
 	    );

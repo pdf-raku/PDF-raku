@@ -16,27 +16,21 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
     }
     multi sub inherit(Mu $, Str $, :$hops) is default { Nil }
 
-    sub tie-att-hash(Hash $object, Str $key, Attribute $att) is rw {
-
+    method rw-accessor(Str $key!, $att) {
 	#| array of type, declared with '@' sigil, e.g.
         #| has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
-
 	Proxy.new( 
 	    FETCH => sub ($) {
 		my $val := $att.tied.is-inherited
-		    ?? inherit($object, $key)
-		    !! $object{$key};
+		    ?? inherit(self, $key)
+		    !! self{$key};
 		$att.tied.type-check($val, :$key);
 	    },
 	    STORE => sub ($, $val is copy) {
-		my $lval = $object.lvalue($val);
+		my $lval = self.lvalue($val);
 		$att.apply($lval);
-		$object{$key} := $att.tied.type-check($lval, :$key);
+		self{$key} := $att.tied.type-check($lval, :$key);
 	    });
-    }
-
-    method rw-accessor(Str $key!, $att) {
-	tie-att-hash(self, $key, $att);
     }
 
     method tie-init {

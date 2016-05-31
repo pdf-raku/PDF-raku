@@ -6,22 +6,21 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 
     has Attribute @.index is rw;    #| for typed indices
 
-    sub tie-att-array($object, UInt $key, Attribute $att) is rw {
+    method rw-accessor(Str $, Attribute $att) is rw {
+
+        my UInt $key = $att.index;
 
 	Proxy.new(
 	    FETCH => sub ($) {
-		my $val := $object[$key];
+		my $val := self[$key];
 		$att.tied.type-check($val, :$key);
 	    },
 	    STORE => sub ($, $val is copy) {
-		my $lval = $object.lvalue($val);
+		my $lval = self.lvalue($val);
 		$att.apply($lval);
-		$object[$key] := $att.tied.type-check($lval, :$key);
+		self[$key] := $att.tied.type-check($lval, :$key);
 	    });
-    }
 
-    multi method rw-accessor(Str $key!, Attribute $att) {
-	tie-att-array(self, $att.index, $att);
     }
 
     method tie-init {

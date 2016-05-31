@@ -44,8 +44,7 @@ class PDF::Storage::Crypt::AES
     method decrypt( $key, $enc-iv) {
         my @iv = $enc-iv[0 ..^ 16];
         my @enc = +$enc-iv > 16 ?? $enc-iv[16 .. *] !! [];
-        my $dec = $.aes-decrypt($key, @enc, :@iv );
-        $dec;
+        $.aes-decrypt($key, @enc, :@iv );
     }
 
 }
