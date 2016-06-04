@@ -1,0 +1,263 @@
+{
+  "pdf": {
+    "body": [
+      {
+        "trailer": {
+          "dict": {
+            "Encrypt": {
+              "ind-ref": [
+                1,
+                0
+              ]
+            },
+            "Info": {
+              "ind-ref": [
+                2,
+                0
+              ]
+            },
+            "Root": {
+              "ind-ref": [
+                3,
+                0
+              ]
+            },
+            "Size": {
+              "int": 9
+            },
+            "ID": {
+              "array": [
+                {
+                  "hex-string": "CÜ{ÃHADCN:C"
+                },
+                {
+                  "hex-string": "ÇÂL¨§>v+|7é1Ý^"
+                }
+              ]
+            }
+          }
+        },
+        "objects": [
+          {
+            "ind-obj": [
+              1,
+              0,
+              {
+                "dict": {
+                  "V": {
+                    "int": 1
+                  },
+                  "Filter": {
+                    "name": "Standard"
+                  },
+                  "U": {
+                    "hex-string": "§NØ©à¦û$£>1ÓÆ¼yä%ªÄP0>~@"
+                  },
+                  "P": {
+                    "int": -64
+                  },
+                  "O": {
+                    "hex-string": "EðÀFOEqà®bá^2KrÔ·%E[ûG]ðù®$"
+                  },
+                  "R": {
+                    "int": 2
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj": [
+              2,
+              0,
+              {
+                "dict": {
+                  "CreationDate": {
+                    "literal": "E©NèRG,o\"ËªÔÁÀÂJ#'"
+                  },
+                  "Author": {
+                    "literal": "Q×:õ7r1cÑËþÝü×*À"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj": [
+              3,
+              0,
+              {
+                "dict": {
+                  "Outlines": {
+                    "ind-ref": [
+                      4,
+                      0
+                    ]
+                  },
+                  "Pages": {
+                    "ind-ref": [
+                      5,
+                      0
+                    ]
+                  },
+                  "Type": {
+                    "name": "Catalog"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj": [
+              4,
+              0,
+              {
+                "dict": {
+                  "Count": {
+                    "int": 0
+                  },
+                  "Type": {
+                    "name": "Outlines"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj": [
+              5,
+              0,
+              {
+                "dict": {
+                  "Count": {
+                    "int": 1
+                  },
+                  "Type": {
+                    "name": "Pages"
+                  },
+                  "Kids": {
+                    "array": [
+                      {
+                        "ind-ref": [
+                          6,
+                          0
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj": [
+              6,
+              0,
+              {
+                "dict": {
+                  "Resources": {
+                    "dict": {
+                      "Procset": {
+                        "array": [
+                          {
+                            "name": "PDF"
+                          },
+                          {
+                            "name": "Text"
+                          }
+                        ]
+                      },
+                      "Font": {
+                        "dict": {
+                          "F1": {
+                            "ind-ref": [
+                              8,
+                              0
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "Contents": {
+                    "ind-ref": [
+                      7,
+                      0
+                    ]
+                  },
+                  "Parent": {
+                    "ind-ref": [
+                      5,
+                      0
+                    ]
+                  },
+                  "MediaBox": {
+                    "array": [
+                      {
+                        "int": 0
+                      },
+                      {
+                        "int": 0
+                      },
+                      {
+                        "int": 420
+                      },
+                      {
+                        "int": 595
+                      }
+                    ]
+                  },
+                  "Type": {
+                    "name": "Page"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj": [
+              7,
+              0,
+              {
+                "stream": {
+                  "encoded": "íP:~J1Î>©>ÆÐ²¥ ¸¹ùcx1\n'¿B«ú´\"À2k7",
+                  "dict": {
+                    "Length": {
+                      "int": 46
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj": [
+              8,
+              0,
+              {
+                "dict": {
+                  "Encoding": {
+                    "name": "MacRomanEncoding"
+                  },
+                  "BaseFont": {
+                    "name": "Helvetica"
+                  },
+                  "Type": {
+                    "name": "Font"
+                  },
+                  "Subtype": {
+                    "name": "Type1"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "header": {
+      "type": "PDF",
+      "version": 1.3
+    }
+  }
+}

@@ -341,6 +341,9 @@ restrictions on update, printing or copying of the PDF.
 
 The optional `Crypt::GCrypt` module is required to encrypt, or decrypt documents with AES encryption. This module also boosts performance and is recommended, if you are handling encrypted documents.
 
+An encrypted PDF can be saved as JSON. It will remain encrypted and
+a password may be required, to reopen it.
+
 ## Data-types and Coercion
 
 The `PDF::DAO` name-space provides roles and classes for the representation and manipulation of PDF objects.

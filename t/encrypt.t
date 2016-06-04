@@ -15,7 +15,8 @@ my $expected-author = 'PDF-Tools/t/dao-doc.t';
 
 lives-ok { $doc.encrypt( :$owner-pass, :$user-pass, :R(2), :V(1), ); }, '$doc.encrypt (R2.1) - lives';
 is $doc.crypt.is-owner, True, 'newly encrypted pdf - is-owner';
-lives-ok {$doc.save-as: "t/encrypt.pdf"}, '$doc.save-as - lives';
+lives-ok {$doc.save-as: "t/encrypt.pdf"}, '$doc.save-as .pdf - lives';
+lives-ok {$doc.save-as: "t/encrypt.json"}, '$doc.save-as .json - lives';
 dies-ok { $doc = PDF::DAO::Doc.open: "t/encrypt.pdf", :password<dunno> }, "open encrypted with incorrect password - dies";
 
 lives-ok { $doc = PDF::DAO::Doc.open("t/encrypt.pdf", :password($user-pass)) }, 'open with user password - lives';
@@ -27,5 +28,9 @@ lives-ok { $doc = PDF::DAO::Doc.open("t/encrypt.pdf", :password($owner-pass)) },
 is $doc.crypt.is-owner, True, 'open with owner password - is-owner';
 is $doc<Info><Author>, $expected-author, 'open with owner password - .Info.Author';
 is $doc<Root><Pages><Kids>[0]<Contents>.decoded, $expected-contents, 'open with owner password - contents';
+
+dies-ok { $doc = PDF::DAO::Doc.open: "t/encrypt.json", :password<dunno> }, "open encrypted json with incorrect password - dies";
+
+lives-ok { $doc = PDF::DAO::Doc.open("t/encrypt.json", :password($user-pass)) }, 'open json user password - lives';
 
 done-testing;
