@@ -33,7 +33,7 @@ class PDF::Storage::Crypt::RC4
 	# Algorithm 3.1
 
         my $obj-key = self!object-key( $obj-num, $gen-num );
-	Buf.new: PDF::Storage::Crypt::rc4-crypt( $obj-key, $bytes );
+	Buf.new: PDF::Storage::Crypt.rc4-crypt( $obj-key, $bytes );
     }
 
 }

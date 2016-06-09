@@ -5,7 +5,6 @@ class PDF::Storage::Crypt {
     use PDF::DAO::Dict;
     use PDF::Storage::Util :resample;
     use PDF::DAO::Type::Encrypt;
-    use Crypt::RC4;
 
     has UInt $!R;         #| encryption revision
     has Bool $!EncryptMetadata;
@@ -118,7 +117,7 @@ class PDF::Storage::Crypt {
         else {
             die 'This PDF lacks an ID.  The document cannot be decrypted'
         }
-	@!P =  resample([ $P ], 32, 8).reverse;
+	@!P = resample([ $P ], 32, 8).reverse;
 	@!O = $O.ords;
 	@!U = $U.ords;
 
@@ -134,30 +133,36 @@ class PDF::Storage::Crypt {
 	$!key-bytes = $key-bits +> 3;
     }
 
-    use Digest::MD5;
     my $gcrypt-digest-class;
     my $gcrypt-cipher-class;
     our sub gcrypt-available {
-	state Bool $have-it //= try {
+	state Bool $have-it //= do {
+	    CATCH {
+		default {
+		    require ::('Digest::MD5');
+		    require ::('Crypt::RC4');
+		    False;
+		}
+	    }
 	    require ::('Crypt::GCrypt::Digest');
 	    $gcrypt-digest-class = ::('Crypt::GCrypt::Digest');
 	    require ::('Crypt::GCrypt::Cipher');
 	    $gcrypt-cipher-class = ::('Crypt::GCrypt::Cipher');
 	    ? ($gcrypt-cipher-class.check-version
 	       && $gcrypt-digest-class.check-version);
-	} // False;
+	};
     }
 	    
-    multi method md5($msg) {
+    method md5($msg) {
 	gcrypt-available()
 	    ?? Buf.new: $gcrypt-digest-class.md5($msg)
-	    !! Digest::MD5.md5_buf(Buf.new($msg).decode('latin-1'));
+	    !! ::('Digest::MD5').md5_buf(Buf.new($msg).decode('latin-1'));
     }
 
-    our sub rc4-crypt($key, $msg) {
+    method rc4-crypt($key, $msg) {
         my @crypt = gcrypt-available()
             ?? $gcrypt-cipher-class.arcfour(:$key, $msg).list
-            !! Crypt::RC4::RC4($key, $msg).list;
+            !! ::('Crypt::RC4').new(:$key).RC4($msg).list;
         @crypt;
     }
 
@@ -178,11 +183,11 @@ class PDF::Storage::Crypt {
 	if $!R >= 3 {
 	    for @steps -> $iter {
 		my uint8 @key = $code.map({ $_ +^ $iter });
-		@pass = rc4-crypt(@key, @pass);
+		@pass = $.rc4-crypt(@key, @pass).list;
 	    }
 	}
 	else {
-	    @pass = rc4-crypt($code, @pass);
+	    @pass = $.rc4-crypt($code, @pass).list;
 	}
 	@pass;
     }
@@ -221,14 +226,12 @@ class PDF::Storage::Crypt {
 	    # Algorithm 3.5 steps 1 .. 5
 	    $pass.append: @!doc-id;
 	    $pass = $.md5( $pass );
-	    $pass = rc4-crypt($key, $pass);
-	    $pass = self!do-iter-crypt($key, $pass.list);
-	    $pass.append( @Padding[0 .. 15] );
-	    @computed = $pass[0 .. 15];
+	    $pass = $.rc4-crypt($key, $pass);
+	    @computed = self!do-iter-crypt($key, @$pass);
 	}
 	else {
 	    # Algorithm 3.4
-	    @computed = rc4-crypt($key, @Padding);
+	    @computed = $.rc4-crypt($key, @Padding).list;
 	}
 
         @computed;
@@ -277,7 +280,7 @@ class PDF::Storage::Crypt {
         my uint8 @owner = @user-pass;
         
 	if $!R == 2 {      # 2 (Revision 2 only)
-	    @owner = rc4-crypt($key, @owner);
+	    @owner = $.rc4-crypt($key, @owner).list;
 	}
 	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
 	    @owner = self!do-iter-crypt($key, @owner, :steps(0..19) );
@@ -291,7 +294,7 @@ class PDF::Storage::Crypt {
 	my $key = self!compute-owner-key( @pass );    # 1
 	my $user-pass = @!O.list;
 	if $!R == 2 {      # 2 (Revision 2 only)
-	    $user-pass = rc4-crypt($key, $user-pass);
+	    $user-pass = $.rc4-crypt($key, $user-pass);
 	}
 	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
 	    $user-pass = self!do-iter-crypt($key, $user-pass, :steps(19, 18 ... 0) );
