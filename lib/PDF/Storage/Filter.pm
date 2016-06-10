@@ -27,7 +27,7 @@ class PDF::Storage::Filter {
     }
 
     proto method decode($, Hash :$dict!) {*}
-    proto method encode($, Hash :$dict!) returns PDF::Storage::Blob {*}
+    proto method encode($, Hash :$dict!) {*}
 
     multi method decode( $input, Hash :$dict! where !.<Filter>.defined) {
         # nothing to do
@@ -35,7 +35,7 @@ class PDF::Storage::Filter {
     }
 
     multi method decode( $data, Hash :$dict! where $.have-backend) {
-       PDF::Storage::Blob.new: $.filter-backend.decode( $data, :$dict);
+       $.filter-backend.decode( $data, :$dict);
     }
 
     # object may have an array of filters [PDF 1.7 spec Table 5]
@@ -69,7 +69,7 @@ class PDF::Storage::Filter {
     }
 
     multi method encode( $data, Hash :$dict! where $.have-backend) {
-       PDF::Storage::Blob.new: $.filter-backend.encode( $data, :$dict);
+	$.filter-backend.encode( $data, :$dict);
     }
 
     # object may have an array of filters PDF 1.7 spec Table 3.4 
