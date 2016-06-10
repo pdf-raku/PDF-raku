@@ -199,18 +199,20 @@ class PDF::Storage::Serializer {
         return (:ind-ref( %!objects-idx{$object} ))
 	    if %!objects-idx{$object}:exists;
 
-        my Bool $is-stream = $object.isa(PDF::DAO::Stream);
-
-        if $is-stream && $*compress.defined {
-            $*compress ?? $object.compress !! $object.uncompress;
-        }
+        my $encoded;
+	if $object.isa(PDF::DAO::Stream) {
+	    with $*compress {
+		$_ ?? $object.compress !! $object.uncompress
+	    }
+	    $encoded = $object.encoded;
+	}
 
         my $ind-obj;
         my $slot;
 	my $dict;
 
-        if $is-stream {
-	    my $encoded = $object.encoded;
+        if $encoded.defined {
+	    $encoded .= Str;
             $ind-obj = :stream{
                 :$dict,
                 :$encoded,

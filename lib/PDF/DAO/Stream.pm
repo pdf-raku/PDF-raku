@@ -129,10 +129,13 @@ class PDF::DAO::Stream
 
     method content {
         my $encoded = $.encoded; # may update $.dict<Length>
-        my $dict = to-ast-native self;
-	$encoded.defined
-	    ?? :stream( %( $dict, :$encoded ))
-	    !! $dict;   # no content - downgrade to dict
+        my Pair $dict = to-ast-native self;
+	with $.encoded {
+	    :stream( %( $dict, :encoded(.Str) ))
+	}
+	else {
+	    $dict;   # no content - downgrade to dict
+	}
     }
 
     method uncompress {
