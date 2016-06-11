@@ -36,7 +36,7 @@ role PDF::DAO {
     multi method coerce(Hash $dict!, |c) {
 	use PDF::Grammar :AST-Types;
 	+$dict == 1 && $dict.keys[0] ∈ AST-Types
-	    ?? $.coerce( |%$dict, |c )    #| JSON munged pair
+	    ?? $.coerce( |$dict, |c )    #| JSON munged pair
 	    !! $.coerce( :$dict,  |c );
     }
     multi method coerce(Array $array!, |c) {

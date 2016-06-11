@@ -44,7 +44,7 @@ class PDF::Storage::Crypt::Doc
                 die "Encryption scheme /$cf-entry /CFM is not 'V2', 'AESV2', or 'None': $_";
             }
         };
-        $class.new( :$doc, |%$encrypt, |%$CF, |c );
+        $class.new( :$doc, |$encrypt, |$CF, |c );
     }
         
     #| read existing encryption
@@ -62,7 +62,7 @@ class PDF::Storage::Crypt::Doc
 	given $encrypt.V {
 	    when 1..3 {
                 # stream and string channels are identical
-                $!stm-f := PDF::Storage::Crypt::RC4.new( :$doc, |%$encrypt, |c );
+                $!stm-f := PDF::Storage::Crypt::RC4.new( :$doc, |$encrypt, |c );
                 $!str-f := $!stm-f;
 	    }
             when 4 {

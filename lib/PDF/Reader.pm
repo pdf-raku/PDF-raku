@@ -359,8 +359,7 @@ class PDF::Reader {
             $idx<ind-obj> = $ind-obj;
         }
         elsif ! $is-ind-obj  {
-            # immediate return to work around rakudo RT#126369
-            return :$ind-obj;
+            $ind-obj := :$ind-obj;
         }
 
         $ind-obj;
