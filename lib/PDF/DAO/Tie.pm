@@ -259,14 +259,20 @@ role PDF::DAO::Tie {
     #| simple native type. no need to coerce
     multi method deref($value) is default { $value }
 
-    method cb-init {Nil}
-    method cb-finish {Nil}
-
     method FALLBACK($key, |c) is rw  {
-        die "unknown method $key" unless %!entries{$key}:exists;
-        my $att = %!entries{$key};
-	$att.set_rw;
-	my &meth = method { self.rw-accessor( $key, $att ) };
+        my &meth = do given $key {
+            when %!entries{$key}:exists {
+                my $att = %!entries{$key};
+	        $att.set_rw;
+                method { self.rw-accessor( $key, $att ) };
+            }
+            when 'cb-init' | 'cb-finish' {
+                method {Nil};
+            }
+            default {
+                die X::Method::NotFound.new( :method($_), :typename(self.^name) );
+            }
+        };
 	self.^add_method( $key, &meth );
         self."$key"(|c);
     }
