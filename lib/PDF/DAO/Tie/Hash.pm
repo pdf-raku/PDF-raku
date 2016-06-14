@@ -52,9 +52,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	    if $val ~~ Pair | Array | Hash;
 
 	my Attribute $att = %.entries{$key} // $.of-att;
-	$att.apply($val)
-	    if $att.defined;
-
+	.apply($val) with $att;
 	$val;
     }
 
@@ -63,8 +61,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	my $lval = $.lvalue($val);
 
 	my Attribute $att = %.entries{$key} // $.of-att;
-	$att.apply($lval)
-	    if $att.defined;
+	.apply($lval) with $att;
 
 	nextwith($key, $lval )
     }

@@ -13,8 +13,8 @@ class PDF::Writer {
     has Str $.indent is rw = '';
 
     submethod BUILD(:$input, :$!ast, :$!offset = Nil, :$!prev = Nil) {
-        $!input = PDF::Storage::Input.coerce( $input )
-            if $input.defined;
+        $!input = PDF::Storage::Input.coerce( $_ )
+            with $input;
     }
 
     method Str returns Str {
@@ -74,7 +74,7 @@ class PDF::Writer {
 	    # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
 	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
 	    my $contigous = +@xref && .<obj-num> && .<obj-num> == $!size;
-	    @xref.push: %( obj-first-num => .<obj-num>, entries => [] )
+	    @xref.push: %( :obj-first-num(.<obj-num>), :entries[] )
 		unless $contigous;
 	    @xref[*-1]<entries>.push: $_;
 	    @xref[*-1]<obj-count>++;
@@ -297,7 +297,7 @@ class PDF::Writer {
 
     multi method write( Hash :$stream! ) {
 
-        my %dict = %( $stream<dict> );
+        my %dict = $stream<dict>;
         my $data = $stream<encoded> // $.input.stream-data( :$stream );
         $data = $data.decode("latin-1")
             unless $data.isa(Str);
@@ -307,13 +307,13 @@ class PDF::Writer {
 
     multi method write( Hash :$trailer!, :$prev, :$size ) {
 
-        my %dict = %( $trailer<dict> // {} );
+        my %dict = $trailer<dict> // {};
 
-        %dict<Prev> = :int($prev)
-            if $prev.defined;
+        %dict<Prev> = :int($_)
+            with $prev;
 
-        %dict<Size> = :int($!size)
-            if $!size;
+        %dict<Size> = :int($_)
+            with $!size;
 
         ( "trailer", $.write( :%dict ), '' ).join: "\n";
     }
@@ -355,7 +355,7 @@ class PDF::Writer {
     multi method write( Hash $ast!, :$node?) {
         my %params = $node.defined
             ?? ($node => $ast{$node})
-            !! $ast.flat;
+            !! $ast;
 
         $.write( |%params );
     }

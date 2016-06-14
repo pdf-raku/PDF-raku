@@ -41,7 +41,7 @@ class PDF::DAO::Stream
 
     multi method new(Hash :$dict = {}, :$decoded, :$encoded, *%etc) {
         my $obj = %obj-cache{$dict};
-        unless $obj.defined {
+        without $obj {
             temp %obj-cache{$dict} = $obj = self.bless(|%etc);
 	    $obj.tie-init;
             # this may trigger cascading PDF::DAO::Tie coercians
@@ -55,8 +55,8 @@ class PDF::DAO::Stream
 	    }
         }
 
-	$obj.decoded = $decoded if $decoded.defined;
-	$obj.encoded = $encoded if $encoded.defined;
+	$obj.decoded = $_ with $decoded;
+	$obj.encoded = $_ with $encoded;
 
         $obj;
     }
@@ -68,8 +68,8 @@ class PDF::DAO::Stream
 	Proxy.new(
 	    FETCH => sub ($) {
 
-		$encoded //= self.encode( $decoded )
-		    if $decoded.defined;
+		$encoded //= self.encode( $_ )
+		    with $decoded;
 
 		if $encoded.can('codes') {
 		    self<Length> = $encoded.codes;
@@ -95,8 +95,8 @@ class PDF::DAO::Stream
 
 	Proxy.new(
 	    FETCH => sub ($) {
-		$decoded //= self.decode( $encoded )
-		    if $encoded.defined;
+		$decoded //= self.decode( $_ )
+		    with $encoded;
 		$decoded;
 	    },
 	    STORE => sub ($, $stream) {

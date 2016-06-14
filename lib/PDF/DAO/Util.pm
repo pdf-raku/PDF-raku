@@ -20,7 +20,7 @@ module PDF::DAO::Util {
     multi sub to-ast-native(Hash $_dict!) {
 	my $dict = %seen{$_dict};
 
-	unless $dict.defined {
+	without $dict {
 	    $dict = temp %seen{$_dict} = {};
 	    $dict{.key} = to-ast(.value) for $_dict.pairs;
 	}
@@ -31,7 +31,7 @@ module PDF::DAO::Util {
     multi sub to-ast-native(Array $_array!) {
 	my $array = %seen{$_array};
 
-	unless $array.defined {
+	without $array {
 	    $array = temp %seen{$_array} = [ ];
 	    $array.push( to-ast( $_ ) ) for $_array.values;
 	}
@@ -68,14 +68,14 @@ module PDF::DAO::Util {
     multi sub to-ast-native(Bool $bool!) {:$bool}
     multi sub to-ast-native($other) is default {
         return (:null(Any))
-            unless $other.defined;
+            without $other;
         die "don't know how to to-ast: {$other.perl}";
     }
 
     proto sub from-ast(|) is export(:from-ast) {*};
 
     multi sub from-ast( Pair $p! ) {
-        from-ast( |%( $p.kv ) );
+        from-ast( |$p );
     }
 
     #| for JSON deserialization, e.g. { :int(42) } => :int(42)

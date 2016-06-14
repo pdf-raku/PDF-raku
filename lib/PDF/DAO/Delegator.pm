@@ -81,8 +81,8 @@ class PDF::DAO::Delegator {
     method find-delegate( Str $type!, $subtype?, :$fallback! ) is default {
 
 	my $subclass = $type;
-	$subclass ~= '::' ~ $subtype
-	    if $subtype.defined;
+	$subclass ~= '::' ~ $_
+	    with $subtype;
 
 	return %handler{$subclass}
 	if %handler{$subclass}:exists;

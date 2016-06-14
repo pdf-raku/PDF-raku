@@ -48,7 +48,7 @@ class PDF::Storage::Filter {
 
         for $dict<Filter>.keys -> $i {
             my %dict = Filter => $dict<Filter>[$i];
-            %dict<DecodeParms> = %( $dict<DecodeParms>[$i] )
+            %dict<DecodeParms> = $dict<DecodeParms>[$i]
                 if $dict<DecodeParms>:exists;
 
             $data = $.decode( $data, :%dict )
@@ -58,7 +58,7 @@ class PDF::Storage::Filter {
     }
 
     multi method decode( $input, Hash :$dict! ) {
-        my %params = %( $dict<DecodeParms> )
+        my %params = $dict<DecodeParms>
             if $dict<DecodeParms>:exists; 
         $.filter-class( $dict<Filter> ).decode( $input, |%params);
     }
@@ -83,7 +83,7 @@ class PDF::Storage::Filter {
 
         for $dict<Filter>.keys.reverse -> $i {
             my %dict = Filter => $dict<Filter>[$i];
-            %dict<DecodeParms> = %( $dict<DecodeParms>[$i] )
+            %dict<DecodeParms> = $dict<DecodeParms>[$i]
                 if $dict<DecodeParms>:exists;
 
             $data = $.encode( $data, :%dict )
@@ -93,7 +93,7 @@ class PDF::Storage::Filter {
     }
 
     multi method encode( $input, Hash :$dict! --> PDF::Storage::Blob ) {
-        my %params = %( $dict<DecodeParms> )
+        my %params = $dict<DecodeParms>
             if $dict<DecodeParms>:exists;
         $.filter-class( $dict<Filter> ).encode( $input, |%params);
     }

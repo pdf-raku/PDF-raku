@@ -26,10 +26,13 @@ class PDF::Storage::Input::IOH
     }
 
     multi method subbuf( UInt $from!, UInt $length = $.codes - $from + 1 --> Buf) {
-        return $!str.substr( $from, $length )
-            if $!str.defined;
-        $!value.seek( $from, SeekFromBeginning );
-        $.value.read( $length );
+        with $!str {
+            .substr( $from, $length )
+        }
+        else {
+            $!value.seek( $from, SeekFromBeginning );
+            $.value.read( $length );
+        }
     }
 
     method substr(|c) {

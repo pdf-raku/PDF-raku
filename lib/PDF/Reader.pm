@@ -179,7 +179,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my Hash $dict = PDF::DAO.coerce( |%(.<trailer>) );
+                my Hash $dict = PDF::DAO.coerce( |.<trailer> );
                 self!set-trailer( $dict.content<dict> );
 		self!setup-crypt(|c);
             }
@@ -476,7 +476,7 @@ class PDF::Reader {
 	    }
 	}
 
-	$dict = PDF::DAO.coerce( |%($index<trailer>), :reader(self) );
+	$dict = PDF::DAO.coerce( |$index<trailer>, :reader(self) );
 
 	@idx;
     }
@@ -629,7 +629,7 @@ class PDF::Reader {
             }
 
             if .<trailer> {
-                my Hash $dict = PDF::DAO.coerce( |%(.<trailer>) );
+                my Hash $dict = PDF::DAO.coerce( |.<trailer> );
                 self!set-trailer( $dict.content<dict> );
 		self!setup-crypt(|c);
             }

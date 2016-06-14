@@ -85,9 +85,9 @@ role PDF::DAO::Tie {
 		    }
 		    else {
 			($.coerce)($lval, $type);
-			$lval.reader  //= $reader  if $reader.defined;
-			$lval.obj-num //= $obj-num if $obj-num.defined;
-			$lval.gen-num //= $gen-num if $gen-num.defined;
+			$lval.reader  //= $_ with $reader;
+			$lval.obj-num //= $_ with $obj-num;
+			$lval.gen-num //= $_ with $gen-num;
 		    }
 		}
 		else {
@@ -107,13 +107,13 @@ role PDF::DAO::Tie {
 	}
 
 	multi method type-check($val is copy, Positional[Mu] $type) is rw {
-	    if $val.defined {
-		$.type-check($val, Array);
+	    with $val -> $v {
+		$.type-check($v, Array);
 		die "array not of length: {$.length}"
-		    if $.length && +$val != $.length;
+		    if $.length && +$v != $.length;
 		my $of-type = $type.of;
 		$.type-check($_, $of-type)
-		    for $val.values;
+		    for $v.values;
 	    }
 	    else {
 		die "missing required field: $*key"
@@ -124,11 +124,11 @@ role PDF::DAO::Tie {
 	}
 
 	multi method type-check($val is copy, Associative[Mu] $type) is rw {
-	    if $val.defined {
-		$.type-check($val, Hash);
+	    with $val -> $v {
+		$.type-check($v, Hash);
 		my $of-type = $type.of;
 		$.type-check($_, $of-type)
-		    for $val.values;
+		    for $v.values;
 	    }
 	    else {
 		die "missing required field: $*key"
@@ -140,7 +140,7 @@ role PDF::DAO::Tie {
 
 	#| untyped attribute
 	multi method type-check($val is copy, Mu $type) is rw {
-	    if !$val.defined {
+	    without $val {
 		die "missing required field: $*key"
 		    if $.is-required;
 		$val = Nil
@@ -149,9 +149,9 @@ role PDF::DAO::Tie {
 	}
 	#| type attribute
 	multi method type-check($val is copy, $type = $.type) is rw is default {
-	    if $val.defined {
-		die "{$val.WHAT.^name}.$*key: {$val.WHAT.gist} - not of type: {$type.gist}"
-		    unless $val ~~ $type | Pair;	#| undereferenced - don't know it's type yet
+	    with $val {
+		die "{.WHAT.^name}.$*key: {.WHAT.gist} - not of type: {$type.gist}"
+		    unless $_ ~~ $type | Pair;	#| undereferenced - don't know it's type yet
 	    }
 	    else {
 	      die "{$val.WHAT.^name}: missing required field: $*key"

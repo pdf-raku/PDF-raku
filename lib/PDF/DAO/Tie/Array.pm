@@ -44,8 +44,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	    if $val ~~ Pair | Array | Hash;
 
 	my Attribute $att = $.index[$pos] // $.of-att;
-	$att.apply($val)
-	    if $att.defined;
+	.apply($val) with $att;
 
 	$val;
     }
@@ -55,8 +54,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	my $lval = $.lvalue($val);
 
 	my Attribute $att = $.index[$pos] // $.of-att;
-	$att.apply($lval)
-	    if $att.defined;
+	.apply($lval) with $att;
 
 	nextwith($pos, $lval )
     }

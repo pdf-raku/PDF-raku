@@ -20,7 +20,7 @@ class PDF::DAO::Dict
 
     multi method new(Hash :$dict = {}, *%etc) is default {
         my $obj = %seen{$dict};
-        unless $obj.defined {
+        without $obj {
             temp %seen{$dict} = $obj = self.bless(|%etc);
 	    $obj.tie-init;
             # this may trigger cascading PDF::DAO::Tie coercians

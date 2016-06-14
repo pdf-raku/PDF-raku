@@ -20,14 +20,16 @@ class PDF::Storage::Serializer {
 
     #| Reference count hashes. Could be derivate class of PDF::DAO::Dict or PDF::DAO::Stream.
     multi method analyse( Hash $dict!) {
-        return if %!ref-count{$dict}++; # already encountered
-        $.analyse($dict{$_}) for $dict.keys.sort;
+        unless %!ref-count{$dict}++ { # already encountered
+            $.analyse($dict{$_}) for $dict.keys.sort
+        }
     }
 
     #| Reference count arrays. Could be derivate class of PDF::DAO::Array
     multi method analyse( Array $array!) {
-        return if %!ref-count{$array}++; # already encountered
-        $.analyse($array[$_]) for $array.keys;
+        unless %!ref-count{$array}++ { # already encountered
+            $.analyse($array[$_]) for $array.keys
+        }
     }
 
     #| we don't reference count anything else at the moment.
@@ -116,7 +118,7 @@ class PDF::Storage::Serializer {
 
     #| return objects without renumbering existing objects. requires a PDF reader
     multi method body( Bool:_ :$*compress ) is default {
-        my @objects = @( $.reader.get-objects );
+        my @objects = $.reader.get-objects;
 
 	my %dict = self!get-root(@objects);
 	self!discard-linearization(@objects);
@@ -154,17 +156,11 @@ class PDF::Storage::Serializer {
     }
 
     method !freeze-dict( Hash $dict) {
-        my %frozen;
-        %frozen{$_} = $.freeze( $dict{$_} )
-            for $dict.keys.sort;
-        %frozen;
+        %( $dict.keys.sort.map: { $_ => $.freeze( $dict{$_} ) } );
     }
 
     method !freeze-array( Array $array) {
-        my @frozen;
-        @frozen.push( $.freeze( $array[$_] ) )
-            for $array.keys;
-        @frozen;
+        [ $array.keys.map: { $.freeze( $array[$_] ) } ];
     }
 
     #| should this be serialized as an indirect object?
@@ -195,65 +191,69 @@ class PDF::Storage::Serializer {
     #| handles PDF::DAO::Dict, PDF::DAO::Stream, (plain) Hash
     multi method freeze( Hash $object!, Bool :$indirect) {
 
-        # already an indirect object
-        return (:ind-ref( %!objects-idx{$object} ))
-	    if %!objects-idx{$object}:exists;
-
-        my $encoded;
-	if $object.isa(PDF::DAO::Stream) {
-	    with $*compress {
-		$_ ?? $object.compress !! $object.uncompress
-	    }
-	    $encoded = $object.encoded;
-	}
-
-        my $ind-obj;
-        my $slot;
-	my $dict;
-
-        if $encoded.defined {
-	    $encoded .= Str;
-            $ind-obj = :stream{
-                :$dict,
-                :$encoded,
-            };
-            $slot := $ind-obj.value<dict>;
+        with %!objects-idx{$object} -> $ind-ref {
+            # already an indirect object
+            :$ind-ref
         }
         else {
-            $ind-obj = :$dict;
-            $slot := $ind-obj.value;
+            my $encoded;
+	    if $object.isa(PDF::DAO::Stream) {
+	        with $*compress {
+		    $_ ?? $object.compress !! $object.uncompress
+	        }
+	        $encoded = $object.encoded;
+	    }
+
+            my $ind-obj;
+            my $slot;
+	    my $dict;
+
+            if $encoded.defined {
+	        $encoded .= Str;
+                $ind-obj = :stream{
+                    :$dict,
+                    :$encoded,
+                };
+                $slot := $ind-obj.value<dict>;
+            }
+            else {
+                $ind-obj = :$dict;
+                $slot := $ind-obj.value;
+            }
+
+            # register prior to traversing the object. in case there are cyclical references
+            my $ret = $indirect || $.is-indirect( $object )
+              ?? self!index-object($ind-obj, :$object )
+              !! $ind-obj;
+
+            $slot = self!freeze-dict($object);
+
+            $ret;
         }
-
-        # register prior to traversing the object. in case there are cyclical references
-        my $ret = $indirect || $.is-indirect( $object )
-            ?? self!index-object($ind-obj, :$object )
-            !! $ind-obj;
-
-        $slot = self!freeze-dict($object);
-
-        $ret;
     }
 
     #| handles PDF::DAO::Array, (plain) Array
     multi method freeze( Array $object!, Bool :$indirect ) {
 
-        # already an indirect object
-        return (:ind-ref( %!objects-idx{$object} ))
-	    if %!objects-idx{$object}:exists;
+        with %!objects-idx{$object} -> $ind-ref {
+            # already an indirect object
+            :$ind-ref
+        }
+        else {
+	    my $array;
 
-	my $array;
+            my $ind-obj = :$array;
+            my $slot := $ind-obj.value;
 
-        my $ind-obj = :$array;
-        my $slot := $ind-obj.value;
+            # register prior to traversing the object. in case there are cyclical references
+            my $ret = $indirect || $.is-indirect( $object )
+                ?? self!index-object($ind-obj, :$object )
+                !! $ind-obj;
 
-        # register prior to traversing the object. in case there are cyclical references
-        my $ret = $indirect || $.is-indirect( $object )
-            ?? self!index-object($ind-obj, :$object )
-            !! $ind-obj;
+            $slot = self!freeze-array($object);
 
-        $slot = self!freeze-array($object);
-
-        $ret;
+            $ret;
+        }
     }
 
     #| handles other basic types

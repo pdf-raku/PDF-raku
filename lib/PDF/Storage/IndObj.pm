@@ -8,8 +8,8 @@ class PDF::Storage::IndObj {
 
     #| construct by wrapping a pre-existing PDF::DAO
     multi submethod BUILD( PDF::DAO :$!object!, :$obj-num, :$gen-num ) {
-	$!object.obj-num = $obj-num if $obj-num.defined;
-	$!object.gen-num = $gen-num if $gen-num.defined;
+	$!object.obj-num = $_ with $obj-num;
+	$!object.gen-num = $_ with $gen-num;
     }
 
     #| construct an object instance from a PDF::Grammar::PDF ast representation of
