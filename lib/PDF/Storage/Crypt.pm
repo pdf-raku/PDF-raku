@@ -133,8 +133,7 @@ class PDF::Storage::Crypt {
 	$!key-bytes = $key-bits +> 3;
     }
 
-    method blob($v) { $v.isa(Blob) ?? $v !! Blob.new: $v }
-
+    use Crypt::GCrypt::Cipher;
     use OpenSSL::NativeLib;
     use NativeCall;
     sub MD5( Blob, size_t, Blob )
@@ -147,12 +146,28 @@ class PDF::Storage::Crypt {
         $digest;
     }
 
-    use OpenSSL::CryptTools::RC4;
-    use Crypt::GCrypt::Cipher;
-    method rc4-crypt(Blob $key, Blob $msg) {
-        OpenSSL::CryptTools::RC4::crypt(:$key, $msg );
-    }
+    sub RC4_set_key(Blob, int32, Blob) is native(&gen-lib) { ... }
 
+    sub RC4(Blob, int32, Blob, Blob) is native(&gen-lib) { ... }
+
+    method rc4-crypt(Blob $key, Blob $in) {
+        # from openssl/rc4.h:
+        # typedef struct rc4_key_st {
+        #   RC4_INT x, y;
+        #   RC4_INT data[256];
+        # } RC4_KEY;
+
+        constant RC4_INT = uint32;
+        my $rc4 = Buf[RC4_INT].new;
+        $rc4.reallocate(258);
+        RC4_set_key($rc4, $key.bytes, $key);
+        my $out = buf8.new;
+        $out.reallocate($in.bytes)
+            if $in.bytes;
+        RC4($rc4, $in.bytes, $in, $out);
+        $out;
+    }
+    
     sub aes-crypt($action, $msg, |c) {
 	Crypt::GCrypt::Cipher.aes($msg, :$action, :mode<cbc>, |c)
     }
