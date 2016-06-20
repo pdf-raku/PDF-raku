@@ -21,8 +21,9 @@ class PDF::Storage::Crypt::RC4
 	my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
 
 	my UInt $size = +@obj-key;
-	my $key = $.md5( @obj-key );
-	$size < 16 ?? $key[0 ..^ $size] !! $key;
+	my $key = $.md5( Buf.new(@obj-key) );
+        $key.reallocate($size) if $size < 16;
+	$key;
     }
 
     multi method crypt( Str $text, |c --> Str) {
@@ -33,7 +34,7 @@ class PDF::Storage::Crypt::RC4
 	# Algorithm 3.1
 
         my $obj-key = self!object-key( $obj-num, $gen-num );
-	Buf.new: PDF::Storage::Crypt.rc4-crypt( $obj-key, $bytes );
+	PDF::Storage::Crypt.rc4-crypt( $obj-key, $bytes );
     }
 
 }

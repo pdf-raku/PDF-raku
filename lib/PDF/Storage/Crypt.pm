@@ -133,43 +133,28 @@ class PDF::Storage::Crypt {
 	$!key-bytes = $key-bits +> 3;
     }
 
-    my $gcrypt-digest-class;
-    my $gcrypt-cipher-class;
-    our sub gcrypt-available {
-	state Bool $have-it //= do {
-	    CATCH {
-		default {
-		    require ::('Digest::MD5');
-		    require ::('Crypt::RC4');
-		    False;
-		}
-	    }
-	    require ::('Crypt::GCrypt::Digest');
-	    $gcrypt-digest-class = ::('Crypt::GCrypt::Digest');
-	    require ::('Crypt::GCrypt::Cipher');
-	    $gcrypt-cipher-class = ::('Crypt::GCrypt::Cipher');
-	    ? ($gcrypt-cipher-class.check-version
-	       && $gcrypt-digest-class.check-version);
-	};
-    }
-	    
-    method md5($msg) {
-	gcrypt-available()
-	    ?? Buf.new: $gcrypt-digest-class.md5($msg)
-	    !! ::('Digest::MD5').md5_buf(Buf.new($msg).decode('latin-1'));
+    method blob($v) { $v.isa(Blob) ?? $v !! Blob.new: $v }
+
+    use OpenSSL::NativeLib;
+    use NativeCall;
+    sub MD5( Blob, size_t, Blob )
+        is native(&gen-lib) { * }
+        
+    method md5(Blob $msg) {
+        my $digest = buf8.new;
+        $digest[15] = 0;
+	MD5($msg, $msg.bytes, $digest);
+        $digest;
     }
 
-    method rc4-crypt($key, $msg) {
-        my @crypt = gcrypt-available()
-            ?? $gcrypt-cipher-class.arcfour(:$key, $msg).list
-            !! ::('Crypt::RC4').new(:$key).RC4($msg).list;
-        @crypt;
+    use OpenSSL::CryptTools::RC4;
+    use Crypt::GCrypt::Cipher;
+    method rc4-crypt(Blob $key, Blob $msg) {
+        OpenSSL::CryptTools::RC4::crypt(:$key, $msg );
     }
 
     sub aes-crypt($action, $msg, |c) {
-        die "This encryption operation requires the Perl 6 Crypt::GCrypt module. Please install and try again."
-	    unless gcrypt-available;
-	$gcrypt-cipher-class.aes($msg, :$action, :mode<cbc>, |c)
+	Crypt::GCrypt::Cipher.aes($msg, :$action, :mode<cbc>, |c)
     }
     method aes-encrypt($key, $msg, |c --> Buf) {
         aes-crypt('encrypt', $msg, :$key, |c);
@@ -178,18 +163,19 @@ class PDF::Storage::Crypt {
         aes-crypt('decrypt', $msg, :$key, |c);
     }
 
-    method !do-iter-crypt($code, @pass is copy, :@steps = (1 ... 19)) {
+    method !do-iter-crypt(Blob $code, @pass, :@steps = (1 ... 19)) {
 
+        my $crypt = Buf.new: @pass;
 	if $!R >= 3 {
 	    for @steps -> $iter {
-		my uint8 @key = $code.map({ $_ +^ $iter });
-		@pass = $.rc4-crypt(@key, @pass).list;
+		my $key = Buf.new: $code.map({ $_ +^ $iter });
+		$crypt = $.rc4-crypt($key, $crypt);
 	    }
 	}
 	else {
-	    @pass = $.rc4-crypt($code, @pass).list;
+	    $crypt = $.rc4-crypt($code, $crypt);
 	}
-	@pass;
+	$crypt;
     }
 
     method compute-user(@pass-padded, :$key! is rw) {
@@ -211,30 +197,30 @@ class PDF::Storage::Crypt {
 	    $reps = 51;
 	}
 
-	$key = @input;
+	$key = Buf.new: @input;
 
 	for 1 .. $reps {
 	    $key = $.md5($key);
-	    $key = $key[0 ..^ $n]
+	    $key.reallocate($n)
 		unless $key.elems <= $n;
 	}
 
-	my uint8 @computed;
-	my $pass = [ @Padding.list ];
+	my $computed;
+	my Buf $pass .= new: @Padding;
 
 	if $!R >= 3 {
 	    # Algorithm 3.5 steps 1 .. 5
 	    $pass.append: @!doc-id;
 	    $pass = $.md5( $pass );
 	    $pass = $.rc4-crypt($key, $pass);
-	    @computed = self!do-iter-crypt($key, @$pass);
+	    $computed = self!do-iter-crypt($key, $pass);
 	}
 	else {
 	    # Algorithm 3.4
-	    @computed = $.rc4-crypt($key, @Padding).list;
+	    $computed = $.rc4-crypt($key, $pass);
 	}
 
-        @computed;
+        $computed.list;
     }
 
     method !auth-user-pass(@pass) {
@@ -252,7 +238,7 @@ class PDF::Storage::Crypt {
 
     method !compute-owner-key(@pass-padded) {
         # Algorithm 3.7 steps 1 .. 4
-	my uint8 @input = @pass-padded;           # 1
+	my Buf $key .= new: @pass-padded;   # 1
 
 	my UInt $n = 5;
 	my UInt $reps = 1;
@@ -262,11 +248,9 @@ class PDF::Storage::Crypt {
 	    $reps = 51;
 	}
 
-	my $key = @input;
-
 	for 1..$reps {
 	    $key = $.md5($key);
-	    $key = $key[0 ..^ $n]
+	    $key.reallocate($n)
 		unless $key.elems <= $n;
 	}
 
@@ -277,22 +261,22 @@ class PDF::Storage::Crypt {
         # Algorithm 3.3
 	my $key = self!compute-owner-key( @owner-pass );    # Steps 1..4
 
-        my uint8 @owner = @user-pass;
+        my Buf $owner .= new: @user-pass;
         
 	if $!R == 2 {      # 2 (Revision 2 only)
-	    @owner = $.rc4-crypt($key, @owner).list;
+	    $owner = $.rc4-crypt($key, $owner);
 	}
 	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
-	    @owner = self!do-iter-crypt($key, @owner, :steps(0..19) );
+	    $owner = self!do-iter-crypt($key, $owner, :steps(0..19) );
 	}
 
-        @owner;
+        $owner.list;
     }
 
     method !auth-owner-pass(@pass) {
 	# Algorithm 3.7
-	my $key = self!compute-owner-key( @pass );    # 1
-	my $user-pass = @!O.list;
+	my Buf $key = self!compute-owner-key( @pass );    # 1
+	my Buf $user-pass .= new: @!O;
 	if $!R == 2 {      # 2 (Revision 2 only)
 	    $user-pass = $.rc4-crypt($key, $user-pass);
 	}

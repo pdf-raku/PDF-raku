@@ -20,7 +20,7 @@ class PDF::Storage::Crypt::AES
 	my uint8 @gen-bytes = resample([ $gen-num ], 32, 8).reverse;
 	my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1], 0x73, 0x41, 0x6C, 0x54; # 'sAIT'
 
-	$.md5( @obj-key );
+	$.md5( Buf.new(@obj-key) );
     }
 
     multi method crypt( Str $text, |c) {
@@ -35,16 +35,16 @@ class PDF::Storage::Crypt::AES
     }
 
     method encrypt( $key, $dec --> Buf) {
-        my @iv = (^256).pick xx 16;
-        my $enc-iv = Buf.new: @iv;
-        $enc-iv.append: $.aes-encrypt($key, $dec, :@iv );
-        $enc-iv;
+        my $iv = Buf.new( (^256).pick xx 16 );
+        my $enc = $iv;
+        $enc.append: $.aes-encrypt($key, $dec, :$iv );
+        $enc;
     }
 
     method decrypt( $key, $enc-iv) {
-        my @iv = $enc-iv[0 ..^ 16];
+        my $iv = Buf.new: $enc-iv[0 ..^ 16];
         my @enc = +$enc-iv > 16 ?? $enc-iv[16 .. *] !! [];
-        $.aes-decrypt($key, @enc, :@iv );
+        $.aes-decrypt($key, Buf.new(@enc), :$iv );
     }
 
 }

@@ -1,6 +1,6 @@
 branches:
   except:
-    - gh-pages
+    - openssl-crypt
 language: perl6
 sudo: false
 perl6:
