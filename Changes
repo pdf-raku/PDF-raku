@@ -1,8 +1,9 @@
     Release 0.0.7
+    - [PDF::Storage::Crypt] Encryption refactored to use OpenSSL.
     - [PDF::DAO::Doc] add saves-as( :update ) option.
       The input PDF is copied to the destination PDF, which is then incrementally
       updated. This should generally be faster.
-    - Bug fixes to Encryption and JSON serialization
+    - [PDF::Reader] Bug fixes to JSON serialization
     
     Release 0.0.6
     - [bin/pdf-rewriter.pl] unbust rewriting/recompression of encrypted PDFs

@@ -1,6 +1,6 @@
 {   "perl"        : "6",
     "name"        : "PDF",
-    "version"     : "0.0.6",
+    "version"     : "0.0.7",
     "description" : "Low level tools for reading, writing and manipulation of PDF files",
     "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Fast", "OpenSSL" ],
     "source-url"  : "git://github.com/p6-pdf/perl6-PDF-Tools.git",
