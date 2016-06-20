@@ -2,6 +2,10 @@ use v6;
 
 class PDF::Storage::Crypt {
 
+    use OpenSSL::NativeLib;
+    use OpenSSL::CryptTools;
+    use NativeCall;
+
     use PDF::DAO::Dict;
     use PDF::Storage::Util :resample;
     use PDF::DAO::Type::Encrypt;
@@ -133,9 +137,6 @@ class PDF::Storage::Crypt {
 	$!key-bytes = $key-bits +> 3;
     }
 
-    use OpenSSL::NativeLib;
-    use OpenSSL::CryptTools;
-    use NativeCall;
     sub MD5( Blob, size_t, Blob )
         is native(&gen-lib) { * }
         
