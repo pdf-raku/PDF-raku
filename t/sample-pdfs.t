@@ -14,8 +14,6 @@ for 't/pdf/samples'.IO.dir.sort {
     for False, True -> Bool $repair {
 	my $desc = "$pdf-filename {:$repair.perl}";
 	my $doc;
-        todo "Crypt::GCrypt is required for AES encryption"
-            if $pdf-filename ~~ /:i'aes'/  && ! PDF::Storage::Crypt::gcrypt-available;
 	lives-ok {$doc = PDF::DAO::Doc.open( $pdf-filename, :$repair ); $doc.Info}, "$desc open - lives"
             or next;
 
