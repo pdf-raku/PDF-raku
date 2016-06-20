@@ -133,15 +133,15 @@ class PDF::Storage::Crypt {
 	$!key-bytes = $key-bits +> 3;
     }
 
-    use Crypt::GCrypt::Cipher;
     use OpenSSL::NativeLib;
+    use OpenSSL::CryptTools;
     use NativeCall;
     sub MD5( Blob, size_t, Blob )
         is native(&gen-lib) { * }
         
     method md5(Blob $msg) {
         my $digest = buf8.new;
-        $digest[15] = 0;
+        $digest.reallocate(16);
 	MD5($msg, $msg.bytes, $digest);
         $digest;
     }
@@ -168,14 +168,12 @@ class PDF::Storage::Crypt {
         $out;
     }
     
-    sub aes-crypt($action, $msg, |c) {
-	Crypt::GCrypt::Cipher.aes($msg, :$action, :mode<cbc>, |c)
+    method aes-encrypt($key, $msg, :$iv --> Buf) {
+        OpenSSL::CryptTools::encrypt( :aes128, $msg, :$key, :$iv);
     }
-    method aes-encrypt($key, $msg, |c --> Buf) {
-        aes-crypt('encrypt', $msg, :$key, |c);
-    }
-    method aes-decrypt($key, $msg, |c --> Buf) {
-        aes-crypt('decrypt', $msg, :$key, |c);
+
+    method aes-decrypt($key, $msg, :$iv --> Buf) {
+        OpenSSL::CryptTools::decrypt( :aes128, $msg, :$key, :$iv);
     }
 
     method !do-iter-crypt(Blob $code, @pass, :@steps = (1 ... 19)) {
