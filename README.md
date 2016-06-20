@@ -339,10 +339,8 @@ A document can be encrypted using the `encrypt` method: `$doc.encrypt( :owner-pa
 Note that it's quite common to leave the user-password blank. This indicates that the document is readable by anyone, but may have
 restrictions on update, printing or copying of the PDF.
 
-The optional `Crypt::GCrypt` module is required to encrypt, or decrypt documents with AES encryption. This module also boosts performance and is recommended, if you are handling encrypted documents.
-
 An encrypted PDF can be saved as JSON. It will remain encrypted and
-a password may be required, to reopen it.
+passwords may be required, to reopen it.
 
 ## Data-types and Coercion
 
