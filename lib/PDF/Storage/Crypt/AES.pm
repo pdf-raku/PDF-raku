@@ -7,8 +7,24 @@ class PDF::Storage::Crypt::AES
     is PDF::Storage::Crypt
     does PDF::Storage::Crypt::AST {
 
+    use OpenSSL::CryptTools;
     use PDF::Storage::Blob;
     use PDF::Storage::Util :resample;
+    
+    constant KeyLen = 16;
+
+    submethod BUILD(UInt :$Length = 128, |c) {
+        die "unsupported AES encryption key length: $Length"
+            unless $Length == 16|128;
+    }
+    
+    method !aes-encrypt($key, $msg, :$iv --> Buf) {
+        OpenSSL::CryptTools::encrypt( :aes128, $msg, :$key, :$iv);
+    }
+
+    method !aes-decrypt($key, $msg, :$iv --> Buf) {
+        OpenSSL::CryptTools::decrypt( :aes128, $msg, :$key, :$iv);
+    }
 
     method type { 'AESV2' }
 
@@ -35,16 +51,16 @@ class PDF::Storage::Crypt::AES
     }
 
     method encrypt( $key, $dec --> Buf) {
-        my $iv = Buf.new( (^256).pick xx 16 );
+        my $iv = Buf.new( (^256).pick xx KeyLen );
         my $enc = $iv;
-        $enc.append: $.aes-encrypt($key, $dec, :$iv );
+        $enc.append: self!aes-encrypt($key, $dec, :$iv );
         $enc;
     }
 
     method decrypt( $key, $enc-iv) {
-        my $iv = Buf.new: $enc-iv[0 ..^ 16];
-        my @enc = +$enc-iv > 16 ?? $enc-iv[16 .. *] !! [];
-        $.aes-decrypt($key, Buf.new(@enc), :$iv );
+        my $iv = Buf.new: $enc-iv[0 ..^ KeyLen];
+        my @enc = +$enc-iv > KeyLen ?? $enc-iv[KeyLen .. *] !! [];
+        self!aes-decrypt($key, Buf.new(@enc), :$iv );
     }
 
 }

@@ -3,7 +3,6 @@ use v6;
 class PDF::Storage::Crypt {
 
     use OpenSSL::NativeLib;
-    use OpenSSL::CryptTools;
     use NativeCall;
 
     use PDF::DAO::Dict;
@@ -58,7 +57,7 @@ class PDF::Storage::Crypt {
             if $doc.Encrypt;
 
 	die "invalid encryption key length: $Length"
-	    unless 40 <= $Length <= 128
+            unless 40 <= $Length <= 128
             && ($V > 1 || $Length == 40)
 	    && $Length %% 8;
 
@@ -167,14 +166,6 @@ class PDF::Storage::Crypt {
             if $in.bytes;
         RC4($rc4, $in.bytes, $in, $out);
         $out;
-    }
-    
-    method aes-encrypt($key, $msg, :$iv --> Buf) {
-        OpenSSL::CryptTools::encrypt( :aes128, $msg, :$key, :$iv);
-    }
-
-    method aes-decrypt($key, $msg, :$iv --> Buf) {
-        OpenSSL::CryptTools::decrypt( :aes128, $msg, :$key, :$iv);
     }
 
     method !do-iter-crypt(Blob $code, @pass, :@steps = (1 ... 19)) {
