@@ -26,30 +26,30 @@ class PDF::Storage::Filter {
 	}
     }
 
-    proto method decode($, Hash :$dict!) {*}
-    proto method encode($, Hash :$dict!) {*}
-
-    multi method decode( $input, Hash :$dict! where !.<Filter>.defined) {
-        # nothing to do
-        $input;
-    }
-
-    multi method decode( $data, Hash :$dict! where $.have-backend) {
-       $.filter-backend.decode( $data, :$dict);
+    method decode( $input, Hash :$dict ) is default {
+        with $dict<Filter> {
+            when $.have-backend { $.filter-backend.encode( $input, :$dict) }
+            when Str  { self!decode-item( $input, |$dict) }
+            when List { self!decode-list( $input, |$dict) }
+            default { die "bad filter: $_" }
+        }
+        else {
+            # nothing to do
+            $input
+        }
     }
 
     # object may have an array of filters [PDF 1.7 spec Table 5]
-    multi method decode( $data is copy, Hash :$dict! where .<Filter>.isa(List)) {
-        if $dict<DecodeParms>:exists {
-            die "Filter array {.<Filter>} does not have a corresponding DecodeParms array"
-                if $dict<DecodeParms>:exists
-                && (!$dict<DecodeParms>.isa(List) || +$dict<Filter> != +$dict<DecodeParms>);
+    method !decode-list( $data is copy, List :$Filter, :$DecodeParms) {
+        with $DecodeParms {
+            die "Filter array {$Filter} does not have a corresponding DecodeParms array"
+                if !.isa(List) || +$Filter != +$DecodeParms;
         }
 
-        for $dict<Filter>.keys -> $i {
-            my %dict = Filter => $dict<Filter>[$i];
-            %dict<DecodeParms> = $dict<DecodeParms>[$i]
-                if $dict<DecodeParms>:exists;
+        for $Filter.keys -> $i {
+            my %dict = Filter => $Filter[$i];
+            %dict<DecodeParms> = .[$i]
+                with $DecodeParms;
 
             $data = $.decode( $data, :%dict )
         }
@@ -57,45 +57,44 @@ class PDF::Storage::Filter {
         $data;
     }
 
-    multi method decode( $input, Hash :$dict! ) {
-        my %params = $dict<DecodeParms>
-            if $dict<DecodeParms>:exists; 
-        $.filter-class( $dict<Filter> ).decode( $input, |%params);
+    method !decode-item( $input, Str :$Filter, :%DecodeParms) {
+        $.filter-class( $Filter ).decode( $input, |%DecodeParms);
     }
 
-    multi method encode( $input, Hash :$dict! where !.<Filter>.defined) {
-        # nothing to do
-        $input;
+    method encode( $input, Hash :$dict ) is default {
+        with $dict<Filter> {
+            when $.have-backend { $.filter-backend.encode( $input, :$dict) }
+            when Str  { self!encode-item( $input, |$dict) }
+            when List { self!encode-list( $input, |$dict) }
+            default { die "bad filter: $_" }
+        }
+        else {
+            # nothing to do
+            $input
+        }
     }
 
-    multi method encode( $data, Hash :$dict! where $.have-backend) {
-	$.filter-backend.encode( $data, :$dict);
+    method !encode-item( $input, Str :$Filter!, :%DecodeParms) {
+        $.filter-class( $Filter ).encode( $input, |%DecodeParms);
     }
 
     # object may have an array of filters PDF 1.7 spec Table 3.4 
-    multi method encode( $data is copy, Hash :$dict! where .<Filter>.isa(List) ) {
+    method !encode-list( $data is copy, List :$Filter!, :$DecodeParams) {
 
-        if $dict<DecodeParms>:exists {
-            die "Filter array {.<Filter>} does not have a corresponding DecodeParms array"
-                if $dict<DecodeParms>:exists
-                && (!$dict<DecodeParms>.isa(List) || +$dict<Filter> != +$dict<DecodeParms>);
+        with $DecodeParams {
+            die "Filter array {$Filter} does not have a corresponding DecodeParms array"
+                if !.isa(List) || +$Filter != +$_;
         }
 
-        for $dict<Filter>.keys.reverse -> $i {
-            my %dict = Filter => $dict<Filter>[$i];
-            %dict<DecodeParms> = $dict<DecodeParms>[$i]
-                if $dict<DecodeParms>:exists;
+        for $Filter.keys.reverse -> $i {
+            my %dict = Filter => $Filter[$i];
+            %dict<DecodeParms> = .[$i]
+                with $DecodeParams;
 
             $data = $.encode( $data, :%dict )
         }
 
         $data;
-    }
-
-    multi method encode( $input, Hash :$dict! --> PDF::Storage::Blob ) {
-        my %params = $dict<DecodeParms>
-            if $dict<DecodeParms>:exists;
-        $.filter-class( $dict<Filter> ).encode( $input, |%params);
     }
 
     method filter-class( Str $filter-name is copy ) {
