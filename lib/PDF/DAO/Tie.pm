@@ -48,8 +48,8 @@ role PDF::DAO::Tie {
 	use nqp;
 
 	multi method apply($lval is rw where { nqp::isrwcont($lval) } ) {
-	    my $type = $.type;
 	    unless $lval.isa(Pair) {
+	        my $type = $.type;
 		if $lval.defined && ! ($lval ~~ $type) {
 
 		    my $reader  = $lval.?reader;

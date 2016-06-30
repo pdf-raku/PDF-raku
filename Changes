@@ -1,9 +1,11 @@
     Release 0.0.7
-    - [PDF::Storage::Crypt] Encryption refactored to use OpenSSL.
+    - [PDF::Storage::Crypt] Encryption refactored to use OpenSSL. Added support for
+      PDF 1.6+ AES-128 encryption.
     - [PDF::DAO::Doc] add saves-as( :update ) option.
       The input PDF is copied to the destination PDF, which is then incrementally
-      updated. This should generally be faster.
+      updated. This should generally be faster than a regular .save-as.
     - [PDF::Reader] Bug fixes to JSON serialization
+    - [PDF::Storage::Filter] simplified filter dispatch
     
     Release 0.0.6
     - [bin/pdf-rewriter.pl] unbust rewriting/recompression of encrypted PDFs
@@ -15,18 +17,18 @@
       -- added $doc.ast method. factored out from $doc.save-as
       -- Added $doc.Str method; for in-memory serialization
       -- $doc.save-as($target); # can now be file-name, io-path, or io-handle
-      -- added $.update( :annex(...) ) option.
-      This allows the update body to be saved to separate 'annex' file, as an
+      -- added $.update( :to(...) ) option.
+      This allows the update body to be saved to a separate 'update' file, as an
       alternative to appending to the original PDF.
       
       Useful in a mail-merge scenario where multiple documents are being produced
       from a common template and each can be reconstituted by appending the
-      annex file to the original template.
+      update file to the original template.
 
       Possible further work:
-      -- JSON output of annex files
-      -- add `$doc.open( $file, :annex)` option - load a base pdf, then apply
-         an annex file.
+      -- JSON output of 'to' files
+      -- add `$doc.open( $file, :update(...))` option - load a base pdf, then apply
+         updates.
     - [PDF::Reader] bug-fixes:
       -- avoid encrypting the encryption dictionary
       -- fixed de-Linearization. Now handled by PDF::Storage::Serializer

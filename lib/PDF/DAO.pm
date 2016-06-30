@@ -37,7 +37,7 @@ role PDF::DAO {
 	use PDF::Grammar :AST-Types;
 	+$dict == 1 && $dict.keys[0] ∈ AST-Types
 	    ?? $.coerce( |$dict, |c )    #| JSON munged pair
-	    !! $.coerce( :$dict,  |c );
+	    !! $.coerce( :$dict, |c );
     }
     multi method coerce(Array $array!, |c) {
         $.coerce( :$array, |c )
@@ -110,21 +110,21 @@ role PDF::DAO {
 
     multi method coerce( Hash :$dict!, |c ) {
         $.required("PDF::DAO::Dict");
-	my $class = ::("PDF::DAO::Dict");
-	$class = $.delegate( :$dict, :fallback($class) );
+	my $fallback = ::("PDF::DAO::Dict");
+	my $class = $.delegate( :$dict, :$fallback );
 	$class.new( :$dict, |c );
     }
 
     multi method coerce( Hash :$stream!, |c ) {
         my %params;
-        for <start end encoded decoded> {
-            %params{$_} = $stream{$_}
-                if $stream{$_}:exists;
+        for <start end encoded decoded> -> $k {
+            %params{$k} = $_
+                with $stream{$k};
         }
         my Hash $dict = $stream<dict> // {};
         $.required("PDF::DAO::Stream");
-	my $class = ::("PDF::DAO::Stream");
-	$class = $.delegate( :$dict, :fallback($class) );
+	my $fallback = ::("PDF::DAO::Stream");
+	my $class = $.delegate( :$dict, :$fallback );
         $class.new( :$dict, |%params, |c );
     }
 
