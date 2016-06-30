@@ -39,6 +39,10 @@ class PDF::Storage::Filter {
         }
     }
 
+    method !decode-item( $input, Str :$Filter, :%DecodeParms) {
+        $.filter-class( $Filter ).decode( $input, |%DecodeParms);
+    }
+
     # object may have an array of filters [PDF 1.7 spec Table 5]
     method !decode-list( $data is copy, List :$Filter, :$DecodeParms) {
         with $DecodeParms {
@@ -51,14 +55,10 @@ class PDF::Storage::Filter {
             %dict<DecodeParms> = .[$i]
                 with $DecodeParms;
 
-            $data = $.decode( $data, :%dict )
+            $data = self!decode-item( $data, |%dict )
         }
 
         $data;
-    }
-
-    method !decode-item( $input, Str :$Filter, :%DecodeParms) {
-        $.filter-class( $Filter ).decode( $input, |%DecodeParms);
     }
 
     method encode( $input, Hash :$dict ) is default {
@@ -91,7 +91,7 @@ class PDF::Storage::Filter {
             %dict<DecodeParms> = .[$i]
                 with $DecodeParams;
 
-            $data = $.encode( $data, :%dict )
+            $data = self!encode-item( $data, |%dict )
         }
 
         $data;
