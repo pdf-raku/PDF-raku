@@ -62,47 +62,40 @@ class PDF::DAO::Stream
     }
 
     method encoded is rw {
-	my $encoded := $!encoded;
-	my $decoded := $!decoded;
-
 	Proxy.new(
 	    FETCH => sub ($) {
+		$!encoded //= self.encode( $_ )
+		    with $!decoded;
 
-		$encoded //= self.encode( $_ )
-		    with $decoded;
-
-		if $encoded.can('codes') {
-		    self<Length> = $encoded.codes;
+		if $!encoded.can('codes') {
+		    self<Length> = $!encoded.codes;
 		}
 		else {
 		    self<Length>:delete
 		}
-		$encoded;
+		$!encoded;
 	    },
 
 	    STORE => sub ($, $stream) {
-		$decoded = Any;
+		$!decoded = Any;
 		self<Length> = $stream.codes
 		    if $stream.can('codes');
-		$encoded = $stream;
+		$!encoded = $stream;
 	    },
 	    )
     }
 
     method decoded is rw {
-	my $encoded := $!encoded;
-	my $decoded := $!decoded;
-
 	Proxy.new(
 	    FETCH => sub ($) {
-		$decoded //= self.decode( $_ )
-		    with $encoded;
-		$decoded;
+		$!decoded //= self.decode( $_ )
+		    with $!encoded;
+		$!decoded;
 	    },
 	    STORE => sub ($, $stream) {
-		$encoded = Any;
+		$!encoded = Any;
 		self<Length>:delete;
-		$decoded = $stream;
+		$!decoded = $stream;
 	    }
 	    );
     }
