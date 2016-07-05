@@ -39,7 +39,12 @@ use PDF::DAO::Doc;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
+# construct a simple PDF document from scratch
+
+# page size is A5 (420pt X 520pt)
 my @MediaBox  = 0, 0, 420, 595;
+
+# define font /F1 as core-font Helvetica
 my %Resources = :Procset[ /'PDF', /'Text'],
                 :Font{
                     :F1{
@@ -50,19 +55,25 @@ my %Resources = :Procset[ /'PDF', /'Text'],
                     },
                 };
 
+# set up an empty PDF
 my $doc = PDF::DAO::Doc.new;
 my $root     = $doc.Root       = { :Type(/'Catalog') };
 my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
 my $pages    = $root<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0), };
 
+# define some basic content
 my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) });
+
+# create a new page. add it to the page tree
 $pages<Kids>.push: { :Type(/'Page'), :Parent($pages), :$Contents };
 $pages<Count>++;
 
+# add some standard meta-data
 my $info = $doc.Info = {};
 $info.CreationDate = DateTime.now;
 $info.Producer = 'PDF-Tools';
 
+# save the PDF to a file
 $doc.save-as: 't/example.pdf';
 ```
 
@@ -74,14 +85,22 @@ use PDF::DAO::Doc;
 
 my $doc = PDF::DAO::Doc.open: 't/example.pdf';
 
+# locate the document root and page tree
 my $catalog = $doc<Root>;
 my $Parent = $catalog<Pages>;
+
+# create additional content, use existing font /F1
 my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  90 250 Td (Goodbye for now!) Tj ET" ) } );
+
+# create a new page. add it to the page-tree
 $Parent<Kids>.push: { :Type( :name<Page> ), :$Parent, :$Contents };
 $Parent<Count>++;
 
+# set modification time in meta-data
 my $info = $doc.Info //= {};
 $info.ModDate = DateTime.now;
+
+# incrementally update the existing PDF
 $doc.update;
 ```
 
@@ -444,6 +463,5 @@ PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 ## See also
 
 - [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing (released)
-- [PDF::Basic](https://github.com/p6-pdf/perl6-PDF-Basic) - Simple content manipulation; including images, fonts, text and general graphics (under construction) 
-- [PDF::Struct](https://github.com/p6-pdf/perl6-PDF-Struct) - Structured access to PDF Documents (experimental, under construction)
+- [PDF::Content](https://github.com/p6-pdf/perl6-PDF-Content) - Simple content manipulation; including images, fonts, text and general graphics (under construction) 
 
