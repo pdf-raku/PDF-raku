@@ -61,7 +61,6 @@ class PDF::Reader {
     use PDF::DAO;
     use PDF::DAO::Dict;
     use PDF::DAO::Util :from-ast, :to-ast;
-    use PDF::Writer;
     use PDF::Storage::Input;
     use PDF::Storage::Crypt::Doc;
 
@@ -780,17 +779,15 @@ class PDF::Reader {
     multi method save-as( $output-path where m:i/'.json' $/,
                           :$ast is copy, |c ) {
         $ast //= $.ast(|c);
-        note "dumping {$output-path}...";
         use JSON::Fast;
         $output-path.IO.spurt( to-json( $ast ) );
     }
 
     #| write to PDF/FDF
-    multi method save-as( $output-path,
-                          :$ast is copy, |c ) is default {
-        $ast //= $.ast(|c);
-        note "saving {$output-path}...";
+    multi method save-as( $output-path, |c ) is default {
+        use PDF::Writer;
         my PDF::Writer $pdf-writer .= new( :$.input );
+        my $ast = $.ast(|c);
         $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
     }
 
