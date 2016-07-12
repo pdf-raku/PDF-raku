@@ -187,20 +187,22 @@ class PDF::Writer {
 
     }
 
-    #| invertors for PDG::Grammar::Function expr term
+    #| invertors for PDF::Grammar::Function expr term
     #| an array is a sequence of sub-expressions
     multi method write(Array :$expr!) {
 	[~] '{ ', $expr.map({ $.write($_) }).join(' '), ' }';
     }
 
-    #| 'ifelse' functional expression
-    multi method write(Hash :$expr! where {.<else>:exists}) {
-	($.write( $expr<if>) , $.write( $expr<else> ), 'ifelse').join(' ');
-    }
-
-    #| 'if' functional expression
+    #| 'if' and 'ifelse' functional expressions
     multi method write(Hash :$expr!) {
-	[~] $.write( $expr<if>) ,' if'
+        my @expr = $.write( $expr<if>);
+        @expr.append: do with $expr<else> {
+	    ($.write( $_ ), 'ifelse');
+        }
+        else {
+	    ('if')
+        }
+        @expr.join: ' ';
     }
 
     multi method write( Str :$hex-char! ) {
@@ -235,21 +237,22 @@ class PDF::Writer {
 
     multi method write(Int :$int!) {sprintf "%d", $int}
 
-    BEGIN my %escapes = "\b" => '\\b', "\f" => '\\f', "\n" => '\\n', "\r" => '\\r', "\t" => '\\t'
-        , "\n" => '\\n', '(' => '\\(', ')' => '\\)', '\\' => '\\\\';
+    constant %Escapes = %( "\b" => '\\b', "\f" => '\\f', "\n" => '\\n',
+                           "\r" => '\\r', "\t" => '\\t', 
+                           '(' => '\\(', ')' => '\\)', '\\' => '\\\\' );
 
     multi method write( Str :$literal! ) {
 
         [~] flat '(',
             $literal.comb.map({
-                when ' ' .. '~' { %escapes{$_} // $_ }
+                when ' ' .. '~' { %Escapes{$_} // $_ }
                 when "\o0" .. "\o377" { sprintf "\\%03o", .ord }
                 default {die "illegal non-latin character in string: U+" ~ .ord.base(16)}
             }),
            ')';
     }
 
-    BEGIN constant Name-Reg-Chars = set ('!'..'~').grep({ $_ !~~ /<PDF::Grammar::char_delimiter>/});
+    constant Name-Reg-Chars = set ('!'..'~').grep({ $_ !~~ /<PDF::Grammar::char_delimiter>/});
 
     multi method write( Str :$name! ) {
         [~] flat '/', $name.comb.map( {
@@ -273,7 +276,7 @@ class PDF::Writer {
         my Str $type = $pdf<header><type> // 'PDF';
 	my Bool $write-xref = $type ne 'FDF';
         my $body = $.write( :body($pdf<body>), :$write-xref );
-        [~] ($header, "\n", $comment, "\n", $body);
+        ($header, $comment, $body).join: "\n";
     }
 
     multi method write(Any :$header! ) {
@@ -282,12 +285,9 @@ class PDF::Writer {
     }
 
     multi method write( Num :$real! ) {
-	constant Epsilon = 1e-5;
-
 	my $int = $real.round(1).Int;
-
-	abs($real - $int) < Epsilon
-	    ?? ~$int   # assume int, give or take
+	$real =~= $int
+	    ?? ~$int
 	    !! sprintf("%.5f", $real);
     }
 
@@ -296,7 +296,6 @@ class PDF::Writer {
     }
 
     multi method write( Hash :$stream! ) {
-
         my %dict = $stream<dict>;
         my $data = $stream<encoded> // $.input.stream-data( :$stream );
         $data = $data.decode("latin-1")
@@ -306,7 +305,6 @@ class PDF::Writer {
     }
 
     multi method write( Hash :$trailer!, :$prev, :$size ) {
-
         my %dict = $trailer<dict> // {};
 
         %dict<Prev> = :int($_)
