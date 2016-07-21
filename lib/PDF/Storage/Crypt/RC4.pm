@@ -9,6 +9,7 @@ class PDF::Storage::Crypt::RC4
 
     use PDF::Storage::Blob;
     use PDF::Storage::Util :resample;
+    use OpenSSL::Digest;
 
     method type { 'V2' }
 
@@ -21,7 +22,7 @@ class PDF::Storage::Crypt::RC4
 	my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
 
 	my UInt $size = +@obj-key;
-	my $key = $.md5( Buf.new(@obj-key) );
+	my $key = md5( Buf.new(@obj-key) );
         $key.reallocate($size) if $size < 16;
 	$key;
     }

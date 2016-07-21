@@ -19,8 +19,8 @@ isa-ok $trailer<FDF>, Hash, '$trailer<FDF>';
 
 is $trailer<FDF><F>, 'Document.pdf', '$trailer<FDF><F>';
 
-isa-ok $trailer<FDF><Fields>, Array, '$tailer<FDF><Fields>';
-is $trailer<FDF><Fields>[1]<T>, 'City', '$tailer<FDF><Fields>[1]<T>';
+isa-ok $trailer<FDF><Fields>, Array, '$trailer<FDF><Fields>';
+is $trailer<FDF><Fields>[1]<T>, 'City', '$trailer<FDF><Fields>[1]<T>';
 
 done-testing;
 

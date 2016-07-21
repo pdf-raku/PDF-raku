@@ -2,8 +2,7 @@ use v6;
 
 class PDF::Storage::Crypt {
 
-    use OpenSSL::NativeLib;
-    use NativeCall;
+    use OpenSSL::Digest;
 
     use PDF::DAO::Dict;
     use PDF::Storage::Util :resample;
@@ -136,18 +135,10 @@ class PDF::Storage::Crypt {
 	$!key-bytes = $key-bits +> 3;
     }
 
-    sub MD5( Blob, size_t, Blob )
-        is native(&gen-lib) { * }
-        
-    method md5(Blob $msg) {
-        my $digest = buf8.new;
-        $digest.reallocate(16);
-	MD5($msg, $msg.bytes, $digest);
-        $digest;
-    }
+    use OpenSSL::NativeLib;
+    use NativeCall;
 
     sub RC4_set_key(Blob, int32, Blob) is native(&gen-lib) { ... }
-
     sub RC4(Blob, int32, Blob, Blob) is native(&gen-lib) { ... }
 
     method rc4-crypt(Blob $key, Blob $in) {
@@ -205,7 +196,7 @@ class PDF::Storage::Crypt {
 	$key = Buf.new: @input;
 
 	for 1 .. $reps {
-	    $key = $.md5($key);
+	    $key = md5($key);
 	    $key.reallocate($n)
 		unless $key.elems <= $n;
 	}
@@ -216,7 +207,7 @@ class PDF::Storage::Crypt {
 	if $!R >= 3 {
 	    # Algorithm 3.5 steps 1 .. 5
 	    $pass.append: @!doc-id;
-	    $pass = $.md5( $pass );
+	    $pass = md5( $pass );
 	    $pass = $.rc4-crypt($key, $pass);
 	    $computed = self!do-iter-crypt($key, $pass);
 	}
@@ -254,7 +245,7 @@ class PDF::Storage::Crypt {
 	}
 
 	for 1..$reps {
-	    $key = $.md5($key);
+	    $key = md5($key);
 	    $key.reallocate($n)
 		unless $key.elems <= $n;
 	}
