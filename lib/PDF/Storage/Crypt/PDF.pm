@@ -2,7 +2,7 @@ use v6;
 
 use PDF::Storage::Crypt::AST;
 
-class PDF::Storage::Crypt::Doc
+class PDF::Storage::Crypt::PDF
     does PDF::Storage::Crypt::AST {
     use PDF::Storage::Crypt;
     use PDF::Storage::Crypt::RC4;

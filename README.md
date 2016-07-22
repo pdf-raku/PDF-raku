@@ -25,6 +25,7 @@ Classes/roles in this tool-kit include:
 - `PDF::Storage::Crypt` - decryption / encryption
 - `PDF::Writer` - for the creation or update of PDF files
 - `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>)
+- `PDF::DAO::Type::PDF` - PDf document root
 
 ## Example Usage
 
@@ -35,7 +36,7 @@ To create a one page PDF that displays 'Hello, World!'.
 # creates t/example.pdf
 use v6;
 use PDF::DAO;
-use PDF::DAO::Doc;
+use PDF::DAO::Type::PDF;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
@@ -56,7 +57,7 @@ my %Resources = :Procset[ /'PDF', /'Text'],
                 };
 
 # set up an empty PDF
-my $doc = PDF::DAO::Doc.new;
+my $doc = PDF::DAO::Type::PDF.new;
 my $root     = $doc.Root       = { :Type(/'Catalog') };
 my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
 my $pages    = $root<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0), };
@@ -81,9 +82,9 @@ Then to update the PDF, adding another page:
 
 ```
 use v6;
-use PDF::DAO::Doc;
+use PDF::DAO::Type::PDF;
 
-my $doc = PDF::DAO::Doc.open: 't/example.pdf';
+my $doc = PDF::DAO::Type::PDF.open: 't/example.pdf';
 
 # locate the document root and page tree
 my $catalog = $doc<Root>;
@@ -227,8 +228,8 @@ is an indirect reference to the first object (object number 1, generation 0) des
 We can quickly put PDF Tools to work using a Perl 6 REPL, to better explore the document:
 
 ```
-snoopy: ~/git/perl6-PDF-Tools $ perl6 -MPDF::DAO::Doc
-> my $doc = PDF::DAO::Doc.open: "t/example.pdf"
+snoopy: ~/git/perl6-PDF-Tools $ perl6 -MPDF::DAO::Type::PDF
+> my $doc = PDF::DAO::Type::PDF.open: "t/example.pdf"
 ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
 > $doc.keys
 (Root Info ID)
@@ -263,9 +264,9 @@ The page `/Contents` entry is a PDF stream which contains graphical instructions
 
 ## Reading and Writing of PDF files:
 
-`PDF::DAO::Doc` is a base class for loading, editing and saving documents in PDF, FDF and other related formats.
+`PDF::DAO::Type::PDF` is a base class for loading, editing and saving documents in PDF, FDF and other related formats.
 
-- `my $doc = PDF::DAO::Doc.open("mydoc.pdf" :repair)`
+- `my $doc = PDF::DAO::Type::PDF.open("mydoc.pdf" :repair)`
  Opens an input `PDF` (or `FDF`) document.
   - `:!repair` causes the read to load only the trailer dictionary and cross reference tables from the tail of the PDF (Cross Reference Table or a PDF 1.5+ Stream). Remaining objects will be lazily loaded on demand.
   - `:repair` causes the reader to perform a full scan, ignoring and recalculating the cross reference stream/index and stream lengths. This can be handy if the PDF document has been hand-edited.
@@ -292,7 +293,7 @@ be handy for debugging, analysis and/or ad-hoc patching of PDF files.
 
 ### See also:
 - `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] [--password=Xxx] <pdf-or-json-file-in> <pdf-or-json-file-out>`
-This script is a thin wrapper for the `PDF::DAO::Doc` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
+This script is a thin wrapper for the `PDF::DAO::Type::PDF` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
 
 ### Reading PDF Files
 
@@ -350,7 +351,7 @@ say $encoded.codes;
 
 PDF::Tools supports RC4 and AES encryption (revisions /R 2 - 4 and versions /V 1 - 4 of PDF Encryption).
 
-To open an encrypted PDF document, specify either the user or owner password: `PDF::DAO::Doc.open( "enc.pdf", :password<ssh!>)`
+To open an encrypted PDF document, specify either the user or owner password: `PDF::DAO::Type::PDF.open( "enc.pdf", :password<ssh!>)`
 
 A document can be encrypted using the `encrypt` method: `$doc.encrypt( :owner-pass<ssh1>, :user-pass<abc>, :aes )`
    - `:aes` encrypts the document using stronger V4 AES encryption, introduced with PDF 1.6.
@@ -449,7 +450,7 @@ A table of Object types and coercements follows:
 
 *Class* | *Base Class* | *Description*
 --- | --- | --- |
-PDF::DAO::Doc | PDF::DAO::Dict | document entry point - the trailer dictionary
+PDF::DAO::Type::PDF | PDF::DAO::Dict | document entry point - the trailer dictionary
 PDF::DAO::Type::Encrypt | PDF::DAO::Dict | PDF Encryption/Permissions dictionary
 PDF::DAO::Type::Info | PDF::DAO::Dict | Document Information Dictionary
 PDF::DAO::Type::ObjStm | PDF::DAO::Stream | PDF 1.5+ Object stream (holds compressed objects)

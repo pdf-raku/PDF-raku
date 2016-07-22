@@ -1,3 +1,7 @@
+    Release 0.0.8
+    - Renamed classes
+      PDF::DAO::Type::PDF, renamed from PDF::DAO::Doc
+      PDF::DAO::Storage::Crypt::PDF, renamed from PDF::DAO::Storage::Crypt::Doc
     Release 0.0.7
     - [PDF::Storage::Crypt] Encryption refactored to use OpenSSL. Added support for
       PDF 1.6+ AES-128 encryption.

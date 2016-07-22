@@ -92,11 +92,11 @@ does-ok $cat.Pages.Kids[0], KidRole, 'Array Instance role';
 is $cat.Pages.Kids[0].obj-num, -1, '@ sigil entry(:indirect)';
 dies-ok {$cat.Pages.Kids[1] = 42}, 'typechecking - array elems';
 
-use PDF::DAO::Doc;
+use PDF::DAO::Type::PDF;
 use PDF::Storage::Serializer;
-my $doc = PDF::DAO::Doc.new( { :Root($cat) } );
+my $pdf = PDF::DAO::Type::PDF.new( { :Root($cat) } );
 my $serializer = PDF::Storage::Serializer.new;
-my $body = $serializer.body( $doc );
+my $body = $serializer.body( $pdf );
 
 is-json-equiv $body[0], {:objects[
 			       :ind-obj($[1, 0, :dict{ :NeedsRendering(:bool),

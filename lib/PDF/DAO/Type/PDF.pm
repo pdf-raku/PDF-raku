@@ -4,11 +4,11 @@ use PDF::DAO::Dict;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
-class PDF::DAO::Doc
+class PDF::DAO::Type::PDF
     is PDF::DAO::Dict {
 
     use PDF::Storage::Serializer;
-    use PDF::Storage::Crypt::Doc;
+    use PDF::Storage::Crypt::PDF;
     use PDF::Reader;
     use PDF::Writer;
     use PDF::DAO::Tie;
@@ -16,15 +16,15 @@ class PDF::DAO::Doc
 
     # See [PDF 1.7 TABLE 15 Entries in the file trailer dictionary]
 
-    has Int $.Size is entry;         #| (Required; shall not be an indirect reference) greater than the highest object number defined in the file.
+    has Int $.Size is entry;                              #| (Required; shall not be an indirect reference) greater than the highest object number defined in the file.
 
-    has PDF::DAO::Type::Encrypt $.Encrypt is entry;     #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
+    has PDF::DAO::Type::Encrypt $.Encrypt is entry;       #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
     use PDF::DAO::Type::Info;
     has PDF::DAO::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary 
-    has Str @.ID is entry(:len(2));  #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array of two byte-strings constituting a file identifier
+    has Str @.ID is entry(:len(2));                       #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array of two byte-strings constituting a file identifier
 
-    has Hash $.Root is entry( :indirect );  #| generic document content, as defined by subclassee, e.g.  PDF::DOM or PDF::FDF
-    has PDF::Storage::Crypt::Doc $.crypt is rw;
+    has Hash $.Root is entry( :indirect );                #| generic document content, as defined by subclassee, e.g.  PDF::DOM or PDF::FDF
+    has PDF::Storage::Crypt::PDF $.crypt is rw;
 
     #| open the input file-name or path
     method open($spec, |c) {
@@ -39,7 +39,7 @@ class PDF::DAO::Doc
     }
 
     method encrypt( Str :$owner-pass!, Str :$user-pass = '', |c ) {
-        $!crypt = PDF::Storage::Crypt::Doc.new( :doc(self), :$owner-pass, :$user-pass, |c);
+        $!crypt = PDF::Storage::Crypt::PDF.new( :doc(self), :$owner-pass, :$user-pass, |c);
     }
 
     #| perform an incremental save back to the opened input file, or to the

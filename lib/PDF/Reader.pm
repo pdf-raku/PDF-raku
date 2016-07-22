@@ -62,7 +62,7 @@ class PDF::Reader {
     use PDF::DAO::Dict;
     use PDF::DAO::Util :from-ast, :to-ast;
     use PDF::Storage::Input;
-    use PDF::Storage::Crypt::Doc;
+    use PDF::Storage::Crypt::PDF;
 
     has $.input is rw;       #= raw PDF image (latin-1 encoding)
     has Str $.file-name;
@@ -74,7 +74,7 @@ class PDF::Reader {
     has UInt $.prev;
     has UInt $.size is rw;   #= /Size entry in trailer dict ~ first free object number
     has UInt @.xrefs = (0);  #= xref position for each revision in the file
-    has PDF::Storage::Crypt::Doc $.crypt;
+    has PDF::Storage::Crypt::PDF $.crypt;
 
     method actions {
         state $actions //= PDF::Grammar::PDF::Actions.new
@@ -101,7 +101,7 @@ class PDF::Reader {
 	my Hash $doc = self.trailer;
 	return unless $doc<Encrypt>:exists;
 
-	$!crypt = PDF::Storage::Crypt::Doc.new( :$doc );
+	$!crypt = PDF::Storage::Crypt::PDF.new( :$doc );
 	$!crypt.authenticate( $password );
 	my $enc := $doc<Encrypt>;
         my $enc-obj-num = $enc.obj-num;

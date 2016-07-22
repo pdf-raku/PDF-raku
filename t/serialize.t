@@ -17,18 +17,18 @@ my $dict2 = { :ID(2) };
 # create circular hash ref
 $dict2<SelfRef> := $dict2;
 
-my $doc = PDF::DAO.coerce: { :Root[ $dict1, $dict2 ] };
+my $pdf = PDF::DAO.coerce: { :Root[ $dict1, $dict2 ] };
 # create circular array reference
-$doc<Root>[2] := $doc<Root>;
+$pdf<Root>[2] := $pdf<Root>;
 
 # cycle back from hash to array
-$doc<Root>[0]<Parent> := $doc<Root>;
+$pdf<Root>[0]<Parent> := $pdf<Root>;
 
-my $doc-ast = to-ast($doc);
-is $doc-ast<dict><Root><array>[1]<dict><ID><int>, 2, 'ast dereference';
+my $pdf-ast = to-ast($pdf);
+is $pdf-ast<dict><Root><array>[1]<dict><ID><int>, 2, 'ast dereference';
 
 # our serializer should create indirect refs to resolve the above
-my $body = PDF::Storage::Serializer.new.body( $doc )[0];
+my $body = PDF::Storage::Serializer.new.body( $pdf )[0];
 is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
 is-deeply $body<trailer><dict><Size>, (:int(3)), 'body trailer dict - Size';
 my $s-objects = $body<objects>;
@@ -39,7 +39,7 @@ is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => 
 
 is-deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], ID => :int(2)}]), "circular hash ref resolution";
 
-$doc = PDF::DAO.coerce: { :Root{
+$pdf = PDF::DAO.coerce: { :Root{
     :Type(/'Catalog'),
     :Pages{
             :Type(/'Pages'),
@@ -60,9 +60,9 @@ $doc = PDF::DAO.coerce: { :Root{
     :Outlines{ :Type(/'Outlines'), :Count(0) },
 } };
 
-$doc<Root><Pages><Kids>[0]<Parent> = $doc<Root><Pages>;
+$pdf<Root><Pages><Kids>[0]<Parent> = $pdf<Root><Pages>;
 
-$body = PDF::Storage::Serializer.new.body( $doc )[0];
+$body = PDF::Storage::Serializer.new.body( $pdf )[0];
 my $objects = $body<objects>;
 
 sub infix:<object-order-ok>($obj-a, $obj-b) {
@@ -101,7 +101,7 @@ $objects = PDF::Storage::Serializer.new.body($obj-with-utf8)[0]<objects>;
 is-json-equiv $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
 is $writer.write( :ind-obj($objects[0].value)), "1 0 obj <<\n  /Name /Heyd#c9#99r#20#c6#8fliyev\n>> endobj\n", 'name write';
 
-my $objects-compressed = PDF::Storage::Serializer.new.body($doc, :compress)[0]<objects>;
+my $objects-compressed = PDF::Storage::Serializer.new.body($pdf, :compress)[0]<objects>;
 my $stream = $objects-compressed[*-2].value[2]<stream>;
 is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'compressed dict';
 is $stream<encoded>.codes, 54, 'compressed stream length';

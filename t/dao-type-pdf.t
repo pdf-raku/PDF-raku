@@ -2,7 +2,7 @@ use v6;
 use Test;
 
 use PDF::DAO;
-use PDF::DAO::Doc;
+use PDF::DAO::Type::PDF;
 use PDF::Grammar::PDF;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
@@ -10,8 +10,8 @@ sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 # ensure consistant document ID generation
 srand(123456);
 
-my $doc = PDF::DAO::Doc.new;
-my $root     = $doc.Root       = { :Type(/'Catalog') };
+my $pdf = PDF::DAO::Type::PDF.new;
+my $root     = $pdf.Root       = { :Type(/'Catalog') };
 my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
 my $pages    = $root<Pages>    = { :Type(/'Pages'), :Kids[], :Count(0) };
 
@@ -30,17 +30,17 @@ my %Resources = :Procset[ /'PDF', /'Text'],
 $pages<Kids>.push: { :Type(/'Page'), :Parent($pages), :@MediaBox, :$Contents, :%Resources };
 $pages<Count>++;
 
-my $info = $doc.Info = {};
+my $info = $pdf.Info = {};
 $info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
 $info.Author = 'PDF-Tools/t/dao-doc.t';
 
-lives-ok {$doc.save-as("t/helloworld.pdf")}, 'save-as pdf';
-ok $doc.ID, 'doc ID generated';
-my $doc-id = $doc.ID[0];
-my $upd-id = $doc.ID[1];
-is $upd-id, $doc-id, 'initial document ID';
-lives-ok {$doc.save-as("t/pdf/samples/helloworld.json")}, 'save-as json';
-is $doc.ID[0], $doc-id, 'document ID[0] - post update';
-isnt $doc.ID[1], $doc-id, 'document ID[1] - post update';
-ok PDF::Grammar::PDF.parse( $doc.Str ), '$doc.Str serialization';
+lives-ok {$pdf.save-as("t/helloworld.pdf")}, 'save-as pdf';
+ok $pdf.ID, 'doc ID generated';
+my $pdf-id = $pdf.ID[0];
+my $upd-id = $pdf.ID[1];
+is $upd-id, $pdf-id, 'initial document ID';
+lives-ok {$pdf.save-as("t/pdf/samples/helloworld.json")}, 'save-as json';
+is $pdf.ID[0], $pdf-id, 'document ID[0] - post update';
+isnt $pdf.ID[1], $pdf-id, 'document ID[1] - post update';
+ok PDF::Grammar::PDF.parse( $pdf.Str ), '$pdf.Str serialization';
 done-testing;

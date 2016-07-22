@@ -1,7 +1,7 @@
 use v6;
 use Test;
-use PDF::Storage::Crypt::Doc;
-use PDF::DAO::Doc;
+use PDF::Storage::Crypt::PDF;
+use PDF::DAO::Type::PDF;
 
 my $plain-text = "BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET";
 
@@ -81,12 +81,12 @@ my $test-identity = do {
 }
 
 for $test-v1, $test-v2, $test-v4-rc4, $test-identity {
-    my $doc = PDF::DAO::Doc.new: .<doc>;
+    my $doc = PDF::DAO::Type::PDF.new: .<doc>;
     my $owner-pass  = .<owner-pass>;
     my $user-pass   = .<user-pass>;
     my $cipher-text = .<crypt>;
     my $case = .<case>;
-    my $crypt = PDF::Storage::Crypt::Doc.new( :$doc );
+    my $crypt = PDF::Storage::Crypt::PDF.new( :$doc );
     dies-ok  { $crypt.authenticate( 'blah' ) }, "$case - bad password" unless $case eq 'Identity';
     lives-ok { $crypt.authenticate( $user-pass ) }, "$case - user password";
     ok ! $crypt.is-owner, "$case - is not owner" unless $case eq 'Identity';

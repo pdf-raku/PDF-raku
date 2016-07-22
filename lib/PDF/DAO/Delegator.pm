@@ -121,6 +121,6 @@ includes classes and roles for object construction, validation and serialization
 - The `PDF::DAO` `coerce` methods should be used to create new Hash or Array based objects an appropriate sub-class will be chosen with the assistance of `PDF::DAO::Delegator`.
 
 - The delegator may be subclassed. For example, `PDF::Struct` subclasses `PDF::DAO::Delegator` with
-`PDF::Struct::Doc::Delegator`.
+`PDF::Struct::Type::PDF::Delegator`.
 
 =end pod

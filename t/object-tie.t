@@ -84,11 +84,11 @@ ok !$contents.Length.defined, '$stream<Length>:delete propagates to $stream.Leng
 
 $contents = Nil;
 
-my $doc = PDF::DAO.coerce: { :Root{ :Type(/'Catalog') } };
-$doc<Root><Outlines> = $root-obj<Outlines>;
-$doc<Root><Pages> = $root-obj<Pages>;
+my $pdf = PDF::DAO.coerce: { :Root{ :Type(/'Catalog') } };
+$pdf<Root><Outlines> = $root-obj<Outlines>;
+$pdf<Root><Pages> = $root-obj<Pages>;
 
-my $body = PDF::Storage::Serializer.new.body( $doc );
+my $body = PDF::Storage::Serializer.new.body( $pdf );
 
 # write the two page pdf
 my $ast = :pdf{ :version(1.2), :$body };

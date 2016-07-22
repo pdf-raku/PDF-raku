@@ -4,7 +4,7 @@ use Test;
 use PDF::Reader;
 use PDF::Writer;
 use PDF::DAO;
-use PDF::DAO::Doc;
+use PDF::DAO::Type::PDF;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
@@ -16,10 +16,10 @@ srand(123456);
 
 't/pdf/pdf.in'.IO.copy('t/pdf/pdf-updated.out');
 
-my $doc = PDF::DAO::Doc.open( 't/pdf/pdf-updated.out' );
-my $reader = $doc.reader;
+my $pdf = PDF::DAO::Type::PDF.open( 't/pdf/pdf-updated.out' );
+my $reader = $pdf.reader;
 is +$reader.xrefs, 1, 'reader.xrefs - initial';
-my $catalog = $doc<Root>;
+my $catalog = $pdf<Root>;
 
 {
     my $Parent = $catalog<Pages>;
@@ -31,7 +31,7 @@ my $catalog = $doc<Root>;
 }
 
 # firstly, write and anlayse just the updates
-lives-ok { $doc.update(:to("t/pdf/pdf.in.patch".IO.open(:w)) ) }, 'update to PDF file - lives';
+lives-ok { $pdf.update(:to("t/pdf/pdf.in.patch".IO.open(:w)) ) }, 'update to PDF file - lives';
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 my Str $body-str = "t/pdf/pdf.in.patch".IO.slurp( :enc<latin-1> );
@@ -65,16 +65,16 @@ is-json-equiv $updated-objects[2], (
 
 my $ind-obj1 = $reader.ind-obj( 3, 0 );
 my $ast1 = $ind-obj1.ast;
-my $prev1 = $doc.reader.prev;
-my $size1 = $doc.reader.size;
-my $Info = $doc.Info //= {};
+my $prev1 = $pdf.reader.prev;
+my $size1 = $pdf.reader.size;
+my $Info = $pdf.Info //= {};
 $Info.ModDate = DateTime.new( :year(2015), :month(12), :day(26) );
-$doc.update;
+$pdf.update;
 is +$reader.xrefs, 2, 'reader.xrefs - post-update';
-my $prev2 = $doc.reader.prev;
+my $prev2 = $pdf.reader.prev;
 ok $prev2 > $prev1, "reader.prev incremented by update"
    or diag "prev1:$prev1  prev2:$prev2";
-my $size2 = $doc.reader.size;
+my $size2 = $pdf.reader.size;
 ok $size2 > $size1, "reader.size incremented by update"
    or diag "size1:$size1  size2:$size2";
 my $ind-obj2;
@@ -85,14 +85,14 @@ my $ast2 = $ind-obj2.ast;
 todo "not quite equivalent";
 is-deeply $ast1, $ast2, 'indirect object ast equivalence';
 
-is $doc.Size, $size2, 'document trailer - updated Size';
-isa-ok $doc<Root><Pages><Kids>[1], PDF::DAO::Dict, 'updated page 2 access';
+is $pdf.Size, $size2, 'document trailer - updated Size';
+isa-ok $pdf<Root><Pages><Kids>[1], PDF::DAO::Dict, 'updated page 2 access';
 
 # now re-read the pdf. Will also test our ability to read a PDF
 # with multiple body segments
 
-my $doc2 = PDF::DAO::Doc.open: 't/pdf/pdf-updated.out';
-$reader = $doc2.reader;
+my $pdf2 = PDF::DAO::Type::PDF.open: 't/pdf/pdf-updated.out';
+$reader = $pdf2.reader;
 is $reader.type, 'PDF', 'reader type';
 is +$reader.xrefs, 2, 'reader.xrefs - reread';
 
@@ -106,6 +106,6 @@ is-deeply $ast<pdf><body>[0]<objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Leng
 
 # do a full rewrite of the updated PDF. Output should be cleaned up, with a single body and
 # cleansed of old object versions.
-ok $doc2.save-as('t/pdf/pdf-updated-and-rebuilt.pdf', :rebuild), 'save-as :rebuild';
+ok $pdf2.save-as('t/pdf/pdf-updated-and-rebuilt.pdf', :rebuild), 'save-as :rebuild';
 
 done-testing;

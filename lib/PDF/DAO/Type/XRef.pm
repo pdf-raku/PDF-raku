@@ -50,7 +50,7 @@ role PDF::DAO::Type::XRef
 
         # /W resize to widest byte-widths, if needed
         for 0..2 -> $i {
-            my UInt $val = $xref.map({ .[$i] }).max;
+            my UInt $val = $xref.map( *.[$i] ).max;
             my UInt $max-bytes;
 
             repeat {
