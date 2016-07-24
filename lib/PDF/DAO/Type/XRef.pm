@@ -66,13 +66,13 @@ role PDF::DAO::Type::XRef
         nextwith( PDF::Storage::Blob.new: $buf );
     }
 
-    #= inverse of $.decode-to-stage2 . handily calculates and sets $.Size and $.Index
-    method encode-from-stage2(Array $xref-index) {
-        my @entries = $xref-index.list.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
-
+    #= inverse of $.decode-index . handily calculates and sets $.Size and $.Index
+    method encode-index(Array $xref-index) {
         my $size = 0;
         my UInt @index;
-        my Array $encoded = [];
+        my Array @encoded-index = [];
+
+        my @entries = $xref-index.list.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
         for @entries -> $entry {
             my Bool $contigous = ?( $entry<obj-num> && $entry<obj-num> == $size );
@@ -84,14 +84,14 @@ role PDF::DAO::Type::XRef
                 when 2   { [ $entry<type>, $entry<ref-obj-num>, $entry<index> ] }
                 default  { die "unknown object type in XRef index: $_"}
             };
-            $encoded.push( $item );
+            @encoded-index.push: $item;
             $size = $entry<obj-num> + 1;
         }
 
         self<Size> = $size;
         self<Index> = @index;
 
-        $.encode($encoded);
+        $.encode(@encoded-index);
     }
 
     method decode($? --> Array) {
@@ -116,11 +116,11 @@ role PDF::DAO::Type::XRef
     }
 
     #= an extra decoding stage - build index entries from raw decoded data
-    multi method decode-to-stage2($encoded = $.encoded) {
+    multi method decode-index($encoded = $.encoded) {
 
         my UInt $i = 0;
         my Array $index = self<Index> // [ 0, $.Size ];
-        my Array $decoded-stage2 = [];
+        my Hash @decoded-index = [];
 
         my Array $decoded = $.decode( $encoded );
 
@@ -134,13 +134,13 @@ role PDF::DAO::Type::XRef
                         # free or inuse objects
                         my UInt $offset = $idx[1];
                         my UInt $gen-num = $idx[2];
-                        $decoded-stage2.push: { :$type, :$obj-num, :$gen-num, :$offset };
+                        @decoded-index.push: { :$type, :$obj-num, :$gen-num, :$offset };
                     }
                     when 2 {
                         # embedded objects
                         my UInt $ref-obj-num = $idx[1];
                         my UInt $index = $idx[2];
-                        $decoded-stage2.push: { :$type, :$obj-num, :$ref-obj-num, :$index };
+                        @decoded-index.push: { :$type, :$obj-num, :$ref-obj-num, :$index };
                     }
                     default {
                         die "XRef index object type outside range 0..2: $type"
@@ -150,7 +150,7 @@ role PDF::DAO::Type::XRef
             }
         }
 
-        $decoded-stage2;
+        @decoded-index;
     }
 
 }

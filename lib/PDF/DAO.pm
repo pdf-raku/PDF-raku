@@ -12,15 +12,15 @@ role PDF::DAO {
     method is-indirect is rw returns Bool {
 	Proxy.new(
 	    FETCH => sub ($) { ? self.obj-num },
-	    STORE => sub ($, Bool $val) {
-		if $val {
+	    STORE => sub ($, Bool $yup) {
+		if $yup {
 		    # Ensure this object is indirect. Serializer will renumber
 		    self.obj-num //= -1;
 		}
 		else {
 		    self.obj-num = Nil;
 		}
-		$val
+		$yup
 	    },
 	    );
     }
@@ -48,11 +48,14 @@ role PDF::DAO {
     multi method coerce(Pair %_!, |c) {
 	$.coerce( |%_, |c)
     }
+    #| work around rakudo performance regressions - issue #15
     method required(*@path where +@path) {
 	my Str $mod-name = @path.join('::');
-	unless %required{$mod-name}++ {
-	    require ::($mod-name)
+	unless %required{$mod-name}:exists {
+	    require ::($mod-name);
+            %required{$mod-name} = ::($mod-name);
 	}
+        %required{$mod-name};
     }
     method add-role($obj, Str $role) {
 	$.required($role);
@@ -62,8 +65,7 @@ role PDF::DAO {
     }
 
     multi method coerce( Array :$array!, |c ) {
-        $.required("PDF::DAO::Array");
-        my $fallback = ::("PDF::DAO::Array");
+        my $fallback = $.required("PDF::DAO::Array");
         $.delegate( :$array, :$fallback ).new( :$array, |c );
     }
 
@@ -104,13 +106,11 @@ role PDF::DAO {
     }
 
     multi method coerce( Any :$null!, |c) {
-        $.required("PDF::DAO::Null");
-        ::("PDF::DAO::Null").new( |c );
+        $.required("PDF::DAO::Null").new( |c );
     }
 
     multi method coerce( Hash :$dict!, |c ) {
-        $.required("PDF::DAO::Dict");
-	my $fallback = ::("PDF::DAO::Dict");
+	my $fallback = $.required("PDF::DAO::Dict");
 	my $class = $.delegate( :$dict, :$fallback );
 	$class.new( :$dict, |c );
     }
@@ -122,8 +122,7 @@ role PDF::DAO {
                 with $stream{$k};
         }
         my Hash $dict = $stream<dict> // {};
-        $.required("PDF::DAO::Stream");
-	my $fallback = ::("PDF::DAO::Stream");
+	my $fallback = $.required("PDF::DAO::Stream");
 	my $class = $.delegate( :$dict, :$fallback );
         $class.new( :$dict, |%params, |c );
     }
@@ -131,9 +130,8 @@ role PDF::DAO {
     multi method coerce($val) is default { $val }
 
     method delegator is rw {
-	unless $delegator.can('delegate') {
-	    $.required('PDF::DAO::Delegator');
-	    $delegator = ::('PDF::DAO::Delegator');
+	without $delegator {
+	    $_ = $.required('PDF::DAO::Delegator');
 	}
 	$delegator
     }

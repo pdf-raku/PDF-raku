@@ -30,27 +30,27 @@ is-json-equiv $xref, $expected-xref, 'decoded index as expected';
 my $xref-recompressed = $xref-obj.encode;
 
 my %ast2;
-lives-ok {%ast2 = %( $ind-obj.ast ) }, '$.ast - lives';
+lives-ok {%ast2 = $ind-obj.ast }, '$.ast - lives';
 
 my $ind-obj2 = PDF::Storage::IndObj.new( |%ast2);
 my $xref-roundtrip = $ind-obj2.object.decode( $xref-recompressed );
 
 is-deeply $xref, $xref-roundtrip, 'encode/decode round-trip';
 
-my $xref-stage2;
-lives-ok { $xref-stage2 = $ind-obj.object.decode-to-stage2 }, 'decode to stage 2 - lives';
+my $xref-index;
+lives-ok { $xref-index = $ind-obj.object.decode-index }, 'decode to index - lives';
 
-my $expected-stage2-sample = [
+my $expected-index-sample = [
     {:obj-num(248), :ref-obj-num(217), :index(16), :type(2)},
     {:obj-num(249), :type(2), :ref-obj-num(217), :index(17)},
     {:obj-num(250), :offset(495), :gen-num(0), :type(1)},
     ];
 
-is-json-equiv [ $xref-stage2[*-3..*] ], $expected-stage2-sample, 'decoded stage 2 (sample)';
+is-json-equiv [ $xref-index[*-3..*] ], $expected-index-sample, 'decoded index (sample)';
 
-my $xref-recompressed-from-stage2 = $ind-obj.object.encode-from-stage2($xref-stage2);
-$xref-roundtrip = $ind-obj2.object.decode-to-stage2( $xref-recompressed-from-stage2 );
-is-json-equiv $xref-stage2, $xref-roundtrip, 'encode-from-stage2/decode-from-stage1 round-trip';
+my $xref-recompressed-from-index = $ind-obj.object.encode-index($xref-index);
+$xref-roundtrip = $ind-obj2.object.decode-index( $xref-recompressed-from-index );
+is-json-equiv $xref-index, $xref-roundtrip, 'encode-index/decode-from-stage1 round-trip';
 
 my $xref-new = ::('PDF::DAO::Type')::('XRef').new(:decoded($expected-xref), :dict{ :Index[42, 37], :Size(37) } );
 my $xref-roundtrip2 = $xref-new.decode( $xref-new.encode );

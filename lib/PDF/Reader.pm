@@ -490,7 +490,7 @@ class PDF::Reader {
 	my PDF::Storage::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
 	my $xref-obj = $ind-obj.object;
 	$dict = $xref-obj;
-	$xref-obj.decode-to-stage2.list;
+	$xref-obj.decode-index.list;
     }
 
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
