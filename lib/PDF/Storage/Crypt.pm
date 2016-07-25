@@ -159,17 +159,11 @@ class PDF::Storage::Crypt {
         $out;
     }
 
-    method !do-iter-crypt(Blob $code, @pass, :@steps = (1 ... 19)) {
-
-        my $crypt = Buf.new: @pass;
-	if $!R >= 3 {
-	    for @steps -> $iter {
-		my $key = Buf.new: $code.map({ $_ +^ $iter });
-		$crypt = $.rc4-crypt($key, $crypt);
-	    }
-	}
-	else {
-	    $crypt = $.rc4-crypt($code, $crypt);
+    method !do-iter-crypt(Blob $code, @pass, $n=0, $m=19) {
+        my Buf $crypt .= new: @pass;
+	for $n ... $m -> $iter {
+	    my Buf $key .= new: $code.map( * +^ $iter );
+	    $crypt = $.rc4-crypt($key, $crypt);
 	}
 	$crypt;
     }
@@ -208,7 +202,6 @@ class PDF::Storage::Crypt {
 	    # Algorithm 3.5 steps 1 .. 5
 	    $pass.append: @!doc-id;
 	    $pass = md5( $pass );
-	    $pass = $.rc4-crypt($key, $pass);
 	    $computed = self!do-iter-crypt($key, $pass);
 	}
 	else {
@@ -263,7 +256,7 @@ class PDF::Storage::Crypt {
 	    $owner = $.rc4-crypt($key, $owner);
 	}
 	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
-	    $owner = self!do-iter-crypt($key, $owner, :steps(0..19) );
+	    $owner = self!do-iter-crypt($key, $owner);
 	}
 
         $owner.list;
@@ -277,7 +270,7 @@ class PDF::Storage::Crypt {
 	    $user-pass = $.rc4-crypt($key, $user-pass);
 	}
 	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
-	    $user-pass = self!do-iter-crypt($key, $user-pass, :steps(19, 18 ... 0) );
+	    $user-pass = self!do-iter-crypt($key, $user-pass, 19, 0);
 	}
 	$.is-owner = True;
 	self!auth-user-pass($user-pass.list);          # 3
