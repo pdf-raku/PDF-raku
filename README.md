@@ -276,7 +276,7 @@ This performs an incremental update to the input pdf, which must be indexed `PDF
 PDF's opened with `:repair`, FDF or JSON files). A new section is appended to the PDF that
 contains only updated and newly created objects. This method can be used as a fast and efficient way to make
 small updates to a large existing PDF document.
-    - `:to(IO::handle $fh)` - saves just the update section to an alternate location.
+    - `:diffs(IO::handle $fh)` - saves just the updates to an alternate location. This can be later appended to the base PDF to reproduce the updated PDF.
 
 - `$doc.save-as("mydoc-2.pdf", :compress, :rebuild, :update)`
 Saves a new document, including any updates. Options:

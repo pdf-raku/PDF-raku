@@ -102,9 +102,8 @@ class PDF::DAO::Stream
 
     method edit-stream( Str :$prepend = '', Str :$append = '' ) {
         for $prepend, $append {
-            for .ords {
-                die "illegal non-latin hex byte in stream-edit: U+" ~ .base(16)
-                    unless 0 <= $_ <= 0xFF;
+            if /<- [\x0 .. \xFF]>/ {
+               die "illegal non-latin hex byte in stream-edit: U+" ~ (~$/).ord.base(16)
             }
         }
         $.decoded = $prepend ~ ($!decoded // '') ~ $append;
@@ -124,7 +123,7 @@ class PDF::DAO::Stream
         my $encoded = $.encoded; # may update $.dict<Length>
         my Pair $dict = to-ast-native self;
 	with $.encoded {
-	    :stream( %( $dict, :encoded(.Str) ))
+	    stream => %( $dict, :encoded(.Str) );
 	}
 	else {
 	    $dict;   # no content - downgrade to dict
@@ -137,8 +136,7 @@ class PDF::DAO::Stream
                 $!encoded = Nil;
                 self<Filter>:delete;
                 self<DecodeParms>:delete;
-                self<Length> = $!decoded.codes
-		    if $!decoded.can('codes')
+                self<Length> = $!decoded.codes;
             }
         }
     }
@@ -147,7 +145,6 @@ class PDF::DAO::Stream
         unless self<Filter>:exists {
             $!decoded //= $!encoded;
             $!encoded = Nil;
-            require PDF::DAO;
             self<Filter> = PDF::DAO.coerce( :name<FlateDecode> );
             self<Length>:delete;        # recompute this later
         }

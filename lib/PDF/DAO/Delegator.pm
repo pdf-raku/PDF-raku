@@ -104,8 +104,7 @@ class PDF::DAO::Delegator {
     multi method delegate( Hash :$dict! where {$dict<Type>:exists}, :$fallback) {
 	my $type = from-ast($dict<Type>);
 	my $subtype = from-ast($dict<Subtype> // $dict<S>);
-	my $delegate = $.find-delegate( $type, $subtype, :$fallback );
-	$delegate;
+	$.find-delegate( $type, $subtype, :$fallback );
     }
 
     multi method delegate( :$fallback! ) is default {

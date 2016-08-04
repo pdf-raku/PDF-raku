@@ -63,6 +63,7 @@ class PDF::Reader {
     use PDF::DAO::Util :from-ast, :to-ast;
     use PDF::Storage::Input;
     use PDF::Storage::Crypt::PDF;
+    use JSON::Fast;
 
     has $.input is rw;       #= raw PDF image (latin-1 encoding)
     has Str $.file-name;
@@ -156,7 +157,6 @@ class PDF::Reader {
 
     #| derserialize a json dump
     multi method open( Str $input-file  where m:i/'.json' $/, |c ) {
-        use JSON::Fast;
         my $ast = from-json( $input-file.IO.slurp );
         die X::PDF::BadDump.new( :$input-file )
             unless $ast.isa(Hash) && ($ast<pdf>:exists);
@@ -222,8 +222,6 @@ class PDF::Reader {
     }
 
     multi method open($input!, |c) {
-        use PDF::Storage::Input;
-
         $!input = PDF::Storage::Input.coerce( $input );
 
         $.load-header( );
@@ -405,8 +403,8 @@ class PDF::Reader {
     #| Load input in FDF (Form Data Definition) format.
     #| Use full-scan mode, as these are not indexed.
     multi method load('FDF') {
-        use PDF::Grammar::FDF;
-        self!full-scan( PDF::Grammar::FDF, $.actions);
+        require PDF::Grammar::FDF;
+        self!full-scan( ::('PDF::Grammar::FDF'), $.actions);
     }
 
     #| scan the entire PDF, bypass any indices. Populate index with
@@ -779,14 +777,13 @@ class PDF::Reader {
     multi method save-as( $output-path where m:i/'.json' $/,
                           :$ast is copy, |c ) {
         $ast //= $.ast(|c);
-        use JSON::Fast;
         $output-path.IO.spurt( to-json( $ast ) );
     }
 
     #| write to PDF/FDF
     multi method save-as( $output-path, |c ) is default {
-        use PDF::Writer;
-        my PDF::Writer $pdf-writer .= new( :$.input );
+        require PDF::Writer;
+        my $pdf-writer = ::('PDF::Writer').new( :$.input );
         my $ast = $.ast(|c);
         $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
     }

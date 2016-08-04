@@ -3,8 +3,6 @@ use v6;
 class PDF::Storage::Serializer {
 
     use PDF::DAO;
-    use PDF::DAO::Array;
-    use PDF::DAO::Dict;
     use PDF::DAO::Stream;
     use PDF::DAO::Util :to-ast;
 

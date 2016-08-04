@@ -59,9 +59,9 @@ role PDF::DAO {
     }
     method add-role($obj, Str $role) {
 	$.required($role);
-        $obj does ::($role)
-	    unless $obj.does(::($role));
-	$obj;
+	$obj.does(::($role))
+            ?? $obj
+            !! $obj does ::($role)
     }
 
     multi method coerce( Array :$array!, |c ) {
