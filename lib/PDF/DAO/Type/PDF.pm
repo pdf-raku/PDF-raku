@@ -8,43 +8,44 @@ class PDF::DAO::Type::PDF
     is PDF::DAO::Dict {
 
     use PDF::Storage::Serializer;
-    use PDF::Storage::Crypt::PDF;
-    use PDF::Reader;
     use PDF::Writer;
     use PDF::DAO::Tie;
-    use PDF::DAO::Type::Encrypt :PermissionsFlag;
+    use JSON::Fast;
 
     # See [PDF 1.7 TABLE 15 Entries in the file trailer dictionary]
 
     has Int $.Size is entry;                              #| (Required; shall not be an indirect reference) greater than the highest object number defined in the file.
 
+    use PDF::DAO::Type::Encrypt;
     has PDF::DAO::Type::Encrypt $.Encrypt is entry;       #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
     use PDF::DAO::Type::Info;
     has PDF::DAO::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary 
     has Str @.ID is entry(:len(2));                       #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array of two byte-strings constituting a file identifier
 
     has Hash $.Root is entry( :indirect );                #| generic document content, as defined by subclassee, e.g.  PDF::DOM or PDF::FDF
-    has PDF::Storage::Crypt::PDF $.crypt is rw;
+    has $.crypt is rw;
 
     #| open the input file-name or path
     method open($spec, |c) {
-        my PDF::Reader $reader .= new;
+        require PDF::Reader;
+        my $reader = ::('PDF::Reader').new;
         my $doc = self.new( :$reader );
 
         $reader.install-trailer( $doc );
         $reader.open($spec, |c);
         $doc.crypt = $reader.crypt
-            with $reader.crypt;
+            if $reader.crypt;
         $doc;
     }
 
     method encrypt( Str :$owner-pass!, Str :$user-pass = '', |c ) {
-        $!crypt = PDF::Storage::Crypt::PDF.new( :doc(self), :$owner-pass, :$user-pass, |c);
+        require PDF::Storage::Crypt::PDF;
+        $!crypt = ::('PDF::Storage::Crypt::PDF').new( :doc(self), :$owner-pass, :$user-pass, |c);
     }
 
-    #| perform an incremental save back to the opened input file, or to the
-    #| specified :to file
-    method update(:$compress, IO::Handle :$to) {
+    #| perform an incremental save back to the opened input file, or write
+    #| differences to the specified file
+    method update(:$compress, IO::Handle :$diffs) {
 
 	self.?cb-init
 	    unless self<Root>:exists;
@@ -58,44 +59,57 @@ class PDF::DAO::Type::PDF
 
 	my $type = $reader.type;
 	self.generate-id( :$type )
-	    unless $to;
+	    unless $diffs;
 
         my PDF::Storage::Serializer $serializer .= new( :$reader, :$type );
         my Array $body = $serializer.body( :updates, :$compress );
 	.crypt-ast('body', $body, :mode<encrypt>)
 	    with $!crypt;
 
-	my Hash $trailer = $body[0]<trailer><dict>;
+        if $diffs && $diffs.path ~~ m:i/'.json' $/ {
+            # JSON output to a separate diffs file.
+            my %ast = :pdf{ :$body };
+            $diffs.print: to-json(%ast);
+            $diffs.close;
+        }
+        else {
+            self!incremental-save($body, :$diffs);
+        }
+    }
+
+    method !incremental-save($body, :$diffs) {
+        my Hash $trailer = $body[0]<trailer><dict>;
 	my UInt $prev = $trailer<Prev>.value;
 
         constant Preamble = "\n\n";
-        my Numeric $offset = $reader.input.codes + Preamble.codes;
+        my Numeric $offset = $.reader.input.codes + Preamble.codes;
         my PDF::Writer $writer .= new( :$offset, :$prev );
 	my @entries;
         my Str $new-body = $writer.write-body( $body[0], @entries, :$prev, :$trailer );
 	my IO::Handle $fh;
 
-	if $to {
+	if $diffs {
 	    # saving updates elsewhere
-	    my Str $path = ~ $to.path;
+	    my Str $path = ~ $diffs.path;
 
 	    die "to file and input PDF are the same: $path"
-               if $path eq $reader.file-name;
+               if $path eq $.reader.file-name;
 
-            die "update to JSON NYI"
-	        if $path ~~ m:i/'.json' $/;
-
-	    $fh = $to;
+	    $fh = $diffs;
 	}
 	else {
 	    # in-place update. merge the updated entries in the index
 	    # todo: we should be able to leave the input file open and append to it
 	    $prev = $writer.prev;
 	    my UInt $size = $writer.size;
-	    $reader.update( :@entries, :$prev, :$size);
+	    $.reader.update( :@entries, :$prev, :$size);
 	    $.Size = $size;
 	    @entries = [];
-	    $fh = $reader.file-name.IO.open(:a);
+            with  $.reader.file-name {
+                die "Unable to incremetally update a JSON file"
+                    if  m:i/'.json' $/;
+	        $fh = .IO.open(:a);
+            }
 	}
 
         $fh.write: Preamble.encode('latin-1');
@@ -122,7 +136,6 @@ class PDF::DAO::Type::PDF
 
     multi method save-as(IO::Path $iop, Bool :$update, |c) {
 	when $iop.path ~~  m:i/'.json' $/ {
-            use JSON::Fast;
 	    $iop.spurt( to-json( $.ast(|c) ));
 	}
 	when $update && $.reader.defined {

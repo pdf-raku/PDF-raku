@@ -8,6 +8,7 @@ use PDF::DAO::Type::PDF;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
+use JSON::Fast;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
@@ -30,38 +31,42 @@ my $catalog = $pdf<Root>;
     $Parent<Count>++;
 }
 
-# firstly, write and anlayse just the updates
-lives-ok { $pdf.update(:to("t/pdf/pdf.in.patch".IO.open(:w)) ) }, 'update to PDF file - lives';
+# firstly, write and analyse just the updates
+lives-ok { $pdf.update(:diffs("t/pdf/pdf.in-diffs".IO.open(:w)) ) }, 'update to PDF file - lives';
+lives-ok { $pdf.update(:diffs("t/pdf/pdf.in.json".IO.open(:w)) ) }, 'update to JSON file - lives';
 
 my $actions = PDF::Grammar::PDF::Actions.new;
-my Str $body-str = "t/pdf/pdf.in.patch".IO.slurp( :enc<latin-1> );
+my Str $body-str = "t/pdf/pdf.in-diffs".IO.slurp( :enc<latin-1> );
 ok PDF::Grammar::PDF.subparse( $body-str.trim, :rule<body>, :$actions), "can reparse update-body";
-my $ast = $/.ast;
+my $pdf-ast = $/.ast;
+my $json-ast =  from-json("t/pdf/pdf.in.json".IO.slurp);
 
-is-deeply $ast<body><trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
-is-deeply $ast<body><trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';
-is-deeply $ast<body><trailer><dict><Prev>, (:int(644)), 'body trailer dict - Prev';
-my $updated-objects = $ast<body><objects>;
-is +$updated-objects, 3, 'number of updates';
-is-json-equiv $updated-objects[0], (
-    :ind-obj[3, 0, :dict{ Kids => :array[ :ind-ref[4, 0], :ind-ref[9, 0]],
-                          Count => :int(2),
-                          Type => :name<Pages>,
-                         }]), 'altered /Pages';
+for $pdf-ast<body>, $json-ast<pdf><body>[0] -> $body {
+    is-json-equiv $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
+    is-json-equiv $body<trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';
+    is-json-equiv $body<trailer><dict><Prev>, (:int(644)), 'body trailer dict - Prev';
+    my $updated-objects = $body<objects>;
+    is +$updated-objects, 3, 'number of updates';
+    is-json-equiv $updated-objects[0], (
+        :ind-obj[3, 0, :dict{ Kids => :array[ :ind-ref[4, 0], :ind-ref[9, 0]],
+                              Count => :int(2),
+                              Type => :name<Pages>,
+                            }]), 'altered /Pages';
 
-is-json-equiv $updated-objects[1], (
-    :ind-obj[9, 0, :dict{ MediaBox => :array[ :int(0), :int(0), :int(420), :int(595)],
-                          Contents => :ind-ref[10, 0],
-                          Resources => :dict{ Font => :dict{ F1 => :ind-ref[7, 0]},
-                                              ProcSet => :ind-ref[6, 0]},
-                          Parent => :ind-ref[3, 0],
-                          Type => :name<Page>,
-                         }]), 'inserted page';
+    is-json-equiv $updated-objects[1], (
+        :ind-obj[9, 0, :dict{ MediaBox => :array[ :int(0), :int(0), :int(420), :int(595)],
+                              Contents => :ind-ref[10, 0],
+                              Resources => :dict{ Font => :dict{ F1 => :ind-ref[7, 0]},
+                                                  ProcSet => :ind-ref[6, 0]},
+                              Parent => :ind-ref[3, 0],
+                              Type => :name<Page>,
+                            }]), 'inserted page';
 
-is-json-equiv $updated-objects[2], (
-    :ind-obj[10, 0, :stream{ :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET"),
-                             :dict{Length => :int(70) },
-                            }]), 'inserted content';
+    is-json-equiv $updated-objects[2], (
+        :ind-obj[10, 0, :stream{ :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET"),
+                                 :dict{Length => :int(70) },
+                               }]), 'inserted content';
+}
 
 my $ind-obj1 = $reader.ind-obj( 3, 0 );
 my $ast1 = $ind-obj1.ast;
@@ -96,7 +101,7 @@ $reader = $pdf2.reader;
 is $reader.type, 'PDF', 'reader type';
 is +$reader.xrefs, 2, 'reader.xrefs - reread';
 
-$ast = $reader.ast( :rebuild );
+my $ast = $reader.ast( :rebuild );
 is $ast<pdf><header><type>, 'PDF', 'pdf ast type';
 is +$ast<pdf><body>, 1, 'single body';
 is +$ast<pdf><body>[0]<objects>, 10, 'read-back has object count';

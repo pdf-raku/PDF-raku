@@ -5,6 +5,7 @@ use PDF::Reader;
 use PDF::Writer;
 use PDF::Storage::Serializer;
 use PDF::DAO;
+use PDF::DAO::Array;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
