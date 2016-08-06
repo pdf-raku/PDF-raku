@@ -16,12 +16,12 @@ class PDF::Storage::Input {
     }
 
     multi method coerce( IO::Handle $value! ) {
-        require ::('PDF::Storage::Input::IOH');
+        require PDF::Storage::Input::IOH;
         ::('PDF::Storage::Input::IOH').bless( :$value );
     }
 
     multi method coerce( Str $value! where { !.isa(PDF::Storage::Input) }) {
-        require ::('PDF::Storage::Input::Str');
+        require PDF::Storage::Input::Str;
         ::('PDF::Storage::Input::Str').bless( :$value );
     }
 

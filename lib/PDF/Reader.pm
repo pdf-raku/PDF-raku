@@ -100,7 +100,7 @@ class PDF::Reader {
 
     method !setup-crypt( Str :$password = '') {
 	my Hash $doc = self.trailer;
-	return unless $doc<Encrypt>:exists;
+	return without $doc<Encrypt>;
 
 	$!crypt = PDF::Storage::Crypt::PDF.new( :$doc );
 	$!crypt.authenticate( $password );
@@ -246,18 +246,20 @@ class PDF::Reader {
             my UInt $length = $.deref( $obj-raw.value<dict><Length> );
             my UInt $start = $obj-raw.value<start>:delete;
 
-            die X::PDF::BadIndirectObject.new(
-                :$obj-num, :$gen-num, :$offset,
-                :details("stream Length $length appears too large (> {$max-end - $start})"),
-                ) if $max-end && $length > $max-end - $start;
+            with $max-end {
+                die X::PDF::BadIndirectObject.new(
+                    :$obj-num, :$gen-num, :$offset,
+                    :details("stream Length $length appears too large (> {$max-end - $start})"),
+                ) if $length > $_ - $start;
+            }
 
             # ensure stream is followed by an 'endstream' marker
             my Str $tail = $input.substr( $offset + $start + $length, 20 );
-            if $tail ~~ m{^ (.*?) <PDF::Grammar::PDF::stream-tail>} {
+            if $tail ~~ m{<PDF::Grammar::PDF::stream-tail>} {
                 warn X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
-                    :details("ignoring {$0.codes} bytes before 'endstream' marker")
-                    ) if $0.codes;
+                    :details("ignoring {$/.from} bytes before 'endstream' marker")
+                    ) if $/.from;
             }
             else {
                 die X::PDF::BadIndirectObject.new(
@@ -410,7 +412,7 @@ class PDF::Reader {
     #| scan the entire PDF, bypass any indices. Populate index with
     #| raw ast indirect objects. Useful if the index is corrupt and/or
     #| the PDF has been hand-created/edited.
-    multi method load('PDF', :$repair! where {$repair}, |c ) {
+    multi method load('PDF', :$repair! where .so, |c ) {
         self!full-scan( PDF::Grammar::PDF, $.actions, :repair, |c );
     }
 
@@ -566,8 +568,9 @@ class PDF::Reader {
     #| bypass any indices. directly parse and reconstruct index fromn objects.
     method !full-scan( $grammar, $actions, Bool :$repair, |c) {
         temp $actions.get-offsets = True;
-        $grammar.parse(~$.input, :$actions)
-            or die X::PDF::ParseError.new( :input(~$.input) );
+        my Str $input = ~$.input;
+        $grammar.parse($input, :$actions)
+            or die X::PDF::ParseError.new( :$input );
 
         my %ast = $/.ast;
         my Hash @body = %ast<body>.list;
@@ -580,19 +583,18 @@ class PDF::Reader {
                 my @ind-obj = .value.list;
                 my (UInt $obj-num, UInt $gen-num, $object, UInt $offset) = @ind-obj;
 
-                my Hash $dict;
                 my $stream-type;
-                my $value := $object.value;
 
                 if $object.key eq 'stream' {
-                    $dict = $value<dict>;
-                    $stream-type = $dict<Type> && $dict<Type>.value;
+                    my $stream := $object.value;
+                    my Hash $dict = $stream<dict>;
+                    $stream-type = .value with $dict<Type>;
 
                     # reset/repair stream length
-                    $dict<Length> = :int($value<encoded>.codes)
+                    $dict<Length> = :int($stream<encoded>.codes)
                         if $repair;
 
-		    if $stream-type && $stream-type eq 'XRef' {
+		    if $stream-type ~~ 'XRef' {
 			self!set-trailer( $dict, :keys[<Root Encrypt Info ID>] );
 			self!setup-crypt(|c);
 			# discard existing /Type /XRef stream objects. These are specific to the input PDF
