@@ -1,8 +1,8 @@
 use v6;
-use PDF::DAO;
 
 role PDF::DAO::Tie {
 
+    use PDF::DAO;
     has Attribute $.of-att is rw;      #| default attribute
     has Attribute %.entries;
 
@@ -106,7 +106,7 @@ role PDF::DAO::Tie {
 	    $.type-check($val, $.type)
 	}
 
-	multi method type-check($val is copy, Positional[Mu] $type) is rw {
+	multi method type-check($val, Positional[Mu] $type) is rw {
 	    with $val -> $v {
 		$.type-check($v, Array);
 		die "array not of length: {$.length}"
@@ -114,51 +114,53 @@ role PDF::DAO::Tie {
 		my $of-type = $type.of;
 		$.type-check($_, $of-type)
 		    for $v.values;
+                $v;
 	    }
 	    else {
 		die "missing required field: $*key"
 		    if $.is-required;
-		$val = Nil;
+		Nil;
 	    }
-	    $val;
 	}
 
-	multi method type-check($val is copy, Associative[Mu] $type) is rw {
+	multi method type-check($val, Associative[Mu] $type) is rw {
 	    with $val -> $v {
 		$.type-check($v, Hash);
 		my $of-type = $type.of;
 		$.type-check($_, $of-type)
 		    for $v.values;
+                $v;
 	    }
 	    else {
 		die "missing required field: $*key"
 		    if $.is-required;
-		$val = Nil
+		Nil;
 	    }
-	    $val;
 	}
 
 	#| untyped attribute
-	multi method type-check($val is copy, Mu $type) is rw {
-	    without $val {
+	multi method type-check($val, Mu $type) is rw {
+            with $val {
+                $_;
+            }
+	    else {
 		die "missing required field: $*key"
 		    if $.is-required;
-		$val = Nil
+		Nil;
 	    }
-	    $val
 	}
 	#| type attribute
-	multi method type-check($val is copy, $type = $.type) is rw is default {
+	multi method type-check($val, $type = $.type) is rw is default {
 	    with $val {
 		die "{.WHAT.^name}.$*key: {.WHAT.gist} - not of type: {$type.gist}"
 		    unless $_ ~~ $type | Pair;	#| undereferenced - don't know it's type yet
+                $_;
 	    }
 	    else {
 	      die "{$val.WHAT.^name}: missing required field: $*key"
 		  if $.is-required;
-	      $val = Nil;
+	      Nil;
 	    }
-	    $val;
 	}
 
     }
