@@ -24,28 +24,48 @@ class PDF::Writer {
         $.write( $.ast );
     }
 
-    proto method write(|c) returns Str {*}
-
-    multi method write( Array :$array! ) {
+    method write-array( Array $_ ) {
 	temp $!indent ~= '  ';  # for indentation of child dictionarys
-	('[', $array.map({ $.write($_) }), ']').join: ' ';
+	('[', .map({ $.write($_) }), ']').join: ' ';
     }
 
-    multi method write( Array :$body!, Bool :$write-xref = True ) {
+    multi method write-body( Array $_, |c ) {
         temp $!prev = Nil;
-        $body.map({ $.write( :body($_), :$write-xref )}).join: "\n";
+        .map({ $.write-body( $_, |c )}).join: "\n";
     }
 
-    multi method write( Hash :$body!,  Bool :$write-xref = True ) {
+    multi method write-body( Hash $body, |c ) {
 	$!offset //= 0;
-	$.write-body( $body, :$write-xref);
+	$.write-body( $body, my @_idx, |c );
+    }
+
+    #| write the body and return the index
+    multi method write-body( Hash $body!, @idx, Bool :$write-xref = True --> Str ) {
+        my @out;
+	@idx.unshift: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
+
+	$.make-objects( $body<objects>, @out, @idx );
+
+	my $trailer = $body<trailer> // {};
+
+	if $write-xref {
+	    $.make-xref( $trailer, @out, @idx );
+	}
+	else {
+            # simple trailer, no xref
+            @out.push: [~] ( $.write-trailer( $trailer ), '%%EOF' );
+	}
+
+        $!offset += @out[*-1].codes + 2;
+
+        @out.join: "\n";
     }
 
     method make-objects( @objects, @out = [], @idx = [] ) {
         for @objects -> $obj {
 
-            if my $ind-obj = $obj<ind-obj> {
-                @out.push: $.write( :$ind-obj );
+            with $obj<ind-obj> -> $ind-obj {
+                @out.push: $.write-ind-obj( $ind-obj );
 
 		my UInt $obj-num = $ind-obj[0];
 		my UInt $gen-num = $ind-obj[1];
@@ -53,7 +73,7 @@ class PDF::Writer {
 		@idx.push: { :type(1), :$.offset, :$gen-num, :$obj-num, :$ind-obj };
             }
             elsif my $comment = $obj<comment> {
-                @out.push: $.write( :$comment );
+                @out.push: $.write-comment($comment);
             }
             else {
                 die "don't know how to serialize body component: {$obj.perl}"
@@ -65,7 +85,6 @@ class PDF::Writer {
     }
 
     method make-xref( Hash $trailer, @out, @idx, Bool :$write-xref ) {
-
 	@idx = @idx.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
 	my Hash @xref;
@@ -81,55 +100,36 @@ class PDF::Writer {
 	    $!size = .<obj-num> + 1;
 	}
 
-	my Str $xref-str = $.write( :@xref );
+	my Str $xref-str = $.write-xref( @xref );
 	my UInt $startxref = $.offset;
 
 	@out.push: [~] (
 	    $xref-str,
-	    $.write( :$trailer, :$!prev, :$!size ),
-	    $.write( :$startxref ),
+	    $.write-trailer( $trailer, :$!prev, :$!size ),
+	    $.write-startxref( $startxref ),
 	    '%%EOF');
 
 	$!offset += $xref-str.codes;
 	$!prev = $startxref;
     }
 
-    method write-body( Hash $body!, @idx = [], Bool :$write-xref = True --> Str ) {
-        my @out;
-	@idx.unshift: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
-
-	$.make-objects( $body<objects>, @out, @idx );
-
-	my $trailer = $body<trailer> // {};
-
-	if $write-xref {
-	    $.make-xref( $trailer, @out, @idx );
-	}
-	else {
-            # simple trailer, no xref
-            @out.push: [~] ( $.write( :$trailer ), '%%EOF' );
-	}
-
-        $!offset += @out[*-1].codes + 2;
-
-        @out.join: "\n";
-    }
-
-    multi method write( Bool :$bool! ) {
-        $bool ?? 'true' !! 'false';
+    method write-bool( $_ ) {
+        .so ?? 'true' !! 'false';
     }
 
     #| inverter for PDF::Grammar::Content::Actions
 
-    multi method write( Array :$content! ) {
-        $content.map({ $.write( :content($_) ) }).join("\n");
+    multi method write-content( Array $_ ) {
+        .map({ $.write-content($_) }).join("\n");
     }
 
-    multi method write( :$content! where Pair | Hash) {
-        my ($op, $args) = $content.kv;
+    multi method write-content( $_ where Pair | Hash) {
+        my ($op, $args) = .kv;
         $args //= [];
         $.write-op($op, |@$args);
     }
+
+    multi method write-content( Str $_ ) { $_ }
 
     #| BI <dict> - BeginImage
     multi method write-op('BI', $arg = :dict{}) {
@@ -138,10 +138,12 @@ class PDF::Writer {
 	"BI\n" ~
 	  $.indented({
 	      $entries.pairs.sort.map({
-		  [~] $.indent, $.write( :name( .key )), ' ', $.write( .value ),
+		  [~] $.indent, $.write-name( .key ), ' ', $.write( .value ),
 	      }).join: "\n"
 	 });
     }
+ 
+   multi method write-op( Str $_ where /^\w+/ ) { $_ }
 
     #| ID <bytes> - ImageData
     multi method write-op('ID', $image-data) {
@@ -152,24 +154,18 @@ class PDF::Writer {
         (@args.map({ $.write( $_ ) }).Slip, $.write( :$op )).join(' ');
     }
 
-    multi method write( Str :$content! ) {
-        $content
+    multi method write-comment(List $_) {
+        .map({ $.write-comment($_) }).join: "\n";
     }
 
-    multi method write( Str :$op! where /^\w+/ ) { $op }
-
-    multi method write(List :$comment!) {
-        $comment.map({ $.write( :comment($_) ) }).join: "\n";
+    multi method write-comment(Str $_) {
+        /^ '%'/ ?? $_ !! '% ' ~ $_
     }
 
-    multi method write(Str :$comment!) {
-        $comment ~~ /^ '%'/ ?? $comment !! '% ' ~ $comment;
-    }
-
-    multi method write(Hash :$dict!) {
+    method write-dict(Hash $_) {
 
         # prioritize /Type and /Subtype entries. output /Length as last entry
-        my @keys = $dict.keys.sort({
+        my @keys = .keys.sort({
             when 'Type'          {"0"}
             when 'Subtype' | 'S' {"1"}
             when 'Length'        {"z"}
@@ -179,7 +175,7 @@ class PDF::Writer {
         ( '<<',
           $.indented({
 	      @keys.map( -> $key {
-		  [~] $.indent, $.write( :name($key)), ' ', $.write( $dict{$key} ),
+		  [~] $.indent, $.write-name($key), ' ', $.write( .{$key} ),
 	      }).join: "\n"
 	  }),
           $!indent ~ '>>'
@@ -189,14 +185,14 @@ class PDF::Writer {
 
     #| invertors for PDF::Grammar::Function expr term
     #| an array is a sequence of sub-expressions
-    multi method write(Array :$expr!) {
-	[~] '{ ', $expr.map({ $.write($_) }).join(' '), ' }';
+    multi method write-expr(Array $_) {
+	[~] '{ ', .map({ $.write($_) }).join(' '), ' }';
     }
 
     #| 'if' and 'ifelse' functional expressions
-    multi method write(Hash :$expr!) {
-        my @expr = $.write( $expr<if>);
-        @expr.append: do with $expr<else> {
+    multi method write-expr(Hash $_) {
+        my @expr = $.write( .<if> );
+        @expr.append: do with .<else> {
 	    ($.write( $_ ), 'ifelse');
         }
         else {
@@ -205,46 +201,44 @@ class PDF::Writer {
         @expr.join: ' ';
     }
 
-    multi method write( Str :$hex-char! ) {
-        for $hex-char {
-            die "multi or zero-byte hex character: {.perl}"
-                unless .chars == 1;
-            die "illegal non-latin hex character: U+" ~ .ord.base(16)
-                unless 0 <= .ord <= 0xFF;
-            sprintf '#%02x', .ord
-        }
+    method write-hex-char( Str $_ ) {
+        die "multi or zero-byte hex character: {.perl}"
+           unless .chars == 1;
+        die "illegal non-latin hex character: U+" ~ .ord.base(16)
+            unless 0 <= .ord <= 0xFF;
+        sprintf '#%02x', .ord
     }
 
-    multi method write( Str :$hex-string! ) {
-        [~] flat '<', $hex-string.comb.map({ 
+    method write-hex-string( Str $_ ) {
+        [~] flat '<', .comb.map({ 
             die "illegal non-latin character in string: U+" ~ .ord.base(16)
                 unless 0 <= .ord <= 0xFF;
             sprintf '%02x', .ord;
         }), '>';
     }
 
-    multi method write(:@ind-obj! ) {
-        my (UInt $obj-num, UInt $gen-num, $object where Pair | Hash) = @ind-obj;
+    method write-ind-obj(@_) {
+        my (UInt $obj-num, UInt $gen-num, $object where Pair | Hash) = @_;
 
         [~] (sprintf('%d %d obj ', $obj-num, $gen-num),
 	     $.write( $object ),
 	     " endobj\n");
     }
 
-    multi method write(Array :$ind-ref!) {
-        ($ind-ref[0], $ind-ref[1], 'R').join: ' ';
+    method write-ind-ref(Array $_) {
+        [ .[0], .[1], 'R' ].join: ' ';
     }
 
-    multi method write(Int :$int!) {sprintf "%d", $int}
+    method write-int(Int $_) {sprintf "%d", $_}
 
     constant %Escapes = %( "\b" => '\\b', "\f" => '\\f', "\n" => '\\n',
                            "\r" => '\\r', "\t" => '\\t', 
                            '(' => '\\(', ')' => '\\)', '\\' => '\\\\' );
 
-    multi method write( Str :$literal! ) {
+    method write-literal( Str $_ ) {
 
         [~] flat '(',
-            $literal.comb.map({
+            .comb.map({
                 when ' ' .. '~' { %Escapes{$_} // $_ }
                 when "\o0" .. "\o377" { sprintf "\\%03o", .ord }
                 default {die "illegal non-latin character in string: U+" ~ .ord.base(16)}
@@ -254,8 +248,8 @@ class PDF::Writer {
 
     constant Name-Reg-Chars = set ('!'..'~').grep({ $_ !~~ /<PDF::Grammar::char_delimiter>/});
 
-    multi method write( Str :$name! ) {
-        [~] flat '/', $name.comb.map( {
+    method write-name( Str $_ ) {
+        [~] flat '/', .comb.map( {
             when $_ ∈ Name-Reg-Chars { $_ }
             when '#' { '##' }
             default {
@@ -264,47 +258,47 @@ class PDF::Writer {
         } )
     }
 
-    multi method write( Any :$null! ) { 'null' }
+    method write-null( $ ) { 'null' }
 
-    multi method write( Hash :$pdf! ) {
+    method write-pdf( Hash $pdf ) {
         my Str $header = $.write( $pdf, :node<header> );
         my Str $comment = $pdf<comment>:exists
             ?? $.write( $pdf, :node<comment> )
-            !! $.write( :comment<%¥±ë> );
+            !! $.write-comment( q<%¥±ë> );
         $!offset = $header.codes + $comment.codes + 2;  # since format is byte orientated
         # Form Definition Format is normally written without an xref
         my Str $type = $pdf<header><type> // 'PDF';
 	my Bool $write-xref = $type ne 'FDF';
-        my $body = $.write( :body($pdf<body>), :$write-xref );
+        my $body = $.write-body( $pdf<body>, :$write-xref );
         ($header, $comment, $body).join: "\n";
     }
 
-    multi method write(Any :$header! ) {
-        my Str $type = $header<type> // 'PDF';
-        sprintf '%%%s-%.1f', $type, $header<version> // 1.2;
+    method write-header($_ ) {
+        my Str $type = .<type> // 'PDF';
+        sprintf '%%%s-%.1f', $type, .<version> // 1.2;
     }
 
-    multi method write( Num :$real! ) {
-	my $int = $real.round(1).Int;
-	$real =~= $int
+    multi method write-real( Num $_ ) {
+	my $int = .round(1).Int;
+	$_ =~= $int
 	    ?? ~$int
-	    !! sprintf("%.5f", $real);
+	    !! sprintf("%.5f", $_);
     }
 
-    multi method write( Numeric :$real! ) {
-        ~$real
+    multi method write-real( Numeric $_ ) {
+        ~$_
     }
 
-    multi method write( Hash :$stream! ) {
+    method write-stream( Hash $stream ) {
         my %dict = $stream<dict>;
         my $data = $stream<encoded> // $.input.stream-data( :$stream );
         $data = $data.decode("latin-1")
             unless $data.isa(Str);
         %dict<Length> //= :int($data.codes);
-        [~] $.write( :%dict ), " stream\n", $data, "\nendstream";
+        [~] $.write-dict(%dict), " stream\n", $data, "\nendstream";
     }
 
-    multi method write( Hash :$trailer!, :$prev, :$size ) {
+    method write-trailer( Hash $trailer, :$prev, :$size ) {
         my %dict = $trailer<dict> // {};
 
         %dict<Prev> = :int($_)
@@ -313,21 +307,21 @@ class PDF::Writer {
         %dict<Size> = :int($_)
             with $!size;
 
-        ( "trailer", $.write( :%dict ), '' ).join: "\n";
+        ( "trailer", $.write-dict(%dict), '' ).join: "\n";
     }
 
-    multi method write(UInt :$startxref! ) {
-        "startxref\n" ~ $.write( :int( $startxref) ) ~ "\n"
+    method write-startxref(UInt $_ ) {
+        "startxref\n" ~ $.write-int($_) ~ "\n"
     }
 
-    multi method write(Array :$xref!) {
+    multi method write-xref(Array $_) {
         (flat 'xref',
-          $xref.map({ $.write( :xref($_) ) }),
+          .map({ $.write-xref($_) }),
 	 '').join: "\n";
     }
 
     #| write a traditional (PDF 1.4-) cross reference table
-    multi method write(Hash :$xref!) {
+    multi method write-xref(Hash $xref!) {
         (flat
          $xref<obj-first-num> ~ ' ' ~ $xref<obj-count>,
          $xref<entries>.map({
@@ -346,11 +340,13 @@ class PDF::Writer {
         ).join: "\n";
     }
 
-    multi method write( Pair $ast!) {
-        $.write( %$ast );
+    proto method write(|c) returns Str {*}
+
+    multi method write( Pair $_!) {
+        self."write-{.key}"( .value );
     }
 
-    multi method write( Hash $ast!, :$node?) {
+    multi method write( Hash $ast!, :$node) {
         my %params = $node.defined
             ?? ($node => $ast{$node})
             !! $ast;
@@ -359,12 +355,13 @@ class PDF::Writer {
     }
 
     multi method write( *@args, *%opt ) is default {
-        return 'null' if %opt<null>:exists;
-
         die "unexpected arguments: {[@args].perl}"
             if @args;
         
-        die "unable to handle {%opt.keys} struct: {%opt.perl}"
+        my $key = %opt.keys.sort.first({  $.can("write-$_") })
+            or die "unable to handle {%opt.keys} struct: {%opt.perl}";
+        
+        self."write-$key"(%opt{$key}, |%opt);
     }
 
     #| handle indentation.

@@ -1,4 +1,4 @@
-    Release 0.0.8
+   Release 0.0.8
     - [PDF::DAO::Doc] .update( :diffs(...) ) - now supports JSON
     - Renamed classes
       -- PDF::DAO::Doc -> PDF::DAO::Type::PDF
@@ -6,6 +6,7 @@
     - [PDF::DAO::Type::XRef] renamed methods
       -- decode-to-stage2 -> decode-index
       -- encode-from-stage2 -> encode-index
+    - [PDF::Writer] refactored write multi method into individual methods
 
    Release 0.0.7
     - [PDF::Storage::Crypt] Encryption refactored to use OpenSSL. Added support for

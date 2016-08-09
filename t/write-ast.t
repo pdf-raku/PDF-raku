@@ -13,7 +13,7 @@ for 't/write-ast.json'.IO.lines {
 
     my $test = from-json($_);
     my $expected-pdf = $test<pdf>;
-    my %ast = %( $test<ast> );
+    my %ast = $test<ast>;
     my $opt = $test<opt> // {};
 
     if my $skip = $opt<skip> {

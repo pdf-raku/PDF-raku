@@ -84,8 +84,7 @@ class PDF::DAO::Type::PDF
         constant Preamble = "\n\n";
         my Numeric $offset = $.reader.input.codes + Preamble.codes;
         my PDF::Writer $writer .= new( :$offset, :$prev );
-	my @entries;
-        my Str $new-body = $writer.write-body( $body[0], @entries, :$prev, :$trailer );
+        my Str $new-body = $writer.write-body( $body[0], my @entries, :$prev, :$trailer );
 	my IO::Handle $fh;
 
 	if $diffs {
