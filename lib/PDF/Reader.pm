@@ -777,17 +777,15 @@ class PDF::Reader {
 
     #| dump to json
     multi method save-as( $output-path where m:i/'.json' $/,
-                          :$ast is copy, |c ) {
-        $ast //= $.ast(|c);
-        $output-path.IO.spurt( to-json( $ast ) );
+                          :$ast, |c ) {
+        $output-path.IO.spurt( to-json( $ast // $.ast(|c) ) );
     }
 
     #| write to PDF/FDF
-    multi method save-as( $output-path, |c ) is default {
+    multi method save-as( $output-path, :$ast, |c ) is default {
         require PDF::Writer;
         my $pdf-writer = ::('PDF::Writer').new( :$.input );
-        my $ast = $.ast(|c);
-        $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
+        $output-path.IO.spurt( $pdf-writer.write( $ast // $.ast(|c) ), :enc<latin1> );
     }
 
 }

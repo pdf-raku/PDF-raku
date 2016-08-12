@@ -7,6 +7,10 @@
       -- decode-to-stage2 -> decode-index
       -- encode-from-stage2 -> encode-index
     - [PDF::Writer] refactored write multi method into individual methods
+    - [PDF::Writer] [PDF::Storage::Filter::RunLength] fixed handling
+      of DOS newline graphemes "\r\n"
+    - [PDF::Reader] restored .save-ast: :$ast option. This fixes
+      bin/pdf-rewriter.pl --rebuild
 
    Release 0.0.7
     - [PDF::Storage::Crypt] Encryption refactored to use OpenSSL. Added support for
