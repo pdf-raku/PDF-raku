@@ -1,6 +1,5 @@
 use v6;
 
-use Method::Profiler;
 class PDF::Writer {
 
     use PDF::Grammar;
