@@ -1,6 +1,6 @@
 use Test;
 # this test based on PDF-API2/t/filter-runlengthdecode.t
-plan 5;
+plan 15;
 
 use PDF::Storage::Filter::RunLength;
 use PDF::Storage::Filter;
@@ -23,12 +23,13 @@ is PDF::Storage::Filter.decode($out, :%dict),
    $in,
    q{RunLength test string is decoded correctly};
 
-is(PDF::Storage::Filter.decode($out, :%dict),
-   $in,
-   q{ASCIIHex test string is decoded correctly});
-
-is-deeply(~PDF::Storage::Filter.encode($in, :%dict),
-   $out,
-   q{ASCIIHex test string is encoded correctly});
-
-
+for :empty(''), :single-byte('a'), :min-run('aa'), :min-lit('ab'), :long-run('a' x 130), :long-lit([~] ' ' .. 0xFE.chr) {
+    my $test = .key;
+    my $in = .value;
+    my $round-trip;
+    lives-ok {
+        my $out = ~PDF::Storage::Filter.encode($in, :%dict);
+        $round-trip = ~PDF::Storage::Filter.decode($out, :%dict);
+    }, "$test round trip";
+    is $round-trip, $in, "RunLength $test round-trip";
+}
