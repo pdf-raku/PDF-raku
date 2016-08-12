@@ -1,5 +1,6 @@
 use v6;
 
+use Method::Profiler;
 class PDF::Writer {
 
     use PDF::Grammar;
@@ -210,10 +211,8 @@ class PDF::Writer {
     }
 
     method write-hex-string( Str $_ ) {
-        [~] flat '<', .comb.map({ 
-            die "illegal non-latin character in string: U+" ~ .ord.base(16)
-                unless 0 <= .ord <= 0xFF;
-            sprintf '%02x', .ord;
+        [~] flat '<', .encode("latin-1").map({ 
+            sprintf '%02x', $_;
         }), '>';
     }
 
@@ -231,17 +230,16 @@ class PDF::Writer {
 
     method write-int(Int $_) {sprintf "%d", $_}
 
-    constant %Escapes = %( "\b" => '\\b', "\f" => '\\f', "\n" => '\\n',
-                           "\r" => '\\r', "\t" => '\\t', 
-                           '(' => '\\(', ')' => '\\)', '\\' => '\\\\' );
+    constant %Escapes = %(
+        "\b" => '\\b', "\f" => '\\f', "\n" => '\\n', "\r" => '\\r',
+        "\t" => '\\t', '(' => '\\(', ')' => '\\)', '\\' => '\\\\' );
 
     method write-literal( Str $_ ) {
 
         [~] flat '(',
-            .comb.map({
-                when ' ' .. '~' { %Escapes{$_} // $_ }
-                when "\o0" .. "\o377" { sprintf "\\%03o", .ord }
-                default {die "illegal non-latin character in string: U+" ~ .ord.base(16)}
+        .encode("latin-1").map({
+                my \c = .chr;
+                %Escapes{c} // (32 <= $_ <= 126 ?? c !! sprintf "\\%03o", $_);
             }),
            ')';
     }

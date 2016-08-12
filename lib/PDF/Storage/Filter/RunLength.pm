@@ -7,75 +7,80 @@ class PDF::Storage::Filter::RunLength {
     # in section 7.4.5.
     use PDF::Storage::Blob;
 
-    multi method encode(Blob $input, |c) {
-	$.encode( $input.decode("latin-1"), |c);
-    }
+    multi method encode(Blob \input --> PDF::Storage::Blob) {
+        my @out;
+        my \n = input.elems - 1;
+        my int $i = 0;
+        my int $j = 0;
 
-    multi method encode(Str $input, --> PDF::Storage::Blob) {
-        my @chunks;
+        while $i <= n {
+            @out[$j++] := my $ind;
+            my $ord = input[$i++];
+            @out[$j++] = $ord;
 
-        for $input.comb(/(.)$0**0..127/) -> $/ {
-
-            my UInt $ord = $0.ord;
-            my UInt $len = $/.codes;
-
-            die 'illegal wide byte: U+' ~ $ord.base(16)
-                if $ord > 0xFF;
-
-            if $len > 1 {
-                # run of repeating characters
-                @chunks.push: $[257 - $len, $ord];
+            if $i > n || $ord == input[$i] {
+                # run of repeated characters
+                $ind = 256;
+                while $i <= n && input[$i] == $ord {
+                    last if $ind <= 129;
+                    $i++;
+                    $ind--;
+                }
             }
             else {
                 # literal sequence
-                @chunks.push: $[-1]
-                    unless @chunks && @chunks[*-1][0] < 127;
-
-                for @chunks[*-1] {
-                    .[0]++;
-                    .push: $ord;
+                $ind = 0;
+                while ($i < n && input[$i] != input[$i+1]) || $i == n {
+                    last if $ind >= 127;
+                    @out[$j++] = input[$i++];
+                    $ind++;
                 }
             }
         }
 
-        @chunks.push: $[128];
+        @out[$j] = 128;
 
-        PDF::Storage::Blob.new: flat @chunks.map: { @$_ };
+	PDF::Storage::Blob.new: @out
     }
 
-    multi method decode(Blob $input, |c) {
-	$.decode( $input.decode("latin-1"), |c);
+    multi method encode(Str \input ) {
+        $.encode( input.encode("latin-1") )
     }
-    multi method decode(Str $input, Bool :$eod = True --> PDF::Storage::Blob) {
+
+    multi method decode(Blob \input, Bool :$eod = True --> PDF::Storage::Blob) {
 
         my UInt $idx = 0;
-        my uint8 @in = $input.ords;
         my uint8 @out;
+        my \n = input.elems;
 
-        while $idx < +@in {
-            given @in[ $idx++ ] {
+        while $idx < n {
+            given input[ $idx++ ] {
                 when * < 128 {
                     # literal sequence
-                    @out.push: @in[ $idx++ ] for 0 .. $_;
+                    @out.push: input[ $idx++ ] for 0 .. $_;
                 }
                 when * > 128 {
                     # run of repeating characters
-                    @out.append: @in[ $idx ] xx (257 - $_);
+                    @out.append: input[ $idx ] xx (257 - $_);
                     $idx++;
                 }
                 when 128 {
                     #eod
                     die "unexpected end-of-data marker (0x80)"
-                        unless $idx == +@in;
+                        unless $idx == n;
                     last;
                 }
             }
 
             die "missing end-of-data at end of run-length encoding"
-                if $eod && (+@in == 0 || @in[*-1] != 128);
-
+                if $eod && (n == 0 || input[*-1] != 128);
         }
 
         PDF::Storage::Blob.new: @out;
     }
+
+    multi method decode(Str \input ) {
+        $.decode( input.encode("latin-1") )
+    }
+
 }

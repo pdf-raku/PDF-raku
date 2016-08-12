@@ -5,8 +5,8 @@ plan 5;
 use PDF::Storage::Filter::RunLength;
 use PDF::Storage::Filter;
 
-my $in = '--- Look at this test string. ---';
-my $out = "\x[fe]-\x01 L\xffo\x16k at this test string. \x[fe]-";
+my $in = "--- Look at this test string.\r\n ---";
+my $out = "\x[fe]-\x01 L\xffo\x18k at this test string.\r\n \x[fe]-";
 
 my %dict = :Filter<RunLengthDecode>;
 
