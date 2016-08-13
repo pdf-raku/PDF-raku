@@ -7,7 +7,7 @@ use PDF::DAO::Tie::Hash;
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
 # See [PDF 1.7 Section 3.4.6 Object Streams]
-role PDF::DAO::Type::ObjStm
+class PDF::DAO::Type::ObjStm
     is PDF::DAO::Stream
     does PDF::DAO::Tie::Hash {
 
