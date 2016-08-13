@@ -614,10 +614,10 @@ class PDF::Reader {
                         my $container-obj = $.ind-obj( $obj-num, $gen-num ).object;
                         my Array $type2-objects = $container-obj.decoded;
                         for $type2-objects.kv -> $index, $_ {
-                            my UInt $obj-num2 = .[0];
+                            my UInt $sub-obj-num = .[0];
+                            my UInt $sub-gen-num = 0;
                             my UInt $ref-obj-num = $obj-num;
-                            my UInt $gen-num2 = 0;
-                            %!ind-obj-idx{$obj-num2}{$gen-num2} //= {
+                            %!ind-obj-idx{$sub-obj-num}{$sub-gen-num} //= {
                                 :type(2),
                                 :$index,
                                 :$ref-obj-num,
@@ -627,9 +627,9 @@ class PDF::Reader {
                 }
             }
 
-            if .<trailer> {
-                my Hash $dict = PDF::DAO.coerce( |.<trailer> );
-                self!set-trailer( $dict.content<dict> );
+            with .<trailer> {
+                my Hash $trailer = PDF::DAO.coerce( |$_ );
+                self!set-trailer( $trailer.content<dict> );
 		self!setup-crypt(|c);
             }
         }
@@ -650,8 +650,8 @@ class PDF::Reader {
         ) {
         constant $unpack = True;
         my @object-refs;
-
         my %objstm-objects;
+
         for %!ind-obj-idx.values.map( *.values.Slip ) {
             # implicitly an objstm object, if it contains type2 (compressed) objects
             %objstm-objects{ .<ref-obj-num> }++
@@ -711,9 +711,11 @@ class PDF::Reader {
 
                 my $ind-obj = $ast.value[2];
 
-                if $ind-obj<stream>:exists && (my $obj-type = $ind-obj<stream><dict><Type>) {
-                    # discard existing /Type /XRef and ObjStm objects.
-                    next if $obj-type<name> eq 'XRef' | 'ObjStm';
+                with $ind-obj<stream> {
+                    with .<dict><Type> -> $obj-type {
+                        # discard existing /Type /XRef and ObjStm objects.
+                        next if $obj-type<name> eq 'XRef'|'ObjStm';
+                    }
                 }
 
                 $offset //= 0;
@@ -776,16 +778,17 @@ class PDF::Reader {
     #| suitable as input to PDF::Writer
 
     #| dump to json
-    multi method save-as( $output-path where m:i/'.json' $/,
-                          :$ast, |c ) {
-        $output-path.IO.spurt( to-json( $ast // $.ast(|c) ) );
+    multi method save-as( $output-path where m:i/'.json' $/, |c ) {
+        my $ast = $.ast(|c);
+        $output-path.IO.spurt( to-json( $ast ) );
     }
 
     #| write to PDF/FDF
-    multi method save-as( $output-path, :$ast, |c ) is default {
+    multi method save-as( $output-path, |c ) is default {
         require PDF::Writer;
         my $pdf-writer = ::('PDF::Writer').new( :$.input );
-        $output-path.IO.spurt( $pdf-writer.write( $ast // $.ast(|c) ), :enc<latin1> );
+        my $ast = $.ast(|c);
+        $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
     }
 
 }

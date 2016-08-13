@@ -33,9 +33,8 @@ sub MAIN (
         $reader.recompress(:$compress)
     }
 
-    note "building ast ...";
-    my $ast = $reader.ast( :$rebuild );
-    $reader.save-as($file-out, :$ast); 
+    note "saving ...";
+    $reader.save-as($file-out, :$rebuild); 
     note "done";
 
 }
