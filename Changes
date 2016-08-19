@@ -6,7 +6,10 @@
     - [PDF::DAO::Type::XRef] renamed methods
       -- decode-to-stage2 -> decode-index
       -- encode-from-stage2 -> encode-index
-    - [PDF::Writer] refactored write multi method into individual methods
+    - [PDF::Writer]
+      -- refactored 'write' multi method into node-specific methods
+         (write-array, write-bool, ... etc)
+      -- handle comments in write-op method
     - [PDF::Writer] [PDF::Storage::Filter::RunLength] fixed handling
       of DOS newline graphemes "\r\n"
     - [bin/pdf-rewriter.pl] fixed --rebuild option

@@ -151,7 +151,23 @@ class PDF::Writer {
     }
 
     multi method write-op(Str $op, *@args) is default {
-        (@args.map({ $.write( $_ ) }).Slip, $.write( :$op )).join(' ');
+        my @vals;
+        my Str @comments;
+        for @args -> $arg {
+            with $arg<comment> {
+                @comments.push: $_
+            }
+            else {
+                @vals.push: $arg;
+            }
+        }
+
+        my @out = @vals.map: {$.write($_)};
+        @out.push: $.write-op( $op );
+        @out.push: $.write-comment( @comments.join(' ') )
+            if @comments;
+
+        @out.join: ' ';
     }
 
     multi method write-comment(List $_) {
@@ -159,7 +175,7 @@ class PDF::Writer {
     }
 
     multi method write-comment(Str $_) {
-        /^ '%'/ ?? $_ !! '% ' ~ $_
+        m:s{^ '%'} ?? $_ !! '% ' ~ $_
     }
 
     method write-dict(Hash $_) {
