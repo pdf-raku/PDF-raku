@@ -130,8 +130,9 @@ role PDF::DAO {
     multi method coerce($val) is default { $val }
 
     method delegator is rw {
-	without $delegator {
-	    $_ = $.required('PDF::DAO::Delegator');
+	unless $delegator.can('delegate') {
+	    $.required('PDF::DAO::Delegator');
+	    $delegator = ::('PDF::DAO::Delegator');
 	}
 	$delegator
     }
