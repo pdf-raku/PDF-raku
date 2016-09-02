@@ -7,6 +7,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
     #| resolve a heritable property by dereferencing /Parent entries
     proto sub inehrit(Hash $, Str $, Int :$hops) {*}
     multi sub inherit(Hash $object, Str $key where { $object{$key}:exists }, :$hops) {
+        temp $object.strict = True;
 	$object{$key};
     }
     multi sub inherit(Hash $object, Str $key where { $object<Parent>:exists }, Int :$hops is copy = 1) {
@@ -16,21 +17,19 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
     }
     multi sub inherit(Mu $, Str $, :$hops) is default { Nil }
 
-    method rw-accessor(Str $key!, $att) {
-	#| array of type, declared with '@' sigil, e.g.
-        #| has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
-	Proxy.new( 
-	    FETCH => sub ($) {
-		my $val := $att.tied.is-inherited
-		    ?? inherit(self, $key)
-		    !! self{$key};
-		$att.tied.type-check($val, :$key);
-	    },
-	    STORE => sub ($, $val is copy) {
-		my $lval = self.lvalue($val);
-		$att.apply($lval);
-		self{$key} := $att.tied.type-check($lval, :$key);
-	    });
+    method rw-accessor(Attribute $att, Str :$key!) is rw {
+        Proxy.new(
+            FETCH => sub (\p) {
+                temp self.strict = True;
+                $att.tied.is-inherited
+	            ?? inherit(self, $key)
+	            !! self{$key};
+            },
+            STORE => sub (\p, \v) {
+                temp self.strict = True;
+                self{$key} = v;
+            }
+        );
     }
 
     method tie-init {
@@ -47,22 +46,28 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
     #| for hash lookups, typically $foo<bar>
     method AT-KEY($key) is rw {
         my $val := callsame;
-
         $val := $.deref(:$key, $val)
 	    if $val ~~ Pair | Array | Hash;
 
-	my Attribute $att = %.entries{$key} // $.of-att;
-	.apply($val) with $att;
-	$val;
+	my Attribute \att = %.entries{$key} // $.of-att;
+         with att {
+	     .apply($val);
+             .tied.type-check($val, :$key)
+                 if $.strict;
+         }
+         $val;
     }
 
     #| handle hash assignments: $foo<bar> = 42; $foo{$baz} := $x;
     method ASSIGN-KEY($key, $val) {
 	my $lval = $.lvalue($val);
 
-	my Attribute $att = %.entries{$key} // $.of-att;
-	.apply($lval) with $att;
-
+	my Attribute \att = %.entries{$key} // $.of-att;
+        with att {
+	    .apply($lval);
+            .tied.type-check($lval, :$key)
+                 if $.strict;
+        }
 	nextwith($key, $lval )
     }
 

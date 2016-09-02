@@ -6,7 +6,6 @@ class PDF::Storage::Filter {
     use PDF::Storage::Filter::ASCII85;
     use PDF::Storage::Filter::Flate;
     use PDF::Storage::Filter::RunLength;
-    use PDF::Storage::Blob;
 
     #| set P6_PDF_FILTER_CLASS to enable experimental/alternate backends
     #| aka LibGnuPDF::Filter

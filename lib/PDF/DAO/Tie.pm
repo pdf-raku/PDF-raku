@@ -5,6 +5,7 @@ role PDF::DAO::Tie {
     use PDF::DAO;
     has Attribute $.of-att is rw;      #| default attribute
     has Attribute %.entries;
+    has Bool $.strict is rw = False;
 
     #| generate an indirect reference to ourselves
     method ind-ref {
@@ -49,45 +50,45 @@ role PDF::DAO::Tie {
 
 	multi method apply($lval is rw where { nqp::isrwcont($lval) } ) {
 	    unless $lval.isa(Pair) {
-	        my $type = $.type;
-		if $lval.defined && ! ($lval ~~ $type) {
+	        my \type = $.type;
+		if $lval.defined && ! ($lval ~~ type) {
 
-		    my $reader  = $lval.?reader;
-		    my $obj-num = $lval.?obj-num;
-		    my $gen-num = $lval.?gen-num;
+		    my \reader  = $lval.?reader;
+		    my \obj-num = $lval.?obj-num;
+		    my \gen-num = $lval.?gen-num;
 
-		    if ($type ~~ Positional[Mu] && $lval ~~ Array)
-                    || ($type ~~ Associative[Mu] && $lval ~~ Hash) {
+		    if (type ~~ Positional[Mu] && $lval ~~ Array)
+                    || (type ~~ Associative[Mu] && $lval ~~ Hash) {
 			# of-att array declaration, e.g.:
 			# has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
                         # or, associative hash declarations, e.g.:
                         # has PDF::DOM::Type::ExtGState %.ExtGState is entry;
-			my $of-type = $type.of;
+			my \of-type = type.of;
 			my Attribute $att = $lval.of-att;
 			if $att {
-			    die "conflicting types for {$att.name} {$att.type.gist} {$of-type.gist}"
-				unless $of-type ~~ $att.type;
+			    die "conflicting types for {$att.name} {$att.type.gist} {of-type.gist}"
+				unless of-type ~~ $att.type;
 			}
 			else {
 			    # init
-			    $att = Attribute.new( :name('@!' ~ $.accessor-name), :type($of-type), :package<?> );
+			    $att = Attribute.new( :name('@!' ~ $.accessor-name), :type(of-type), :package<?> );
 			    $att does TiedIndex;
 			    $att.tied = $.clone;
-			    $att.tied.type = $of-type;
+			    $att.tied.type = of-type;
 			    $lval.of-att = $att;
 			
 			    for $lval.values {
 				next if $_ ~~ Pair | $att.tied.type;
 				($att.tied.coerce)($_, $att.tied.type);
-				.reader //= $reader if $reader && .can('reader');
+				.reader //= reader if reader && .can('reader');
 			    }
 			}
 		    }
 		    else {
-			($.coerce)($lval, $type);
-			$lval.reader  //= $_ with $reader;
-			$lval.obj-num //= $_ with $obj-num;
-			$lval.gen-num //= $_ with $gen-num;
+			($.coerce)($lval, type);
+			$lval.reader  //= $_ with reader;
+			$lval.obj-num //= $_ with obj-num;
+			$lval.gen-num //= $_ with gen-num;
 		    }
 		}
 		else {
@@ -111,8 +112,8 @@ role PDF::DAO::Tie {
 		$.type-check($v, Array);
 		die "array not of length: {$.length}"
 		    if $.length && +$v != $.length;
-		my $of-type = $type.of;
-		$.type-check($_, $of-type)
+		my \of-type = $type.of;
+		$.type-check($_, of-type)
 		    for $v.values;
                 $v;
 	    }
@@ -126,8 +127,8 @@ role PDF::DAO::Tie {
 	multi method type-check($val, Associative[Mu] $type) is rw {
 	    with $val -> $v {
 		$.type-check($v, Hash);
-		my $of-type = $type.of;
-		$.type-check($_, $of-type)
+		my \of-type = $type.of;
+		$.type-check($_, of-type)
 		    for $v.values;
                 $v;
 	    }
@@ -186,36 +187,35 @@ role PDF::DAO::Tie {
     }
 
     multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {
-	my $type = $att.type;
+	my \type = $att.type;
 	my Bool $gen-accessor = $att.has_accessor;
 	$att does TiedEntry;
-	my $name = $att.name;
-	$att.tied.accessor-name = $name.subst(/^(\$|\@|\%)'!'/, '');
+	$att.tied.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
 	my $sigil = ~ $0;
 	given $sigil {
 	    when '$' {}
 	    when '@' {
 		# assert that rakudo has interpreted this as Positional[SomeType]
-		die "internal error. expecting Positional role, got {$type.gist}"
-		    unless $type ~~ Positional;
+		die "internal error. expecting Positional role, got {type.gist}"
+		    unless type ~~ Positional;
 	    }
 	    when '%' {
 		# assert that rakudo has interpreted this as Associative[SomeType]
-		die "internal error. expecting Associative role, got {$type.gist}"
-		    unless $type ~~ Associative;
+		die "internal error. expecting Associative role, got {type.gist}"
+		    unless type ~~ Associative;
 	    }
 	    default {
 		warn "ignoring '$sigil' sigil";
 	    }
 	}
-	$att.tied.type = $type;
+	$att.tied.type = type;
 	$att.tied.gen-accessor = $gen-accessor;
 	process-args($entry, $att);
     }
 
     multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
-	my $type = $att.type;
-	my Bool $gen-accessor = $att.has_accessor;
+	my \type = $att.type;
+	my Bool \gen-accessor = $att.has_accessor;
 	$att does TiedIndex;
 	$att.tied.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
 	my $sigil = $0 && ~ $0;
@@ -223,8 +223,8 @@ role PDF::DAO::Tie {
 	die "index trait requires a UInt argument, e.g. 'is index(1)'"
 	    unless @args && @args[0] ~~ UInt;
 	$att.index = @args.shift;
-	$att.tied.type = $type;
-	$att.tied.gen-accessor = $gen-accessor;
+	$att.tied.type = type;
+	$att.tied.gen-accessor = gen-accessor;
 	process-args(@args, $att);
     }
 
@@ -266,7 +266,7 @@ role PDF::DAO::Tie {
             when %!entries{$key}:exists {
                 my $att = %!entries{$key};
 	        $att.set_rw;
-                method { self.rw-accessor( $key, $att ) };
+                method () is rw { self.rw-accessor( $att, :$key ) };
             }
             when 'cb-init' | 'cb-finish' {
                 method {Nil};
