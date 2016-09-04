@@ -22,15 +22,14 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
     }
 
     method tie-init {
-	my $class = self.WHAT;
-	my $class-name = $class.^name;
+	my \class = self.WHAT;
 
-	for $class.^attributes.grep({.name !~~ /descriptor/ && .can('index') }) -> $att {
-	    my $pos = $att.index;
-	    my $key = $att.tied.accessor-name;
-	    next if @!index[$pos];
-	    @!index[$pos] = $att;
-            %.entries{$key} = $att;
+	for class.^attributes.grep({.name !~~ /descriptor/ && .can('index') }) -> \att {
+	    my \pos = att.index;
+	    my \key = att.tied.accessor-name;
+	    next if @!index[pos];
+	    @!index[pos] = att;
+            %.entries{key} = att;
 	}
     }
 

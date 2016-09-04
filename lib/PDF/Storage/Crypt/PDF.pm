@@ -32,9 +32,9 @@ class PDF::Storage::Crypt::PDF
         return Nil
             if $cf-entry eq 'Identity';
 
-        my Hash $CF = $encrypt.CF{$cf-entry};
-        my Str $CFM = $CF<CFM> // 'None';
-        my $class = do given $CF<CFM> {
+        my Hash \CF = $encrypt.CF{$cf-entry};
+        my Str \CFM = CF<CFM> // 'None';
+        my $class = do given CFM {
             when 'V2'    { PDF::Storage::Crypt::RC4 }
             when 'AESV2' { PDF::Storage::Crypt::AES }
             when 'None' {
@@ -44,7 +44,7 @@ class PDF::Storage::Crypt::PDF
                 die "Encryption scheme /$cf-entry /CFM is not 'V2', 'AESV2', or 'None': $_";
             }
         };
-        $class.new( :$doc, |$encrypt, |$CF, |c );
+        $class.new( :$doc, |$encrypt, |CF, |c );
     }
         
     #| read existing encryption
@@ -52,11 +52,10 @@ class PDF::Storage::Crypt::PDF
 	die "document is not encrypted"
             unless $doc<Encrypt>:exists;
 
-        my $encrypt = $doc<Encrypt>;
-        
         die 'This PDF lacks an ID.  The document cannot be decrypted'
 	    unless $doc<ID>;
 
+        my $encrypt = $doc<Encrypt>;
         PDF::DAO.delegator.coerce($encrypt, PDF::DAO::Type::Encrypt);
         
 	given $encrypt.V {

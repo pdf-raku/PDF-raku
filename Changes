@@ -1,4 +1,7 @@
-   Release 0.0.8
+    Release 0.0.9
+    - Internal refactor. Use of siglless variables, where appropriate.
+
+    Release 0.0.8
     - [PDF::DAO::Doc] .update( :diffs(...) ) - now supports JSON
     - Renamed classes
       -- PDF::DAO::Doc -> PDF::DAO::Type::PDF
@@ -14,7 +17,7 @@
       of DOS newline graphemes "\r\n"
     - [bin/pdf-rewriter.pl] fixed --rebuild option
 
-   Release 0.0.7
+    Release 0.0.7
     - [PDF::Storage::Crypt] Encryption refactored to use OpenSSL. Added support for
       PDF 1.6+ AES-128 encryption.
     - [PDF::DAO::Doc] add saves-as( :update ) option.

@@ -15,13 +15,13 @@ class PDF::Storage::Filter::RunLength {
 
         while $i <= n {
             @out[$j++] := my $ind;
-            my $ord = input[$i++];
-            @out[$j++] = $ord;
+            my \ord = input[$i++];
+            @out[$j++] = ord;
 
-            if $i > n || $ord == input[$i] {
+            if $i > n || ord == input[$i] {
                 # run of repeated characters
                 $ind = 256;
-                while $i <= n && input[$i] == $ord {
+                while $i <= n && input[$i] == ord {
                     last if $ind <= 129;
                     $i++;
                     $ind--;

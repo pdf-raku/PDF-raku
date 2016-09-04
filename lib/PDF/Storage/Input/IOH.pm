@@ -16,7 +16,7 @@ class PDF::Storage::Input::IOH
     }
 
     multi method Str {
-        $.value.seek( 0, SeekFromBeginning );
+        $!value.seek( 0, SeekFromBeginning );
         $!str //= $.value.slurp-rest;
     }
 
@@ -31,7 +31,7 @@ class PDF::Storage::Input::IOH
         }
         else {
             $!value.seek( $from, SeekFromBeginning );
-            $.value.read( $length );
+            $!value.read( $length );
         }
     }
 

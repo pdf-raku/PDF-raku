@@ -1,3 +1,4 @@
+
 use v6;
 
 class PDF::Storage::Serializer {
@@ -40,16 +41,16 @@ class PDF::Storage::Serializer {
     
     #| remove and return the root object (trailer dictionary)
     method !get-root(@objects) {
-	my DictIndObj $root-ind-obj = @objects.shift; # first object is trailer dict
-	$root-ind-obj.value[2]<dict>;
+	my DictIndObj \root-ind-obj = @objects.shift; # first object is trailer dict
+	root-ind-obj.value[2]<dict>;
     }
 
     #| Discard Linearization aka "Fast Web View"
     method !discard-linearization(@objects) {
     	if @objects && @objects[0] ~~ DictIndObj {
-	    my $first-ind-obj = @objects[0].value[2];
+	    my \first-ind-obj = @objects[0].value[2];
 	    @objects.shift
-		if $first-ind-obj<dict><Linearized>:exists;
+		if first-ind-obj<dict><Linearized>:exists;
 	}
     }
 
@@ -79,7 +80,7 @@ class PDF::Storage::Serializer {
     multi method body( Bool :$updates! where $updates, :$*compress ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
         $.size = $.reader.size;
-        my $prev = $.reader.prev;
+        my \prev = $.reader.prev;
 
         # disable auto-deref to keep all analysis and freeze stages lazy. if it hasn't been
         # loaded, it hasn't been updated
@@ -90,25 +91,25 @@ class PDF::Storage::Serializer {
         temp $.renumber = False;
         %!ref-count = ();
 	@!objects = ();
-	my $trailer = $.reader.trailer;
+	my \trailer = $.reader.trailer;
 
-	temp $trailer.obj-num = 0;
-	temp $trailer.gen-num = 0;
+	temp trailer.obj-num = 0;
+	temp trailer.gen-num = 0;
 
         my @updated-objects = $.reader.get-updates.list;
 
-        for @updated-objects -> $object {
+        for @updated-objects -> \object {
             # reference count new objects
-            $.analyse( $object );
+            $.analyse( object );
         }
 
-	for @updated-objects -> $object {
-	    $.freeze( $object, :indirect )
+	for @updated-objects -> \object {
+	    $.freeze( object, :indirect )
 	}
 
 	my %dict = self!get-root(@!objects);
 
-        %dict<Prev> = :int($prev);
+        %dict<Prev> = :int(prev);
         %dict<Size> = :int($.size);
 
         [ { :@!objects, :trailer{ :%dict } }, ]
@@ -220,13 +221,13 @@ class PDF::Storage::Serializer {
             }
 
             # register prior to traversing the object. in case there are cyclical references
-            my $ret = $indirect || $.is-indirect( $object )
+            my \ret = $indirect || $.is-indirect( $object )
               ?? self!index-object($ind-obj, :$object )
               !! $ind-obj;
 
             $slot = self!freeze-dict($object);
 
-            $ret;
+            ret;
         }
     }
 

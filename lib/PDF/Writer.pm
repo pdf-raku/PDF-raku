@@ -18,10 +18,14 @@ class PDF::Writer {
     }
 
     method Str returns Str {
-        nextsame unless $.ast.defined;
-        temp $!offset;
-        temp $!prev;
-        $.write( $.ast );
+        with $.ast {
+            temp $!offset;
+            temp $!prev;
+            $.write( $_ );
+        }
+        else {
+            nextsame;
+        }
     }
 
     method write-array( Array $_ ) {
@@ -46,14 +50,14 @@ class PDF::Writer {
 
 	$.make-objects( $body<objects>, @out, @idx );
 
-	my $trailer = $body<trailer> // {};
+	my \trailer = $body<trailer> // {};
 
 	if $write-xref {
-	    $.make-xref( $trailer, @out, @idx );
+	    $.make-xref( trailer, @out, @idx );
 	}
 	else {
             # simple trailer, no xref
-            @out.push: [~] ( $.write-trailer( $trailer ), '%%EOF' );
+            @out.push: [~] ( $.write-trailer( trailer ), '%%EOF' );
 	}
 
         $!offset += @out[*-1].codes + 2;
@@ -62,9 +66,9 @@ class PDF::Writer {
     }
 
     method make-objects( @objects, @out = [], @idx = [] ) {
-        for @objects -> $obj {
+        for @objects -> \obj {
 
-            with $obj<ind-obj> -> $ind-obj {
+            with obj<ind-obj> -> $ind-obj {
                 @out.push: $.write-ind-obj( $ind-obj );
 
 		my UInt $obj-num = $ind-obj[0];
@@ -72,11 +76,11 @@ class PDF::Writer {
 
 		@idx.push: { :type(1), :$.offset, :$gen-num, :$obj-num, :$ind-obj };
             }
-            elsif my $comment = $obj<comment> {
-                @out.push: $.write-comment($comment);
+            elsif my \comment = obj<comment> {
+                @out.push: $.write-comment(comment);
             }
             else {
-                die "don't know how to serialize body component: {$obj.perl}"
+                die "don't know how to serialize body component: {obj.perl}"
             }
 
             $!offset += @out[*-1].codes + 1;
@@ -92,25 +96,25 @@ class PDF::Writer {
 	for @idx {
 	    # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
 	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
-	    my $contigous = +@xref && .<obj-num> && .<obj-num> == $!size;
+	    my \contiguous = +@xref && .<obj-num> && .<obj-num> == $!size;
 	    @xref.push: %( :obj-first-num(.<obj-num>), :entries[] )
-		unless $contigous;
+		unless contiguous;
 	    @xref[*-1]<entries>.push: $_;
 	    @xref[*-1]<obj-count>++;
 	    $!size = .<obj-num> + 1;
 	}
 
-	my Str $xref-str = $.write-xref( @xref );
-	my UInt $startxref = $.offset;
+	my Str \xref-str = $.write-xref( @xref );
+	my UInt \startxref = $.offset;
 
 	@out.push: [~] (
-	    $xref-str,
+	    xref-str,
 	    $.write-trailer( $trailer, :$!prev, :$!size ),
-	    $.write-startxref( $startxref ),
+	    $.write-startxref( startxref ),
 	    '%%EOF');
 
-	$!offset += $xref-str.codes;
-	$!prev = $startxref;
+	$!offset += xref-str.codes;
+	$!prev = startxref;
     }
 
     method write-bool( $_ ) {
@@ -153,12 +157,12 @@ class PDF::Writer {
     multi method write-op(Str $op, *@args) is default {
         my @vals;
         my Str @comments;
-        for @args -> $arg {
-            with $arg<comment> {
+        for @args -> \arg {
+            with arg<comment> {
                 @comments.push: $_
             }
             else {
-                @vals.push: $arg;
+                @vals.push: arg;
             }
         }
 
@@ -190,8 +194,8 @@ class PDF::Writer {
 
         ( '<<',
           $.indented({
-	      @keys.map( -> $key {
-		  [~] $.indent, $.write-name($key), ' ', $.write( .{$key} ),
+	      @keys.map( -> \key {
+		  [~] $.indent, $.write-name(key), ' ', $.write( .{key} ),
 	      }).join: "\n"
 	  }),
           $!indent ~ '>>'
@@ -234,9 +238,7 @@ class PDF::Writer {
     method write-ind-obj(@_) {
         my (UInt $obj-num, UInt $gen-num, $object where Pair | Hash) = @_;
 
-        [~] (sprintf('%d %d obj ', $obj-num, $gen-num),
-	     $.write( $object ),
-	     " endobj\n");
+        sprintf "%d %d obj %s endobj\n", $obj-num, $gen-num, $.write( $object );
     }
 
     method write-ind-ref(Array $_) {
@@ -274,27 +276,27 @@ class PDF::Writer {
     method write-null( $ ) { 'null' }
 
     method write-pdf( Hash $pdf ) {
-        my Str $header = $.write( $pdf, :node<header> );
-        my Str $comment = $pdf<comment>:exists
+        my Str \header = $.write( $pdf, :node<header> );
+        my Str \comment = $pdf<comment>:exists
             ?? $.write( $pdf, :node<comment> )
             !! $.write-comment( q<%¥±ë> );
-        $!offset = $header.codes + $comment.codes + 2;  # since format is byte orientated
+        $!offset = header.codes + comment.codes + 2;  # since format is byte orientated
         # Form Definition Format is normally written without an xref
-        my Str $type = $pdf<header><type> // 'PDF';
-	my Bool $write-xref = $type ne 'FDF';
-        my $body = $.write-body( $pdf<body>, :$write-xref );
-        ($header, $comment, $body).join: "\n";
+        my Str \type = $pdf<header><type> // 'PDF';
+	my Bool $write-xref = type ne 'FDF';
+        my \body = $.write-body( $pdf<body>, :$write-xref );
+        (header, comment, body).join: "\n";
     }
 
     method write-header($_ ) {
-        my Str $type = .<type> // 'PDF';
-        sprintf '%%%s-%.1f', $type, .<version> // 1.2;
+        my Str \type = .<type> // 'PDF';
+        sprintf '%%%s-%.1f', type, .<version> // 1.2;
     }
 
     multi method write-real( Num $_ ) {
-	my $int = .round(1).Int;
-	$_ =~= $int
-	    ?? ~$int
+	my \int = .round(1).Int;
+	$_ =~= int
+	    ?? ~int
 	    !! sprintf("%.5f", $_);
     }
 

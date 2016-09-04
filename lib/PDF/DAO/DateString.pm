@@ -16,19 +16,19 @@ class PDF::DAO::DateString
 	$pdf-date ~~ DateRx
 	    or die "Date $pdf-date not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
 
-        my UInt $year  = +$<year>;
-        my UInt $month = +( @<dd>[0] // 1 );
-        my UInt $day   = +( @<dd>[1] // 1 );
-        my UInt $hour  = +( @<dd>[2] // 0 );
-        my UInt $min   = +( @<dd>[3] // 0 );
-        my UInt $sec   = +( @<dd>[4] // 0 );
-        my Str $tz = $<tz-sign> && $<tz-sign> ne 'Z'
+        my UInt \year  = +$<year>;
+        my UInt \month = +( @<dd>[0] // 1 );
+        my UInt \day   = +( @<dd>[1] // 1 );
+        my UInt \hour  = +( @<dd>[2] // 0 );
+        my UInt \min   = +( @<dd>[3] // 0 );
+        my UInt \sec   = +( @<dd>[4] // 0 );
+        my Str  \tz = $<tz-sign> && $<tz-sign> ne 'Z'
             ?? sprintf '%s%02d%02d', $<tz-sign>, $<tz-hour>, $<tz-min>
 	    !! '';
 
-        my Str $iso-date = sprintf "%04d-%02d-%02dT%02d:%02d:%02d%s", $year, $month, $day, $hour, $min, $sec, $tz;
+        my Str \iso-date = sprintf "%04d-%02d-%02dT%02d:%02d:%02d%s", year, month, day, hour, min, sec, tz;
 
-	nextwith( $iso-date, :&formatter );
+	nextwith( iso-date, :&formatter );
     }
 
     multi method new(DateTime $dt!) {

@@ -5,32 +5,26 @@ module PDF::Storage::Util {
     #= resample a buffer as n-bit to m-bit unsigned integers
     proto sub resample( $, $, $ --> Array) is export(:resample) {*};
     multi sub resample( $nums!, 8, 4)  { my uint8  @s = flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
-    multi sub resample( $nums!, 4, 8)  { my uint8  @s = flat $nums.list.map: -> $hi, $lo { $hi +< 4  +  $lo } }
-    multi sub resample( $nums!, 8, 16) { my uint16 @s = flat $nums.list.map: -> $hi, $lo { $hi +< 8  +  $lo } }
-    multi sub resample( $nums!, 8, 32) { my uint32 @s = flat $nums.list.map: -> $b1, $b2, $b3, $b4 { $b1 +< 24  +  $b2 +< 16  +  $b3 +< 8  +  $b4 } }
+    multi sub resample( $nums!, 4, 8)  { my uint8  @s = flat $nums.list.map: -> \hi, \lo { hi +< 4  +  lo } }
+    multi sub resample( $nums!, 8, 16) { my uint16 @s = flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
+    multi sub resample( $nums!, 8, 32) { my uint32 @s = flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
     multi sub resample( $nums!, 16, 8) { my uint8  @s = flat $nums.list.map: { ($_ +> 8, $_) } }
     multi sub resample( $nums!, 32, 8) { my uint8  @s = flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
     multi sub resample( $nums!, UInt $n!, UInt $ where $n) { $nums }
+
+    sub get-bit($num, $bit) { $num +> ($bit) +& 1 }
+    sub set-bit($bit) { 1 +< ($bit) }
     multi sub resample( $nums!, UInt $n!, UInt $m!) is default {
         warn "unoptimised $n => $m bit sampling";
         flat gather {
             my Int $m0 = 1;
             my Int $sample = 0;
 
-            sub get-bit($num, $bit) {
-                $num +> ($bit) +& 1;
-            }
-
-            sub set-bit($bit) {
-                1 +< ($bit);
-            }
-
             for $nums.list -> $num is copy {
                 for 1 .. $n -> $n0 {
 
-                    my $in-bit = get-bit( $num, $n - $n0);
                     $sample += set-bit( $m - $m0)
-                        if $in-bit;
+                        if get-bit( $num, $n - $n0);
 
                     if ++$m0 > $m {
                         take $sample;

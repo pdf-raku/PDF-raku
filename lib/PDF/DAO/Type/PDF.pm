@@ -28,14 +28,14 @@ class PDF::DAO::Type::PDF
     #| open the input file-name or path
     method open($spec, |c) {
         require PDF::Reader;
-        my $reader = ::('PDF::Reader').new;
-        my $doc = self.new( :$reader );
+        my \reader = ::('PDF::Reader').new;
+        my \doc = self.new( :reader(reader) );
 
-        $reader.install-trailer( $doc );
-        $reader.open($spec, |c);
-        $doc.crypt = $reader.crypt
-            if $reader.crypt;
-        $doc;
+        reader.install-trailer( doc );
+        reader.open($spec, |c);
+        doc.crypt = $_
+            with reader.crypt;
+        doc;
     }
 
     method encrypt( Str :$owner-pass!, Str :$user-pass = '', |c ) {
@@ -87,14 +87,14 @@ class PDF::DAO::Type::PDF
         my Str $new-body = $writer.write-body( $body[0], my @entries, :$prev, :$trailer );
 	my IO::Handle $fh;
 
-	if $diffs {
+	with $diffs {
 	    # saving updates elsewhere
-	    my Str $path = ~ $diffs.path;
+	    my Str $path = ~ .path;
 
 	    die "to file and input PDF are the same: $path"
                if $path eq $.reader.file-name;
 
-	    $fh = $diffs;
+	    $fh = $_;
 	}
 	else {
 	    # in-place update. merge the updated entries in the index

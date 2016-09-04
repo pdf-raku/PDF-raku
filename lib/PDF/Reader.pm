@@ -1,11 +1,11 @@
 use v6;
 
 my sub synopsis($input) {
-    my $desc = ($input.chars < 60
+    my \desc = ($input.chars < 60
                 ?? $input
                 !! [~] $input.substr(0, 32), ' ... ', $input.substr(*-20))\
                 .subst(/\n+/, ' ', :g);
-    $desc.perl;
+    desc.perl;
 }
 
 class X::PDF::BadDump is Exception {
@@ -104,9 +104,9 @@ class PDF::Reader {
 
 	$!crypt = PDF::Storage::Crypt::PDF.new( :$doc );
 	$!crypt.authenticate( $password );
-	my $enc := $doc<Encrypt>;
-        my $enc-obj-num = $enc.obj-num;
-        my $enc-gen-num = $enc.gen-num;
+	my \enc = $doc<Encrypt>;
+        my \enc-obj-num = enc.obj-num;
+        my \enc-gen-num = enc.gen-num;
 
 	for %!ind-obj-idx.pairs {
 
@@ -118,8 +118,8 @@ class PDF::Reader {
 		my Hash $idx = .value;
 
                 # skip the encryption dictionary, if it's an indirect object
-		if $obj-num == $enc-obj-num
-		&& $gen-num == $enc-gen-num {
+		if $obj-num == enc-obj-num
+		&& $gen-num == enc-gen-num {
 		    $idx<is-enc-dict> = True;
 		}
 		else {
@@ -147,9 +147,9 @@ class PDF::Reader {
 	temp $.auto-deref = False;
         my Hash $trailer = self.trailer;
 
-        for $keys.sort -> $k {
-            $trailer{$k} = from-ast $_
-                 with $dict{$k};
+        for $keys.sort -> \k {
+            $trailer{k} = from-ast $_
+                 with $dict{k};
         }
 
         $trailer;
@@ -157,18 +157,18 @@ class PDF::Reader {
 
     #| derserialize a json dump
     multi method open( Str $input-file  where m:i/'.json' $/, |c ) {
-        my $ast = from-json( $input-file.IO.slurp );
+        my \ast = from-json( $input-file.IO.slurp );
         die X::PDF::BadDump.new( :$input-file )
-            unless $ast.isa(Hash) && ($ast<pdf>:exists);
-        $!type = $ast<pdf><header><type> // 'PDF';
-        $!version = $ast<pdf><header><version> // 1.2;
+            unless ast.isa(Hash) && (ast<pdf>:exists);
+        $!type = ast<pdf><header><type> // 'PDF';
+        $!version = ast<pdf><header><version> // 1.2;
 
-        for $ast<pdf><body>.list {
+        for ast<pdf><body>.list {
 
             for .<objects>.list.reverse {
                 next unless .<ind-obj>:exists;
                 my $ind-obj = .<ind-obj>;
-                (my UInt $obj-num, my UInt $gen-num, my $object) = @( $ind-obj );
+                (my UInt $obj-num, my UInt $gen-num) = $ind-obj.list;
 
                 %!ind-obj-idx{$obj-num}{$gen-num} //= {
                     :type(1),
@@ -184,7 +184,7 @@ class PDF::Reader {
             }
        }
 
-        $ast;
+        ast;
     }
 
     # process a batch of indirect object updates
@@ -235,7 +235,7 @@ class PDF::Reader {
                               UInt :$max-end,     #| upper bound for the end of the stream
         )
     {
-        (my UInt $obj-num, my UInt $gen-num, my $obj-raw) = @ind-obj;
+        my (UInt $obj-num, UInt $gen-num, $obj-raw) = @ind-obj;
 
         $obj-raw.value<encoded> //= do {
             die X::PDF::BadIndirectObject.new(
@@ -243,19 +243,19 @@ class PDF::Reader {
                 :details("stream mandatory /Length field is missing")
                 ) unless $obj-raw.value<dict><Length>;
 
-            my UInt $length = $.deref( $obj-raw.value<dict><Length> );
-            my UInt $start = $obj-raw.value<start>:delete;
+            my UInt \length = $.deref( $obj-raw.value<dict><Length> );
+            my UInt \from = $obj-raw.value<start>:delete;
 
             with $max-end {
                 die X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
-                    :details("stream Length $length appears too large (> {$max-end - $start})"),
-                ) if $length > $_ - $start;
+                    :details("stream Length {length} appears too large (> {$max-end - from})"),
+                ) if length > $_ - from;
             }
 
             # ensure stream is followed by an 'endstream' marker
-            my Str $tail = $input.substr( $offset + $start + $length, 20 );
-            if $tail ~~ m{<PDF::Grammar::PDF::stream-tail>} {
+            my Str \tail = $input.substr( $offset + from + length, 20 );
+            if tail ~~ m{<PDF::Grammar::PDF::stream-tail>} {
                 warn X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
                     :details("ignoring {$/.from} bytes before 'endstream' marker")
@@ -264,12 +264,12 @@ class PDF::Reader {
             else {
                 die X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
-                    :details("unable to locate 'endstream' marker after consuming /Length $length bytes")
+                    :details("unable to locate 'endstream' marker after consuming /Length {length} bytes")
                     );
             }
 
-	    $length
-		?? $input.substr( $offset + $start, $length )
+	    length
+		?? $input.substr( $offset + from, length )
 		!! '';
         };
     }
@@ -286,9 +286,9 @@ class PDF::Reader {
         given $idx<type> {
             when 1 {
                 # type 1 reference to an external object
-                my $offset = $idx<offset>;
-                my $end = $idx<end>;
-                my $max-end = $end - $offset - 1;
+                my UInt $offset = $idx<offset>;
+                my UInt $end = $idx<end>;
+                my UInt $max-end = $end - $offset - 1;
                 my $input = $.input.substr( $offset, $max-end );
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
                     or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
@@ -306,14 +306,14 @@ class PDF::Reader {
             }
             when 2 {
                 # type 2 embedded object
-                my $container-obj = $.ind-obj( $idx<ref-obj-num>, 0 ).object;
-                my $type2-objects = $container-obj.decoded;
+                my \container-obj = $.ind-obj( $idx<ref-obj-num>, 0 ).object;
+                my \type2-objects = container-obj.decoded;
 
-                my $index = $idx<index>;
-                my $ind-obj-ref = $type2-objects[$index];
-                $actual-obj-num = $ind-obj-ref[0];
+                my UInt \index = $idx<index>;
+                my Array \ind-obj-ref = type2-objects[index];
+                $actual-obj-num = ind-obj-ref[0];
                 $actual-gen-num = 0;
-                my $input = $ind-obj-ref[1];
+                my $input = ind-obj-ref[1];
 
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<object> )
                     or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$input);
@@ -339,25 +339,25 @@ class PDF::Reader {
 
         my $ind-obj = $idx<ind-obj> //= do {
             return unless $eager;
-            my $_ind-obj = self!fetch-ind-obj($idx, :$obj-num, :$gen-num);
+            my \ind-obj = self!fetch-ind-obj($idx, :$obj-num, :$gen-num);
             # only fully stantiate object when needed
-            $get-ast ?? $_ind-obj !! PDF::Storage::IndObj.new( :ind-obj($_ind-obj), :reader(self) )
+            $get-ast ?? ind-obj !! PDF::Storage::IndObj.new( :ind-obj(ind-obj), :reader(self) )
         };
 
-        my Bool $is-ind-obj = $ind-obj.isa(PDF::Storage::IndObj);
-        my Bool $to-ast = $get-ast && $is-ind-obj;
-        my Bool $to-obj = ?(!$get-ast && !$is-ind-obj);
+        my Bool \is-ind-obj = $ind-obj.isa(PDF::Storage::IndObj);
+        my Bool \to-ast = $get-ast && is-ind-obj;
+        my Bool \to-obj = ?(!$get-ast && !is-ind-obj);
 
-        if $to-ast {
+        if to-ast {
             # regenerate ast from object, if required
             $ind-obj = $ind-obj.ast
         }
-        elsif $to-obj {
+        elsif to-obj {
             # upgrade storage to object, if object requested
             $ind-obj = PDF::Storage::IndObj.new( :$ind-obj, :reader(self) );
             $idx<ind-obj> = $ind-obj;
         }
-        elsif ! $is-ind-obj  {
+        elsif ! is-ind-obj  {
             $ind-obj := :$ind-obj;
         }
 
@@ -367,13 +367,13 @@ class PDF::Reader {
     #| utility method for basic deferencing, e.g.
     #| $reader.deref($root,<Pages>,<Kids>,[0],<Contents>)
     method deref($val is copy, **@ops ) is rw {
-        for @ops -> $op {
+        for @ops -> \op {
             $val = self!ind-deref($val)
                 if $val.isa(Pair);
-            $val = do given $op {
-                when Array { $val[ $op[0] ] }
-                when Str   { $val{ $op } }
-                default    {die "bad $.deref arg: {.perl}"}
+            $val = do given op {
+                when Array { $val[ .[0] ] }
+                when Str   { $val{ $_ } }
+                default    {die "bad \$.deref arg: {.perl}"}
             };
         }
         $val = self!ind-deref($val)
@@ -389,7 +389,7 @@ class PDF::Reader {
     }
 
     method load-header() {
-        use PDF::Grammar::Doc;
+        require PDF::Grammar::Doc;
         # file should start with: %PDF-n.m, (where n, m are single
         # digits giving the major and minor version numbers).
 
@@ -416,7 +416,7 @@ class PDF::Reader {
         self!full-scan( PDF::Grammar::PDF, $.actions, :repair, |c );
     }
 
-    method !locate-xref($input-bytes, $tail-bytes, $offset, $tail, $fallback is rw) {
+    method !locate-xref($input-bytes, $tail-bytes, $tail, $offset, $fallback is rw) {
 	my Str $xref;
 	$fallback = sub ($_) {$_};
 	constant SIZE = 4096;       # big enough to usually contain xref
@@ -447,14 +447,14 @@ class PDF::Reader {
 
     #| load PDF 1.4- xref table followed by trailer
     method !load-xref-table(Str $xref is copy, $dict is rw, :$offset, :&fallback) {
-	my $parse = ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
+	my \parse = ( PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions )
 		      || PDF::Grammar::PDF.subparse( &fallback($xref), :rule<index>, :$.actions ) )
 	    or die X::PDF::BadXRef.new( :$offset, :$xref );
 
-	my $index = $parse.ast;
+	my \index = parse.ast;
 	my @idx;
 
-	with $index<xref> {
+	with index<xref> {
 	    for .list {
 		my UInt $obj-num = .<obj-first-num>;
 		for @( .<entries> ) {
@@ -475,7 +475,7 @@ class PDF::Reader {
 	    }
 	}
 
-	$dict = PDF::DAO.coerce( |$index<trailer>, :reader(self) );
+	$dict = PDF::DAO.coerce( |index<trailer>, :reader(self) );
 
 	@idx;
     }
@@ -488,26 +488,25 @@ class PDF::Reader {
 
 	my %ast = $/.ast;
 	my PDF::Storage::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
-	my $xref-obj = $ind-obj.object;
-	$dict = $xref-obj;
-	$xref-obj.decode-index.list;
+	$dict = $ind-obj.object;
+	$dict.decode-index.list;
     }
 
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
     #| via the $.ind-obj() method.
     multi method load('PDF', |c) is default {
-        my UInt $tail-bytes = min(1024, $.input.codes);
-        my Str $tail = $.input.substr(* - $tail-bytes);
+        my UInt \tail-bytes = min(1024, $.input.codes);
+        my Str \tail = $.input.substr(* - tail-bytes);
 
         my UInt %offsets-seen;
         @!xrefs = [];
 
-        PDF::Grammar::PDF.parse($tail, :$.actions, :rule<postamble>)
-            or die X::PDF::BadTrailer.new( :$tail );
+        PDF::Grammar::PDF.parse(tail, :$.actions, :rule<postamble>)
+            or die X::PDF::BadTrailer.new( :tail(tail) );
 
         $!prev = $/.ast<startxref>;
         my UInt:_ $offset = $!prev;
-        my UInt $input-bytes = $.input.codes;
+        my UInt \input-bytes = $.input.codes;
 
         my Hash @obj-idx;
         my Hash $dict;
@@ -517,11 +516,11 @@ class PDF::Reader {
             die "xref '/Prev' cycle detected \@$offset"
                 if %offsets-seen{$offset}++;
             # see if our cross reference table is already contained in the current tail
-	    my Str $xref = self!locate-xref($input-bytes, $tail-bytes, $offset, $tail, my &fallback);
+	    my Str \xref = self!locate-xref(input-bytes, tail-bytes, tail, $offset, my &fallback);
 
-	    @obj-idx.append: $xref ~~ /^'xref'/
-		?? self!load-xref-table( $xref, $dict, :&fallback, :$offset)
-		!! self!load-xref-stream($xref, $dict, :&fallback, :$offset);
+	    @obj-idx.append: xref ~~ /^'xref'/
+		?? self!load-xref-table( xref, $dict, :&fallback, :$offset)
+		!! self!load-xref-stream(xref, $dict, :&fallback, :$offset);
 
 	    self!set-trailer: $dict;
 
@@ -539,9 +538,9 @@ class PDF::Reader {
         my @type1-obj-entries = .list.sort({ $^a<offset> })
             with %obj-entries-of-type<1>;
 
-        for @type1-obj-entries.kv -> $k, $_ {
+        for @type1-obj-entries.kv -> \k, $_ {
             my UInt $offset = .<offset>;
-            my UInt $end = $k + 1 < +@type1-obj-entries ?? @type1-obj-entries[$k + 1]<offset> !! $input-bytes;
+            my UInt $end = k + 1 < +@type1-obj-entries ?? @type1-obj-entries[k + 1]<offset> !! input-bytes;
             %!ind-obj-idx{ .<obj-num> }{ .<gen-num> } = { :type(1), :$offset, :$end };
         }
 
@@ -560,9 +559,9 @@ class PDF::Reader {
         }
 
         #| don't entirely trust /Size entry in trailer dictionary
-        my UInt $actual-size = max( %!ind-obj-idx.keys>>.Int );
-        $.size = $actual-size + 1
-            if $.size <= $actual-size;
+        my UInt \actual-size = max( %!ind-obj-idx.keys>>.Int );
+        $.size = actual-size + 1
+            if $.size <= actual-size;
     }
 
     #| bypass any indices. directly parse and reconstruct index fromn objects.
@@ -586,16 +585,16 @@ class PDF::Reader {
                 my $stream-type;
 
                 if $object.key eq 'stream' {
-                    my $stream := $object.value;
-                    my Hash $dict = $stream<dict>;
-                    $stream-type = .value with $dict<Type>;
+                    my \stream = $object.value;
+                    my Hash \dict = stream<dict>;
+                    $stream-type = .value with dict<Type>;
 
                     # reset/repair stream length
-                    $dict<Length> = :int($stream<encoded>.codes)
+                    dict<Length> = :int(stream<encoded>.codes)
                         if $repair;
 
 		    if $stream-type ~~ 'XRef' {
-			self!set-trailer( $dict, :keys[<Root Encrypt Info ID>] );
+			self!set-trailer( dict, :keys[<Root Encrypt Info ID>] );
 			self!setup-crypt(|c);
 			# discard existing /Type /XRef stream objects. These are specific to the input PDF
 			next;
@@ -611,9 +610,9 @@ class PDF::Reader {
                 with $stream-type {
                     when 'ObjStm' {
                         # Object Stream. Index contents as type 2 objects
-                        my $container-obj = $.ind-obj( $obj-num, $gen-num ).object;
-                        my Array $type2-objects = $container-obj.decoded;
-                        for $type2-objects.kv -> $index, $_ {
+                        my \container-obj = $.ind-obj( $obj-num, $gen-num ).object;
+                        my Array \type2-objects = container-obj.decoded;
+                        for type2-objects.kv -> $index, $_ {
                             my UInt $sub-obj-num = .[0];
                             my UInt $sub-gen-num = 0;
                             my UInt $ref-obj-num = $obj-num;
@@ -628,8 +627,8 @@ class PDF::Reader {
             }
 
             with .<trailer> {
-                my Hash $trailer = PDF::DAO.coerce( |$_ );
-                self!set-trailer( $trailer.content<dict> );
+                my Hash \trailer = PDF::DAO.coerce( |$_ );
+                self!set-trailer( trailer.content<dict> );
 		self!setup-crypt(|c);
             }
         }
@@ -697,29 +696,29 @@ class PDF::Reader {
                 }
 
 		my Bool $eager = ! $incremental;
-                my $ast = $.ind-obj($obj-num, $gen-num, :get-ast, :$eager)
+                my \ast = $.ind-obj($obj-num, $gen-num, :get-ast, :$eager)
 		    or next;
 
                 if $incremental {
 		    if $offset && $obj-num {
 			# check updated vs original PDF value.
-			my $original-ast = self!fetch-ind-obj(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
+			my \original-ast = self!fetch-ind-obj(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
 			# discard, if not updated
-			next if $original-ast eqv $ast.value;
+			next if original-ast eqv ast.value;
 		    }
                 }
 
-                my $ind-obj = $ast.value[2];
+                my \ind-obj = ast.value[2];
 
-                with $ind-obj<stream> {
-                    with .<dict><Type> -> $obj-type {
+                with ind-obj<stream> {
+                    with .<dict><Type> -> \obj-type {
                         # discard existing /Type /XRef and ObjStm objects.
-                        next if $obj-type<name> eq 'XRef'|'ObjStm';
+                        next if obj-type<name> eq 'XRef'|'ObjStm';
                     }
                 }
 
                 $offset //= 0;
-                @object-refs.push( ($offset + $seq) => $ast );
+                @object-refs.push( ($offset + $seq) => ast );
             }
         }
 
@@ -731,8 +730,8 @@ class PDF::Reader {
 
     #| get just updated objects. return as objects
     method get-updates() {
-        my List $raw-objects = $.get-objects( :incremental );
-        $raw-objects.list.map({
+        my List \raw-objects = $.get-objects( :incremental );
+        raw-objects.list.map({
             my Int $obj-num = .value[0];
             my Int $gen-num = .value[1];
             $.ind-obj($obj-num, $gen-num).object;
@@ -742,28 +741,30 @@ class PDF::Reader {
     multi method recompress(Bool :$compress = True) {
         # locate and compress/uncompress stream objects
 
-        for self.get-objects.list {
-            my ($type, $ind-obj) = .kv;
-            next unless $type eq 'ind-obj';
-            my ($obj-type, $obj-raw) = $ind-obj[2].kv;
-            if $obj-type eq 'stream' {
-                my Bool $is-compressed = $obj-raw<dict><Filter>:exists;
-                next if $compress == $is-compressed;
-                my Int $obj-num = $ind-obj[0];
-                my Int $gen-num = $ind-obj[1];
+        for self.get-objects.list -> \obj {
+            next unless obj.key eq 'ind-obj';
+            my \ind-obj = obj.value[2];
+            my \obj-type = ind-obj.key;
+            my \obj-dict = ind-obj.value<dict>;
+
+            if obj-type eq 'stream' {
+                my Int \obj-num = obj.value[0];
+                my Int \gen-num = obj.value[1];
+                my Bool \is-compressed = obj-dict<Filter>:exists;
+                next if $compress == is-compressed;
                 # fully stantiate object and adjust compression
-                my $object = self.ind-obj( $obj-num, $gen-num).object;
-                $compress ?? $object.compress !! $object.uncompress;
+                my \object = self.ind-obj( obj-num, gen-num).object;
+                $compress ?? object.compress !! object.uncompress;
             }
         }
     }
 
     method ast( Bool :$rebuild ) {
-        my $serializer = PDF::Storage::Serializer.new( :reader(self) );
+        my \serializer = PDF::Storage::Serializer.new( :reader(self) );
 
         my Array $body = $rebuild
-            ?? $serializer.body( self.trailer )
-            !! $serializer.body( );
+            ?? serializer.body( self.trailer )
+            !! serializer.body( );
 
         .crypt-ast('body', $body, :mode<encrypt>)
             with self.crypt;
@@ -778,17 +779,17 @@ class PDF::Reader {
     #| suitable as input to PDF::Writer
 
     #| dump to json
-    multi method save-as( $output-path where m:i/'.json' $/, |c ) {
-        my $ast = $.ast(|c);
-        $output-path.IO.spurt( to-json( $ast ) );
+    multi method save-as( Str $output-path where m:i/'.json' $/, |c ) {
+        my \ast = $.ast(|c);
+        $output-path.IO.spurt( to-json( ast ) );
     }
 
     #| write to PDF/FDF
-    multi method save-as( $output-path, |c ) is default {
+    multi method save-as( Str $output-path, |c ) is default {
         require PDF::Writer;
-        my $pdf-writer = ::('PDF::Writer').new( :$.input );
-        my $ast = $.ast(|c);
-        $output-path.IO.spurt( $pdf-writer.write( $ast ), :enc<latin1> );
+        my \pdf-writer = ::('PDF::Writer').new( :$.input );
+        my \ast = $.ast(|c);
+        $output-path.IO.spurt( pdf-writer.write( ast ), :enc<latin1> );
     }
 
 }

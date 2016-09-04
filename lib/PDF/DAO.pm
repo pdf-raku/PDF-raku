@@ -11,16 +11,16 @@ role PDF::DAO {
 
     method is-indirect is rw returns Bool {
 	Proxy.new(
-	    FETCH => sub ($) { ? self.obj-num },
-	    STORE => sub ($, Bool $yup) {
-		if $yup {
+	    FETCH => sub (\p) { ? self.obj-num },
+	    STORE => sub (\p, Bool \yup) {
+		if yup {
 		    # Ensure this object is indirect. Serializer will renumber
 		    self.obj-num //= -1;
 		}
 		else {
 		    self.obj-num = Nil;
 		}
-		$yup
+		yup
 	    },
 	    );
     }
@@ -50,12 +50,12 @@ role PDF::DAO {
     }
     #| work around rakudo performance regressions - issue #15
     method required(*@path where +@path) {
-	my Str $mod-name = @path.join('::');
-	unless %required{$mod-name}:exists {
-	    require ::($mod-name);
-            %required{$mod-name} = ::($mod-name);
+	my Str \mod-name = @path.join('::');
+	unless %required{mod-name}:exists {
+	    require ::(mod-name);
+            %required{mod-name} = ::(mod-name);
 	}
-        %required{$mod-name};
+        %required{mod-name};
     }
     method add-role($obj, Str $role) {
 	$.required($role);
@@ -117,9 +117,9 @@ role PDF::DAO {
 
     multi method coerce( Hash :$stream!, |c ) {
         my %params;
-        for <start end encoded decoded> -> $k {
-            %params{$k} = $_
-                with $stream{$k};
+        for <start end encoded decoded> -> \k {
+            %params{k} = $_
+                with $stream{k};
         }
         my Hash $dict = $stream<dict> // {};
 	my $fallback = $.required("PDF::DAO::Stream");

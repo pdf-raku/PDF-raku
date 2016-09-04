@@ -14,10 +14,10 @@ class PDF::Storage::Filter {
     }
     method have-backend {
 	state Bool $have-backend //= ? do {
-	    with %*ENV<P6_PDF_FILTER_CLASS> -> $filter-name {
+	    with %*ENV<P6_PDF_FILTER_CLASS> -> \filter-name {
 		try {
-		    require ::($filter-name);
-		    $.filter-backend = ::($filter-name);
+		    require ::(filter-name);
+		    $.filter-backend = ::(filter-name);
 		    # ping the library, just to make sure it's operational
 		    $.filter-backend.ping;
 		}
@@ -49,9 +49,9 @@ class PDF::Storage::Filter {
                 if !.isa(List) || +$Filter != +$DecodeParms;
         }
 
-        for $Filter.keys -> $i {
-            my %dict = Filter => $Filter[$i];
-            %dict<DecodeParms> = .[$i]
+        for $Filter.keys -> \i {
+            my %dict = Filter => $Filter[i];
+            %dict<DecodeParms> = .[i]
                 with $DecodeParms;
 
             $data = self!decode-item( $data, |%dict )
@@ -85,9 +85,9 @@ class PDF::Storage::Filter {
                 if !.isa(List) || +$Filter != +$_;
         }
 
-        for $Filter.keys.reverse -> $i {
-            my %dict = Filter => $Filter[$i];
-            %dict<DecodeParms> = .[$i]
+        for $Filter.keys.reverse -> \i {
+            my %dict = Filter => $Filter[i];
+            %dict<DecodeParms> = .[i]
                 with $DecodeParams;
 
             $data = self!encode-item( $data, |%dict )

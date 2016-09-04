@@ -89,9 +89,9 @@ class PDF::DAO::Delegator {
 
 	my $handler-class = $fallback;
 
-	for self.class-paths -> $class-path {
-	    PDF::DAO.required($class-path, $subclass);
-	    $handler-class = ::($class-path)::($subclass);
+	for self.class-paths -> \class-path {
+	    PDF::DAO.required(class-path, $subclass);
+	    $handler-class = ::(class-path)::($subclass);
 	    last;
 	    CATCH {
 		when X::CompUnit::UnsatisfiedDependency { }
@@ -102,9 +102,9 @@ class PDF::DAO::Delegator {
     }
 
     multi method delegate( Hash :$dict! where {$dict<Type>:exists}, :$fallback) {
-	my $type = from-ast($dict<Type>);
-	my $subtype = from-ast($dict<Subtype> // $dict<S>);
-	$.find-delegate( $type, $subtype, :$fallback );
+	my \type = from-ast($dict<Type>);
+	my \subtype = from-ast($dict<Subtype> // $dict<S>);
+	$.find-delegate( type, subtype, :$fallback );
     }
 
     multi method delegate( :$fallback! ) is default {

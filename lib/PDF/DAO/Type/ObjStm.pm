@@ -32,53 +32,52 @@ class PDF::DAO::Type::ObjStm
     method encode(Array $objstm = $.decoded, Bool :$check = False) {
         my UInt @idx;
         my Str $objects-str = '';
-        my UInt $offset = 0;
         for $objstm.list { 
-            my UInt $obj-num = .[0];
-            my Str $object-str = .[1];
+            my UInt \obj-num = .[0];
+            my Str \object-str = .[1];
             if $check {
-                PDF::Grammar::PDF.parse( $object-str, :rule<object> )
-                    // die "unable to parse type 2 object: $obj-num 0 R [from type 1 object {$.obj-num // '?'} {$.gen-num // '?'} R]\n$object-str";
+                PDF::Grammar::PDF.parse( object-str, :rule<object> )
+                    // die "unable to parse type 2 object: {obj-num} 0 R [from type 1 object {$.obj-num // '?'} {$.gen-num // '?'} R]\n{object-str}";
             }
-            @idx.push: $obj-num;
-            @idx.push: $objects-str.chars;
-            $objects-str ~= $object-str;
+            @idx.push: obj-num;
+            @idx.push: $objects-str.codes;
+            $objects-str ~= \object-str;
         }
-        my Str $idx-str = @idx.join: ' ';
-        self<First> = $idx-str.chars + 1;
+        my Str \idx-str = @idx.join: ' ';
+        self<First> = idx-str.codes + 1;
         self<N> = +$objstm;
 
-        nextwith( [~] $idx-str, ' ', $objects-str );
+        nextwith( [~] (idx-str, ' ', $objects-str) );
     }
 
     method decode($? --> Array) {
-        my Blob $chars = callsame;
-        my UInt $first = $.First;
-        my UInt $n = $.N;
+        my Blob \chars = callsame;
+        my UInt \first = $.First;
+        my UInt \n = $.N;
 
-        my Str $object-index-str = substr($chars, 0, $first - 1);
-        my Str $objects-str = substr($chars, $first);
+        my Str \object-index-str = substr(chars, 0, first - 1);
+        my Str \objects-str = substr(chars, first);
 
         my $actions = PDF::Grammar::PDF::Actions.new;
-        PDF::Grammar::PDF.parse($object-index-str, :rule<object-stream-index>, :$actions)
-            or die "unable to parse object stream index: $object-index-str";
+        PDF::Grammar::PDF.parse(object-index-str, :rule<object-stream-index>, :$actions)
+            or die "unable to parse object stream index: {object-index-str}";
 
-        my Array $object-index = $/.ast;
+        my Array \object-index = $/.ast;
         # these should possibly be structured exceptions
-        die "problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\nexpected /N = $n index entries, got {+$object-index}"
-            unless +$object-index >= $n;
+        die "problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\nexpected /N = {n} index entries, got {+object-index}"
+            unless +object-index >= n;
 
-        [ (0 ..^ $n).map: -> $i {
-            my UInt $obj-num = $object-index[$i][0].Int;
-            my UInt $start = $object-index[$i][1];
-            my UInt $end = $object-index[$i + 1]:exists
-                ?? $object-index[$i + 1][1]
-                !! $objects-str.chars;
-            my Int $length = $end - $start;
-            die "problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\nindex offset $start exceeds decoded data length {$objects-str.chars}"
-                if $start > $objects-str.chars;
-            my Str $object-str = $objects-str.substr( $start, $length );
-            [ $obj-num, $object-str ]
+        [ (0 ..^ n).map: -> \i {
+            my UInt \obj-num = object-index[i][0].Int;
+            my UInt \begin = object-index[i][1];
+            my UInt \end = object-index[i + 1]:exists
+                ?? object-index[i + 1][1]
+                !! objects-str.chars;
+            my Int \length = end - begin;
+            die "problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\nindex offset {begin} exceeds decoded data length {objects-str.chars}"
+                if begin > objects-str.chars;
+            my Str \object-str = objects-str.substr( begin, length );
+            [ obj-num, object-str ]
         } ]
     }
 }

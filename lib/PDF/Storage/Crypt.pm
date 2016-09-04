@@ -149,20 +149,20 @@ class PDF::Storage::Crypt {
         # } RC4_KEY;
 
         constant RC4_INT = uint32;
-        my $rc4 = Buf[RC4_INT].new;
-        $rc4.reallocate(258);
-        RC4_set_key($rc4, $key.bytes, $key);
+        my \rc4 = Buf[RC4_INT].new;
+        rc4.reallocate(258);
+        RC4_set_key(rc4, $key.bytes, $key);
         my $out = buf8.new;
         $out.reallocate($in.bytes)
             if $in.bytes;
-        RC4($rc4, $in.bytes, $in, $out);
+        RC4(rc4, $in.bytes, $in, $out);
         $out;
     }
 
     method !do-iter-crypt(Blob $code, @pass, $n=0, $m=19) {
         my Buf $crypt .= new: @pass;
-	for $n ... $m -> $iter {
-	    my Buf $key .= new: $code.map( * +^ $iter );
+	for $n ... $m -> \iter {
+	    my Buf $key .= new: $code.map( * +^ iter );
 	    $crypt = $.rc4-crypt($key, $crypt);
 	}
 	$crypt;
@@ -195,21 +195,20 @@ class PDF::Storage::Crypt {
 		unless $key.elems <= $n;
 	}
 
-	my $computed;
 	my Buf $pass .= new: @Padding;
 
-	if $!R >= 3 {
+	my \computed = do if $!R >= 3 {
 	    # Algorithm 3.5 steps 1 .. 5
 	    $pass.append: @!doc-id;
 	    $pass = md5( $pass );
-	    $computed = self!do-iter-crypt($key, $pass);
+	    self!do-iter-crypt($key, $pass);
 	}
 	else {
 	    # Algorithm 3.4
-	    $computed = $.rc4-crypt($key, $pass);
+	    $.rc4-crypt($key, $pass);
 	}
 
-        $computed.list;
+        computed.list;
     }
 
     method !auth-user-pass(@pass) {
@@ -248,15 +247,15 @@ class PDF::Storage::Crypt {
 
     method compute-owner(@owner-pass, @user-pass) {
         # Algorithm 3.3
-	my $key = self!compute-owner-key( @owner-pass );    # Steps 1..4
+	my Buf \key = self!compute-owner-key( @owner-pass );    # Steps 1..4
 
         my Buf $owner .= new: @user-pass;
         
 	if $!R == 2 {      # 2 (Revision 2 only)
-	    $owner = $.rc4-crypt($key, $owner);
+	    $owner = $.rc4-crypt(key, $owner);
 	}
 	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
-	    $owner = self!do-iter-crypt($key, $owner);
+	    $owner = self!do-iter-crypt(key, $owner);
 	}
 
         $owner.list;
@@ -264,13 +263,13 @@ class PDF::Storage::Crypt {
 
     method !auth-owner-pass(@pass) {
 	# Algorithm 3.7
-	my Buf $key = self!compute-owner-key( @pass );    # 1
+	my Buf \key = self!compute-owner-key( @pass );    # 1
 	my Buf $user-pass .= new: @!O;
 	if $!R == 2 {      # 2 (Revision 2 only)
-	    $user-pass = $.rc4-crypt($key, $user-pass);
+	    $user-pass = $.rc4-crypt(key, $user-pass);
 	}
 	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
-	    $user-pass = self!do-iter-crypt($key, $user-pass, 19, 0);
+	    $user-pass = self!do-iter-crypt(key, $user-pass, 19, 0);
 	}
 	$.is-owner = True;
 	self!auth-user-pass($user-pass.list);          # 3

@@ -11,8 +11,8 @@ role PDF::DAO::Int
 	    $i = @u32[0];
 	}
 	
-	my $bit := 1 +< ($flag-num - 1);
-	? ($i +& $bit);
+	my \bit = 1 +< ($flag-num - 1);
+	? ($i +& bit);
     }
 
     method content { :int(self+0) };

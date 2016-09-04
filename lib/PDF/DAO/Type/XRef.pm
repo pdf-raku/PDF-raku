@@ -49,8 +49,8 @@ class PDF::DAO::Type::XRef
             unless $.next-obj-num;
 
         # /W resize to widest byte-widths, if needed
-        for 0..2 -> $i {
-            my UInt $val = $xref.map( *.[$i] ).max;
+        for 0..2 -> \i {
+            my UInt $val = $xref.map( *.[i] ).max;
             my UInt $max-bytes;
 
             repeat {
@@ -58,34 +58,34 @@ class PDF::DAO::Type::XRef
                 $val div= 256;
             } until $val == 0;
 
-            $.W[$i] = $max-bytes
-                if ($.W[$i] // 0) < $max-bytes;
+            $.W[i] = $max-bytes
+                if ($.W[i] // 0) < $max-bytes;
         }
 
-        my $buf := resample( $xref, $.W, 8 );
-        nextwith( PDF::Storage::Blob.new: $buf );
+        my \buf := resample( $xref, $.W, 8 );
+        nextwith( PDF::Storage::Blob.new: buf );
     }
 
     #= inverse of $.decode-index . handily calculates and sets $.Size and $.Index
     method encode-index(Array $xref-index) {
-        my $size = 0;
+        my $size = 1;
         my UInt @index;
         my Array @encoded-index = [];
 
         my @entries = $xref-index.list.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
-        for @entries -> $entry {
-            my Bool $contigous = ?( $entry<obj-num> && $entry<obj-num> == $size );
-            @index.push( $entry<obj-num>,  0 )
-                unless $contigous;
+        for @entries -> \entry {
+            my Bool \contiguous = ?( entry<obj-num> && entry<obj-num> == $size );
+            @index.push( entry<obj-num>,  0 )
+                unless contiguous;
             @index[*-1]++;
-            my Array $item = do given $entry<type> {
-                when 0|1 { [ $entry<type>, $entry<offset>, $entry<gen-num> ] }
-                when 2   { [ $entry<type>, $entry<ref-obj-num>, $entry<index> ] }
+            my Array \item = do given entry<type> {
+                when 0|1 { [ entry<type>, entry<offset>, entry<gen-num> ] }
+                when 2   { [ entry<type>, entry<ref-obj-num>, entry<index> ] }
                 default  { die "unknown object type in XRef index: $_"}
             };
-            @encoded-index.push: $item;
-            $size = $entry<obj-num> + 1;
+            @encoded-index.push: item;
+            $size = entry<obj-num> + 1;
         }
 
         self<Size> = $size;
@@ -99,47 +99,46 @@ class PDF::DAO::Type::XRef
 	$buf = $buf.encode('latin-1')
 	    if $buf.isa(Str);
 
-        my $W = $.W
+        my \W = $.W
             // die "missing mandatory /XRef param: /W";
 
-        my Array $xref-array := resample( $buf, 8, $W );
+        my Array \xref-array := resample( $buf, 8, W );
         my UInt $Size = $.Size
             // die "missing mandatory /XRef param: /Size";
 
-        if my $index = self<Index> {
-            my $n = [+] $index[1, 3 ... *];
-            die "problem decoding /Type /XRef object. /Index specified $n objects, got {+$xref-array}"
-                unless +$xref-array == $n;
+        if my \index = self<Index> {
+            my \n = [+] index[1, 3 ... *];
+            die "problem decoding /Type /XRef object. /Index specified {n} objects, got {+xref-array}"
+                unless +xref-array == n;
         }
 
-        $xref-array;
+        xref-array;
     }
 
     #= an extra decoding stage - build index entries from raw decoded data
     multi method decode-index($encoded = $.encoded) {
 
+        my Array \index = self<Index> // [ 0, $.Size ];
+        my Array \decoded = $.decode( $encoded );
         my UInt $i = 0;
-        my Array $index = self<Index> // [ 0, $.Size ];
         my Hash @decoded-index = [];
 
-        my Array $decoded = $.decode( $encoded );
+        for index.list -> $obj-num is rw, \num-entries {
 
-        for $index.list -> $obj-num is rw, $num-entries {
-
-            for 1 .. $num-entries {
-                my Array $idx = $decoded[$i++];
-                my UInt $type = $idx[0];
+            for 1 .. num-entries {
+                my Array \idx = decoded[$i++];
+                my UInt $type = idx[0];
                 given $type {
                     when 0|1 {
                         # free or inuse objects
-                        my UInt $offset = $idx[1];
-                        my UInt $gen-num = $idx[2];
+                        my UInt $offset = idx[1];
+                        my UInt $gen-num = idx[2];
                         @decoded-index.push: { :$type, :$obj-num, :$gen-num, :$offset };
                     }
                     when 2 {
                         # embedded objects
-                        my UInt $ref-obj-num = $idx[1];
-                        my UInt $index = $idx[2];
+                        my UInt $ref-obj-num = idx[1];
+                        my UInt $index = idx[2];
                         @decoded-index.push: { :$type, :$obj-num, :$ref-obj-num, :$index };
                     }
                     default {

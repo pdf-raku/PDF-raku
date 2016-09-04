@@ -120,9 +120,9 @@ class PDF::DAO::Stream
     }
 
     method content {
-        my $encoded = $.encoded; # may update $.dict<Length>
+        my \encoded = $.encoded; # may update $.dict<Length>
         my Pair $dict = to-ast-native self;
-	with $.encoded {
+	with encoded {
 	    stream => %( $dict, :encoded(.Str) );
 	}
 	else {
