@@ -47,10 +47,12 @@ class PDF::DAO::Delegator {
 
     multi method coerce( Array $obj where PDF::DAO, $role where PDF::DAO::Tie::Array ) {
 	$obj does $role;
+        $obj.tie-init;
     }
 
     multi method coerce( Hash $obj where PDF::DAO, $role where PDF::DAO::Tie::Hash ) {
 	$obj does $role;
+        $obj.tie-init;
     }
 
     multi method coerce( $obj, $role where PDF::DAO::Tie ) {

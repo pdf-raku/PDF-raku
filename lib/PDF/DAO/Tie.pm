@@ -4,6 +4,7 @@ role PDF::DAO::Tie {
 
     use PDF::DAO;
     has Attribute $.of-att is rw;      #| default attribute
+    has Attribute %.entries;
     has Bool $.strict is rw = False;
 
     #| generate an indirect reference to ourselves
@@ -25,7 +26,7 @@ role PDF::DAO::Tie {
     my class Tied {...}
 
     my role TiedAtt {
-        #| override standard Attribute method for generating accessorsx
+        #| override standard Attribute method for generating accessors
 	has Tied $.tied is rw handles <apply> = Tied.new;
         method compose(Mu $package) {
             my $key = self.tied.accessor-name;

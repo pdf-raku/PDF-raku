@@ -20,6 +20,7 @@ class PDF::DAO::Array
         my $obj = %seen{$array};
         unless $obj.defined {
             temp %seen{$array} = $obj = self.bless(|%etc);
+            $obj.tie-init;
             # this may trigger cascading PDF::DAO::Tie coercians
             # e.g. native Array to PDF::DAO::Array
             $obj[ .key ] = from-ast(.value) for $array.pairs;

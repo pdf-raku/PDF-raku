@@ -43,6 +43,7 @@ class PDF::DAO::Stream
         my $obj = %obj-cache{$dict};
         without $obj {
             temp %obj-cache{$dict} = $obj = self.bless(|%etc);
+            $obj.tie-init;
             # this may trigger cascading PDF::DAO::Tie coercians
             $obj{.key} = from-ast(.value) for $dict.pairs;
             $obj.?cb-init;

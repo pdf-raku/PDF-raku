@@ -21,32 +21,16 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 	    });
     }
 
-    my Array %index;
-    my Hash %entries; # {Any}
-    method !mixin {
-	my \class = self.^name;
-        unless %entries{class}:exists {
-            my Attribute %atts;
-            my Attribute @idx;
-            for self.^attributes.grep({.name !~~ /descriptor/ && .can('index') }) -> \att {
-                my \pos = att.index;
-                my \key = att.tied.accessor-name;
-                @idx[pos] = att;
-                %atts{key} = att;
-            }
-            %entries{class} = %atts;
-            %index{class} = @idx;
-        }
-    }
+    method tie-init {
+       my \class = self.WHAT;
 
-    method entries {
-        self!mixin;
-        %entries{self.^name};
-    }
-
-    method index {
-        self!mixin;
-        %index{self.^name};
+       for class.^attributes.grep({.name !~~ /descriptor/ && .can('index') }) -> \att {
+           my \pos = att.index;
+           my \key = att.tied.accessor-name;
+           next if @!index[pos];
+           @!index[pos] = att;
+            %.entries{key} = att;
+       }
     }
 
     #| for array lookups, typically $foo[42]
