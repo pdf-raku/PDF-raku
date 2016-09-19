@@ -44,7 +44,7 @@ module PDF::Storage::Util {
         my @samples;
         while $j < +$nums {
             my @sample = $W.keys.map: -> $i {
-                my $s = 0;
+                my UInt $s = 0;
                 for 1 .. $W[$i] {
                     $s *= 256;
                     $s += $nums[$j++];

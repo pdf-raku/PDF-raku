@@ -101,10 +101,9 @@ class PDF::DAO::Type::XRef
 
         my \W = $.W
             // die "missing mandatory /XRef param: /W";
+        die "missing mandatory /XRef param: /Size" without $.Size;
 
         my Array \xref-array := resample( $buf, 8, W );
-        my UInt $Size = $.Size
-            // die "missing mandatory /XRef param: /Size";
 
         if my \index = self<Index> {
             my \n = [+] index[1, 3 ... *];

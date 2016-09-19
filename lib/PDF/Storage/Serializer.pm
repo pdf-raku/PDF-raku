@@ -245,13 +245,13 @@ class PDF::Storage::Serializer {
             my $slot := $ind-obj.value;
 
             # register prior to traversing the object. in case there are cyclical references
-            my $ret = $indirect || $.is-indirect( $object )
+            my \ret = $indirect || $.is-indirect( $object )
                 ?? self!index-object($ind-obj, :$object )
                 !! $ind-obj;
 
             $slot = self!freeze-array($object);
 
-            $ret;
+            ret;
         }
     }
 
@@ -266,15 +266,15 @@ class PDF::Storage::Serializer {
 	Numeric :$version=1.3,
 	Str     :$!type,     #| e.g. 'PDF', 'FDF;
 	Bool    :$compress,
-	:$crypt,
+	        :$crypt,
         ) {
 	$!type //= $.reader.?type;
 	$!type //= (($trailer<Root>:exists) && ($trailer<Root><FDF>:exists)
 		    ?? 'FDF'
 		    !! 'PDF');
         my Array $body = self.body($trailer, :$compress );
-	$crypt.crypt-ast('body', $body, :mode<encrypt>)
-	    if $crypt;
+	.crypt-ast('body', $body, :mode<encrypt>)
+	    with $crypt;
         :pdf{ :header{ :$!type, :$version }, :$body };
     }
 }

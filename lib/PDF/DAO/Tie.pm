@@ -4,46 +4,51 @@ role PDF::DAO::Tie {
 
     use PDF::DAO;
     has Attribute $.of-att is rw;      #| default attribute
-    has Attribute %.entries;
     has Bool $.strict is rw = False;
 
     #| generate an indirect reference to ourselves
     method ind-ref {
-	die "not an indirect obect"
-	    unless $.obj-num && $.obj-num > 0;
-	:ind-ref[ $.obj-num, $.gen-num ];
+	my \obj-num = $.obj-num;
+	obj-num && obj-num > 0
+	    ?? :ind-ref[ obj-num, $.gen-num ]
+	    !! die "not an indirect object";
     }
 
     #| generate an indirect reference, include the reader, if spanning documents
     method link { 
-	my $obj-num = $.obj-num;
-	$obj-num && $obj-num > 0
-	    ?? :ind-ref[ $obj-num, $.gen-num, $.reader ]
-	    !! self
+	my \obj-num = $.obj-num;
+	obj-num && obj-num > 0
+	    ?? :ind-ref[ obj-num, $.gen-num, $.reader ]
+	    !! self;
     }
 
     my class Tied {...}
 
-    my role TiedEntry {
-	has Tied $.tied handles <apply> = Tied.new;
-	has method has_accessor { False }
+    my role TiedAtt {
+        #| override standard Attribute method for generating accessorsx
+	has Tied $.tied is rw handles <apply> = Tied.new;
+        method compose(Mu $package) {
+            my $key = self.tied.accessor-name;
+            my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
+            $package.^add_method( $key, &accessor );
+        }
+    }
+
+    my role TiedEntry does TiedAtt {
 	has Bool $.entry = True;
     }
 
-    my role TiedIndex {
-	has Tied $.tied is rw handles <apply> = Tied.new;
-	has method has_accessor { False }
+    my role TiedIndex does TiedAtt {
 	has UInt $.index is rw;
     }
 
     my class Tied {
-	has $.type is rw;
+        has $.type is rw;
 	has Bool $.is-required is rw = False;
 	has Bool $.is-indirect is rw = False;
 	has Bool $.is-inherited is rw = False;
 	has Str $.accessor-name is rw;
-	has Bool $.gen-accessor is rw;
-	has Code $.coerce is rw = sub ($lval is rw, Mu:U $type) { PDF::DAO.coerce($lval, $type) };
+	has Code $.coerce is rw = sub ($lval is rw, Mu $type) { PDF::DAO.coerce($lval, $type) };
         has UInt $.length is rw;
 
 	use nqp;
@@ -188,7 +193,6 @@ role PDF::DAO::Tie {
 
     multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {
 	my \type = $att.type;
-	my Bool $gen-accessor = $att.has_accessor;
 	$att does TiedEntry;
 	$att.tied.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
 	my \sigil = ~ $0;
@@ -209,13 +213,11 @@ role PDF::DAO::Tie {
 	    }
 	}
 	$att.tied.type = type;
-	$att.tied.gen-accessor = $gen-accessor;
 	process-args($entry, $att);
     }
 
     multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
 	my \type = $att.type;
-	my Bool \gen-accessor = $att.has_accessor;
 	$att does TiedIndex;
 	$att.tied.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
 	my @args = $index.list;
@@ -223,7 +225,6 @@ role PDF::DAO::Tie {
 	    unless @args && @args[0] ~~ UInt;
 	$att.index = @args.shift;
 	$att.tied.type = type;
-	$att.tied.gen-accessor = gen-accessor;
 	process-args(@args, $att);
     }
 
@@ -259,24 +260,6 @@ role PDF::DAO::Tie {
 
     #| simple native type. no need to coerce
     multi method deref($value) is default { $value }
-
-    method FALLBACK($key, |c) is rw  {
-        my &meth = do given $key {
-            when %!entries{$key}:exists {
-                my $att = %!entries{$key};
-	        $att.set_rw;
-                method () is rw { self.rw-accessor( $att, :$key ) };
-            }
-            when 'cb-init' | 'cb-finish' {
-                method {Nil};
-            }
-            default {
-                die X::Method::NotFound.new( :method($_), :typename(self.^name) );
-            }
-        };
-	self.^add_method( $key, &meth );
-        self."$key"(|c);
-    }
 }
 
 =begin pod

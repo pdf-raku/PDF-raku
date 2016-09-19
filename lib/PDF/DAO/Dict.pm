@@ -22,7 +22,6 @@ class PDF::DAO::Dict
         my $obj = %seen{$dict};
         without $obj {
             temp %seen{$dict} = $obj = self.bless(|%etc);
-	    $obj.tie-init;
             # this may trigger cascading PDF::DAO::Tie coercians
             # e.g. native Array to PDF::DAO::Array
             $obj{.key} = from-ast(.value) for $dict.pairs;

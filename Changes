@@ -1,5 +1,7 @@
     Release 0.0.9
-    - Internal refactor. Use of siglless variables, where appropriate.
+    Internal refactors.
+    - Use of siglless variables, where appropriate.
+    - Revamped handing of :entry and :index traits.
 
     Release 0.0.8
     - [PDF::DAO::Doc] .update( :diffs(...) ) - now supports JSON

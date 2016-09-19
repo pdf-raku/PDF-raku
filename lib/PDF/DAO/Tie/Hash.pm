@@ -32,13 +32,17 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
         );
     }
 
-    method tie-init {
-	my \class = self.WHAT;
-	for class.^attributes.grep({.name !~~ /descriptor/ && .can('entry') }) -> \att {
-	    my \key = att.tied.accessor-name;
-	    next if %.entries{key}:exists;
-	    %.entries{key} = att;
-	}
+    my Hash %entries; #{Any}
+    method entries {
+	my \class = self.^name;
+        unless %entries{class}:exists {
+            my Attribute %atts;
+            for self.^attributes.grep({.name !~~ /descriptor/ && .can('entry') }).list -> \att {
+	        %atts{att.tied.accessor-name} = att;
+	    }
+            %entries{class} = %atts;
+        }
+        %entries{class}
     }
 
     #| for hash lookups, typically $foo<bar>
