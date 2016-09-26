@@ -745,9 +745,9 @@ class PDF::Reader {
             next unless obj.key eq 'ind-obj';
             my \ind-obj = obj.value[2];
             my \obj-type = ind-obj.key;
-            my \obj-dict = ind-obj.value<dict>;
 
             if obj-type eq 'stream' {
+                my \obj-dict = ind-obj.value<dict>;
                 my Int \obj-num = obj.value[0];
                 my Int \gen-num = obj.value[1];
                 my Bool \is-compressed = obj-dict<Filter>:exists;

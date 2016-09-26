@@ -65,9 +65,9 @@ role PDF::DAO::Tie {
 
 		    if (type ~~ Positional[Mu] && $lval ~~ Array)
                     || (type ~~ Associative[Mu] && $lval ~~ Hash) {
-			# of-att array declaration, e.g.:
+			# of-att typed array declaration, e.g.:
 			# has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
-                        # or, associative hash declarations, e.g.:
+                        # or, typed hash declarations, e.g.:
                         # has PDF::DOM::Type::ExtGState %.ExtGState is entry;
 			my \of-type = type.of;
 			my Attribute $att = $lval.of-att;
@@ -116,8 +116,10 @@ role PDF::DAO::Tie {
 	multi method type-check($val, Positional[Mu] $type) is rw {
 	    with $val -> \v {
 		$.type-check(v, Array);
-		die "array not of length: {$.length}"
-		    if $.length && +v != $.length;
+                with $.length {
+		    die "array not of length: {$_}"
+		    if +v != $_;
+                }
 		my \of-type = $type.of;
 		$.type-check($_, of-type)
 		    for v.values;
@@ -172,23 +174,24 @@ role PDF::DAO::Tie {
 
     }
 
-    multi sub process-args(True, Attribute $att) {}
-    multi sub process-args($entry, Attribute $att) {
+    sub process-args($entry, Attribute $att) {
 
 	for $entry.list -> \arg {
-	    unless arg ~~ Pair {
-		warn "ignoring entry trait  argument: {arg.perl}";
-		next;
-	    }
-	    my \val = arg.value;
-	    given arg.key {
-		when 'inherit'  { $att.tied.is-inherited = val }
-		when 'required' { $att.tied.is-required  = val }
-		when 'indirect' { $att.tied.is-indirect  = val }
-		when 'coerce'   { $att.tied.coerce       = val }
-                when 'len'      { $att.tied.length       = val }
-		default         { warn "ignoring entry attribute: $_" }
-	    }
+            if arg ~~ Pair {
+	        my \val = arg.value;
+	        given arg.key {
+		    when 'inherit'  { $att.tied.is-inherited = val }
+		    when 'required' { $att.tied.is-required  = val }
+		    when 'indirect' { $att.tied.is-indirect  = val }
+		    when 'coerce'   { $att.tied.coerce       = val }
+                    when 'len'      { $att.tied.length       = val }
+		    default         { warn "ignoring entry attribute: $_" }
+	        }
+            }
+            else {
+		warn "ignoring entry trait attribute: {arg.perl}"
+                    unless arg ~~ Bool;
+            }
 	}
     }
 
