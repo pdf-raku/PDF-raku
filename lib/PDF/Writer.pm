@@ -236,9 +236,9 @@ class PDF::Writer {
     }
 
     method write-ind-obj(@_) {
-        my (UInt $obj-num, UInt $gen-num, $object where Pair | Hash) = @_;
+        my (UInt \obj-num, UInt \gen-num, \object where Pair | Hash) = @_;
 
-        sprintf "%d %d obj %s endobj\n", $obj-num, $gen-num, $.write( $object );
+        sprintf "%d %d obj %s\nendobj\n", obj-num, gen-num, $.write( object );
     }
 
     method write-ind-ref(Array $_) {
