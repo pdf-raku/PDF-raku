@@ -29,14 +29,12 @@ role PDF::DAO {
 	$.delegator.coerce( $obj, $type )
     }
 
-    # coerce Hash & Array assignments to objects
     multi method coerce(PDF::DAO $val!) { $val }
-    #| to allow round-tripping from JSON
 
     multi method coerce(Hash $dict!, |c) {
 	use PDF::Grammar :AST-Types;
 	+$dict == 1 && $dict.keys[0] ∈ AST-Types
-	    ?? $.coerce( |$dict, |c )    #| JSON munged pair
+	    ?? $.coerce( |$dict, |c )    # JSON munged pair
 	    !! $.coerce( :$dict, |c );
     }
     multi method coerce(Array $array!, |c) {

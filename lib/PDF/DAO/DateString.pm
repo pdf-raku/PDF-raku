@@ -10,10 +10,12 @@ class PDF::DAO::DateString
     BEGIN our &formatter = &date-time-formatter;
 
     multi method new(Str $pdf-date!) {
-	constant DateRx = rx/^ 'D:'? $<year>=\d**4 [$<dd>=\d**2]**0..5
-	    [ $<tz-sign>=< + - Z > $<tz-hour>=\d**2 \' $<tz-min>=\d**2 \']? /;
-
-	$pdf-date ~~ DateRx
+	$pdf-date ~~ /^
+                'D:'?
+                $<year>=\d**4
+                [$<dd>=\d**2]**0..5
+	        [ $<tz-sign>=< + - Z > $<tz-hour>=\d**2 \' $<tz-min>=\d**2 \']?
+            /
 	    or die "Date $pdf-date not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
 
         my UInt \year  = +$<year>;
@@ -32,7 +34,7 @@ class PDF::DAO::DateString
     }
 
     multi method new(DateTime $dt!) {
-        my %args = <year month day hour minute second timezone>.map({ $_ => $dt."$_"() });
+        my %args = <year month day hour minute second timezone>.map: {$_ => $dt."$_"() };
         $.new( |%args, :&formatter);
     }
 
