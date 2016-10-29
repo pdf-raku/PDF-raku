@@ -386,9 +386,9 @@ use PDF::Grammar::Doc;
 use PDF::Grammar::Doc::Actions;
 use PDF::DAO;
 my $actions = PDF::Grammar::Doc::Actions.new;
-PDF::Grammar::Doc.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :rule<object>, :$actions)
+my \p = PDF::Grammar::Doc.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :rule<object>, :$actions)
     or die "parse failed";
-my %ast = $/.ast;
+my %ast = p.ast;
 
 say '#'~%ast.perl;
 #:dict({:Count(:int(1)), :Kids(:array([:ind-ref([4, 0])])), :Type(:name("Pages"))})
@@ -402,11 +402,8 @@ say '#'~$object.WHAT.gist;
 say '#'~$object.perl;
 #{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
 
-say '#'~$object<Type>;
+say '#'~$object<Type>.WHAT.^name;
 #(Str+{PDF::DAO::Name})
-
-say '#'~$object<Type>.WHAT.gist;
-#{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
 ```
 The `PDF::DAO.coerce` method is also used to construct new objects from application data.
 
