@@ -7,12 +7,12 @@ use PDF::Storage::Crypt;
 # ensure consistant document ID generation
 srand(123456);
 
-my $pdf = PDF::DAO::Type::PDF.open: "t/helloworld.pdf";
+my $pdf = PDF::DAO::Type::PDF.open: "t/pdf/samples/00helloworld.pdf";
 
 my $user-pass = '';
 my $owner-pass = 'ssh!';
 my $expected-contents = 'BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET';
-my $expected-author = 'PDF-Tools/t/dao-doc.t';
+my $expected-author = 'PDF-Tools';
 
 lives-ok { $pdf.encrypt( :$owner-pass, :$user-pass, :aes ); }, '$pdf.encrypt (AES) - lives';
 is $pdf.crypt.is-owner, True, 'newly encrypted pdf - is-owner';
