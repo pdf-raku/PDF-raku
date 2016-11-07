@@ -83,7 +83,7 @@ class PDF::Reader {
 
     method trailer {
         self.install-trailer
-           unless %!ind-obj-idx{0}{0}:exists;
+           unless %!ind-obj-idx{"0 0"}:exists;
         self.ind-obj(0, 0).object;
     }
 
@@ -92,7 +92,7 @@ class PDF::Reader {
         my $gen-num = 0;
 
         #| install the trailer at index (0,0)
-        %!ind-obj-idx{$obj-num}{$gen-num} = do {
+        %!ind-obj-idx{"$obj-num $gen-num"} = do {
             my PDF::Storage::IndObj $ind-obj .= new( :$object, :$obj-num, :$gen-num );
             { :type(1), :$ind-obj }
         }
@@ -110,27 +110,23 @@ class PDF::Reader {
 
 	for %!ind-obj-idx.pairs {
 
-	    my UInt $obj-num = +.key
-		or next;
+            my (UInt $obj-num, UInt $gen-num) = .key.split(' ')>>.Int;
+            next unless $obj-num;
+	    my Hash $idx = .value;
 
-	    for .value.pairs {
-		my UInt $gen-num = +.key;
-		my Hash $idx = .value;
+            # skip the encryption dictionary, if it's an indirect object
+	    if $obj-num == enc-obj-num
+	    && $gen-num == enc-gen-num {
+		$idx<is-enc-dict> = True;
+	    }
+	    else {
 
-                # skip the encryption dictionary, if it's an indirect object
-		if $obj-num == enc-obj-num
-		&& $gen-num == enc-gen-num {
-		    $idx<is-enc-dict> = True;
-		}
-		else {
+		if my $ind-obj := $idx<ind-obj> {
+		    die "too late to setup encryption: $obj-num $gen-num R"
+		    if $idx<type> != 0 | 1
+		    || $ind-obj.isa(PDF::Storage::IndObj);
 
-		    if my $ind-obj := $idx<ind-obj> {
-			die "too late to setup encryption: $obj-num $gen-num R"
-			    if $idx<type> != 0 | 1
-			    || $ind-obj.isa(PDF::Storage::IndObj);
-
-			$!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> );
-		    }
+		    $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> );
 		}
 	    }
 	}
@@ -170,7 +166,7 @@ class PDF::Reader {
                 my $ind-obj = .<ind-obj>;
                 (my UInt $obj-num, my UInt $gen-num) = $ind-obj.list;
 
-                %!ind-obj-idx{$obj-num}{$gen-num} //= {
+                %!ind-obj-idx{"$obj-num $gen-num"} //= {
                     :type(1),
                     :$ind-obj,
                 };
@@ -200,11 +196,11 @@ class PDF::Reader {
 
 	    given $type {
 	        when 0 { # freed
-                    %!ind-obj-idx{$obj-num}{$gen-num}:delete;
+                    %!ind-obj-idx{"$obj-num $gen-num"}:delete;
 		}
 	        when 1 { # type 1 entry
 		    my $ind-obj = $entry<ind-obj>;
-		    %!ind-obj-idx{$obj-num}{$gen-num} = {
+		    %!ind-obj-idx{"$obj-num $gen-num"} = {
 		        :$type,
 		        :$ind-obj,
 	            }
@@ -334,7 +330,7 @@ class PDF::Reader {
                     Bool :$eager = True,     #| fetch object, if not already loaded
         ) {
 
-        my Hash $idx := %!ind-obj-idx{ $obj-num }{ $gen-num }
+        my Hash $idx := %!ind-obj-idx{"$obj-num $gen-num"}
             // die "unable to find object: $obj-num $gen-num R";
 
         my $ind-obj = $idx<ind-obj> //= do {
@@ -541,7 +537,7 @@ class PDF::Reader {
         for @type1-obj-entries.kv -> \k, $_ {
             my UInt $offset = .<offset>;
             my UInt $end = k + 1 < +@type1-obj-entries ?? @type1-obj-entries[k + 1]<offset> !! input-bytes;
-            %!ind-obj-idx{ .<obj-num> }{ .<gen-num> } = { :type(1), :$offset, :$end };
+            %!ind-obj-idx{.<obj-num> ~ ' ' ~ .<gen-num>} = { :type(1), :$offset, :$end };
         }
 
 	self!setup-crypt(|c);
@@ -555,11 +551,12 @@ class PDF::Reader {
             my UInt $index = .<index>;
             my UInt $ref-obj-num = .<ref-obj-num>;
 
-            %!ind-obj-idx{ $obj-num }{ $gen-num } = { :type(2), :$index, :$ref-obj-num };
+            %!ind-obj-idx{"$obj-num $gen-num"} = { :type(2), :$index, :$ref-obj-num };
         }
 
         #| don't entirely trust /Size entry in trailer dictionary
-        my UInt \actual-size = max( %!ind-obj-idx.keys>>.Int );
+        my Str \max-idx = max( %!ind-obj-idx.keys );
+        my UInt \actual-size = max-idx.split(' ')[0].Int;
         $.size = actual-size + 1
             if $.size <= actual-size;
     }
@@ -601,7 +598,7 @@ class PDF::Reader {
 		    }
                 }
 
-                %!ind-obj-idx{$obj-num}{$gen-num} //= {
+                %!ind-obj-idx{"$obj-num $gen-num"} //= {
                     :type(1),
                     :@ind-obj,
                     :$offset,
@@ -616,7 +613,7 @@ class PDF::Reader {
                             my UInt $sub-obj-num = .[0];
                             my UInt $sub-gen-num = 0;
                             my UInt $ref-obj-num = $obj-num;
-                            %!ind-obj-idx{$sub-obj-num}{$sub-gen-num} //= {
+                            %!ind-obj-idx{"$sub-obj-num $sub-gen-num"} //= {
                                 :type(2),
                                 :$index,
                                 :$ref-obj-num,
@@ -651,75 +648,72 @@ class PDF::Reader {
         my @object-refs;
         my %objstm-objects;
 
-        for %!ind-obj-idx.values.map( *.values.Slip ) {
+        for %!ind-obj-idx.values {
             # implicitly an objstm object, if it contains type2 (compressed) objects
             %objstm-objects{ .<ref-obj-num> }++
                 if .<type> == 2;
         }
 
         for %!ind-obj-idx.pairs.sort {
-            my UInt $obj-num = .key.Int;
+            my (UInt $obj-num, UInt $gen-num) = .key.split(' ')>>.Int;
 
             # discard objstm objects (/Type /ObjStm)
             next
                 if $unpack && %objstm-objects{$obj-num};
 
-            for .value.pairs.sort {
-                my UInt $gen-num = .key.Int;
-                my Hash $entry = .value;
-                my UInt $seq = 0;
-                my UInt $offset;
+            my Hash $entry = .value;
+            my UInt $seq = 0;
+            my UInt $offset;
 
-                given $entry<type> {
-                    when 0 {
-                        # type 0 freed object
-                        next;
-                    }
-                    when 1 {
-                        # type 1 regular top-level/inuse object
-                        $offset = $_
-                            with $entry<offset>
-                    }
-                    when 2 {
-                        # type 2 embedded object
-                        next unless $unpack;
-                        my UInt $parent = $entry<ref-obj-num>;
-			with %!ind-obj-idx{$parent}{0} {
-                            $offset = .<offset>;
-                        }
-                        else {
-			    die "unable to find object: $parent 0 R"
-                        }
-                        $seq = $entry<index>;
-                    }
-                    default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
+            given $entry<type> {
+                when 0 {
+                    # type 0 freed object
+                    next;
                 }
-
-		my Bool $eager = ! $incremental;
-                my \ast = $.ind-obj($obj-num, $gen-num, :get-ast, :$eager)
-		    or next;
-
-                if $incremental {
-		    if $offset && $obj-num {
-			# check updated vs original PDF value.
-			my \original-ast = self!fetch-ind-obj(%!ind-obj-idx{$obj-num}{$gen-num}, :$obj-num, :$gen-num);
-			# discard, if not updated
-			next if original-ast eqv ast.value;
-		    }
+                when 1 {
+                    # type 1 regular top-level/inuse object
+                    $offset = $_
+                    with $entry<offset>
                 }
-
-                my \ind-obj = ast.value[2];
-
-                with ind-obj<stream> {
-                    with .<dict><Type> -> \obj-type {
-                        # discard existing /Type /XRef and ObjStm objects.
-                        next if obj-type<name> eq 'XRef'|'ObjStm';
+                when 2 {
+                    # type 2 embedded object
+                    next unless $unpack;
+                    my UInt $parent = $entry<ref-obj-num>;
+		    with %!ind-obj-idx{"$parent 0"} {
+                        $offset = .<offset>;
                     }
+                    else {
+			die "unable to find object: $parent 0 R"
+                    }
+                    $seq = $entry<index>;
                 }
-
-                $offset //= 0;
-                @object-refs.push( ($offset + $seq) => ast );
+                default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
             }
+
+	    my Bool $eager = ! $incremental;
+            my \ast = $.ind-obj($obj-num, $gen-num, :get-ast, :$eager)
+	        or next;
+
+            if $incremental {
+		if $offset && $obj-num {
+		    # check updated vs original PDF value.
+		    my \original-ast = self!fetch-ind-obj(%!ind-obj-idx{"$obj-num $gen-num"}, :$obj-num, :$gen-num);
+		    # discard, if not updated
+		    next if original-ast eqv ast.value;
+		}
+            }
+
+            my \ind-obj = ast.value[2];
+
+            with ind-obj<stream> {
+                with .<dict><Type> -> \obj-type {
+                    # discard existing /Type /XRef and ObjStm objects.
+                    next if obj-type<name> eq 'XRef'|'ObjStm';
+                }
+            }
+
+            $offset //= 0;
+            @object-refs.push( ($offset + $seq) => ast );
         }
 
         # preserve input order
