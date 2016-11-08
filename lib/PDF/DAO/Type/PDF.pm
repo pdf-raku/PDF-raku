@@ -134,7 +134,7 @@ class PDF::DAO::Type::PDF
     }
 
     multi method save-as(IO::Path $iop, Bool :$update, |c) {
-	when $iop.path ~~  m:i/'.json' $/ {
+	when $iop.extension.lc eq 'json' {
 	    $iop.spurt( to-json( $.ast(|c) ));
 	}
 	when $update && $.reader.defined {

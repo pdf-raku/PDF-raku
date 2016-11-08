@@ -11,7 +11,7 @@ for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
     my $desc = ~ pdf-file;
 
     my $pdf;
-    lives-ok {$pdf = PDF::DAO::Type::PDF.open( ~pdf-file, :repair ); $pdf.Info}, "$desc open - lives"
+    lives-ok {$pdf = PDF::DAO::Type::PDF.open( pdf-file, :repair ); $pdf.Info}, "$desc open - lives"
         or next;
 
     isa-ok $pdf, PDF::DAO::Type::PDF, "$desc trailer";

@@ -88,12 +88,8 @@ class PDF::Reader {
     }
 
     method install-trailer(PDF::DAO::Dict $object = PDF::DAO::Dict.new( :reader(self) ) ) {
-        my $obj-num = 0;
-        my $gen-num = 0;
-
-        #| install the trailer at index (0,0)
-        %!ind-obj-idx{"$obj-num $gen-num"} = do {
-            my PDF::Storage::IndObj $ind-obj .= new( :$object, :$obj-num, :$gen-num );
+        %!ind-obj-idx{"0 0"} = do {
+            my PDF::Storage::IndObj $ind-obj .= new( :$object, :obj-num(0), :gen-num(0) );
             { :type(1), :$ind-obj }
         }
     }
@@ -151,10 +147,15 @@ class PDF::Reader {
         $trailer;
     }
 
+    #| open the named PDF/FDF file
+    multi method open( Str $!file-name where {!.isa(PDF::Storage::Input)}, |c) {
+        $.open( $!file-name.IO, |c );
+    }
+
     #| derserialize a json dump
-    multi method open( Str $input-file  where m:i/'.json' $/, |c ) {
-        my \ast = from-json( $input-file.IO.slurp );
-        die X::PDF::BadDump.new( :$input-file )
+    multi method open(IO::Path $input-path  where .extension.lc eq 'json', |c ) {
+        my \ast = from-json( $input-path.IO.slurp );
+        die X::PDF::BadDump.new( :input-file($input-path.abspath) )
             unless ast.isa(Hash) && (ast<pdf>:exists);
         $!type = ast<pdf><header><type> // 'PDF';
         $!version = ast<pdf><header><version> // 1.2;
@@ -173,8 +174,8 @@ class PDF::Reader {
 
             }
 
-            if .<trailer> {
-                my Hash $dict = PDF::DAO.coerce( |.<trailer> );
+            with .<trailer> {
+                my Hash $dict = PDF::DAO.coerce( |$_ );
                 self!set-trailer( $dict.content<dict> );
 		self!setup-crypt(|c);
             }
@@ -212,11 +213,6 @@ class PDF::Reader {
 	}
     }
 
-    #| open the named PDF/FDF file
-    multi method open( Str $!file-name where {!.isa(PDF::Storage::Input)}, |c) {
-        $.open( $!file-name.IO.open( :enc<latin-1> ), |c );
-    }
-
     multi method open($input!, |c) {
         $!input = PDF::Storage::Input.coerce( $input );
 
@@ -234,13 +230,11 @@ class PDF::Reader {
         my (UInt $obj-num, UInt $gen-num, $obj-raw) = @ind-obj;
 
         $obj-raw.value<encoded> //= do {
-            die X::PDF::BadIndirectObject.new(
-                :$obj-num, :$gen-num, :$offset,
-                :details("stream mandatory /Length field is missing")
-                ) unless $obj-raw.value<dict><Length>;
-
-            my UInt \length = $.deref( $obj-raw.value<dict><Length> );
             my UInt \from = $obj-raw.value<start>:delete;
+            my UInt \length = $.deref( $obj-raw.value<dict><Length> )
+                or die X::PDF::BadIndirectObject.new(:$obj-num, :$gen-num, :$offset,
+                                                     :details("stream mandatory /Length field is missing")
+                                                    );
 
             with $max-end {
                 die X::PDF::BadIndirectObject.new(
