@@ -147,7 +147,7 @@ class PDF::Writer {
 	 });
     }
  
-   multi method write-op( Str $_ where /^\w+/ ) { $_ }
+   multi method write-op( Str $_ where /^\w+/ ) { .Str }
 
     #| ID <bytes> - ImageData
     multi method write-op('ID', $image-data) {
