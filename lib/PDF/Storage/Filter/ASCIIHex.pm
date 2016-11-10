@@ -36,7 +36,7 @@ class PDF::Storage::Filter::ASCIIHex {
             # followed the last digit."
 
             $str ~= '0'
-                unless $str.chars %% 2;
+                unless $str.codes %% 2;
         }
         else {
            die "missing end-of-data marker '>' at end of hexidecimal encoding"

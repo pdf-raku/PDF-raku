@@ -1,6 +1,6 @@
 use Test;
 
-plan 4;
+plan 5;
 
 use PDF::Storage::Filter;
 
@@ -22,6 +22,11 @@ is(PDF::Storage::Filter.encode($in, :%dict),
 is(PDF::Storage::Filter.decode($out, :%dict),
    $in,
    q{ASCII85 test string with EOD marker is decoded correctly});
+
+my $in2 = "\0abc\0ABC\0";
+my $enc2 = PDF::Storage::Filter.encode($in2, :%dict);
+my $dec2 = PDF::Storage::Filter.decode($enc2, :%dict);
+is $dec2, $in2, 'decoding/encoding of null characters';
 
 # Check for death if invalid characters are included
 dies-ok { PDF::Storage::Filter.decode('This is not valid input{|}', :%dict) }, q{ASCII85 dies if invalid characters are passed to decode};
