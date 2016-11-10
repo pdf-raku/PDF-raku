@@ -3,7 +3,6 @@ use v6;
 class PDF::Storage::IndObj {
 
     use PDF::DAO;
-
     has $.object handles <content obj-num gen-num>;
 
     #| construct by wrapping a pre-existing PDF::DAO

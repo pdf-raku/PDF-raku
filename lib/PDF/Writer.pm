@@ -5,14 +5,14 @@ class PDF::Writer {
     use PDF::Grammar;
     use PDF::Storage::Input;
 
-    has PDF::Storage::Input $.input;
+    has PDF::Storage::Input $!input;
     has $.ast is rw;
     has UInt $.offset;
     has UInt $.prev;
     has UInt $.size;
     has Str $.indent is rw = '';
 
-    submethod BUILD(:$input, :$!ast, :$!offset = Nil, :$!prev = Nil) {
+    submethod TWEAK(:$input) {
         $!input = PDF::Storage::Input.coerce( $_ )
             with $input;
     }

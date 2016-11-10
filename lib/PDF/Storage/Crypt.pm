@@ -34,7 +34,7 @@ class PDF::Storage::Crypt {
 	@pass-padded[0..31];
     }
 
-    submethod BUILD(:$doc!, Str :$owner-pass, |c) {
+    submethod TWEAK(:$doc!, Str :$owner-pass, |c) {
         $owner-pass
             ?? self.generate( :$doc, :$owner-pass, |c)
             !! self.load( :$doc, |c)

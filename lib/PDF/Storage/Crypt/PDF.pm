@@ -11,7 +11,7 @@ class PDF::Storage::Crypt::PDF
     has PDF::Storage::Crypt $!stm-f; #| stream filter (/StmF)
     has PDF::Storage::Crypt $!str-f; #| string filter (/StrF)
 
-    submethod BUILD(:$doc!, Str :$owner-pass, |c) {
+    submethod TWEAK(:$doc!, Str :$owner-pass, |c) {
         $owner-pass
             ?? self!generate( :$doc, :$owner-pass, |c)
             !! self!load( :$doc, |c)

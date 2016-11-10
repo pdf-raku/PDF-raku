@@ -14,7 +14,7 @@ class PDF::Storage::Crypt::AES
     
     constant KeyLen = 16;
 
-    submethod BUILD(UInt :$Length = 128, |c) {
+    submethod TWEAK(UInt :$Length = 128, |c) {
         die "unsupported AES encryption key length: $Length"
             unless $Length == 16|128;
     }

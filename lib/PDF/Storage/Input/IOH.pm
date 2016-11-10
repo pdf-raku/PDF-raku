@@ -5,11 +5,11 @@ use PDF::Storage::Input;
 class PDF::Storage::Input::IOH
     is PDF::Storage::Input {
 
-    has IO::Handle $.value is rw;
+    has IO::Handle $.value is rw is required;
     has Str $!str;
     has UInt $.codes is rw;
 
-    multi submethod BUILD( IO::Handle :$!value! ) {
+    multi submethod TWEAK {
         $!value.seek( 0, SeekFromEnd );
         $!codes = $!value.tell;
         $!value.seek( 0, SeekFromBeginning );
