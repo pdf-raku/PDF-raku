@@ -63,28 +63,24 @@ $pdf = PDF::DAO.coerce: { :Root{
 $pdf<Root><Pages><Kids>[0]<Parent> = $pdf<Root><Pages>;
 
 $body = PDF::Storage::Serializer.new.body( $pdf )[0];
-my $objects = $body<objects>;
+my @objects = @($body<objects>);
 
-sub infix:<object-order-ok>($obj-a, $obj-b) {
-    my ($obj-num-a, $gen-num-a) = @( $obj-a.value );
-    my ($obj-num-b, $gen-num-b) = @( $obj-b.value );
-    my $ok = $obj-num-a < $obj-num-b
-        || ($obj-num-a == $obj-num-b && $gen-num-a < $gen-num-b);
-    die  "objects out of sequence: $obj-num-a $gen-num-a R is not <= $obj-num-a $gen-num-b R"
-         unless $ok;
-    $obj-b
+sub obj-sort {
+    my ($obj-num-a, $gen-num-a) = @( $^a.value );
+    my ($obj-num-b, $gen-num-b) = @( $^b.value );
+    $obj-num-a <=> $obj-num-b || $gen-num-a <=> $gen-num-b
 }
 
-ok ([object-order-ok] @$objects), 'objects are in order';
-is +$objects, 6, 'number of objects';
-is-json-equiv $objects[0], (:ind-obj[1, 0, :dict{
+is-deeply [@objects.sort(&obj-sort)], @objects, 'objects are in order';
+is +@objects, 6, 'number of objects';
+is-json-equiv @objects[0], (:ind-obj[1, 0, :dict{
                                                Type => { :name<Catalog> },
                                                Pages => :ind-ref[3, 0],
                                                Outlines => :ind-ref[2, 0],
                                              },
                                    ]), 'root object';
 
-is-json-equiv $objects[3], (:ind-obj[4, 0, :dict{
+is-json-equiv @objects[3], (:ind-obj[4, 0, :dict{
                                               Resources => :dict{Procset => :array[ :name<PDF>, :name<Text>],
                                               Font => :dict{F1 => :ind-ref[6, 0]}},
                                               Type => :name<Page>,
@@ -94,21 +90,21 @@ is-json-equiv $objects[3], (:ind-obj[4, 0, :dict{
                                    ]), 'page object';
 
 my $obj-with-utf8 = PDF::DAO.coerce: { :Root{ :Name(/"Heydər Əliyev") } };
-$obj-with-utf8<Root>.obj-num = -1;
+$obj-with-utf8<Root>.is-indirect = True;
 my $writer = PDF::Writer.new;
 
-$objects = PDF::Storage::Serializer.new.body($obj-with-utf8)[0]<objects>;
-is-json-equiv $objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
-is $writer.write( :ind-obj($objects[0].value)), "1 0 obj <<\n  /Name /Heyd#c9#99r#20#c6#8fliyev\n>>\nendobj\n", 'name write';
+@objects = @(PDF::Storage::Serializer.new.body($obj-with-utf8)[0]<objects>);
+is-json-equiv @objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
+is $writer.write( :ind-obj(@objects[0].value)), "1 0 obj <<\n  /Name /Heyd#c9#99r#20#c6#8fliyev\n>>\nendobj\n", 'name write';
 
-my $objects-compressed = PDF::Storage::Serializer.new.body($pdf, :compress)[0]<objects>;
-my $stream = $objects-compressed[*-2].value[2]<stream>;
+my @objects-compressed = @(PDF::Storage::Serializer.new.body($pdf, :compress)[0]<objects>);
+my $stream = @objects-compressed[*-2].value[2]<stream>;
 is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'compressed dict';
 is $stream<encoded>.codes, 54, 'compressed stream length';
 
 # just to define current behaviour wrt to non-latin chars; blows up during write.
 my $obj-with-bad-byte-string = PDF::DAO.coerce: { :Root{ :Name("Heydər Əliyev") } };
-$objects = PDF::Storage::Serializer.new.body($obj-with-bad-byte-string)<objects>;
-dies-ok {$writer.write( :ind-obj($objects[0].value) )}, 'out-of-range byte-string dies during write';
+@objects = @(PDF::Storage::Serializer.new.body($obj-with-bad-byte-string)<objects>);
+dies-ok {$writer.write( :ind-obj(@objects[0].value) )}, 'out-of-range byte-string dies during write';
 
 done-testing;
