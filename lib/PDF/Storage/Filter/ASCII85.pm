@@ -49,7 +49,7 @@ class PDF::Storage::Filter::ASCII85 {
     multi method decode(Blob $buf, |c) {
 	$.decode($buf.Str, |c);
     }
-    multi method decode(Str $input, Bool :$eod = True --> PDF::Storage::Blob) {
+    multi method decode(Str $input, Bool :$eod = False --> PDF::Storage::Blob) {
 
         my Str $str = $input.subst(/\s/, '', :g).subst(/z/, '!!!!', :g);
 
@@ -61,14 +61,14 @@ class PDF::Storage::Filter::ASCII85 {
                if $eod
         }
 
-        die "invalid ASCII85 encoded character: {(~$0).perl}"
+        die "invalid ASCII85 encoded character: {$0.Str.perl}"
             if $str ~~ /(<-[\!..\u\z]>)/;
 
         my \padding = 'u' x (-$str.codes % 5);
         my $buf = ($str ~ padding).encode('latin-1');
 
         my uint32 @buf32;
-        for $buf.list.keys {
+        for $buf.keys {
             @buf32.push: 0 if $_ %% 5;
             @buf32[*-1] *= 85;
             @buf32[*-1] += $buf[$_] - 33;

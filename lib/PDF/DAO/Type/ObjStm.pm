@@ -51,7 +51,7 @@ class PDF::DAO::Type::ObjStm
     }
 
     method decode($? --> Array) {
-        my Blob \chars = callsame;
+        my \chars = callsame;
         my UInt \first = $.First;
         my UInt \n = $.N;
 

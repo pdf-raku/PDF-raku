@@ -24,30 +24,30 @@ class PDF::Storage::Filter::ASCIIHex {
     multi method decode(Blob $input, |c) {
 	$.decode( $input.decode("latin-1"), |c);
     }
-    multi method decode(Str $input, Bool :$eod = True --> PDF::Storage::Blob) {
+    multi method decode(Str $input, Bool :$eod = False --> PDF::Storage::Blob) {
 
         my Str $str = $input.subst(/\s/, '', :g);
 
         if $str && $str.substr(*-1,1) eq '>' {
             $str = $str.chop;
-
-            # "If the filter encounters the EOD marker after reading an odd
-            # number of hexadecimal digits, it shall behave as if a 0 (zero)
-            # followed the last digit."
-
-            $str ~= '0'
-                unless $str.codes %% 2;
         }
         else {
-           die "missing end-of-data marker '>' at end of hexidecimal encoding"
+           die "missing end-of-data marker '>' at end of hexadecimal encoding"
                if $eod
         }
 
-        die "Illegal character(s) found in ASCII hex-encoded stream"
-            if $str ~~ m:i/< -[0..9 A..F]>/;
+        # "If the filter encounters the EOD marker after reading an odd
+        # number of hexadecimal digits, it shall behave as if a 0 (zero)
+        # followed the last digit."
 
-        my uint8 @ords = $str.comb( /../ ).map: { :16($_) };
+        $str ~= '0'
+            unless $str.codes %% 2;
 
-	PDF::Storage::Blob.new( @ords );
+        die "Illegal character(s) found in ASCII hex-encoded stream: {$0.Str.perl}"
+            if $str ~~ m:i/(< -[0..9 A..F]>)/;
+
+        my uint8 @bytes = $str.comb.map: -> \a, \b { :16(a ~ b) };
+
+	PDF::Storage::Blob.new( @bytes );
     }
 }
