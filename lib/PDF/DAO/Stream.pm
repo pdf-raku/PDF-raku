@@ -10,9 +10,6 @@ class PDF::DAO::Stream
     use PDF::Storage::Filter;
     use PDF::DAO::Util :from-ast, :to-ast-native;
 
-    has $.encoded;
-    has $.decoded;
-
     # see [PDF 1.7 TABLE 5 Entries common to all stream dictionaries]
 
     has UInt $.Length is entry;                     #| (Required) The number of bytes from the beginning of the line following the keyword stream to the last byte just before the keyword endstream
@@ -30,11 +27,12 @@ class PDF::DAO::Stream
 
     has UInt $.DL is entry;                         #| (Optional; PDF 1.5) A non-negative integer representing the number of bytes in the decoded (defiltered) stream.
 
-    method new(:$encoded, :$decoded, |c) {
-        my $obj = callsame;
-        $obj.decoded = $_ with $decoded;
-        $obj.encoded = $_ with $encoded;
-        $obj;
+    has $!encoded;
+    has $!decoded;
+
+    submethod TWEAK(:$encoded, :$decoded, |c) {
+        self.decoded = $_ with $decoded;
+        self.encoded = $_ with $encoded;
     }
 
     method encoded is rw {
@@ -43,19 +41,13 @@ class PDF::DAO::Stream
 		$!encoded //= self.encode( $_ )
 		    with $!decoded;
 
-		if $!encoded.can('codes') {
-		    self<Length> = $!encoded.codes;
-		}
-		else {
-		    self<Length>:delete
-		}
+		self<Length> = .codes with $!encoded;
 		$!encoded;
 	    },
 
 	    STORE => sub ($, $stream) {
 		$!decoded = Any;
-		self<Length> = $stream.codes
-		    if $stream.can('codes');
+		self<Length> = .codes with $stream;
 		$!encoded = $stream;
 	    },
 	    )
