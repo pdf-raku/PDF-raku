@@ -1,20 +1,17 @@
 use v6;
 
-use PDF::DAO;
-use PDF::DAO::Tie::Hash;
+use PDF::DAO::Dict;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 class PDF::DAO::Stream
-    does PDF::DAO
-    is Hash
-    does PDF::DAO::Tie::Hash {
+    is PDF::DAO::Dict {
 
     use PDF::DAO::Tie;
     use PDF::Storage::Filter;
     use PDF::DAO::Util :from-ast, :to-ast-native;
 
-    has $!encoded;
-    has $!decoded;
+    has $.encoded;
+    has $.decoded;
 
     # see [PDF 1.7 TABLE 5 Entries common to all stream dictionaries]
 
@@ -33,31 +30,10 @@ class PDF::DAO::Stream
 
     has UInt $.DL is entry;                         #| (Optional; PDF 1.5) A non-negative integer representing the number of bytes in the decoded (defiltered) stream.
 
-    my %obj-cache{Any} = (); #= to catch circular references
-
-    multi method new(Hash $dict!, |c) {
-	self.new( :$dict, |c );
-    }
-
-    multi method new(Hash :$dict = {}, :$decoded, :$encoded, *%etc) {
-        my $obj = %obj-cache{$dict};
-        without $obj {
-            temp %obj-cache{$dict} = $obj = self.bless(|%etc);
-            $obj.tie-init;
-            # this may trigger cascading PDF::DAO::Tie coercians
-            $obj{.key} = from-ast(.value) for $dict.pairs;
-            $obj.?cb-init;
-
-	    if my $required = set $obj.entries.pairs.grep(*.value.tied.is-required).map: *.key {
-		my $missing = $required (-) $obj.keys;
-		die "{self.WHAT.^name}: missing required field(s): $missing"
-		    if $missing;
-	    }
-        }
-
-	$obj.decoded = $_ with $decoded;
-	$obj.encoded = $_ with $encoded;
-
+    method new(:$encoded, :$decoded, |c) {
+        my $obj = callsame;
+        $obj.decoded = $_ with $decoded;
+        $obj.encoded = $_ with $encoded;
         $obj;
     }
 

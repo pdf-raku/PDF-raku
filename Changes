@@ -1,5 +1,8 @@
     Release 0.0.9
-    Internal refactors.
+    - class PDF::DAO::Stream is now based on PDF::DAO::Dict
+    - withdrew non-standard PDF::DAO::Dict.new( $dict) positionals,
+      in favour of PDF::DAO::Dict.new( :$dict ) named arguments.
+      Same also for stream and array object constructors.
     - Use of siglless variables, where appropriate.
     - Revamped handing of :entry and :index traits.
 

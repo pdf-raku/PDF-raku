@@ -94,7 +94,8 @@ dies-ok {$cat.Pages.Kids[1] = 42}, 'typechecking - array elems';
 
 use PDF::DAO::Type::PDF;
 use PDF::Storage::Serializer;
-my $pdf = PDF::DAO::Type::PDF.new( { :Root($cat) } );
+my %dict = :Root($cat);
+my $pdf = PDF::DAO::Type::PDF.new( :%dict );
 my $serializer = PDF::Storage::Serializer.new;
 my $body = $serializer.body( $pdf );
 

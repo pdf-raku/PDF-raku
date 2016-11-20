@@ -51,12 +51,12 @@ class PDF::DAO::Type::ObjStm
     }
 
     method decode($? --> Array) {
-        my \chars = callsame;
+        my \bytes = callsame;
         my UInt \first = $.First;
         my UInt \n = $.N;
 
-        my Str \object-index-str = substr(chars, 0, first - 1);
-        my Str \objects-str = substr(chars, first);
+        my Str \object-index-str = substr-rw(bytes, 0, first - 1);
+        my Str \objects-str = substr-rw(bytes, first);
 
         my $actions = PDF::Grammar::PDF::Actions.new;
         PDF::Grammar::PDF.parse(object-index-str, :rule<object-stream-index>, :$actions)
@@ -72,11 +72,11 @@ class PDF::DAO::Type::ObjStm
             my UInt \begin = object-index[i][1];
             my UInt \end = object-index[i + 1]:exists
                 ?? object-index[i + 1][1]
-                !! objects-str.chars;
+                !! objects-str.codes;
             my Int \length = end - begin;
             die "problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\nindex offset {begin} exceeds decoded data length {objects-str.chars}"
-                if begin > objects-str.chars;
-            my Str \object-str = objects-str.substr( begin, length );
+                if begin > objects-str.codes;
+            my Str \object-str = objects-str.substr-rw( begin, length );
             [ obj-num, object-str ]
         } ]
     }

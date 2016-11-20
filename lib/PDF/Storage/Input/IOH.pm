@@ -16,8 +16,10 @@ class PDF::Storage::Input::IOH
     }
 
     multi method Str {
-        $!value.seek( 0, SeekFromBeginning );
-        $!str //= $.value.slurp-rest;
+        $!str //= do {
+            $!value.seek( 0, SeekFromBeginning );
+            $.value.slurp-rest;
+        }
     }
 
     multi method subbuf( WhateverCode $whence!, |c --> Buf) {
@@ -26,8 +28,8 @@ class PDF::Storage::Input::IOH
     }
 
     multi method subbuf( UInt $from!, UInt $length = $.codes - $from + 1 --> Buf) {
-        with $!str {
-            .substr( $from, $length )
+        with $!str {i
+            .substr-rw( $from, $length )
         }
         else {
             $!value.seek( $from, SeekFromBeginning );

@@ -32,9 +32,9 @@ my $input = q:to"--ENOUGH!!--";
 
 PDF::Grammar::PDF.parse($input, :$actions, :rule<object>)
     // die "parse failed";
-my $ast = $/.ast;
+my $dict = $/.ast.value;
 
-my $catalog = DummyCatalog.new( $ast.value );
+my $catalog = DummyCatalog.new( :$dict );
 isa-ok $catalog, DummyCatalog, 'catalog sanity';
 isa-ok $catalog.Info, PDF::DAO::Dict;
 does-ok $catalog.Info, PDF::DAO::Type::Info;

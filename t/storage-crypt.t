@@ -19,7 +19,7 @@ my $test-v1 = do {
     my $crypt = "åFðë)\x[8a]ø\x[6]}ðFî\x[3]\x[1a]7«Á\x[8b]7\"?^/l\x[a0]Áºqíp\x[13]H\x[3]7êß?ê\x[17]ÒGÉi/¡\x[89]";
     my Str $doc-id = "0\x[8a]Ú\x[1a]D\x[7f]'Ë7äþÙÌ\x[94]»§";
     
-    { :case("RC4 V1 R2"), :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass(''), :owner-pass<owner>, :$crypt }
+    { :case("RC4 V1 R2"), :dict{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass(''), :owner-pass<owner>, :$crypt }
 }
 
 my $test-v2 = do {
@@ -37,7 +37,7 @@ my $test-v2 = do {
     my $crypt = "(\x[c2]B<r\x[97]\x[b3]\x[17]\x[fd]A@/Ps\x[1b]\x[c6]t\x[f2]\x[f2]\x[06]O\x[fb]\x[a2]\x[ed]3\x[10]M\x[12]\x[16]_W\n\x[99]\x[1d]\x[85]\x[fa]\x[b5]\x[fb]\x[b4]*\x[ff]V\x[a2]\x[93]3\x[9f]";
     my Str $doc-id = "0Þ\x[14]}÷9´ªik`\x[90]g=\x[90]à";
     
-    { :case("RC4 V2 R3"), :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass<test2>, :owner-pass<test1>, :$crypt }
+    { :case("RC4 V2 R3"), :dict{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass<test2>, :owner-pass<test1>, :$crypt }
 }
 
 my $test-v4-rc4 = do {
@@ -60,7 +60,7 @@ my $test-v4-rc4 = do {
     my $crypt = "åFðë)\x[8a]ø\x[6]}ðFî\x[3]\x[1a]7«Á\x[8b]7\"?^/l\x[a0]Áºqíp\x[13]H\x[3]7êß?ê\x[17]ÒGÉi/¡\x[89]";
     my Str $doc-id = "0\x[8a]Ú\x[1a]D\x[7f]'Ë7äþÙÌ\x[94]»§";
     
-    { :case("RC4 V4 R2"), :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass(''), :owner-pass<owner>, :$crypt }
+    { :case("RC4 V4 R2"), :dict{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass(''), :owner-pass<owner>, :$crypt }
 }
 
 my $test-identity = do {
@@ -77,11 +77,12 @@ my $test-identity = do {
 
     my Str $doc-id = "0\x[8a]Ú\x[1a]D\x[7f]'Ë7äþÙÌ\x[94]»§";
     
-    { :case("Identity"), :doc{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass(''), :owner-pass<owner>, :crypt($plain-text) }
+    { :case("Identity"), :dict{ :$Encrypt, :ID[$doc-id, $doc-id], }, :user-pass(''), :owner-pass<owner>, :crypt($plain-text) }
 }
 
 for $test-v1, $test-v2, $test-v4-rc4, $test-identity {
-    my $doc = PDF::DAO::Type::PDF.new: .<doc>;
+    my $dict = .<dict>;
+    my $doc = PDF::DAO::Type::PDF.new: :$dict;
     my $owner-pass  = .<owner-pass>;
     my $user-pass   = .<user-pass>;
     my $cipher-text = .<crypt>;

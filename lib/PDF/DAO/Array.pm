@@ -4,28 +4,24 @@ use PDF::DAO;
 use PDF::DAO::Tie::Array;
 
 class PDF::DAO::Array
-    does PDF::DAO
     is Array
+    does PDF::DAO
     does PDF::DAO::Tie::Array {
 
     use PDF::DAO::Util :from-ast, :to-ast;
 
     my %seen{Any} = (); #= to catch circular references
 
-    multi method new(Array $array!, |c) {
-	self.new( :$array, |c );
-    }
-
-    multi method new(Array :$array = [], *%etc) {
+    method new(Array :$array = [], |c) {
         my $obj = %seen{$array};
-        unless $obj.defined {
-            temp %seen{$array} = $obj = self.bless(|%etc);
+        without $obj {
+            temp %seen{$array} = $obj = self.bless(:$array, |c);
             $obj.tie-init;
             # this may trigger cascading PDF::DAO::Tie coercians
             # e.g. native Array to PDF::DAO::Array
             $obj[ .key ] = from-ast(.value) for $array.pairs;
             $obj.?cb-init;
-        }
+         }
         $obj;
     }
 

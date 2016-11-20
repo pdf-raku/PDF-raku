@@ -266,7 +266,7 @@ class PDF::Reader {
 
     #| follow the index. fetch either type-1, or type-2 objects:
     #| type-1: fetch as a top level object from the pdf
-    #| type-2: dereference and extract from the containg object
+    #| type-2: dereference and extract from the containing object
     method !fetch-ind-obj($idx, :$obj-num, :$gen-num) {
         # stantiate the object
         my $ind-obj;
@@ -336,19 +336,21 @@ class PDF::Reader {
 
         my Bool \is-ind-obj = $ind-obj.isa(PDF::Storage::IndObj);
         my Bool \to-ast = $get-ast && is-ind-obj;
-        my Bool \to-obj = ?(!$get-ast && !is-ind-obj);
 
         if to-ast {
             # regenerate ast from object, if required
             $ind-obj = $ind-obj.ast
         }
-        elsif to-obj {
-            # upgrade storage to object, if object requested
-            $ind-obj = PDF::Storage::IndObj.new( :$ind-obj, :reader(self) );
-            $idx<ind-obj> = $ind-obj;
-        }
-        elsif ! is-ind-obj  {
-            $ind-obj := :$ind-obj;
+        else {
+            my Bool \to-obj = ?(!$get-ast && !is-ind-obj);
+            if to-obj {
+                # upgrade storage to object, if object requested
+                $ind-obj = PDF::Storage::IndObj.new( :$ind-obj, :reader(self) );
+                $idx<ind-obj> = $ind-obj;
+            }
+            elsif ! is-ind-obj  {
+                $ind-obj := :$ind-obj;
+            }
         }
 
         $ind-obj;
@@ -373,9 +375,9 @@ class PDF::Reader {
 
     method !ind-deref(Pair $_! ) {
         return .value unless .key eq 'ind-ref';
-        my UInt $obj-num = .value[0];
-        my UInt $gen-num = .value[1];
-        $.ind-obj( $obj-num, $gen-num ).object;
+        my UInt \obj-num = .value[0];
+        my UInt \gen-num = .value[1];
+        $.ind-obj( obj-num, gen-num ).object;
     }
 
     method load-header() {
@@ -605,9 +607,8 @@ class PDF::Reader {
                         my Array \type2-objects = container-obj.decoded;
                         for type2-objects.kv -> $index, $_ {
                             my UInt $sub-obj-num = .[0];
-                            my UInt $sub-gen-num = 0;
                             my UInt $ref-obj-num = $obj-num;
-                            %!ind-obj-idx{"$sub-obj-num $sub-gen-num"} //= {
+                            %!ind-obj-idx{"$sub-obj-num 0"} //= {
                                 :type(2),
                                 :$index,
                                 :$ref-obj-num,

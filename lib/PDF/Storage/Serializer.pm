@@ -18,22 +18,21 @@ class PDF::Storage::Serializer {
     method type { $!type //= $.reader.?type // 'PDF' }
 
     #| Reference count hashes. Could be derivate class of PDF::DAO::Dict or PDF::DAO::Stream.
-    multi method analyse( Hash $dict!) {
+    multi method analyse(Hash $dict) {
         unless %!ref-count{$dict}++ { # already encountered
             $.analyse($dict{$_}) for $dict.keys.sort
         }
     }
 
     #| Reference count arrays. Could be derivate class of PDF::DAO::Array
-    multi method analyse( Array $array!) {
+    multi method analyse(Array $array) {
         unless %!ref-count{$array}++ { # already encountered
             $.analyse($array[$_]) for $array.keys
         }
     }
 
     #| we don't reference count anything else at the moment.
-    multi method analyse( $other! ) is default {
-    }
+    multi method analyse($) is default { }
 
     my subset DictIndObj of Pair where {.key eq 'ind-obj'
 					    && .value[2] ~~ Pair
@@ -77,7 +76,7 @@ class PDF::Storage::Serializer {
     #| prepare a set of objects for an incremental update. Only return indirect objects:
     #| - objects that have been fetched and updated, and
     #| - the trailer dictionary (returned as first object)
-    multi method body( Bool :$updates! where $updates, :$*compress ) {
+    multi method body( Bool :$updates! where .so, :$*compress ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
         $.size = $.reader.size;
         my \prev = $.reader.prev;
@@ -136,9 +135,9 @@ class PDF::Storage::Serializer {
 	    if $object.can('obj-num')
 	    && (! $.reader || $object.reader === $.reader);
         my UInt $gen-num;
-	my subset IsTrailer of UInt where 0;
+	constant TrailerObjNum = 0;
 
-        if $obj-num.defined && (($obj-num > 0 && ! $.renumber) || $obj-num ~~ IsTrailer) {
+        if $obj-num.defined && (($obj-num > 0 && ! $.renumber) || $obj-num == TrailerObjNum) {
             # keep original object number
             $gen-num = $object.gen-num;
         }
@@ -154,31 +153,31 @@ class PDF::Storage::Serializer {
         :$ind-ref;
     }
 
-    method !freeze-dict( Hash $dict) {
-        %( $dict.keys.sort.map: { $_ => $.freeze( $dict{$_} ) } );
+    method !freeze-dict( Hash \dict) {
+        %( dict.keys.sort.map: { $_ => $.freeze( dict{$_} ) } );
     }
 
-    method !freeze-array( Array $array) {
-        [ $array.keys.map: { $.freeze( $array[$_] ) } ];
+    method !freeze-array( Array \array) {
+        [ array.keys.map: { $.freeze( array[$_] ) } ];
     }
 
     #| should this be serialized as an indirect object?
     multi method is-indirect($ --> Bool) {*}
 
     #| streams always need to be indirect objects
-    multi method is-indirect(PDF::DAO::Stream $object)                    {True}
+    multi method is-indirect(PDF::DAO::Stream $)                    {True}
 
     #| multiply referenced objects need to be indirect
-    multi method is-indirect($obj where {%!ref-count{$obj} > 1})          {True}
+    multi method is-indirect($ where %!ref-count{$_} > 1)           {True}
 
     #| typed objects should be indirect, e.g. << /Type /Catalog .... >>
-    multi method is-indirect(Hash $obj where {.<Type>:exists})            {True}
+    multi method is-indirect(Hash $ where {.<Type>:exists})         {True}
 
     #| presumably sourced as an indirect object, so output as such.
-    multi method is-indirect($obj where { .can('obj-num') && .obj-num })  {True}
+    multi method is-indirect($ where {.can('obj-num') && .obj-num}) {True}
 
     #| allow anything else to inline
-    multi method is-indirect($) is default                                {False}
+    multi method is-indirect($) is default                          {False}
 
     #| prepare an object for output.
     #| - if already encountered, return an indirect reference
@@ -195,20 +194,20 @@ class PDF::Storage::Serializer {
             :$ind-ref
         }
         else {
-            my $encoded;
+            my $stream;
 	    if $object.isa(PDF::DAO::Stream) {
 	        with $*compress {
 		    $_ ?? $object.compress !! $object.uncompress
 	        }
-	        $encoded = $object.encoded;
+	        $stream = $object.encoded;
 	    }
 
             my $ind-obj;
             my $slot;
 	    my $dict;
 
-            if $encoded.defined {
-	        $encoded .= Str;
+            with $stream {
+	        my $encoded = .Str;
                 $ind-obj = :stream{
                     :$dict,
                     :$encoded,
