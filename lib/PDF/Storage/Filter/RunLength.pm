@@ -21,8 +21,7 @@ class PDF::Storage::Filter::RunLength {
             if $i > n || ord == input[$i] {
                 # run of repeated characters
                 $ind = 256;
-                while $i <= n && input[$i] == ord {
-                    last if $ind <= 129;
+                while $i <= n && input[$i] == ord && $ind > 129 {
                     $i++;
                     $ind--;
                 }
@@ -49,32 +48,32 @@ class PDF::Storage::Filter::RunLength {
 
     multi method decode(Blob \input, Bool :$eod = True --> PDF::Storage::Blob) {
 
-        my UInt $idx = 0;
+        my int $idx = 0;
         my uint8 @out;
         my \n = input.elems;
 
         while $idx < n {
-            given input[ $idx++ ] {
-                when * < 128 {
+            given (my \m := input[$idx++]) <=> 128 {
+                when Less {
                     # literal sequence
-                    @out.push: input[ $idx++ ] for 0 .. $_;
+                    @out.push: input[$idx++] for 0 .. m;
                 }
-                when * > 128 {
+                when More {
                     # run of repeating characters
-                    @out.append: input[ $idx ] xx (257 - $_);
+                    @out.append: input[ $idx ] xx (257 - m);
                     $idx++;
                 }
-                when 128 {
+                when Same {
                     #eod
                     die "unexpected end-of-data marker (0x80)"
                         unless $idx == n;
                     last;
                 }
             }
-
-            die "missing end-of-data at end of run-length encoding"
-                if $eod && (n == 0 || input[*-1] != 128);
         }
+
+        die "missing end-of-data at end of run-length encoding"
+            if $eod && (n == 0 || input[*-1] != 128);
 
         PDF::Storage::Blob.new: @out;
     }
