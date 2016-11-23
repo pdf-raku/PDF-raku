@@ -28,13 +28,13 @@ class PDF::Storage::Filter::ASCIIHex {
 
         my Str $str = $input.subst(/\s/, '', :g);
 
-        if $str && $str.substr(*-1,1) eq '>' {
-            $str = $str.chop;
-        }
-        else {
+        unless $str ~~ s/'>'$$// {
            die "missing end-of-data marker '>' at end of hexadecimal encoding"
                if $eod
         }
+
+        die "Illegal character(s) found in ASCII hex-encoded stream: {$0.Str.perl}"
+            if $str ~~ m:i/(< -[0..9 A..F]>)/;
 
         # "If the filter encounters the EOD marker after reading an odd
         # number of hexadecimal digits, it shall behave as if a 0 (zero)
@@ -42,9 +42,6 @@ class PDF::Storage::Filter::ASCIIHex {
 
         $str ~= '0'
             unless $str.codes %% 2;
-
-        die "Illegal character(s) found in ASCII hex-encoded stream: {$0.Str.perl}"
-            if $str ~~ m:i/(< -[0..9 A..F]>)/;
 
         my uint8 @bytes = $str.comb.map: -> \a, \b { :16(a ~ b) };
 

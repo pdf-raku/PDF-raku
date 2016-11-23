@@ -12,9 +12,9 @@ streams. It is capable of reading, editing and creation or incremental update of
 This module is primarily intended as base for higher level modules. It can also be used to explore or
 patch data in PDF or FDF files.
 
-It does not understand logical PDF document structure. It is however possible to construct simple documents and
-perform simple edits by direct manipulation of PDF data. You will need some knowledge of how PDF documents are
-structured. Please see 'The Basics' and 'Recommended Reading' sections below.
+This module understands physical data structures rather than the logical document structure. It is possible
+to construct basic documents and perform simple edits by direct manipulation of PDF data. You will need some
+knowledge of how PDF documents are structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 
 Classes/roles in this tool-kit include:
 
@@ -61,6 +61,10 @@ my $doc = PDF::DAO::Type::PDF.new;
 my $root     = $doc.Root       = { :Type(/'Catalog') };
 my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
 my $pages    = $root<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0), };
+# add some standard meta-data
+my $info = $doc.Info = {};
+$info.CreationDate = DateTime.now;
+$info.Producer = 'PDF-Tools';
 
 # define some basic content
 my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) });
@@ -68,11 +72,6 @@ my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hel
 # create a new page. add it to the page tree
 $pages<Kids>.push: { :Type(/'Page'), :Parent($pages), :$Contents };
 $pages<Count>++;
-
-# add some standard meta-data
-my $info = $doc.Info = {};
-$info.CreationDate = DateTime.now;
-$info.Producer = 'PDF-Tools';
 
 # save the PDF to a file
 $doc.save-as: 't/example.pdf';
@@ -97,7 +96,6 @@ my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  90 250 Td (Good
 $Parent<Kids>.push: { :Type( :name<Page> ), :$Parent, :$Contents };
 $Parent<Count>++;
 
-# set modification time in meta-data
 my $info = $doc.Info //= {};
 $info.ModDate = DateTime.now;
 
@@ -119,7 +117,7 @@ This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/d
 
 ## The Basics
 
-PDF files are serialized as numbered indirect objects. The `t/example.pdf` file that we just wrote contains:
+PDF files are serialized as numbered indirect objects. The `t/example.pdf` file that we created above contains:
 ```
 %PDF-1.3
 %...(control characters)
@@ -297,7 +295,7 @@ This script is a thin wrapper for the `PDF::DAO::Type::PDF` `.open` and `.save-a
 
 ### Reading PDF Files
 
-The `PDF::Reader` `.open` method loads a PDF index (cross reference table and/or stream). The document can then be access randomly via the
+The `.open` method loads a PDF index (cross reference table and/or stream). The document can then be access randomly via the
 `.ind.obj(...)` method.
 
 The document can be traversed by dereferencing Array and Hash objects. The reader will load indirect objects via the index, as needed. 

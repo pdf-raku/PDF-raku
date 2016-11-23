@@ -4,7 +4,7 @@
       in favour of PDF::DAO::Dict.new( :$dict ) named arguments.
       Same also for stream and array object constructors.
     - Use of siglless variables, where appropriate.
-    - Revamped handing of :entry and :index traits.
+    - Revamped handing of PDF::DAO::Tie :entry and :index traits.
 
     Release 0.0.8
     - [PDF::DAO::Doc] .update( :diffs(...) ) - now supports JSON

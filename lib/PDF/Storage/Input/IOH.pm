@@ -5,7 +5,7 @@ use PDF::Storage::Input;
 class PDF::Storage::Input::IOH
     is PDF::Storage::Input {
 
-    has IO::Handle $.value is rw is required;
+    has IO::Handle $.value is required handles <read eof close>;
     has Str $!str;
     has UInt $.codes is rw;
 

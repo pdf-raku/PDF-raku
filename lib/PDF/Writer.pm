@@ -372,11 +372,11 @@ class PDF::Writer {
     multi method write( *@args, *%opt ) is default {
         die "unexpected arguments: {[@args].perl}"
             if @args;
-        
+
         my $key = %opt.keys.sort.first({  $.can("write-$_") })
             or die "unable to handle {%opt.keys} struct: {%opt.perl}";
-        
-        self."write-$key"(%opt{$key}, |%opt);
+        my $val = %opt{$key}:delete;
+        self."write-$key"($val, |%opt);
     }
 
     #| handle indentation.
