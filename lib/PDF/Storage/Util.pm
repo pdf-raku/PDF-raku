@@ -17,8 +17,8 @@ module PDF::Storage::Util {
     multi sub resample( $nums!, UInt $n!, UInt $m!) is default {
         warn "unoptimised $n => $m bit sampling";
         flat gather {
-            my Int $m0 = 1;
-            my Int $sample = 0;
+            my int $m0 = 1;
+            my int $sample = 0;
 
             for $nums.list -> $num is copy {
                 for 1 .. $n -> $n0 {
@@ -40,11 +40,11 @@ module PDF::Storage::Util {
     #| variable resampling, e.g. to decode/encode:
     #|   obj 123 0 << /Type /XRef /W [1, 3, 1]
     multi sub resample( $nums!, 8, Array $W!)  {
-        my Int $j = 0;
+        my int $j = 0;
         my @samples;
         while $j < +$nums {
             my @sample = $W.keys.map: -> $i {
-                my UInt $s = 0;
+                my int $s = 0;
                 for 1 .. $W[$i] {
                     $s *= 256;
                     $s += $nums[$j++];
@@ -59,8 +59,8 @@ module PDF::Storage::Util {
     multi sub resample( $num-sets, Array $W!, 8)  {
 	my uint8 @sample;
          for $num-sets.list -> Array $nums {
-            my Int $i = 0;
-            for $nums.list -> Int $num is copy {
+            my int $i = 0;
+            for $nums.list -> int $num is copy {
                 my uint8 @bytes;
                 for 1 .. $W[$i++] {
                     @bytes.unshift: $num +& 255;

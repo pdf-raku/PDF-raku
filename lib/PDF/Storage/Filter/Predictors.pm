@@ -21,8 +21,8 @@ role PDF::Storage::Filter::Predictors {
         my UInt \bit-mask = 2 ** $BitsPerComponent  -  1;
         my Buf \nums := resample( $decoded, 8, $BitsPerComponent );
         my UInt \n = +nums;
-        my UInt @output;
-        my UInt $ptr = 0;
+        my uint @output;
+        my uint $ptr = 0;
 
         while $ptr < n {
 	    for 1 .. $Colors {
@@ -30,8 +30,8 @@ role PDF::Storage::Filter::Predictors {
 	    }
             for 2 .. $Columns {
                 for 1 .. $Colors {
-                    my UInt $prev-color = nums[$ptr - $Colors];
-                    my UInt $result = (nums[ $ptr++ ] - $prev-color) +& bit-mask;
+                    my UInt \prev-color = nums[$ptr - $Colors];
+                    my UInt $result = (nums[ $ptr++ ] - prev-color) +& bit-mask;
                     @output.push: $result;
                 }
             }
@@ -49,8 +49,8 @@ role PDF::Storage::Filter::Predictors {
 
         my UInt \bytes-per-col = ceiling($Colors * $BitsPerComponent / 8);
         my UInt \bytes-per-row = bytes-per-col * $Columns;
-        my UInt $ptr = 0;
-        my UInt $row = 0;
+        my uint $ptr = 0;
+        my uint $row = 0;
         my uint8 @output;
 
         while $ptr < +$encoded {
@@ -58,26 +58,26 @@ role PDF::Storage::Filter::Predictors {
             @output.push: 4; # Paeth indicator
 
             for 1 .. bytes-per-row -> \i {
-                my uint8 $left-byte = i <= bytes-per-col ?? 0 !! $encoded[$ptr - bytes-per-col];
-                my uint8 $up-byte = $row ?? $encoded[$ptr - bytes-per-row] !! 0;
-                my uint8 $up-left-byte = $row && i > bytes-per-col ?? $encoded[$ptr - bytes-per-row - bytes-per-col] !! 0;
+                my \left-byte = i <= bytes-per-col ?? 0 !! $encoded[$ptr - bytes-per-col];
+                my \up-byte = $row ?? $encoded[$ptr - bytes-per-row] !! 0;
+                my \up-left-byte = $row && i > bytes-per-col ?? $encoded[$ptr - bytes-per-row - bytes-per-col] !! 0;
 
-                my uint8 $p = $left-byte + $up-byte - $up-left-byte;
+                my uint8 $p = left-byte + up-byte - up-left-byte;
 
-                my uint8 $pa = abs($p - $left-byte);
-                my uint8 $pb = abs($p - $up-byte);
-                my uint8 $pc = abs($p - $up-left-byte);
-                my uint8 $nearest = do if $pa <= $pb and $pa <= $pc {
-                    $left-byte;
+                my uint8 $pa = abs($p - left-byte);
+                my uint8 $pb = abs($p - up-byte);
+                my uint8 $pc = abs($p - up-left-byte);
+                my \nearest = do if $pa <= $pb and $pa <= $pc {
+                    left-byte;
                 }
                 elsif $pb <= $pc {
-                    $up-byte;
+                    up-byte;
                 }
                 else {
-                    $up-left-byte
+                    up-left-byte
                 }
 
-                @output.push: ($encoded[$ptr++] - $nearest);
+                @output.push: ($encoded[$ptr++] - nearest);
             }
 
             $row++;
@@ -105,12 +105,11 @@ role PDF::Storage::Filter::Predictors {
         my UInt \bit-mask = 2 ** $BitsPerComponent  -  1;
         my Buf \nums = resample( $decoded, 8, $BitsPerComponent );
         my UInt \n = +nums;
-        my UInt $ptr = 0;
-        my UInt @output;
+        my uint $ptr = 0;
+        my uint @output;
 
         while $ptr < n {
-
-            my @pixels = 0 xx $Colors;
+            my uint @pixels = 0 xx $Colors;
 
             for 1 .. $Columns {
 
@@ -135,7 +134,7 @@ role PDF::Storage::Filter::Predictors {
         my UInt \bytes-per-col = ceiling($Colors * $BitsPerComponent / 8);
         my UInt \bytes-per-row = bytes-per-col * $Columns;
         my UInt \n = +$decoded;
-        my UInt $ptr = 0;
+        my uint $ptr = 0;
         my uint8 @output;
 
         my uint8 @up = 0 xx bytes-per-row;
@@ -144,57 +143,59 @@ role PDF::Storage::Filter::Predictors {
             # PNG prediction can vary from row to row
             my UInt \tag = $decoded[$ptr++];
             my uint8 @out;
+            my int $n = 0;
 
             given tag {
                 when 0 {
                     # None
-                    @out.push: $decoded[$ptr++]
+                    @out[$n++] = $decoded[$ptr++]
                         for 1 .. bytes-per-row;
                 }
                 when 1 {
                     # Sub - 1
-                    for 1 .. bytes-per-row -> \i {
-                        my UInt $left-byte = i <= bytes-per-col ?? 0 !! @out[* - bytes-per-col];
-                        @out.push: ($decoded[$ptr++] + $left-byte);
+                    @out[$n++] = $decoded[$ptr++] for 1 .. bytes-per-col;
+                    for bytes-per-col ^.. bytes-per-row {
+                        my \left-byte = @out[$n - bytes-per-col];
+                        @out[$n++] = $decoded[$ptr++] + left-byte;
                     }
                 }
                 when 2 {
                     # Up - 2
                     for 1 .. bytes-per-row {
-                        my UInt $up-byte = @up[ +@out ];
-                        @out.push: ($decoded[$ptr++] + $up-byte);
+                        my \up-byte = @up[$n];
+                        @out[$n++] = $decoded[$ptr++] + up-byte;
                     }
                 }
                 when  3 {
                     # Average - 3
                     for 1 .. bytes-per-row -> \i {
-                        my UInt $left-byte = i <= bytes-per-col ?? 0 !! @out[* - bytes-per-col];
-                        my UInt $up-byte = @up[ +@out ];
-                        @out.push: ($decoded[$ptr++] + ( ($left-byte + $up-byte) div 2 ));
+                        my \left-byte = i <= bytes-per-col ?? 0 !! @out[$n - bytes-per-col];
+                        my \up-byte = @up[$n];
+                        @out[$n++] = $decoded[$ptr++] + ( (left-byte + up-byte) div 2 );
                     }
                 }
                 when 4 {
                     # Paeth - 4
                     for 1 .. bytes-per-row -> \i {
-                        my uint8 $left-byte = i <= bytes-per-col ?? 0 !! @out[* - bytes-per-col];
-                        my uint8 $up-byte = @up[ +@out ];
-                        my uint8 $up-left-byte = i <= bytes-per-col ?? 0 !! @up[ +@out - bytes-per-col];
-                        my uint8 $p = $left-byte + $up-byte - $up-left-byte;
+                        my \left-byte = i <= bytes-per-col ?? 0 !! @out[$n - bytes-per-col];
+                        my \up-left-byte = i <= bytes-per-col ?? 0 !! @up[$n - bytes-per-col];
+                        my \up-byte = @up[$n];
+                        my uint8 $p = left-byte + up-byte - up-left-byte;
 
-                        my uint8 $pa = abs($p - $left-byte);
-                        my uint8 $pb = abs($p - $up-byte);
-                        my uint8 $pc = abs($p - $up-left-byte);
-                        my uint8 $nearest = do if $pa <= $pb and $pa <= $pc {
-                            $left-byte;
+                        my uint8 $pa = abs($p - left-byte);
+                        my uint8 $pb = abs($p - up-byte);
+                        my uint8 $pc = abs($p - up-left-byte);
+                        my \nearest = do if $pa <= $pb and $pa <= $pc {
+                            left-byte;
                         }
                         elsif $pb <= $pc {
-                            $up-byte;
+                            up-byte;
                         }
                         else {
-                            $up-left-byte
+                            up-left-byte
                         }
 
-                        @out.push: ($decoded[$ptr++] + $nearest);
+                        @out[$n++] = $decoded[$ptr++] + nearest;
                     }
                 }
                 default {

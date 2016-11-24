@@ -68,10 +68,10 @@ class PDF::Storage::Filter::ASCII85 {
         my $buf = ($str ~ padding).encode('latin-1');
 
         my uint32 @buf32;
+        my int $n = -1;
         for $buf.keys {
-            @buf32.push: 0 if $_ %% 5;
-            @buf32[*-1] *= 85;
-            @buf32[*-1] += $buf[$_] - 33;
+            @buf32[++$n] = 0 if $_ %% 5;
+            (@buf32[$n] *= 85) += $buf[$_] - 33;
         }
 
         my uint8 @buf := resample(@buf32, 32, 8);

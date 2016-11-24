@@ -7,15 +7,15 @@ class PDF::Storage::Filter::ASCIIHex {
     # in section 7.4.2.
     use PDF::Storage::Blob;
     use PDF::Storage::Util :resample;
+    BEGIN my uint8 @HexEnc = map *.ord, flat '0' .. '9', 'a' .. 'f';
+
 
     multi method encode(Str $input, |c --> PDF::Storage::Blob) {
 	$.encode( $input.encode("latin-1"), |c)
     }
     multi method encode(Blob $input --> PDF::Storage::Blob) {
 
-	BEGIN my uint8 @Hex = map *.ord, flat '0' .. '9', 'a' .. 'f';
-
-	my @buf = resample( $input, 8, 4).map: {@Hex[$_]};
+	my @buf = resample( $input, 8, 4).map: {@HexEnc[$_]};
 	@buf.push: '>'.ord;
 
 	PDF::Storage::Blob.new( @buf );
@@ -26,15 +26,15 @@ class PDF::Storage::Filter::ASCIIHex {
     }
     multi method decode(Str $input, Bool :$eod = False --> PDF::Storage::Blob) {
 
-        my Str $str = $input.subst(/\s/, '', :g);
+        my Str $str = $input.subst(/\s/, '', :g).lc;
 
-        unless $str ~~ s/'>'$$// {
+        if $str.codes && $str.substr(*-1) eq '>' {
+            $str = $str.chop;
+        }
+        else {
            die "missing end-of-data marker '>' at end of hexadecimal encoding"
                if $eod
         }
-
-        die "Illegal character(s) found in ASCII hex-encoded stream: {$0.Str.perl}"
-            if $str ~~ m:i/(< -[0..9 A..F]>)/;
 
         # "If the filter encounters the EOD marker after reading an odd
         # number of hexadecimal digits, it shall behave as if a 0 (zero)
@@ -43,7 +43,16 @@ class PDF::Storage::Filter::ASCIIHex {
         $str ~= '0'
             unless $str.codes %% 2;
 
-        my uint8 @bytes = $str.comb.map: -> \a, \b { :16(a ~ b) };
+        my @HexDec;
+        BEGIN {
+            for @HexEnc.pairs -> \hi {
+                for @HexEnc.pairs {
+                    @HexDec[hi.value][.value] = hi.key +< 4  +  .key;
+                }
+            }
+        }
+
+        my uint8 @bytes = $str.ords.map: -> \a, \b { @HexDec[a;b] //  die "Illegal character(s) found in ASCII hex-encoded stream: {(a~b).perl}" };
 
 	PDF::Storage::Blob.new( @bytes );
     }

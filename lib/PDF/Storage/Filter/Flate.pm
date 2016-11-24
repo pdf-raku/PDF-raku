@@ -16,25 +16,17 @@ class PDF::Storage::Filter::Flate
 	$.encode( $input.encode('latin-1'), |c );
     }
 
-    multi method encode(Blob $buf is copy, :$Predictor, |c --> PDF::Storage::Blob) is default {
-
-        $buf = $.prediction( $buf, :$Predictor, |c )
-            if $Predictor;
-
-        PDF::Storage::Blob.new: compress( $buf );
+    multi method encode(Blob $buf, :$Predictor, |c --> PDF::Storage::Blob) is default {
+        PDF::Storage::Blob.new: compress($Predictor ?? $.prediction( $_, :$Predictor, |c ) !! $_)
+            with $buf;
     }
 
     multi method decode(Str $input, |c) {
 	$.decode( $input.encode('latin-1'), |c);
     }
 
-    multi method decode(Blob $input is copy, :$Predictor, |c --> PDF::Storage::Blob) {
-
-        my $buf = uncompress( $input );
-
-        $buf = $.post-prediction( $buf, :$Predictor, |c )
-            if $Predictor;
-
-        PDF::Storage::Blob.new: $buf;
+    multi method decode(Blob $input, :$Predictor, |c --> PDF::Storage::Blob) {
+        PDF::Storage::Blob.new: ($Predictor ?? $.post-prediction( $_, :$Predictor, |c ) !! $_)
+            with uncompress( $input );
     }
 }
