@@ -48,12 +48,12 @@ class PDF::Writer {
         my @out;
 	@idx.unshift: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
 
-	$.make-objects( $body<objects>, @out, @idx );
+	self!make-objects( $body<objects>, @out, @idx );
 
 	my \trailer = $body<trailer> // {};
 
 	if $write-xref {
-	    $.make-xref( trailer, @out, @idx );
+	    self!make-xref( trailer, @out, @idx );
 	}
 	else {
             # simple trailer, no xref
@@ -65,7 +65,7 @@ class PDF::Writer {
         @out.join: "\n";
     }
 
-    method make-objects( @objects, @out = [], @idx = [] ) {
+    method !make-objects( @objects, @out = [], @idx = [] ) {
         for @objects -> \obj {
 
             with obj<ind-obj> -> $ind-obj {
@@ -88,7 +88,7 @@ class PDF::Writer {
 	@out;
     }
 
-    method make-xref( Hash $trailer, @out, @idx, Bool :$write-xref ) {
+    method !make-xref( Hash $trailer, @out, @idx, Bool :$write-xref ) {
 	@idx = @idx.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
 	my Hash @xref;
@@ -140,7 +140,7 @@ class PDF::Writer {
         my Hash $entries = $arg<dict>;
         my @lines;
 	"BI\n" ~
-	  $.indented({
+	  self!indented({
 	      $entries.pairs.sort.map({
 		  [~] $.indent, $.write-name( .key ), ' ', $.write( .value ),
 	      }).join: "\n"
@@ -193,7 +193,7 @@ class PDF::Writer {
         });
 
         ( '<<',
-          $.indented({
+          self!indented({
 	      @keys.map( -> \key {
 		  [~] $.indent, $.write-name(key), ' ', $.write( .{key} ),
 	      }).join: "\n"
@@ -380,7 +380,7 @@ class PDF::Writer {
     }
 
     #| handle indentation.
-    method indented( &code ) {
+    method !indented( &code ) {
         temp $!indent ~= '  ';
         &code();
     }
