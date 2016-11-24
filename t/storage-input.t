@@ -12,7 +12,8 @@ for :$in-ioh, :$in-str {
     my ($test, $input) = .kv;
     is $input.codes, $str.codes, "$test .codes";
     is $input.read(4).decode("latin-1"), "%PDF", "$test read";
-    is $input.read(4).decode("latin-1"), "-1.3", "$test read";
+    lives-ok {$input.seek(1, SeekFromCurrent);}, 'seek';
+    is $input.read(3).decode("latin-1"), "1.3", "$test read";
     is $input.substr(1, 5), 'PDF-1', "$test head substr";
     nok $input.eof, "$test not at eof yet";
     $input.read(9999);

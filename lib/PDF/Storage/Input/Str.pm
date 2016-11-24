@@ -13,6 +13,21 @@ class PDF::Storage::Input::Str
         $!pos += n;
         s.encode("latin-1");
     }
+    multi method seek(UInt $n, SeekFromBeginning) {
+        $!pos = min($n, $.codes);
+    }
+    multi method seek(UInt $n, SeekFromCurrent) {
+        $!pos = min($!pos + $n, $.codes);
+    }
+    multi method seek(UInt $n, SeekFromEnd) {
+        $!pos = max(0, $.codes - $n);
+    }
+    method slurp-rest {
+        my \codes = $.codes;
+        my \rest := $.substr-rw($!pos, codes - $!pos);
+        $!pos = codes;
+        rest;
+    }
     method eof { $!pos >= $.codes }
     method close {}
 }
