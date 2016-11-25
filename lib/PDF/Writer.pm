@@ -322,7 +322,7 @@ class PDF::Writer {
         %dict<Size> = :int($_)
             with $!size;
 
-        ( "trailer", $.write-dict(%dict), '' ).join: "\n";
+        [~] "trailer\n", $.write-dict(%dict), "\n";
     }
 
     method write-startxref(UInt $_ ) {
