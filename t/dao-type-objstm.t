@@ -1,6 +1,5 @@
 use v6;
 use Test;
-
 plan 12;
 
 use PDF::Storage::IndObj;

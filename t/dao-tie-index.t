@@ -1,6 +1,5 @@
 use v6;
 use Test;
-
 plan 8;
 
 use PDF::DAO::Array;

@@ -1,5 +1,7 @@
 use v6;
 use Test;
+plan 30;
+
 use PDF::Storage::Crypt::PDF;
 use PDF::DAO::Type::PDF;
 

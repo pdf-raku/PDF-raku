@@ -1,10 +1,12 @@
 use v6;
+use Test;
+plan 35;
+
 use PDF::DAO;
 use PDF::DAO::Dict;
 use PDF::DAO::Array;
 use PDF::Storage::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
-use Test;
 
 our %ties;
 our $dummy-reader;

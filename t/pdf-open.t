@@ -11,8 +11,8 @@ for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
     my $desc = ~ pdf-file;
 
     my $pdf;
-    if $desc ~~ /broken/ {
-        dies-ok {$pdf = PDF::DAO::Type::PDF.open( pdf-file ); $pdf.Info}, "$desc open (corrupt) - dies";
+    if $desc ~~ /damaged/ {
+        dies-ok {$pdf = PDF::DAO::Type::PDF.open( pdf-file ); $pdf.Info}, "$desc open - dies";
         next;
     }
 

@@ -1,5 +1,6 @@
 use v6;
 use Test;
+plan 4;
 
 use PDF::Reader;
 use PDF::Writer;

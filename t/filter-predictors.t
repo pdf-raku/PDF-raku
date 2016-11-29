@@ -1,5 +1,5 @@
+use v6;
 use Test;
-
 plan 22;
 
 use PDF::Storage::Filter::Predictors;

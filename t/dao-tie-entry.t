@@ -1,6 +1,5 @@
 use v6;
 use Test;
-
 plan 31;
 
 use PDF::DAO::Dict;

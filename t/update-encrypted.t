@@ -1,5 +1,7 @@
 use v6;
 use Test;
+plan 5;
+
 use PDF::DAO::Type::PDF;
 
 # ensure consistant document ID generation

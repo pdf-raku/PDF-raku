@@ -1,5 +1,6 @@
 use v6;
 use Test;
+plan 10;
 
 use PDF::Reader;
 use PDF::Storage::Input;

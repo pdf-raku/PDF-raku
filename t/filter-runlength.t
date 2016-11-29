@@ -1,3 +1,4 @@
+use v6;
 use Test;
 # this test based on PDF-API2/t/filter-runlengthdecode.t
 plan 15;

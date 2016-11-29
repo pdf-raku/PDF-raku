@@ -1,5 +1,7 @@
 use v6;
 use Test;
+plan 20;
+
 use PDF::DAO;
 use PDF::DAO::DateString;
 

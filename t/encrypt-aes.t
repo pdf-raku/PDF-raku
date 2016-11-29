@@ -1,5 +1,6 @@
 use v6;
 use Test;
+plan 8;
 
 use PDF::DAO::Type::PDF;
 use PDF::Storage::Crypt;

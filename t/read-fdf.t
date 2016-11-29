@@ -1,5 +1,6 @@
 use v6;
 use Test;
+plan 9;
 
 use PDF::Reader;
 use PDF::DAO::Dict;

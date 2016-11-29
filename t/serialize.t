@@ -1,5 +1,6 @@
 use v6;
 use Test;
+plan 15;
 
 use PDF::Storage::Serializer;
 use PDF::DAO::Util :to-ast;

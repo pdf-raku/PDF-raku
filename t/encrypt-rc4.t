@@ -1,5 +1,6 @@
 use v6;
 use Test;
+plan 15;
 
 use PDF::DAO::Type::PDF;
 

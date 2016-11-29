@@ -1,5 +1,7 @@
 use v6;
 use Test;
+plan 18;
+
 use PDF::Storage::Input;
 
 my $ioh = "t/helloworld.pdf".IO;

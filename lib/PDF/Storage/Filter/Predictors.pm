@@ -65,7 +65,6 @@ role PDF::Storage::Filter::Predictors {
                     @out[$n++] = $encoded[$ptr++]
                         for 1 .. bytes-per-row;
                 }
-
                 when 1 { # Left
                     @out[$n++] = $encoded[$ptr++] for 1 .. bytes-per-col;
                     for bytes-per-col ^.. bytes-per-row {
