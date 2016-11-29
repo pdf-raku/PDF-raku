@@ -69,9 +69,9 @@ class PDF::Storage::Filter::ASCII85 {
 
         my uint32 @buf32;
         my int $n = -1;
-        for $buf.keys {
-            @buf32[++$n] = 0 if $_ %% 5;
-            (@buf32[$n] *= 85) += $buf[$_] - 33;
+        for $buf.pairs {
+            @buf32[++$n] = 0 if .key %% 5;
+            (@buf32[$n] *= 85) += .value - 33;
         }
 
         my uint8 @buf := resample(@buf32, 32, 8);

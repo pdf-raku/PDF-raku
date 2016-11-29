@@ -1,6 +1,6 @@
 use Test;
 
-plan 12;
+plan 22;
 
 use PDF::Storage::Filter::Predictors;
 use PDF::Storage::Filter;
@@ -57,8 +57,8 @@ my $rand-data = buf8.new: [
     0x7F, 0x01, 0x05, 0x02, 0x04, 0x08, 0x06, 0x05, 0x0F, 0xFE, 0x01, 0x1A,
     ];
 
-for None => 1, TIFF => 2, PNG => 10 {
-    my ($desc, $Predictor) = .kv;
+for flat 1, 2, 10 .. 15 -> $Predictor {
+    my $desc = do given $Predictor { when 2 { 'TIFF' }; when 1 { 'no-op'}; default {'PNG'} };
 
     my $prediction = PDF::Storage::Filter::Predictors.prediction( $rand-data,
                                                            :Columns(4),

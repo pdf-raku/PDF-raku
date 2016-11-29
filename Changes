@@ -5,6 +5,8 @@
       Same also for stream and array object constructors.
     - Use of siglless variables, where appropriate.
     - Revamped handing of PDF::DAO::Tie :entry and :index traits.
+    - Fixes for PDF::Storage::Input::Str (byte-string reader) and
+      PDF::Storage::Filter::Predictors
 
     Release 0.0.8
     - [PDF::DAO::Doc] .update( :diffs(...) ) - now supports JSON

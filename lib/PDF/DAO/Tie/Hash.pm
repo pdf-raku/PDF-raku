@@ -7,7 +7,6 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
     #| resolve a heritable property by dereferencing /Parent entries
     proto sub inehrit(Hash $, Str $, Int :$hops) {*}
     multi sub inherit(Hash $object, Str $key where { $object{$key}:exists }, :$hops) {
-        temp $object.strict = True;
 	$object{$key};
     }
     multi sub inherit(Hash $object, Str $key where { $object<Parent>:exists }, Int :$hops is copy = 1) {
