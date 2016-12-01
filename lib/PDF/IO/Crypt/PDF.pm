@@ -1,15 +1,15 @@
 use v6;
 
-use PDF::Storage::Crypt::AST;
+use PDF::IO::Crypt::AST;
 
-class PDF::Storage::Crypt::PDF
-    does PDF::Storage::Crypt::AST {
-    use PDF::Storage::Crypt;
-    use PDF::Storage::Crypt::RC4;
-    use PDF::Storage::Crypt::AES;
+class PDF::IO::Crypt::PDF
+    does PDF::IO::Crypt::AST {
+    use PDF::IO::Crypt;
+    use PDF::IO::Crypt::RC4;
+    use PDF::IO::Crypt::AES;
 
-    has PDF::Storage::Crypt $!stm-f; #| stream filter (/StmF)
-    has PDF::Storage::Crypt $!str-f; #| string filter (/StrF)
+    has PDF::IO::Crypt $!stm-f; #| stream filter (/StmF)
+    has PDF::IO::Crypt $!str-f; #| string filter (/StrF)
 
     submethod TWEAK(:$doc!, Str :$owner-pass, |c) {
         $owner-pass
@@ -20,8 +20,8 @@ class PDF::Storage::Crypt::PDF
     #| generate encryption
     submethod !generate( Hash :$doc!, Bool :$aes, UInt :$V = $aes ?? 4 !! 3, |c ) {
         my $class = $aes
-            ?? PDF::Storage::Crypt::AES
-            !! PDF::Storage::Crypt::RC4;
+            ?? PDF::IO::Crypt::AES
+            !! PDF::IO::Crypt::RC4;
         die "/V 4 is required for AES encryption"
             if $aes && $V < 4;
         $!stm-f = $class.new( :$doc, :$V, |c );
@@ -35,8 +35,8 @@ class PDF::Storage::Crypt::PDF
         my Hash \CF = $encrypt.CF{$cf-entry};
         my Str \CFM = CF<CFM> // 'None';
         my $class = do given CFM {
-            when 'V2'    { PDF::Storage::Crypt::RC4 }
-            when 'AESV2' { PDF::Storage::Crypt::AES }
+            when 'V2'    { PDF::IO::Crypt::RC4 }
+            when 'AESV2' { PDF::IO::Crypt::AES }
             when 'None' {
                 die "Security handlers are NYI";
             }
@@ -61,7 +61,7 @@ class PDF::Storage::Crypt::PDF
 	given $encrypt.V {
 	    when 1..3 {
                 # stream and string channels are identical
-                $!stm-f := PDF::Storage::Crypt::RC4.new( :$doc, |$encrypt, |c );
+                $!stm-f := PDF::IO::Crypt::RC4.new( :$doc, |$encrypt, |c );
                 $!str-f := $!stm-f;
 	    }
             when 4 {

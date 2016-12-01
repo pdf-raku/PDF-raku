@@ -1,16 +1,16 @@
 use v6;
 
-use PDF::Storage::Crypt;
-use PDF::Storage::Crypt::AST;
+use PDF::IO::Crypt;
+use PDF::IO::Crypt::AST;
 
-class PDF::Storage::Crypt::AES
-    is PDF::Storage::Crypt
-    does PDF::Storage::Crypt::AST {
+class PDF::IO::Crypt::AES
+    is PDF::IO::Crypt
+    does PDF::IO::Crypt::AST {
 
     use OpenSSL::CryptTools;
     use OpenSSL::Digest;
-    use PDF::Storage::Blob;
-    use PDF::Storage::Util :resample;
+    use PDF::IO::Blob;
+    use PDF::IO :resample;
     
     constant KeyLen = 16;
 

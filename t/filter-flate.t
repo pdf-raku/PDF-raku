@@ -4,9 +4,9 @@ plan 5;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::Storage::Input;
-use PDF::Storage::Filter;
-use PDF::Storage::IndObj;
+use PDF::IO::Input;
+use PDF::IO::Filter;
+use PDF::IO::IndObj;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
@@ -14,13 +14,13 @@ my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
-my $pdf-input = PDF::Storage::Input.coerce( $input );
-my $ind-obj = PDF::Storage::IndObj.new( :$input, |%ast );
+my $pdf-input = PDF::IO::Input.coerce( $input );
+my $ind-obj = PDF::IO::IndObj.new( :$input, |%ast );
 my $dict = $ind-obj.object;
 my $raw-content = $pdf-input.stream-data( |%ast )[0];
 my $content;
 
-lives-ok { $content = PDF::Storage::Filter.decode( $raw-content, :$dict ) }, 'basic content decode - lives';
+lives-ok { $content = PDF::IO::Filter.decode( $raw-content, :$dict ) }, 'basic content decode - lives';
 
 my $content-expected = "16 0 17 141 <</BaseFont/CourierNewPSMT/Encoding/WinAnsiEncoding/FirstChar 111/FontDescriptor 15 0 R/LastChar 111/Subtype/TrueType/Type/Font/Widths[600]>><</BaseFont/TimesNewRomanPSMT/Encoding/WinAnsiEncoding/FirstChar 32/FontDescriptor 14 0 R/LastChar 32/Subtype/TrueType/Type/Font/Widths[250]>>";
 
@@ -45,13 +45,13 @@ my $flate-dec = [1, 0, 16, 0, 1, 2, 229, 0, 1, 4, 6, 0, 1, 5, 166, 0,
 
 my %dict = :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) };
 
-is my $result=PDF::Storage::Filter.decode($flate-enc, :%dict),
+is my $result=PDF::IO::Filter.decode($flate-enc, :%dict),
     $flate-dec, "Flate with PNG predictors - decode";
 
-my $re-encoded = PDF::Storage::Filter.encode($result, :%dict);
+my $re-encoded = PDF::IO::Filter.encode($result, :%dict);
 
-is PDF::Storage::Filter.decode($re-encoded, :%dict),
+is PDF::IO::Filter.decode($re-encoded, :%dict),
     $flate-dec, "Flate with PNG predictors - encode/decode round-trip";
 
-dies-ok { PDF::Storage::Filter.decode('This is not valid input', :%dict) },
+dies-ok { PDF::IO::Filter.decode('This is not valid input', :%dict) },
     q{Flate dies if invalid characters are passed to decode};

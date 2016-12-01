@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 21;
 
-use PDF::Storage::IndObj;
+use PDF::IO::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
@@ -13,7 +13,7 @@ my $input = 't/pdf/ind-obj-XRef.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
-my $ind-obj = PDF::Storage::IndObj.new( |%ast, :$input );
+my $ind-obj = PDF::IO::IndObj.new( |%ast, :$input );
 my $xref-obj = $ind-obj.object;
 does-ok $xref-obj, ::('PDF::DAO::Type')::('XRef');
 is-json-equiv $xref-obj.W, [ 1, 2, 1], '$xref.new .W';
@@ -31,7 +31,7 @@ my $xref-recompressed = $xref-obj.encode;
 my %ast2;
 lives-ok {%ast2 = $ind-obj.ast }, '$.ast - lives';
 
-my $ind-obj2 = PDF::Storage::IndObj.new( |%ast2);
+my $ind-obj2 = PDF::IO::IndObj.new( |%ast2);
 my $xref-roundtrip = $ind-obj2.object.decode( $xref-recompressed );
 
 is-deeply $xref, $xref-roundtrip, 'encode/decode round-trip';

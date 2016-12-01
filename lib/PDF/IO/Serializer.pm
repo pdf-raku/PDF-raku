@@ -1,6 +1,6 @@
 use v6;
 
-class PDF::Storage::Serializer {
+class PDF::IO::Serializer {
 
     use PDF::DAO;
     use PDF::DAO::Stream;

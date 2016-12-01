@@ -4,7 +4,7 @@ plan 44;
 
 use PDF::Reader;
 use PDF::Writer;
-use PDF::Storage::Serializer;
+use PDF::IO::Serializer;
 use PDF::DAO;
 use PDF::DAO::Array;
 
@@ -90,7 +90,7 @@ my $pdf = PDF::DAO.coerce: { :Root{ :Type(/'Catalog') } };
 $pdf<Root><Outlines> = $root-obj<Outlines>;
 $pdf<Root><Pages> = $root-obj<Pages>;
 
-my $body = PDF::Storage::Serializer.new.body( $pdf );
+my $body = PDF::IO::Serializer.new.body( $pdf );
 
 # write the two page pdf
 my $ast = :pdf{ :version(1.2), :$body };

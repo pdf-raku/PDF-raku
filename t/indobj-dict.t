@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 27;
 
-use PDF::Storage::IndObj;
+use PDF::IO::IndObj;
 use PDF::DAO::Util :to-ast;
 use PDF::DAO::Dict;
 use PDF::Grammar::Test :is-json-equiv;
@@ -12,7 +12,7 @@ my $reader = class {
 }.new;
 
 sub ind-obj-tests( :$ind-obj!, :$class!, :$to-json) {
-    my $dict-obj = PDF::Storage::IndObj.new( :$ind-obj, :$reader );
+    my $dict-obj = PDF::IO::IndObj.new( :$ind-obj, :$reader );
     my $object = $dict-obj.object;
     isa-ok $object, $class;
     is $dict-obj.obj-num, $ind-obj[0], '$.obj-num';
@@ -92,10 +92,10 @@ is $cat.Pages.Kids[0].obj-num, -1, '@ sigil entry(:indirect)';
 dies-ok {$cat.Pages.Kids[1] = 42}, 'typechecking - array elems';
 
 use PDF::DAO::Type::PDF;
-use PDF::Storage::Serializer;
+use PDF::IO::Serializer;
 my %dict = :Root($cat);
 my $pdf = PDF::DAO::Type::PDF.new( :%dict );
-my $serializer = PDF::Storage::Serializer.new;
+my $serializer = PDF::IO::Serializer.new;
 my $body = $serializer.body( $pdf );
 
 is-json-equiv $body[0], {:objects[

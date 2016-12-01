@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 14;
 
-use PDF::Storage::IndObj;
+use PDF::IO::IndObj;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 
@@ -13,7 +13,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed: $input";
 my %ast = $/.ast;
 
-my $ind-obj = PDF::Storage::IndObj.new( :$input, |%ast );
+my $ind-obj = PDF::IO::IndObj.new( :$input, |%ast );
 is $ind-obj.obj-num, 5, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $object = $ind-obj.object;
@@ -29,7 +29,7 @@ is +$num-obj, 4.2, 'composed object Num coercement';
 is-deeply ~$num-obj, '4.2', 'composed object Str coercement';
 is-deeply ?$num-obj, True, 'composed object Bool coercement';
 
-my $ind-obj2 = PDF::Storage::IndObj.new( :object($num-obj), :obj-num(4), :gen-num(2) );
+my $ind-obj2 = PDF::IO::IndObj.new( :object($num-obj), :obj-num(4), :gen-num(2) );
 is-deeply $ind-obj2.object, $num-obj, ':object constructor';
 is-deeply $ind-obj2.obj-num, 4, ':object constructor';
 is-deeply $ind-obj2.gen-num, 2, ':object constructor';

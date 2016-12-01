@@ -1,31 +1,30 @@
-perl6-PDF-Tools
-===============
+perl6-PDF-IO
+=============
 
 ## Overview
 
-perl6-PDF-Tools is an experimental low-level tool-kit for reading and manipulating data from PDF files.
+perl6-PDF-IO is a low-level tool-kit for accessing and manipulating data from PDF documents.
 
 It presents a seamless view of the data in PDF or FDF documents; behind the scenes handling
-compression, encryption, fetching of indirect objects and unpacking of object
+indexing, compression, encryption, fetching of indirect objects and unpacking of object
 streams. It is capable of reading, editing and creation or incremental update of PDF files.
 
-This module is primarily intended as base for higher level modules. It can also be used to explore or
+This module understands physical data structures rather than the logical document structure. It is primarily intended as base for higher level modules. It can also be used to explore or
 patch data in PDF or FDF files.
 
-This module understands physical data structures rather than the logical document structure. It is possible
-to construct basic documents and perform simple edits by direct manipulation of PDF data. You will need some
+It is possible to construct basic documents and perform simple edits by direct manipulation of PDF data. This requires some
 knowledge of how PDF documents are structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 
-Classes/roles in this tool-kit include:
+Classes/roles in this module include:
 
 - `PDF::Reader` - for indexed random access to PDF files
-- `PDF::Storage::Filter` - a collection of standard PDF decoding and encoding tools for PDF data streams
-- `PDF::Storage::IndObj` - base class for indirect objects
-- `PDF::Storage::Serializer` - data marshalling utilities for the preparation of full or incremental updates
-- `PDF::Storage::Crypt` - decryption / encryption
+- `PDF::IO::Filter` - a collection of standard PDF decoding and encoding tools for PDF data streams
+- `PDF::IO::IndObj` - base class for indirect objects
+- `PDF::IO::Serializer` - data marshalling utilities for the preparation of full or incremental updates
+- `PDF::IO::Crypt` - decryption / encryption
 - `PDF::Writer` - for the creation or update of PDF files
 - `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>)
-- `PDF::DAO::Type::PDF` - PDf document root
+- `PDF::DAO::Type::PDF` - PDF document root
 
 ## Example Usage
 
@@ -64,7 +63,7 @@ my $pages    = $root<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Ki
 # add some standard meta-data
 my $info = $doc.Info = {};
 $info.CreationDate = DateTime.now;
-$info.Producer = 'PDF-Tools';
+$info.Producer = 'PDF-IO';
 
 # define some basic content
 my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) });
@@ -123,7 +122,7 @@ PDF files are serialized as numbered indirect objects. The `t/example.pdf` file 
 %...(control characters)
 1 0 obj <<
   /CreationDate (D:20151225000000Z00'00')
-  /Producer (PDF-Tools)
+  /Producer (PDF-IO)
 >> endobj
 
 2 0 obj <<
@@ -160,7 +159,8 @@ PDF files are serialized as numbered indirect objects. The `t/example.pdf` file 
   /Length 46
 >> stream
 BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
-endstream endobj
+endstream
+endobj
 
 7 0 obj <<
   /Type /Font
@@ -173,21 +173,21 @@ xref
 0 8
 0000000000 65535 f 
 0000000014 00000 n 
-0000000102 00000 n 
-0000000174 00000 n 
-0000000225 00000 n 
-0000000404 00000 n 
-0000000474 00000 n 
-0000000573 00000 n 
+0000000099 00000 n 
+0000000171 00000 n 
+0000000222 00000 n 
+0000000401 00000 n 
+0000000471 00000 n 
+0000000570 00000 n 
 trailer
 <<
-  /ID [ <4386dc7bc3489e418b44434e3a168843> <4386dc7bc3489e418b44434e3a168843> ]
+  /ID [ <867b4841444e1643c74ca7767ce9dd84> <867b4841444e1643c74ca7767ce9dd84> ]
   /Info 1 0 R
   /Root 2 0 R
   /Size 8
 >>
 startxref
-680
+677
 %%EOF
 ```
 
@@ -196,14 +196,14 @@ The PDF is composed of a series indirect objects, for example, the first object 
 ```
 1 0 obj <<
   /CreationDate (D:20151225000000Z00'00')
-  /Producer (PDF-Tools)
+  /Producer (PDF-IO)
 >> endobj
 ```
 
 It's an indirect object with object number `1` and generation number `0`, with a `<<` ... `>>` delimited dictionary containing the
 author and the date that the document was created. This PDF dictionary is roughly equivalent to a Perl 6 hash:
 
-``` { :CreationDate("D:20151225000000Z00'00'"), :Producer("PDF-Tools"), } ```
+``` { :CreationDate("D:20151225000000Z00'00'"), :Producer("PDF-IO"), } ```
 
 The bottom of the PDF contains:
 
@@ -223,10 +223,10 @@ startxref
 The `<<` ... `>>` delimited section is the trailer dictionary and the main entry point into the document. The entry `/Info 1 0 R`
 is an indirect reference to the first object (object number 1, generation 0) described above.
 
-We can quickly put PDF Tools to work using a Perl 6 REPL, to better explore the document:
+We can quickly put PDF::IO to work using a Perl 6 REPL, to better explore the document:
 
 ```
-snoopy: ~/git/perl6-PDF-Tools $ perl6 -MPDF::DAO::Type::PDF
+snoopy: ~/git/perl6-PDF-IO $ perl6 -MPDF::DAO::Type::PDF
 > my $doc = PDF::DAO::Type::PDF.open: "t/example.pdf"
 ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
 > $doc.keys
@@ -235,11 +235,11 @@ ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref =
 This is the root of the PDF, loaded from the trailer dictionary
 ```
 > $doc<Info>
-CreationDate => D:20151225000000Z00'00', Producer => PDF-Tools;
+CreationDate => D:20151225000000Z00'00', Producer => PDF-IO;
 ```
 That's the document information entry, commonly used to store basic meta-data about the document.
 
-(PDF Tools has conveniently fetched indirect object 1 from the PDF, when we dereferenced this entry).
+(PDF::IO has conveniently fetched indirect object 1 from the PDF, when we dereferenced this entry).
 ```
 > $doc<Root>
 Outlines => ind-ref => [3 0], Pages => ind-ref => [4 0], Type => Catalog
@@ -324,30 +324,30 @@ Filters are used to compress or decompress stream data in objects of type `PDF::
 
 *Filter Name* | *Short Name* | Filter Class
 --- | --- | ---
-ASCIIHexDecode  | AHx | PDF::Storage::Filter::ASCIIHex
-ASCII85Decode   | A85 | PDF::Storage::Filter::ASCII85
+ASCIIHexDecode  | AHx | PDF::IO::Filter::ASCIIHex
+ASCII85Decode   | A85 | PDF::IO::Filter::ASCII85
 CCITTFaxDecode  | CCF | _NYI_
 Crypt           |     | _NYI_
 DCTDecode       | DCT | _NYI_
-FlateDecode     | Fl  | PDF::Storage::Filter::Flate
+FlateDecode     | Fl  | PDF::IO::Filter::Flate
 LZWDecode       | LZW | _NYI_
 JBIG2Decode     |     | _NYI_
 JPXDecode       |     | _NYI_
-RunLengthDecode | RL  | PDF::Storage::Filter::RunLength
+RunLengthDecode | RL  | PDF::IO::Filter::RunLength
 
 Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding is recommended to enforce this.
 
 Each file has `encode` and `decode` methods. Both return latin-1 encoded strings.
 
 ```
-my $encoded = PDF::Storage::Filter.encode( :dict{ :Filter<RunLengthDecode> },
-                                            "This    is waaay toooooo loooong!");
+my $encoded = PDF::IO::Filter.encode( :dict{ :Filter<RunLengthDecode> },
+                                      "This    is waaay toooooo loooong!");
 say $encoded.codes;
  ```
 
 ### Encryption
 
-PDF::Tools supports RC4 and AES encryption (revisions /R 2 - 4 and versions /V 1 - 4 of PDF Encryption).
+PDF::IO supports RC4 and AES encryption (revisions /R 2 - 4 and versions /V 1 - 4 of PDF Encryption).
 
 To open an encrypted PDF document, specify either the user or owner password: `PDF::DAO::Type::PDF.open( "enc.pdf", :password<ssh!>)`
 

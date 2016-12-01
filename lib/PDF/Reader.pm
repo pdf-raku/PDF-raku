@@ -56,13 +56,13 @@ class PDF::Reader {
 
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
-    use PDF::Storage::IndObj;
-    use PDF::Storage::Serializer;
+    use PDF::IO::IndObj;
+    use PDF::IO::Serializer;
     use PDF::DAO;
     use PDF::DAO::Dict;
     use PDF::DAO::Util :from-ast, :to-ast;
-    use PDF::Storage::Input;
-    use PDF::Storage::Crypt::PDF;
+    use PDF::IO::Input;
+    use PDF::IO::Crypt::PDF;
     use JSON::Fast;
 
     has $.input is rw;       #= raw PDF image (latin-1 encoding)
@@ -75,7 +75,7 @@ class PDF::Reader {
     has UInt $.prev;
     has UInt $.size is rw;   #= /Size entry in trailer dict ~ first free object number
     has UInt @.xrefs = (0);  #= xref position for each revision in the file
-    has PDF::Storage::Crypt::PDF $.crypt;
+    has PDF::IO::Crypt::PDF $.crypt;
 
     method actions {
         state $actions //= PDF::Grammar::PDF::Actions.new
@@ -89,7 +89,7 @@ class PDF::Reader {
 
     method install-trailer(PDF::DAO::Dict $object = PDF::DAO::Dict.new( :reader(self) ) ) {
         %!ind-obj-idx{"0 0"} = do {
-            my PDF::Storage::IndObj $ind-obj .= new( :$object, :obj-num(0), :gen-num(0) );
+            my PDF::IO::IndObj $ind-obj .= new( :$object, :obj-num(0), :gen-num(0) );
             { :type(1), :$ind-obj }
         }
     }
@@ -98,7 +98,7 @@ class PDF::Reader {
 	my Hash $doc = self.trailer;
 	return without $doc<Encrypt>;
 
-	$!crypt = PDF::Storage::Crypt::PDF.new( :$doc );
+	$!crypt = PDF::IO::Crypt::PDF.new( :$doc );
 	$!crypt.authenticate( $password );
 	my \enc = $doc<Encrypt>;
         my \enc-obj-num = enc.obj-num;
@@ -120,7 +120,7 @@ class PDF::Reader {
 		if my $ind-obj := $idx<ind-obj> {
 		    die "too late to setup encryption: $obj-num $gen-num R"
 		    if $idx<type> != 0 | 1
-		    || $ind-obj.isa(PDF::Storage::IndObj);
+		    || $ind-obj.isa(PDF::IO::IndObj);
 
 		    $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> );
 		}
@@ -148,7 +148,7 @@ class PDF::Reader {
     }
 
     #| open the named PDF/FDF file
-    multi method open( Str $!file-name where {!.isa(PDF::Storage::Input)}, |c) {
+    multi method open( Str $!file-name where {!.isa(PDF::IO::Input)}, |c) {
         $.open( $!file-name.IO, |c );
     }
 
@@ -214,7 +214,7 @@ class PDF::Reader {
     }
 
     multi method open($input!, |c) {
-        $!input = PDF::Storage::Input.coerce( $input );
+        $!input = PDF::IO::Input.coerce( $input );
 
         $.load-header( );
         $.load( $.type, |c );
@@ -331,10 +331,10 @@ class PDF::Reader {
             return unless $eager;
             my \ind-obj = self!fetch-ind-obj($idx, :$obj-num, :$gen-num);
             # only fully stantiate object when needed
-            $get-ast ?? ind-obj !! PDF::Storage::IndObj.new( :ind-obj(ind-obj), :reader(self) )
+            $get-ast ?? ind-obj !! PDF::IO::IndObj.new( :ind-obj(ind-obj), :reader(self) )
         };
 
-        my Bool \is-ind-obj = $ind-obj.isa(PDF::Storage::IndObj);
+        my Bool \is-ind-obj = $ind-obj.isa(PDF::IO::IndObj);
         my Bool \to-ast = $get-ast && is-ind-obj;
 
         if to-ast {
@@ -345,7 +345,7 @@ class PDF::Reader {
             my Bool \to-obj = ?(!$get-ast && !is-ind-obj);
             if to-obj {
                 # upgrade storage to object, if object requested
-                $ind-obj = PDF::Storage::IndObj.new( :$ind-obj, :reader(self) );
+                $ind-obj = PDF::IO::IndObj.new( :$ind-obj, :reader(self) );
                 $idx<ind-obj> = $ind-obj;
             }
             elsif ! is-ind-obj  {
@@ -479,7 +479,7 @@ class PDF::Reader {
 	    or die X::PDF::BadIndirectObject::Parse.new( :$offset, :input($xref));
 
 	my %ast = $/.ast;
-	my PDF::Storage::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
+	my PDF::IO::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
 	$dict = $ind-obj.object;
 	$dict.decode-index.list;
     }
@@ -749,7 +749,7 @@ class PDF::Reader {
     }
 
     method ast( Bool :$rebuild ) {
-        my \serializer = PDF::Storage::Serializer.new( :reader(self) );
+        my \serializer = PDF::IO::Serializer.new( :reader(self) );
 
         my Array $body = $rebuild
             ?? serializer.body( self.trailer )

@@ -7,7 +7,7 @@ class PDF::DAO::Stream
     is PDF::DAO::Dict {
 
     use PDF::DAO::Tie;
-    use PDF::Storage::Filter;
+    use PDF::IO::Filter;
     use PDF::DAO::Util :from-ast, :to-ast-native;
 
     # see [PDF 1.7 TABLE 5 Entries common to all stream dictionaries]
@@ -79,12 +79,12 @@ class PDF::DAO::Stream
 
     method decode( $encoded = $.encoded ) {
         return $encoded unless self<Filter>:exists;
-        PDF::Storage::Filter.decode( $encoded, :dict(self) );
+        PDF::IO::Filter.decode( $encoded, :dict(self) );
     }
 
     method encode( $decoded = $.decoded) {
         return $decoded unless self<Filter>:exists;
-        PDF::Storage::Filter.encode( $decoded, :dict(self) );
+        PDF::IO::Filter.encode( $decoded, :dict(self) );
     }
 
     method content {

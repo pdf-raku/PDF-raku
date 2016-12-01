@@ -3,11 +3,11 @@ use Test;
 plan 10;
 
 use PDF::Reader;
-use PDF::Storage::Input;
+use PDF::IO::Input;
 
 sub make-pdf( :$header='%PDF-1.3', :$length=46, :$xref-digit='0', :$eof='%%EOF', :$endobj = 'endobj') {
 
-    PDF::Storage::Input.coerce: q:s:to"END";
+    PDF::IO::Input.coerce: q:s:to"END";
 $header
 %xxx
 1 0 obj <<

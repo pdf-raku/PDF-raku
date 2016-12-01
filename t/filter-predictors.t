@@ -2,8 +2,8 @@ use v6;
 use Test;
 plan 22;
 
-use PDF::Storage::Filter::Predictors;
-use PDF::Storage::Filter;
+use PDF::IO::Filter::Predictors;
+use PDF::IO::Filter;
 
 my $prediction-in = buf8.new: [
     0x2, 0x1, 0x0, 0x10, 0x0,
@@ -29,7 +29,7 @@ my $png-post-prediction = buf8.new: [
     1,   2,   3,    4,
     ];
 
-is-deeply PDF::Storage::Filter::Predictors.post-prediction( $prediction-in,
+is-deeply PDF::IO::Filter::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(1), ),
@@ -37,14 +37,14 @@ is-deeply PDF::Storage::Filter::Predictors.post-prediction( $prediction-in,
     "NOOP predictive filter sanity";
 
 my $tiff-in = buf8.new: $prediction-in.head(24);
-is-deeply PDF::Storage::Filter::Predictors.post-prediction( $tiff-in,
+is-deeply PDF::IO::Filter::Predictors.post-prediction( $tiff-in,
                                                      :Columns(4),
                                                      :Colors(3),
                                                      :Predictor(2), ),
     $tiff-post-prediction,
     "TIFF predictive filter sanity";
 
-is-deeply PDF::Storage::Filter::Predictors.post-prediction( $prediction-in,
+is-deeply PDF::IO::Filter::Predictors.post-prediction( $prediction-in,
                                                      :Columns(4),
                                                      :Predictor(12), ),
     $png-post-prediction,
@@ -60,22 +60,22 @@ my $rand-data = buf8.new: [
 for flat 1, 2, 10 .. 15 -> $Predictor {
     my $desc = do given $Predictor { when 2 { 'TIFF' }; when 1 { 'no-op'}; default {'PNG'} };
 
-    my $prediction = PDF::Storage::Filter::Predictors.prediction( $rand-data,
+    my $prediction = PDF::IO::Filter::Predictors.prediction( $rand-data,
                                                            :Columns(4),
                                                            :$Predictor, );
 
-    my $post-prediction = PDF::Storage::Filter::Predictors.post-prediction( $prediction,
+    my $post-prediction = PDF::IO::Filter::Predictors.post-prediction( $prediction,
                                                                      :Columns(4),
                                                                      :$Predictor, );
 
     is-deeply $post-prediction, $rand-data, "$desc predictor ($Predictor) - appears lossless";
 
-    my $prediction2c = PDF::Storage::Filter::Predictors.prediction( $rand-data,
+    my $prediction2c = PDF::IO::Filter::Predictors.prediction( $rand-data,
 								     :Columns(4),
 								     :Colors(2),
 								     :$Predictor, );
     
-    my $post-prediction2c = PDF::Storage::Filter::Predictors.post-prediction( $prediction2c,
+    my $post-prediction2c = PDF::IO::Filter::Predictors.post-prediction( $prediction2c,
 									 :Columns(4),
 									 :Colors(2),
 									 :$Predictor, );
@@ -88,10 +88,10 @@ my $dict = { :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) } }
 my $rand-chrs = [~] $rand-data.list.grep({ $_ <= 0xFF }).map: { .chr };
 
 my $encoded;
-lives-ok {$encoded = PDF::Storage::Filter.encode($rand-chrs, :$dict)}, "$dict<Filter> encode with prediction";
+lives-ok {$encoded = PDF::IO::Filter.encode($rand-chrs, :$dict)}, "$dict<Filter> encode with prediction";
 
 my $decoded;
-lives-ok {$decoded = PDF::Storage::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with prediction";
+lives-ok {$decoded = PDF::IO::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with prediction";
 
 is-deeply ~$decoded, $rand-chrs, "$dict<Filter> round-trip with prediction";
 

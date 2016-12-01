@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 13;
 
-use PDF::Storage::IndObj;
+use PDF::IO::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
@@ -14,7 +14,7 @@ my $input = '42 5 obj (a literal string) endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
-my $ind-obj = PDF::Storage::IndObj.new( |%ast, :$input );
+my $ind-obj = PDF::IO::IndObj.new( |%ast, :$input );
 isa-ok $ind-obj.object, Str;
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
@@ -27,7 +27,7 @@ $input = '123 4 obj <736E6F6f7079> endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 %ast = $/.ast;
-$ind-obj = PDF::Storage::IndObj.new( |%ast, :$input );
+$ind-obj = PDF::IO::IndObj.new( |%ast, :$input );
 isa-ok $ind-obj.object, Str;
 is $ind-obj.obj-num, 123, '$.obj-num';
 is $ind-obj.gen-num, 4, '$.gen-num';

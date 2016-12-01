@@ -2,13 +2,13 @@ use v6;
 use Test;
 plan 18;
 
-use PDF::Storage::Input;
+use PDF::IO::Input;
 
 my $ioh = "t/helloworld.pdf".IO;
 
-my $in-ioh = PDF::Storage::Input.coerce( $ioh );
+my $in-ioh = PDF::IO::Input.coerce( $ioh );
 my Str $str = $ioh.slurp( :enc<latin-1> );
-my $in-str = PDF::Storage::Input.coerce( $str );
+my $in-str = PDF::IO::Input.coerce( $str );
 
 for :$in-ioh, :$in-str {
     my ($test, $input) = .kv;

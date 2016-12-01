@@ -1,4 +1,4 @@
-class PDF::Storage::Blob does Blob[uint8]  is repr('VMArray') {
+class PDF::IO::Blob does Blob[uint8]  is repr('VMArray') {
     method encoding{  'latin-1' }
     method codes { self.bytes }
     multi method Str { self.decode("latin-1") }

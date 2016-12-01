@@ -3,7 +3,7 @@ use Test;
 plan 8;
 
 use PDF::DAO::Type::PDF;
-use PDF::Storage::Crypt;
+use PDF::IO::Crypt;
 
 # ensure consistant document ID generation
 srand(123456);

@@ -1,6 +1,6 @@
 use v6;
 
-module PDF::Storage::Util {
+module PDF::IO {
 
     #= resample a buffer as n-bit to m-bit unsigned integers
     proto sub resample( $, $, $ --> Array) is export(:resample) {*};

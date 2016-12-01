@@ -5,7 +5,7 @@ plan 35;
 use PDF::DAO;
 use PDF::DAO::Dict;
 use PDF::DAO::Array;
-use PDF::Storage::IndObj;
+use PDF::IO::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
 
 our %ties;
@@ -19,7 +19,7 @@ class t::DummyReader {
             :Desc(:literal("indirect object: $obj-num $gen-num R"));
 
             my $ind-obj = [$obj-num, $gen-num, :%dict];
-            PDF::Storage::IndObj.new( :$ind-obj, :reader(self) );
+            PDF::IO::IndObj.new( :$ind-obj, :reader(self) );
         }
     }
 }

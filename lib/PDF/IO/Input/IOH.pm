@@ -1,9 +1,9 @@
 use v6;
 
-use PDF::Storage::Input;
+use PDF::IO::Input;
 
-class PDF::Storage::Input::IOH
-    is PDF::Storage::Input {
+class PDF::IO::Input::IOH
+    is PDF::IO::Input {
 
     has IO::Handle $.value is required handles <read close eof seek slurp-rest>;
     has Str $!str;

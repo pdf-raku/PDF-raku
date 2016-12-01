@@ -1,9 +1,9 @@
 use v6;
 
-class PDF::Storage::Filter::ASCII85 {
+class PDF::IO::Filter::ASCII85 {
 
-    use PDF::Storage::Util :resample;
-    use PDF::Storage::Blob;
+    use PDF::IO :resample;
+    use PDF::IO::Blob;
 
     # Maintainer's Note: ASCIIH85Decode is described in the PDF 1.7 spec
     # in section 3.2.2.
@@ -43,13 +43,13 @@ class PDF::Storage::Filter::ASCII85 {
 
         @a85.append: EOD;
 
-        PDF::Storage::Blob.new( @a85 );
+        PDF::IO::Blob.new( @a85 );
     }
 
     multi method decode(Blob $buf, |c) {
 	$.decode($buf.Str, |c);
     }
-    multi method decode(Str $input, Bool :$eod = False --> PDF::Storage::Blob) {
+    multi method decode(Str $input, Bool :$eod = False --> PDF::IO::Blob) {
 
         my Str $str = $input.subst(/\s/, '', :g).subst(/z/, '!!!!', :g);
 
@@ -77,7 +77,7 @@ class PDF::Storage::Filter::ASCII85 {
         my uint8 @buf := resample(@buf32, 32, 8);
         @buf.pop for 1 .. padding.codes;
 
-        PDF::Storage::Blob.new: @buf;
+        PDF::IO::Blob.new: @buf;
     }
 
 }

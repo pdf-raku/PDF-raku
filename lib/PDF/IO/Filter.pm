@@ -1,11 +1,11 @@
 use v6;
 
-class PDF::Storage::Filter {
+class PDF::IO::Filter {
 
-    use PDF::Storage::Filter::ASCIIHex;
-    use PDF::Storage::Filter::ASCII85;
-    use PDF::Storage::Filter::Flate;
-    use PDF::Storage::Filter::RunLength;
+    use PDF::IO::Filter::ASCIIHex;
+    use PDF::IO::Filter::ASCII85;
+    use PDF::IO::Filter::Flate;
+    use PDF::IO::Filter::RunLength;
 
     #| set P6_PDF_FILTER_CLASS to enable experimental/alternate backends
     #| aka LibGnuPDF::Filter
@@ -99,16 +99,16 @@ class PDF::Storage::Filter {
     method filter-class( Str $filter-name is copy ) {
 
         constant %Filters = %(
-            ASCIIHexDecode => PDF::Storage::Filter::ASCIIHex,
-            ASCII85Decode  => PDF::Storage::Filter::ASCII85,
+            ASCIIHexDecode => PDF::IO::Filter::ASCIIHex,
+            ASCII85Decode  => PDF::IO::Filter::ASCII85,
             CCITTFaxDecode => Mu,
             Crypt          => Mu,
             DCTDecode      => Mu,
-            FlateDecode    => PDF::Storage::Filter::Flate,
+            FlateDecode    => PDF::IO::Filter::Flate,
             LZWDecode      => Mu,
             JBIG2Decode    => Mu,
             JPXDecode      => Mu,
-            RunLengthDecode => PDF::Storage::Filter::RunLength,
+            RunLengthDecode => PDF::IO::Filter::RunLength,
             );
 
 	# image object specific abbreviations :-

@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 23;
 
-use PDF::Storage::IndObj;
+use PDF::IO::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
@@ -14,7 +14,7 @@ my $input = '37 5 obj 42 endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
-my $ind-obj = PDF::Storage::IndObj.new( |%ast, :$input );
+my $ind-obj = PDF::IO::IndObj.new( |%ast, :$input );
 isa-ok $ind-obj.object, Int;
 does-ok $ind-obj.object, ::('PDF::DAO::Int');
 is $ind-obj.obj-num, 37, '$.obj-num';
@@ -39,7 +39,7 @@ $input = '5 6 obj 4.2 endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 %ast = $/.ast;
-$ind-obj = PDF::Storage::IndObj.new( |%ast, :$input );
+$ind-obj = PDF::IO::IndObj.new( |%ast, :$input );
 isa-ok $ind-obj.object, Rat;
 does-ok $ind-obj.object, ::('PDF::DAO::Real');
 is $ind-obj.obj-num, 5, '$.obj-num';

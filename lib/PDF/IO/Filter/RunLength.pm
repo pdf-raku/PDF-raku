@@ -1,13 +1,13 @@
 use v6;
 # based on PDF::API::Core::PDF::Filter::RunLengthDecode
 
-class PDF::Storage::Filter::RunLength {
+class PDF::IO::Filter::RunLength {
 
     # Maintainer's Note: RunLengthDecode is described in the PDF 1.7 spec
     # in section 7.4.5.
-    use PDF::Storage::Blob;
+    use PDF::IO::Blob;
 
-    multi method encode(Blob \input --> PDF::Storage::Blob) {
+    multi method encode(Blob \input --> PDF::IO::Blob) {
         my @out;
         my \n = input.elems - 1;
         my int $i = 0;
@@ -39,14 +39,14 @@ class PDF::Storage::Filter::RunLength {
 
         @out[$j] = 128;
 
-	PDF::Storage::Blob.new: @out
+	PDF::IO::Blob.new: @out
     }
 
     multi method encode(Str \input ) {
         $.encode( input.encode("latin-1") )
     }
 
-    multi method decode(Blob \input, Bool :$eod = True --> PDF::Storage::Blob) {
+    multi method decode(Blob \input, Bool :$eod = True --> PDF::IO::Blob) {
 
         my int $idx = 0;
         my uint8 @out;
@@ -75,7 +75,7 @@ class PDF::Storage::Filter::RunLength {
         die "missing end-of-data at end of run-length encoding"
             if $eod && (n == 0 || input[*-1] != 128);
 
-        PDF::Storage::Blob.new: @out;
+        PDF::IO::Blob.new: @out;
     }
 
     multi method decode(Str \input ) {

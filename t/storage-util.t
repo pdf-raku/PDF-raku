@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 14;
 
-use PDF::Storage::Util :resample;
+use PDF::IO :resample;
 
 my @result;
 my $bytes = array[uint8].new(10, 20, 30, 40, 50, 60);

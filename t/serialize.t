@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 15;
 
-use PDF::Storage::Serializer;
+use PDF::IO::Serializer;
 use PDF::DAO::Util :to-ast;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Writer;
@@ -29,7 +29,7 @@ my $pdf-ast = to-ast($pdf);
 is $pdf-ast<dict><Root><array>[1]<dict><ID><int>, 2, 'ast dereference';
 
 # our serializer should create indirect refs to resolve the above
-my $body = PDF::Storage::Serializer.new.body( $pdf )[0];
+my $body = PDF::IO::Serializer.new.body( $pdf )[0];
 is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
 is-deeply $body<trailer><dict><Size>, (:int(3)), 'body trailer dict - Size';
 my $s-objects = $body<objects>;
@@ -63,7 +63,7 @@ $pdf = PDF::DAO.coerce: { :Root{
 
 $pdf<Root><Pages><Kids>[0]<Parent> = $pdf<Root><Pages>;
 
-$body = PDF::Storage::Serializer.new.body( $pdf )[0];
+$body = PDF::IO::Serializer.new.body( $pdf )[0];
 my @objects = @($body<objects>);
 
 sub obj-sort {
@@ -94,18 +94,18 @@ my $obj-with-utf8 = PDF::DAO.coerce: { :Root{ :Name(/"Heydər Əliyev") } };
 $obj-with-utf8<Root>.is-indirect = True;
 my $writer = PDF::Writer.new;
 
-@objects = @(PDF::Storage::Serializer.new.body($obj-with-utf8)[0]<objects>);
+@objects = @(PDF::IO::Serializer.new.body($obj-with-utf8)[0]<objects>);
 is-json-equiv @objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
 is $writer.write( :ind-obj(@objects[0].value)), "1 0 obj <<\n  /Name /Heyd#c9#99r#20#c6#8fliyev\n>>\nendobj\n", 'name write';
 
-my @objects-compressed = @(PDF::Storage::Serializer.new.body($pdf, :compress)[0]<objects>);
+my @objects-compressed = @(PDF::IO::Serializer.new.body($pdf, :compress)[0]<objects>);
 my $stream = @objects-compressed[*-2].value[2]<stream>;
 is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'compressed dict';
 is $stream<encoded>.codes, 54, 'compressed stream length';
 
 # just to define current behaviour wrt to non-latin chars; blows up during write.
 my $obj-with-bad-byte-string = PDF::DAO.coerce: { :Root{ :Name("Heydər Əliyev") } };
-@objects = @(PDF::Storage::Serializer.new.body($obj-with-bad-byte-string)<objects>);
+@objects = @(PDF::IO::Serializer.new.body($obj-with-bad-byte-string)<objects>);
 dies-ok {$writer.write( :ind-obj(@objects[0].value) )}, 'out-of-range byte-string dies during write';
 
 done-testing;

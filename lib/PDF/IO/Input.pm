@@ -1,13 +1,13 @@
 use v6;
 
-class PDF::Storage::Input {
-    # a poor mans polymorphism: allow pdf input from IO handles or strings
+class PDF::IO::Input {
+    # a poor man's polymorphism: allow pdf input from IO handles or strings
     # could be obseleted by cat-strings, when available
     has Str $.path is rw;
 
-    proto method coerce( $value ) returns PDF::Storage::Input {*}
+    proto method coerce( $value ) returns PDF::IO::Input {*}
 
-    multi method coerce( PDF::Storage::Input $value!, :$path ) {
+    multi method coerce( PDF::IO::Input $value!, :$path ) {
         # don't recoerce
         $value.path = $_ with $path;
         $value;
@@ -18,13 +18,13 @@ class PDF::Storage::Input {
     }
 
     multi method coerce( IO::Handle $value!, |c ) {
-        require PDF::Storage::Input::IOH;
-        ::('PDF::Storage::Input::IOH').bless( :$value, |c );
+        require PDF::IO::Input::IOH;
+        ::('PDF::IO::Input::IOH').bless( :$value, |c );
     }
 
-    multi method coerce( Str $value! where { !.isa(PDF::Storage::Input) }, |c) {
-        require PDF::Storage::Input::Str;
-        ::('PDF::Storage::Input::Str').bless( :$value, |c );
+    multi method coerce( Str $value! where { !.isa(PDF::IO::Input) }, |c) {
+        require PDF::IO::Input::Str;
+        ::('PDF::IO::Input::Str').bless( :$value, |c );
     }
 
     multi method stream-data( Array :$ind-obj! ) {

@@ -1,30 +1,30 @@
 use v6;
 # based on Perl 5's PDF::API::Core::PDF::Filter::ASCIIHexDecode
 
-class PDF::Storage::Filter::ASCIIHex {
+class PDF::IO::Filter::ASCIIHex {
 
     # Maintainer's Note: ASCIIHexDecode is described in the PDF 1.7 spec
     # in section 7.4.2.
-    use PDF::Storage::Blob;
-    use PDF::Storage::Util :resample;
+    use PDF::IO::Blob;
+    use PDF::IO :resample;
     BEGIN my uint8 @HexEnc = map *.ord, flat '0' .. '9', 'a' .. 'f';
 
 
-    multi method encode(Str $input, |c --> PDF::Storage::Blob) {
+    multi method encode(Str $input, |c --> PDF::IO::Blob) {
 	$.encode( $input.encode("latin-1"), |c)
     }
-    multi method encode(Blob $input --> PDF::Storage::Blob) {
+    multi method encode(Blob $input --> PDF::IO::Blob) {
 
 	my @buf = resample( $input, 8, 4).map: {@HexEnc[$_]};
 	@buf.push: '>'.ord;
 
-	PDF::Storage::Blob.new( @buf );
+	PDF::IO::Blob.new( @buf );
     }
 
     multi method decode(Blob $input, |c) {
 	$.decode( $input.decode("latin-1"), |c);
     }
-    multi method decode(Str $input, Bool :$eod = False --> PDF::Storage::Blob) {
+    multi method decode(Str $input, Bool :$eod = False --> PDF::IO::Blob) {
 
         my Str $str = $input.subst(/\s/, '', :g).lc;
 
@@ -54,6 +54,6 @@ class PDF::Storage::Filter::ASCIIHex {
 
         my uint8 @bytes = $str.ords.map: -> \a, \b { @HexDec[a;b] //  die "Illegal character(s) found in ASCII hex-encoded stream: {(a~b).perl}" };
 
-	PDF::Storage::Blob.new( @bytes );
+	PDF::IO::Blob.new( @bytes );
     }
 }

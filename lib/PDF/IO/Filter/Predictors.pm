@@ -1,10 +1,10 @@
 use v6;
 
-role PDF::Storage::Filter::Predictors {
+role PDF::IO::Filter::Predictors {
 
     my subset BPC of UInt where 1 | 2 | 4 | 8 | 16;
 
-    use PDF::Storage::Util :resample;
+    use PDF::IO :resample;
     # post prediction functions as described in the PDF 1.7 spec, table 3.8
     multi method post-prediction($decoded where Blob | Buf, 
                                  UInt :$Predictor! where { $_ <= 1}, #| predictor function

@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 13;
 
-use PDF::Storage::IndObj;
+use PDF::IO::IndObj;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
@@ -14,7 +14,7 @@ my $input = '42 5 obj [0.9505 1.0000 1.0890 [1 2 (abc)]] endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
-my $ind-obj = PDF::Storage::IndObj.new( |%ast, :$input );
+my $ind-obj = PDF::IO::IndObj.new( |%ast, :$input );
 my $object = $ind-obj.object;
 isa-ok $object, Array;
 is-json-equiv $object, [0.9505e0, 1e0, 1.089e0, [1, 2, "abc"]], '$.content';

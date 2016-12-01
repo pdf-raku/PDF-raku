@@ -3,7 +3,7 @@ use Test;
 plan 20;
 
 use PDF::DAO::Stream;
-use PDF::Storage::IndObj;
+use PDF::IO::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
 
 my $stream-obj;
@@ -19,7 +19,7 @@ stream_tests( $stream-obj, 'stream object' );
 %dict<Length> = 59;
 
 my $ind-obj;
-lives-ok { $ind-obj = PDF::Storage::IndObj.new( :ind-obj[123, 1, $stream-obj.content] ); }, 'stream object rebuilt';
+lives-ok { $ind-obj = PDF::IO::IndObj.new( :ind-obj[123, 1, $stream-obj.content] ); }, 'stream object rebuilt';
 is $ind-obj.obj-num, 123, '$.obj-num';
 is $ind-obj.gen-num, 1, '$.gen-num';
 

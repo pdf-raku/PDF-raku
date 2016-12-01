@@ -1,11 +1,11 @@
 use v6;
 
-class PDF::Storage::Crypt {
+class PDF::IO::Crypt {
 
     use OpenSSL::Digest;
 
     use PDF::DAO::Dict;
-    use PDF::Storage::Util :resample;
+    use PDF::IO :resample;
     use PDF::DAO::Type::Encrypt;
 
     has UInt $!R;         #| encryption revision

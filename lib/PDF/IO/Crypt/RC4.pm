@@ -1,14 +1,14 @@
 use v6;
 
-use PDF::Storage::Crypt;
-use PDF::Storage::Crypt::AST;
+use PDF::IO::Crypt;
+use PDF::IO::Crypt::AST;
 
-class PDF::Storage::Crypt::RC4
-    is PDF::Storage::Crypt
-    does PDF::Storage::Crypt::AST {
+class PDF::IO::Crypt::RC4
+    is PDF::IO::Crypt
+    does PDF::IO::Crypt::AST {
 
-    use PDF::Storage::Blob;
-    use PDF::Storage::Util :resample;
+    use PDF::IO::Blob;
+    use PDF::IO :resample;
     use OpenSSL::Digest;
 
     method type { 'V2' }
@@ -35,7 +35,7 @@ class PDF::Storage::Crypt::RC4
 	# Algorithm 3.1
 
         my $obj-key = self!object-key( $obj-num, $gen-num );
-	PDF::Storage::Crypt.rc4-crypt( $obj-key, $bytes );
+	PDF::IO::Crypt.rc4-crypt( $obj-key, $bytes );
     }
 
 }

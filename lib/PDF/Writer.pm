@@ -3,9 +3,9 @@ use v6;
 class PDF::Writer {
 
     use PDF::Grammar;
-    use PDF::Storage::Input;
+    use PDF::IO::Input;
 
-    has PDF::Storage::Input $!input;
+    has PDF::IO::Input $!input;
     has $.ast is rw;
     has UInt $.offset;
     has UInt $.prev;
@@ -13,7 +13,7 @@ class PDF::Writer {
     has Str $.indent is rw = '';
 
     submethod TWEAK(:$input) {
-        $!input = PDF::Storage::Input.coerce( $_ )
+        $!input = PDF::IO::Input.coerce( $_ )
             with $input;
     }
 

@@ -10,8 +10,8 @@ class PDF::DAO::Type::XRef
     is PDF::DAO::Stream
     does PDF::DAO::Tie::Hash {
 
-    use PDF::Storage::Util :resample;
-    use PDF::Storage::Blob;
+    use PDF::IO :resample;
+    use PDF::IO::Blob;
     use PDF::DAO::Tie;
     use PDF::DAO::Name;
 
@@ -63,7 +63,7 @@ class PDF::DAO::Type::XRef
         }
 
         my \buf := resample( $xref, $.W, 8 );
-        nextwith( PDF::Storage::Blob.new: buf );
+        nextwith( PDF::IO::Blob.new: buf );
     }
 
     #= inverse of $.decode-index . handily calculates and sets $.Size and $.Index

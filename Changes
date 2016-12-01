@@ -1,3 +1,8 @@
+    Release 0.1.0
+    Renamed class namespace PDF::Storage -> PDF::IO. Changed the module
+    name from PDF to PDF::IO. This is to emphasise its low level nature
+    and keep the top PDF namespace open for future distributions.
+
     Release 0.0.9
     - class PDF::DAO::Stream is now based on PDF::DAO::Dict
     - withdrew non-standard PDF::DAO::Dict.new( $dict) positionals,

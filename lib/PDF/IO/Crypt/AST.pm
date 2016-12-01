@@ -1,6 +1,6 @@
 use v6;
 
-role PDF::Storage::Crypt::AST {
+role PDF::IO::Crypt::AST {
 
     #| encrypt/decrypt all strings/streams in a PDF body
     multi method crypt-ast('body', Array $body, Str :$mode = 'decrypt') {

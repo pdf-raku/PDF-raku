@@ -6,7 +6,7 @@ use JSON::Fast;
 use PDF::Grammar::Doc;
 use PDF::Grammar::Doc::Actions;
 use PDF::Grammar::Test;
-use PDF::Storage::Input;
+use PDF::IO::Input;
 use PDF::Writer;
 
 my $actions = PDF::Grammar::Doc::Actions.new();
@@ -20,7 +20,7 @@ for 't/pdf'.IO.dir.list.sort {
     my $pdf-input-file = $json-file.subst( /'.json'$/, '.in' );
     next unless $pdf-input-file.IO.e;
     my $pdf-output-file = $json-file.subst( /'.json'$/, '.out' );
-    my $input = PDF::Storage::Input.coerce( $pdf-input-file.IO );
+    my $input = PDF::IO::Input.coerce( $pdf-input-file.IO );
     my $pdf-output = PDF::Writer.new( :$input, :offset(0), :%ast );
     $pdf-output-file.IO.spurt( ~$pdf-output, :enc<latin-1> );
 
@@ -32,7 +32,7 @@ for 't/pdf'.IO.dir.list.sort {
     PDF::Grammar::Test::parse-tests($class, ~$input, :$rule, :$actions, :suite("[$pdf-input-file]"), :%expected );
 
     my $json-output-file = $pdf-output-file ~ '.json';
-    my $output = PDF::Storage::Input.coerce( $pdf-output-file.IO );
+    my $output = PDF::IO::Input.coerce( $pdf-output-file.IO );
     PDF::Grammar::Test::parse-tests($class, ~$output, :$rule, :$actions, :suite("[$pdf-output-file]"), :%expected );
 }
 

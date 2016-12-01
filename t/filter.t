@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 80;
 
-use PDF::Storage::Filter;
+use PDF::IO::Filter;
 
 my $empty = '';
 my $latin-chars = [~] chr(0)..chr(0xFF);
@@ -16,18 +16,18 @@ for 'ASCIIHexDecode', 'FlateDecode', 'RunLengthDecode', ['FlateDecode', 'RunLeng
     my $filter-name = $filter.join: ', ';
     my %dict = Filter => $filter;
 
-    dies-ok { PDF::Storage::Filter.encode($wide-chars, :%dict) }, $filter-name ~' decode chars > \xFF - dies';
+    dies-ok { PDF::IO::Filter.encode($wide-chars, :%dict) }, $filter-name ~' decode chars > \xFF - dies';
 
     for :$empty, :$latin-chars, :$low-repeat, :$high-repeat, :$longish {
         my ($name, $input) = .kv;
 
         my $encoded;
-        lives-ok { $encoded = PDF::Storage::Filter.encode($input, :%dict) }, $filter-name ~' encoding - lives';
+        lives-ok { $encoded = PDF::IO::Filter.encode($input, :%dict) }, $filter-name ~' encoding - lives';
 	isnt $input, $encoded, $filter-name ~' is encoded'
 	     unless $input eq '';
 	     
         my $decoded;
-        lives-ok { $decoded = PDF::Storage::Filter.decode($encoded, :%dict); }, $filter-name ~' decoding - lives';
+        lives-ok { $decoded = PDF::IO::Filter.decode($encoded, :%dict); }, $filter-name ~' decoding - lives';
 	is $decoded, $input, "$filter-name roundtrip: $name"
             or diag :$input.perl;
 

@@ -7,7 +7,7 @@ use PDF::DAO::Dict;
 class PDF::DAO::Type::PDF
     is PDF::DAO::Dict {
 
-    use PDF::Storage::Serializer;
+    use PDF::IO::Serializer;
     use PDF::Writer;
     use PDF::DAO::Tie;
     use JSON::Fast;
@@ -39,8 +39,8 @@ class PDF::DAO::Type::PDF
     }
 
     method encrypt( Str :$owner-pass!, Str :$user-pass = '', |c ) {
-        require PDF::Storage::Crypt::PDF;
-        $!crypt = ::('PDF::Storage::Crypt::PDF').new( :doc(self), :$owner-pass, :$user-pass, |c);
+        require PDF::IO::Crypt::PDF;
+        $!crypt = ::('PDF::IO::Crypt::PDF').new( :doc(self), :$owner-pass, :$user-pass, |c);
     }
 
     #| perform an incremental save back to the opened input file, or write
@@ -61,7 +61,7 @@ class PDF::DAO::Type::PDF
 	self.generate-id( :$type )
 	    unless $diffs;
 
-        my PDF::Storage::Serializer $serializer .= new( :$reader, :$type );
+        my PDF::IO::Serializer $serializer .= new( :$reader, :$type );
         my Array $body = $serializer.body( :updates, :$compress );
 	.crypt-ast('body', $body, :mode<encrypt>)
 	    with $!crypt;
@@ -125,7 +125,7 @@ class PDF::DAO::Type::PDF
 	my $type = $.reader.?type;
 	$type //= self<Root><FDF>:exists ?? 'FDF' !! 'PDF';
 	self.generate-id( :$type );
-	my PDF::Storage::Serializer $serializer .= new;
+	my PDF::IO::Serializer $serializer .= new;
 	$serializer.ast( self, :$type, :$!crypt, |c);
     }
 
