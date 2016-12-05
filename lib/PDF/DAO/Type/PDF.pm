@@ -27,20 +27,18 @@ class PDF::DAO::Type::PDF
 
     #| open the input file-name or path
     method open($spec, |c) {
-        require PDF::Reader;
-        my \reader = ::('PDF::Reader').new;
-        my \doc = self.new( :reader(reader) );
+        my $reader = (require PDF::Reader).new;
+        my \doc = self.new: :$reader;
 
-        reader.install-trailer( doc );
-        reader.open($spec, |c);
+        $reader.trailer = doc;
+        $reader.open($spec, |c);
         doc.crypt = $_
-            with reader.crypt;
+            with $reader.crypt;
         doc;
     }
 
     method encrypt( Str :$owner-pass!, Str :$user-pass = '', |c ) {
-        require PDF::IO::Crypt::PDF;
-        $!crypt = ::('PDF::IO::Crypt::PDF').new( :doc(self), :$owner-pass, :$user-pass, |c);
+        $!crypt = (require PDF::IO::Crypt::PDF).new( :doc(self), :$owner-pass, :$user-pass, |c);
     }
 
     #| perform an incremental save back to the opened input file, or write

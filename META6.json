@@ -1,8 +1,9 @@
 {   "perl"        : "6.*",
     "name"        : "PDF::IO",
     "version"     : "0.1.0",
+    "auth"        : "github:p6-pdf",
     "api"         : "PDF-1.7",
-    "description" : "Low level tools for reading, writing and authoring of PDF files",
+    "description" : "Low level tools for reading, manipulation and writing of PDF data",
     "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Fast", "OpenSSL" ],
     "source-url"  : "git://github.com/p6-pdf/perl6-PDF-Tools.git",
     "provides"    : {

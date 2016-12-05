@@ -56,20 +56,19 @@ role PDF::DAO::Tie {
 
 	multi method apply($lval is rw where { nqp::isrwcont($lval) } ) {
 	    unless $lval.isa(Pair) {
-	        my \type = $.type;
-		if $lval.defined && ! ($lval ~~ type) {
+		if $lval.defined && ! ($lval ~~ $!type) {
 
 		    my \reader  = $lval.?reader;
 		    my \obj-num = $lval.?obj-num;
 		    my \gen-num = $lval.?gen-num;
 
-		    if (type ~~ Positional[Mu] && $lval ~~ Array)
-                    || (type ~~ Associative[Mu] && $lval ~~ Hash) {
+		    if ($!type ~~ Positional[Mu] && $lval ~~ Array)
+                    || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
 			# of-att typed array declaration, e.g.:
 			# has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
                         # or, typed hash declarations, e.g.:
                         # has PDF::DOM::Type::ExtGState %.ExtGState is entry;
-			my \of-type = type.of;
+			my \of-type = $!type.of;
 			my Attribute $att = $lval.of-att;
 			if $att {
 			    die "conflicting types for {$att.name} {$att.type.gist} {of-type.gist}"
@@ -91,7 +90,7 @@ role PDF::DAO::Tie {
 			}
 		    }
 		    else {
-			($.coerce)($lval, type);
+			($.coerce)($lval, $!type);
 			$lval.reader  //= $_ with reader;
 			$lval.obj-num //= $_ with obj-num;
 			$lval.gen-num //= $_ with gen-num;

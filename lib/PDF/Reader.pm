@@ -58,11 +58,11 @@ class PDF::Reader {
     use PDF::Grammar::PDF::Actions;
     use PDF::IO::IndObj;
     use PDF::IO::Serializer;
+    use PDF::IO::Input;
+    use PDF::IO::Crypt::PDF;
     use PDF::DAO;
     use PDF::DAO::Dict;
     use PDF::DAO::Util :from-ast, :to-ast;
-    use PDF::IO::Input;
-    use PDF::IO::Crypt::PDF;
     use JSON::Fast;
 
     has $.input is rw;       #= raw PDF image (latin-1 encoding)
@@ -82,12 +82,19 @@ class PDF::Reader {
     }
 
     method trailer {
-        self.install-trailer
-           unless %!ind-obj-idx{"0 0"}:exists;
-        self.ind-obj(0, 0).object;
+        Proxy.new(
+            FETCH => sub ($) { 
+                self!install-trailer
+                    without %!ind-obj-idx{"0 0"};
+                self.ind-obj(0, 0).object;
+            },
+            STORE => sub ($, \obj) {
+                self!install-trailer(obj);
+            },
+        );
     }
 
-    method install-trailer(PDF::DAO::Dict $object = PDF::DAO::Dict.new( :reader(self) ) ) {
+    method !install-trailer(PDF::DAO::Dict $object = PDF::DAO::Dict.new( :reader(self) ) ) {
         %!ind-obj-idx{"0 0"} = do {
             my PDF::IO::IndObj $ind-obj .= new( :$object, :obj-num(0), :gen-num(0) );
             { :type(1), :$ind-obj }
