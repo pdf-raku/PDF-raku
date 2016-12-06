@@ -455,7 +455,7 @@ class PDF::Reader {
 
 	with index<xref> {
 	    for .list {
-		my UInt $obj-num = .<obj-first-num>;
+		my uint $obj-num = .<obj-first-num>;
 		for @( .<entries> ) {
 		    my UInt $type = .<type>;
 		    my UInt $gen-num = .<gen-num>;

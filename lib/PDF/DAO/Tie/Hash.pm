@@ -5,11 +5,11 @@ use PDF::DAO::Tie;
 role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
     #| resolve a heritable property by dereferencing /Parent entries
-    proto sub inehrit(Hash $, Str $, Int :$hops) {*}
+    proto sub inehrit(Hash $, Str $, int :$hops) {*}
     multi sub inherit(Hash $object, Str $key where { $object{$key}:exists }, :$hops) {
 	$object{$key};
     }
-    multi sub inherit(Hash $object, Str $key where { $object<Parent>:exists }, Int :$hops is copy = 1) {
+    multi sub inherit(Hash $object, Str $key where { $object<Parent>:exists }, int :$hops is copy = 1) {
 	die "cyclical inheritance hierarchy"
 	    if ++$hops > 100;
 	inherit($object<Parent>, $key, :$hops);

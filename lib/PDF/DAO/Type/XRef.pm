@@ -50,8 +50,8 @@ class PDF::DAO::Type::XRef
 
         # /W resize to widest byte-widths, if needed
         for 0..2 -> \i {
-            my UInt $val = $xref.map( *.[i] ).max;
-            my UInt $max-bytes;
+            my uint $val = $xref.map( *.[i] ).max;
+            my uint $max-bytes;
 
             repeat {
                 $max-bytes++;
@@ -119,7 +119,7 @@ class PDF::DAO::Type::XRef
 
         my Array \index = self<Index> // [ 0, $.Size ];
         my Array \decoded = $.decode( $encoded );
-        my UInt $i = 0;
+        my uint $i = 0;
         my Hash @decoded-index = [];
 
         for index.list -> $obj-num is rw, \num-entries {
@@ -130,14 +130,14 @@ class PDF::DAO::Type::XRef
                 given $type {
                     when 0|1 {
                         # free or inuse objects
-                        my UInt $offset = idx[1];
-                        my UInt $gen-num = idx[2];
+                        my uint $offset = idx[1];
+                        my uint $gen-num = idx[2];
                         @decoded-index.push: { :$type, :$obj-num, :$gen-num, :$offset };
                     }
                     when 2 {
                         # embedded objects
-                        my UInt $ref-obj-num = idx[1];
-                        my UInt $index = idx[2];
+                        my uint $ref-obj-num = idx[1];
+                        my uint $index = idx[2];
                         @decoded-index.push: { :$type, :$obj-num, :$ref-obj-num, :$index };
                     }
                     default {

@@ -71,8 +71,8 @@ class PDF::Writer {
             with obj<ind-obj> -> $ind-obj {
                 @out.push: $.write-ind-obj( $ind-obj );
 
-		my UInt $obj-num = $ind-obj[0];
-		my UInt $gen-num = $ind-obj[1];
+		my uint $obj-num = $ind-obj[0];
+		my uint $gen-num = $ind-obj[1];
 
 		@idx.push: { :type(1), :$.offset, :$gen-num, :$obj-num, :$ind-obj };
             }
@@ -91,20 +91,21 @@ class PDF::Writer {
     method !make-xref( Hash $trailer, @out, @idx, Bool :$write-xref ) {
 	@idx = @idx.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
-	my Hash @xref;
+	my Hash @xrefs;
+        my Hash $xref;
 
 	for @idx {
 	    # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
 	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
-	    my \contiguous = +@xref && .<obj-num> && .<obj-num> == $!size;
-	    @xref.push: %( :obj-first-num(.<obj-num>), :entries[] )
+	    my \contiguous = $xref && .<obj-num> && .<obj-num> == $!size;
+	    @xrefs.push: ($xref = %( :obj-first-num(.<obj-num>), :entries[] ))
 		unless contiguous;
-	    @xref[*-1]<entries>.push: $_;
-	    @xref[*-1]<obj-count>++;
+	    $xref<entries>.push: $_;
+	    $xref<obj-count>++;
 	    $!size = .<obj-num> + 1;
 	}
 
-	my Str \xref-str = $.write-xref( @xref );
+	my Str \xref-str = $.write-xref( @xrefs );
 	my UInt \startxref = $.offset;
 
 	@out.push: [~] (

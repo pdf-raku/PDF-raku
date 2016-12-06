@@ -30,7 +30,7 @@ class PDF::DAO::Type::ObjStm
     }
 
     method encode(Array $objstm = $.decoded, Bool :$check = False) {
-        my UInt @idx;
+        my uint @idx;
         my Str $objects-str = '';
         for $objstm.list { 
             my UInt \obj-num = .[0];

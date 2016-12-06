@@ -126,7 +126,7 @@ class PDF::IO::Crypt {
 	die "Only the Standard encryption filter is supported"
 	    unless $Filter eq 'Standard';
 
-	my UInt $key-bits = $V == 1 ?? 40 !! $Length;
+	my uint $key-bits = $V == 1 ?? 40 !! $Length;
         $key-bits *= 8 if $key-bits <= 16;  # assume bytes
 	die "invalid encryption key length: $key-bits"
 	    unless 40 <= $key-bits <= 128
@@ -228,8 +228,8 @@ class PDF::IO::Crypt {
         # Algorithm 3.7 steps 1 .. 4
 	my Buf $key .= new: @pass-padded;   # 1
 
-	my UInt $n = 5;
-	my UInt $reps = 1;
+	my uint $n = 5;
+	my uint $reps = 1;
 
 	if $!R >= 3 {                       # 3
 	    $n = $!key-bytes;
