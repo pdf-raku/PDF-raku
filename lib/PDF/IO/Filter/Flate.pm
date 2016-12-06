@@ -16,17 +16,17 @@ class PDF::IO::Filter::Flate
 	$.encode( $input.encode('latin-1'), |c );
     }
 
-    multi method encode(Blob $buf, :$Predictor, |c --> PDF::IO::Blob) is default {
+    multi method encode(Blob $decoded, :$Predictor, |c --> PDF::IO::Blob) is default {
         PDF::IO::Blob.new: compress($Predictor ?? $.prediction( $_, :$Predictor, |c ) !! $_)
-            with $buf;
+            with $decoded;
     }
 
-    multi method decode(Str $input, |c) {
-	$.decode( $input.encode('latin-1'), |c);
+    multi method decode(Str $encoded, |c) {
+	$.decode( $encoded.encode('latin-1'), |c);
     }
 
-    multi method decode(Blob $input, :$Predictor, |c --> PDF::IO::Blob) {
+    multi method decode(Blob $encoded, :$Predictor, |c --> PDF::IO::Blob) {
         PDF::IO::Blob.new: ($Predictor ?? $.post-prediction( $_, :$Predictor, |c ) !! $_)
-            with uncompress( $input );
+            with uncompress( $encoded );
     }
 }
