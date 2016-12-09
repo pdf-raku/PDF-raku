@@ -50,8 +50,7 @@ role PDF::DAO {
     method required(*@path where +@path) {
 	my Str \mod-name = @path.join('::');
 	unless %required{mod-name}:exists {
-	    require ::(mod-name);
-            %required{mod-name} = ::(mod-name);
+            %required{mod-name} = (require ::(mod-name));
 	}
         %required{mod-name};
     }
@@ -129,8 +128,7 @@ role PDF::DAO {
 
     method delegator is rw {
 	unless $delegator.can('delegate') {
-	    $.required('PDF::DAO::Delegator');
-	    $delegator = ::('PDF::DAO::Delegator');
+	    $delegator = $.required('PDF::DAO::Delegator');
 	}
 	$delegator
     }

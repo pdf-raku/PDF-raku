@@ -1,6 +1,6 @@
 {   "perl"        : "6.*",
     "name"        : "PDF::IO",
-    "version"     : "0.1.0",
+    "version"     : "0.1.1",
     "auth"        : "github:p6-pdf",
     "api"         : "PDF-1.7",
     "description" : "Low level tools for reading, manipulation and writing of PDF data",
