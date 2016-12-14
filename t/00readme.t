@@ -1,6 +1,7 @@
 use v6;
 use Test;
 use PDF::Grammar::PDF;
+use PDF::DAO::Type::PDF;
 
 # ensure consistant document ID generation
 srand(123456);

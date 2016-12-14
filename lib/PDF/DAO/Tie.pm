@@ -52,9 +52,7 @@ role PDF::DAO::Tie {
 	has Code $.coerce is rw = sub ($lval is rw, Mu $type) { PDF::DAO.coerce($lval, $type) };
         has UInt $.length is rw;
 
-	use nqp;
-
-	multi method apply($lval is rw where { nqp::isrwcont($lval) } ) {
+	multi method apply($lval is rw) {
 	    unless $lval.isa(Pair) {
 		if $lval.defined && ! ($lval ~~ $!type) {
 

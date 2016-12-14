@@ -11,10 +11,10 @@ my $high-repeat = chr(180) x 200;
 my $longish = [~] (map { $_ x 3 }, $latin-chars.comb ) x 2;
 my $wide-chars = "Τη γλώσσα μου έδωσαν ελληνική";
 
-for 'ASCIIHexDecode', 'FlateDecode', 'RunLengthDecode', ['FlateDecode', 'RunLengthDecode'] -> $filter {
+for 'ASCIIHexDecode', 'FlateDecode', 'RunLengthDecode', ['FlateDecode', 'RunLengthDecode'] -> $Filter {
 
-    my $filter-name = $filter.join: ', ';
-    my %dict = Filter => $filter;
+    my $filter-name = $Filter.join: ', ';
+    my %dict = :$Filter;
 
     dies-ok { PDF::IO::Filter.encode($wide-chars, :%dict) }, $filter-name ~' decode chars > \xFF - dies';
 

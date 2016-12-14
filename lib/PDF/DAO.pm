@@ -47,67 +47,66 @@ role PDF::DAO {
 	$.coerce( |%_, |c)
     }
     #| work around rakudo performance regressions - issue #15
-    method required(*@path where +@path) {
-	my Str \mod-name = @path.join('::');
-	unless %required{mod-name}:exists {
+    method required(Str \mod-name) {
+	if %required{mod-name}:exists {
+            %required{mod-name};
+        }
+        else {
             %required{mod-name} = (require ::(mod-name));
 	}
-        %required{mod-name};
     }
-    method add-role($obj, Str $role) {
+    method !add-role($obj is rw, Str $role) {
 	$.required($role);
 	$obj.does(::($role))
             ?? $obj
-            !! $obj does ::($role)
+            !! $obj = $obj but ::($role)
     }
 
     multi method coerce( Array :$array!, |c ) {
-        my $fallback = $.required("PDF::DAO::Array");
+        state $fallback //= $.required("PDF::DAO::Array");
         $.delegate( :$array, :$fallback ).new( :$array, |c );
-    }
-
-    multi method coerce( Bool :$bool!) {
-	use nqp;
-        $.add-role($bool, "PDF::DAO::Bool");
-	$.add-role($bool, 'PDF::DAO')
-	    if nqp::isrwcont($bool);
-	$bool;
     }
 
     multi method coerce( Array :$ind-ref!) {
 	:$ind-ref
     }
 
-    multi method coerce( Int :$int!) {
-        $.add-role($int, "PDF::DAO::Int");
+    multi method coerce( Int :$int! is rw) {
+        self!add-role($int, "PDF::DAO::Int");
     }
+    multi method coerce( Int :$int! is copy) { self.coerce: :$int }
 
-    multi method coerce( Numeric :$real!) {
-        $.add-role($real, "PDF::DAO::Real");
+    multi method coerce( Numeric :$real! is rw) {
+        self!add-role($real, "PDF::DAO::Real");
     }
+    multi method coerce( Numeric :$real! is copy) { self.coerce: :$real }
 
-    multi method coerce( Str :$hex-string!) {
-        $.add-role($hex-string, "PDF::DAO::ByteString");
+    multi method coerce( Str :$hex-string! is rw) {
+        self!add-role($hex-string, "PDF::DAO::ByteString");
         $hex-string.type = 'hex-string';
         $hex-string;
     }
+    multi method coerce( Str :$hex-string! is copy) { self.coerce: :$hex-string }
 
-    multi method coerce( Str :$literal!) {
-        $.add-role( $literal, "PDF::DAO::ByteString");
+    multi method coerce( Str :$literal! is rw) {
+        self!add-role( $literal, "PDF::DAO::ByteString");
         $literal.type = 'literal';
         $literal;
     }
+    multi method coerce( Str :$literal! is copy) { self.coerce: :$literal }
 
-    multi method coerce( Str :$name!) {
-        $.add-role($name, "PDF::DAO::Name");
+    multi method coerce( Str :$name! is rw) {
+        self!add-role($name, "PDF::DAO::Name");
     }
+    multi method coerce( Str :$name! is copy) { self.coerce: :$name }
 
-    multi method coerce( Any :$null!, |c) {
-        $.required("PDF::DAO::Null").new( |c );
+    multi method coerce( Bool :$bool! is rw) {
+        self!add-role($bool, "PDF::DAO::Bool");
     }
+    multi method coerce( Bool :$bool! is copy) { self.coerce: :$bool }
 
     multi method coerce( Hash :$dict!, |c ) {
-	my $fallback = $.required("PDF::DAO::Dict");
+	state $fallback //= $.required("PDF::DAO::Dict");
 	my $class = $.delegate( :$dict, :$fallback );
 	$class.new( :$dict, |c );
     }
@@ -122,6 +121,10 @@ role PDF::DAO {
 	my $fallback = $.required("PDF::DAO::Stream");
 	my $class = $.delegate( :$dict, :$fallback );
         $class.new( :$dict, |%params, |c );
+    }
+
+    multi method coerce(*%args where (.<null>:exists)) {
+        $.required("PDF::DAO::Null").new;
     }
 
     multi method coerce($val) is default { $val }

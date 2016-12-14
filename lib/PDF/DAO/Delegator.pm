@@ -41,8 +41,13 @@ class PDF::DAO::Delegator {
 	$obj = $class.new( :value($obj), :$type, |c );
     }
 
-    multi method coerce( Str $obj, $role where PDF::DAO::Name ) {
-	$obj does PDF::DAO::Name
+    multi method coerce( Str $obj is rw, $role where PDF::DAO::Name ) {
+	$obj = $obj but PDF::DAO::Name
+    }
+
+    #| handle ro candidates for the above
+    multi method coerce( Str $obj is copy, \r where PDF::DAO::DateString|DateTime|PDF::DAO::Name) {
+	self.coerce( $obj, r);
     }
 
     multi method coerce( Array $obj where PDF::DAO, $role where PDF::DAO::Tie::Array ) {
@@ -90,8 +95,9 @@ class PDF::DAO::Delegator {
 	my $handler-class = $fallback;
 
 	for self.class-paths -> \class-path {
-	    PDF::DAO.required(class-path, $subclass);
-	    $handler-class = ::(class-path)::($subclass);
+            my \class-name = class-path ~ '::' ~ $subclass;
+	    PDF::DAO.required(class-name);
+	    $handler-class = ::(class-name);
 	    last;
 	    CATCH {
 		when X::CompUnit::UnsatisfiedDependency { }

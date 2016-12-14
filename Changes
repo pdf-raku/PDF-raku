@@ -1,5 +1,6 @@
     Release 0.1.1
     - [PDF::Reader] now handles very large xref tables or streams (> 65K)
+    - [PDF::DAO] use 'but' to apply roles to simple scalars, not 'does'.
 
     Release 0.1.0
     Renamed class namespace PDF::Storage -> PDF::IO. Changed the module
