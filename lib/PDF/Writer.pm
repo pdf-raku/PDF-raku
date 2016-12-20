@@ -13,7 +13,7 @@ class PDF::Writer {
     has Str $.indent is rw = '';
 
     submethod TWEAK(:$input) {
-        $!input = PDF::IO::Input.coerce( $_ )
+        $!input .= coerce( $_ )
             with $input;
     }
 
@@ -40,55 +40,47 @@ class PDF::Writer {
 
     multi method write-body( Hash $body, |c ) {
 	$!offset //= 0;
-	$.write-body( $body, my @_idx, |c );
+	$.write-body( $body, |c );
     }
 
     #| write the body and return the index
-    multi method write-body( Hash $body!, @idx, Bool :$write-xref = True --> Str ) {
-        my @out;
+    multi method write-body( Hash $body!, @idx = [], Bool :$write-xref = True --> Str ) {
+	my @out = self!make-objects( $body<objects>, @idx );
 	@idx.unshift: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
-
-	self!make-objects( $body<objects>, @out, @idx );
 
 	my \trailer = $body<trailer> // {};
 
-	if $write-xref {
-	    self!make-xref( trailer, @out, @idx );
-	}
-	else {
-            # simple trailer, no xref
-            @out.push: [~] ( $.write-trailer( trailer ), '%%EOF' );
-	}
+	@out.push: $write-xref
+                    ?? self!make-trailer( trailer, @idx )
+                    !! [~] ( $.write-trailer( trailer ), '%%EOF' );
 
         $!offset += @out[*-1].codes + 2;
 
         @out.join: "\n";
     }
 
-    method !make-objects( @objects, @out = [], @idx = [] ) {
-        for @objects -> \obj {
-
-            with obj<ind-obj> -> $ind-obj {
-                @out.push: $.write-ind-obj( $ind-obj );
-
+    method !make-objects( @objects, @idx = [] ) {
+        @objects.map: -> \obj {
+            my \bytes = do with obj<ind-obj> -> $ind-obj {
 		my uint $obj-num = $ind-obj[0];
 		my uint $gen-num = $ind-obj[1];
+		@idx.push: { :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj };
 
-		@idx.push: { :type(1), :$.offset, :$gen-num, :$obj-num, :$ind-obj };
+                $.write-ind-obj( $ind-obj );
             }
             elsif my \comment = obj<comment> {
-                @out.push: $.write-comment(comment);
+                $.write-comment(comment);
             }
             else {
                 die "don't know how to serialize body component: {obj.perl}"
             }
 
-            $!offset += @out[*-1].codes + 1;
+            $!offset += bytes.codes + 1;
+            bytes;
         }
-	@out;
     }
 
-    method !make-xref( Hash $trailer, @out, @idx, Bool :$write-xref ) {
+    method !make-trailer( Hash $trailer, @idx ) {
 	@idx = @idx.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
 	my Hash @xrefs;
@@ -108,14 +100,17 @@ class PDF::Writer {
 	my Str \xref-str = $.write-xref( @xrefs );
 	my UInt \startxref = $.offset;
 
-	@out.push: [~] (
+	my \trailer = [~] (
 	    xref-str,
 	    $.write-trailer( $trailer, :$!prev, :$!size ),
 	    $.write-startxref( startxref ),
-	    '%%EOF');
+	    '%%EOF',
+        );
 
 	$!offset += xref-str.codes;
 	$!prev = startxref;
+
+        trailer;
     }
 
     method write-bool( $_ ) {

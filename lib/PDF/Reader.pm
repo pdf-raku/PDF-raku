@@ -800,8 +800,7 @@ class PDF::Reader {
 
     #| write to PDF/FDF
     multi method save-as( Str $output-path, |c ) is default {
-        require PDF::Writer;
-        my \pdf-writer = ::('PDF::Writer').new( :$.input );
+        my \pdf-writer = (require PDF::Writer).new( :$.input );
         my \ast = $.ast(|c);
         $output-path.IO.spurt( pdf-writer.write( ast ), :enc<latin1> );
     }
