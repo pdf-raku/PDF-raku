@@ -63,6 +63,7 @@ class PDF::Reader {
     use PDF::DAO;
     use PDF::DAO::Dict;
     use PDF::DAO::Util :from-ast, :to-ast;
+    use PDF::Writer;
     use JSON::Fast;
 
     has $.input is rw;       #= raw PDF image (latin-1 encoding)
@@ -789,9 +790,6 @@ class PDF::Reader {
         }
     }
 
-    #| return an AST for the fully serialized PDF/FDF etc.
-    #| suitable as input to PDF::Writer
-
     #| dump to json
     multi method save-as( Str $output-path where m:i/'.json' $/, |c ) {
         my \ast = $.ast(|c);
@@ -800,9 +798,9 @@ class PDF::Reader {
 
     #| write to PDF/FDF
     multi method save-as( Str $output-path, |c ) is default {
-        my \pdf-writer = (require PDF::Writer).new( :$.input );
+        my PDF::Writer $writer .= new: :$.input;
         my \ast = $.ast(|c);
-        $output-path.IO.spurt( pdf-writer.write( ast ), :enc<latin1> );
+        $output-path.IO.spurt( $writer.write( ast ), :enc<latin1> );
     }
 
 }

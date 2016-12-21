@@ -8,6 +8,7 @@ class PDF::DAO::Type::PDF
     is PDF::DAO::Dict {
 
     use PDF::IO::Serializer;
+    use PDF::Reader;
     use PDF::Writer;
     use PDF::DAO::Tie;
     use JSON::Fast;
@@ -27,7 +28,7 @@ class PDF::DAO::Type::PDF
 
     #| open the input file-name or path
     method open($spec, |c) {
-        my $reader = (require PDF::Reader).new;
+        my PDF::Reader $reader .= new;
         my \doc = self.new: :$reader;
 
         $reader.trailer = doc;
