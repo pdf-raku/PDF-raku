@@ -1,11 +1,14 @@
+    Release 0.2.0
+    - Renamed class PDF::DAO::Type::PDF to PDF. Restored module name
+      to PDF
+
     Release 0.1.1
     - [PDF::Reader] now handles very large xref tables or streams (> 65K)
     - [PDF::DAO] use 'but' to apply roles to simple scalars, not 'does'.
 
     Release 0.1.0
-    Renamed class namespace PDF::Storage -> PDF::IO. Changed the module
-    name from PDF to PDF::IO. This is to emphasise its low level nature
-    and keep the top PDF namespace open for future distributions.
+    Renamed class namespace PDF::Storage -> PDF::IO. Used as the module
+    name
 
     Release 0.0.9
     - class PDF::DAO::Stream is now based on PDF::DAO::Dict
