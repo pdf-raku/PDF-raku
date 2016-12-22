@@ -57,7 +57,7 @@ class PDF::DAO::Type::PDF
 	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
 
 	my $type = $reader.type;
-	self.generate-id( :$type )
+	self!generate-id( :$type )
 	    unless $diffs;
 
         my PDF::IO::Serializer $serializer .= new( :$reader, :$type );
@@ -123,7 +123,7 @@ class PDF::DAO::Type::PDF
 
 	my $type = $.reader.?type;
 	$type //= self<Root><FDF>:exists ?? 'FDF' !! 'PDF';
-	self.generate-id( :$type );
+	self!generate-id( :$type );
 	my PDF::IO::Serializer $serializer .= new;
 	$serializer.ast( self, :$type, :$!crypt, |c);
     }
@@ -170,7 +170,7 @@ class PDF::DAO::Type::PDF
     }
 
     #| Generate a new document ID.  
-    method generate-id(Str :$type = 'PDF') {
+    method !generate-id(Str :$type = 'PDF') {
 
 	my $obj = $type eq 'FDF' ?? self<Root><FDF> !! self;
 
