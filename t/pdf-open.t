@@ -1,8 +1,8 @@
 use v6;
 use Test;
 
-use PDF::DAO::Type::PDF;
-use PDF::DAO::Type::Info;
+use PDF;
+use PDF::Reader;
 
 for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
 
@@ -12,14 +12,14 @@ for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
 
     my $pdf;
     if $desc ~~ /damaged/ {
-        dies-ok {$pdf = PDF::DAO::Type::PDF.open( pdf-file ); $pdf.Info}, "$desc open - dies";
+        dies-ok {$pdf = PDF.open( pdf-file ); $pdf.Info}, "$desc open - dies";
         next;
     }
 
-    lives-ok {$pdf = PDF::DAO::Type::PDF.open( pdf-file ); $pdf.Info}, "$desc open - lives"
+    lives-ok {$pdf = PDF.open( pdf-file ); $pdf.Info}, "$desc open - lives"
         or next;
 
-    isa-ok $pdf, PDF::DAO::Type::PDF, "$desc trailer";
+    isa-ok $pdf, ::('PDF'), "$desc trailer";
     ok $pdf.reader.defined, "$desc \$pdf.reader defined";
     isa-ok $pdf.reader, ::('PDF::Reader'), "$desc reader type";
 
@@ -33,7 +33,7 @@ for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
 	ok $pdf<Root> && $pdf<Root><Pages>, "$desc <Root><Pages> entry";
 
 	unless pdf-file ~~ /'no-pages'/ {
-	    does-ok $pdf.Info, PDF::DAO::Type::Info, "$desc document info";
+	    does-ok $pdf.Info, ::('PDF::DAO::Type::Info'), "$desc document info";
 	    ok $pdf.Info && $pdf.Info.CreationDate // $pdf.Info.ModDate, "$desc <Info><CreationDate> entry";
 	    isa-ok $pdf<Info><CreationDate>//$pdf<Info><ModDate>, DateTime, "$desc CreationDate";
         }

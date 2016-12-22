@@ -2,8 +2,9 @@ use v6;
 use Test;
 plan 30;
 
+use PDF;
+use PDF;
 use PDF::IO::Crypt::PDF;
-use PDF::DAO::Type::PDF;
 
 my $plain-text = "BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET";
 
@@ -84,7 +85,7 @@ my $test-identity = do {
 
 for $test-v1, $test-v2, $test-v4-rc4, $test-identity {
     my $dict = .<dict>;
-    my $doc = PDF::DAO::Type::PDF.new: :$dict;
+    my $doc = PDF.new: :$dict;
     my $owner-pass  = .<owner-pass>;
     my $user-pass   = .<user-pass>;
     my $cipher-text = .<crypt>;

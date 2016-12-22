@@ -2,11 +2,11 @@ use v6;
 use Test;
 plan 33;
 
+use PDF;
 use PDF::Reader;
 use PDF::Writer;
 use PDF::DAO;
-use PDF::DAO::Type::PDF;
-use PDF::Grammar::PDF;
+use PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 use JSON::Fast;
@@ -18,7 +18,7 @@ srand(123456);
 
 't/pdf/pdf.in'.IO.copy('t/pdf/pdf-updated.out');
 
-my $pdf = PDF::DAO::Type::PDF.open( 't/pdf/pdf-updated.out' );
+my $pdf = PDF.open( 't/pdf/pdf-updated.out' );
 my $reader = $pdf.reader;
 is +$reader.xrefs, 1, 'reader.xrefs - initial';
 my $catalog = $pdf<Root>;
@@ -97,7 +97,7 @@ isa-ok $pdf<Root><Pages><Kids>[1], PDF::DAO::Dict, 'updated page 2 access';
 # now re-read the pdf. Will also test our ability to read a PDF
 # with multiple body segments
 
-my $pdf2 = PDF::DAO::Type::PDF.open: 't/pdf/pdf-updated.out';
+my $pdf2 = PDF.open: 't/pdf/pdf-updated.out';
 $reader = $pdf2.reader;
 is $reader.type, 'PDF', 'reader type';
 is +$reader.xrefs, 2, 'reader.xrefs - reread';

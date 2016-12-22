@@ -2,8 +2,8 @@ use v6;
 use Test;
 plan 7;
 
+use PDF;
 use PDF::DAO;
-use PDF::DAO::Type::PDF;
 use PDF::Grammar::PDF;
 
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
@@ -11,7 +11,7 @@ sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 # ensure consistant document ID generation
 srand(123456);
 
-my $pdf = PDF::DAO::Type::PDF.new;
+my $pdf = PDF.new;
 my $root     = $pdf.Root       = { :Type(/'Catalog') };
 my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
 my $pages    = $root<Pages>    = { :Type(/'Pages'), :Kids[], :Count(0) };

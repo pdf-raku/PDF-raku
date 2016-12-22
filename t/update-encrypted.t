@@ -2,14 +2,14 @@ use v6;
 use Test;
 plan 5;
 
-use PDF::DAO::Type::PDF;
+use PDF;
 
 # ensure consistant document ID generation
 srand(123456);
 
 't/encrypt.pdf'.IO.copy('t/update-encrypted.pdf');
 
-my $pdf = PDF::DAO::Type::PDF.open: "t/update-encrypted.pdf";
+my $pdf = PDF.open: "t/update-encrypted.pdf";
 
 my $catalog = $pdf<Root>;
 my $decoded = "BT /F1 16 Tf  40 250 Td (new page added to an encrypted PDF) Tj ET";
@@ -25,7 +25,7 @@ my $decoded = "BT /F1 16 Tf  40 250 Td (new page added to an encrypted PDF) Tj E
 
 lives-ok { $pdf.update }, 'doc.update lives';
 
-lives-ok {$pdf = PDF::DAO::Type::PDF.open: "t/update-encrypted.pdf"}, 'doc re-open lives';
+lives-ok {$pdf = PDF.open: "t/update-encrypted.pdf"}, 'doc re-open lives';
 
 ok $pdf<Encrypt><O>, 'document is encrypted';
 is +$pdf<Root><Pages><Kids>, 2, 'document has two pages';

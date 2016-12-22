@@ -1,14 +1,17 @@
 {   "perl"        : "6.*",
-    "name"        : "PDF::IO",
-    "version"     : "0.1.1",
+    "name"        : "PDF",
+    "version"     : "0.2.0",
     "auth"        : "github:p6-pdf",
     "api"         : "PDF-1.7",
-    "description" : "Low level tools for reading, manipulation and writing of PDF data",
+    "description" : "Base classes for reading, manipulation and writing of PDF data",
     "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Fast", "OpenSSL" ],
     "source-url"  : "git://github.com/p6-pdf/perl6-PDF-Tools.git",
     "provides"    : {
 
-        "PDF::DAO::Type::PDF" : "lib/PDF/DAO/Type/PDF.pm",
+        "PDF" : "lib/PDF.pm",
+
+        "PDF::Reader" : "lib/PDF/Reader.pm",
+        "PDF::Writer" : "lib/PDF/Writer.pm",
 
         "PDF::DAO" : "lib/PDF/DAO.pm",
         "PDF::DAO::Delegator" : "lib/PDF/DAO/Delegator.pm",
@@ -35,8 +38,6 @@
 
         "PDF::DAO::Util" : "lib/PDF/DAO/Util.pm",
 
-        "PDF::Reader" : "lib/PDF/Reader.pm",
-
         "PDF::IO" : "lib/PDF/IO.pm",
         "PDF::IO::Blob" : "lib/PDF/IO/Blob.pm",
         "PDF::IO::Crypt" : "lib/PDF/IO/Crypt.pm",
@@ -54,9 +55,7 @@
         "PDF::IO::Input" : "lib/PDF/IO/Input.pm",
         "PDF::IO::Input::IOH" : "lib/PDF/IO/Input/IOH.pm",
         "PDF::IO::Input::Str" : "lib/PDF/IO/Input/Str.pm",
-        "PDF::IO::Serializer" : "lib/PDF/IO/Serializer.pm",
-
-        "PDF::Writer" : "lib/PDF/Writer.pm"
+        "PDF::IO::Serializer" : "lib/PDF/IO/Serializer.pm"
      }
 }
 

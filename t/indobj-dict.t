@@ -91,10 +91,10 @@ does-ok $cat.Pages.Kids[0], KidRole, 'Array Instance role';
 is $cat.Pages.Kids[0].obj-num, -1, '@ sigil entry(:indirect)';
 dies-ok {$cat.Pages.Kids[1] = 42}, 'typechecking - array elems';
 
-use PDF::DAO::Type::PDF;
+use PDF;
 use PDF::IO::Serializer;
 my %dict = :Root($cat);
-my $pdf = PDF::DAO::Type::PDF.new( :%dict );
+my $pdf = PDF.new( :%dict );
 my $serializer = PDF::IO::Serializer.new;
 my $body = $serializer.body( $pdf );
 
