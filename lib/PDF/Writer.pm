@@ -48,13 +48,13 @@ class PDF::Writer {
 	my @out = self!make-objects( $body<objects>, @idx );
 	@idx.unshift: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
 
-	my \trailer = $body<trailer> // {};
+	my \trailer-dict = $body<trailer> // {};
+	my \trailer-bytes = $write-xref
+            ?? self!make-trailer( trailer-dict, @idx )
+            !! [~] ( $.write-trailer( trailer-dict ), '%%EOF' );
 
-	@out.push: $write-xref
-                    ?? self!make-trailer( trailer, @idx )
-                    !! [~] ( $.write-trailer( trailer ), '%%EOF' );
-
-        $!offset += @out[*-1].codes + 2;
+        @out.push: trailer-bytes;
+        $!offset += trailer-bytes.codes + 2;
 
         @out.join: "\n";
     }
