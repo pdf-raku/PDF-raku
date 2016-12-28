@@ -6,7 +6,6 @@ use PDF;
 use PDF::Reader;
 use PDF::Writer;
 use PDF::DAO;
-use PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 use JSON::Fast;

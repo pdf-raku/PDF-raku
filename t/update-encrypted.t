@@ -7,7 +7,7 @@ use PDF;
 # ensure consistant document ID generation
 srand(123456);
 
-'t/encrypt.pdf'.IO.copy('t/update-encrypted.pdf');
+'t/pdf-crypt-rc4.pdf'.IO.copy('t/update-encrypted.pdf');
 
 my $pdf = PDF.open: "t/update-encrypted.pdf";
 

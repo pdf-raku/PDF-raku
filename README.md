@@ -459,5 +459,5 @@ PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 ## See also
 
 - [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing (released)
-- [PDF::Content](https://github.com/p6-pdf/perl6-PDF-Content) - Simple content manipulation; including images, fonts, text and general graphics (under construction) 
+- [PDF::Lite](https://github.com/p6-pdf/perl6-PDF-Lite) - basic graphics; including images, fonts, text and general graphics (under construction) 
 

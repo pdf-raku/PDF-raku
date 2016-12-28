@@ -3,7 +3,6 @@ use Test;
 plan 30;
 
 use PDF;
-use PDF;
 use PDF::IO::Crypt::PDF;
 
 my $plain-text = "BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET";
