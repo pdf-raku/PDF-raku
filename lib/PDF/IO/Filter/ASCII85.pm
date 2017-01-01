@@ -8,11 +8,11 @@ class PDF::IO::Filter::ASCII85 {
     # Maintainer's Note: ASCIIH85Decode is described in the PDF 1.7 spec
     # in section 3.2.2.
 
-    multi method encode(Str $input, |c) {
-	$.encode( $input.encode("latin-1"), |c);
+    multi method encode(Str $input) {
+	$.encode( $input.encode("latin-1") );
     }
 
-    multi method encode(Blob $buf is copy --> Blob) {
+    multi method encode(Blob $buf --> Blob) {
 	my UInt \padding = -$buf % 4;
 	my uint8 @buf = $buf.list;
 	@buf.append: 0 xx padding;
@@ -23,8 +23,8 @@ class PDF::IO::Filter::ASCII85 {
 	constant EOD = '~'.ord, '>'.ord; 
 
         my uint8 @a85;
-        for @buf32.reverse {
-            if my $n = $_ {
+        for @buf32.reverse -> int $n is copy {
+            if $n {
                 for 0 .. 4 {
                     @a85.unshift: ($n % 85  +  33);
                     $n div= 85;
@@ -53,8 +53,8 @@ class PDF::IO::Filter::ASCII85 {
 
         my Str $str = $input.subst(/\s/, '', :g).subst(/z/, '!!!!', :g);
 
-        if $str.codes && $str.substr(*-2) eq '~>' {
-            $str = $str.substr(0, *-2);
+        if $str.ends-with('~>') {
+            $str = $str.chop(2);
         }
         else {
            die "missing end-of-data marker '~>' at end of hexidecimal encoding"

@@ -28,7 +28,7 @@ class PDF::IO::Filter::ASCIIHex {
 
         my Str $str = $input.subst(/\s/, '', :g).lc;
 
-        if $str.codes && $str.substr(*-1) eq '>' {
+        if $str.ends-with('>') {
             $str = $str.chop;
         }
         else {

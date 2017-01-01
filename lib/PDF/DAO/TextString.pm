@@ -6,8 +6,9 @@ class PDF::DAO::TextString
     does PDF::DAO
     is Str {
 
+    has $.value;
     has Str $.type is rw = 'literal';
-    has Bool $.bom;
+    has Bool $.bom is rw;
 
 =begin pod
 
@@ -18,16 +19,20 @@ PDFDocEncoding or UTF-16BE with a leading byte-order marker
 
 =end pod
 
-    method new( Str :$value! is copy, Bool :$bom is copy = False, |c ) {
-        if $value ~~ /^ $<bom>=[\xFE \xFF]/ {
+    constant BOM-BE = "\xFE\xFF";
+
+    method new( Str :$value! is copy, :$bom is copy, |c ) {
+        if $value.starts-with(BOM-BE) {
 	    my @be = $value.ords;
-            $value = Buf.new(@be).decode('utf-16');
+            $value =  Buf.new(@be).decode('utf-16');
+            $bom //= True;
         }
-        nextwith( :$value, :$bom, |c );
+        my \obj = nextwith(:$value, |c);
+        obj.bom = $_ with $bom;
+        obj;
     }
 
     our sub utf16-encode(Str $str --> Str) {
-         constant BOM-BE = "\xFE\xFF";
 	 my Str \byte-string = $str.encode("utf-16").map( -> \ord {
                    my \lo = ord mod 0x100;
                    my \hi = ord div 0x100;

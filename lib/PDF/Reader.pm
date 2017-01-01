@@ -536,7 +536,7 @@ class PDF::Reader {
             # see if our cross reference table is already contained in the current tail
 	    my Str \xref = self!locate-xref(input-bytes, tail-bytes, tail, $offset, my &fallback);
 
-	    @obj-idx.append: xref ~~ /^'xref'/
+	    @obj-idx.append: xref.starts-with('xref')
 		?? self!load-xref-table( xref, $dict, :&fallback, :$offset)
 		!! self!load-xref-stream(xref, $dict, :&fallback, :$offset);
 

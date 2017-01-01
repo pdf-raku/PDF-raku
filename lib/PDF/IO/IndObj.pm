@@ -14,9 +14,7 @@ class PDF::IO::IndObj {
     #| construct an object instance from a PDF::Grammar::PDF ast representation of
     #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
     multi submethod BUILD( Array :$ind-obj!, |c ) {
-        my %ast = $ind-obj[2];
-
-        $!object = PDF::DAO.coerce( |%ast, |c );
+        $!object = PDF::DAO.coerce( |$ind-obj[2], |c );
         $!object.obj-num = $ind-obj[0];
         $!object.gen-num = $ind-obj[1];
     }
