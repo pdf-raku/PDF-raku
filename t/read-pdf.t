@@ -48,9 +48,9 @@ ok $stream.defined, 'got stream';
 is-deeply $stream.value[2]<stream><dict><Filter><name>, 'FlateDecode', 'stream is compressed';
 
 # load from a String
-use PDF::IO::Input::Str;
+use PDF::IO::Str;
 my Str $value = 't/pdf/pdf.in'.IO.open( :enc<latin-1> ).slurp-rest;
-my $input-str = PDF::IO::Input::Str.new( :$value );
+my $input-str = PDF::IO::Str.new( :$value );
 my $pdf-str = PDF::Reader.new;
 $pdf-str.open( $input-str );
 is $pdf-str.version, 1.2, 'str - loaded version';

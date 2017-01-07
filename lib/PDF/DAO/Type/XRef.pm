@@ -10,7 +10,7 @@ class PDF::DAO::Type::XRef
     is PDF::DAO::Stream
     does PDF::DAO::Tie::Hash {
 
-    use PDF::IO :resample;
+    use PDF::IO::Util :resample;
     use PDF::IO::Blob;
     use PDF::DAO::Tie;
     use PDF::DAO::Name;

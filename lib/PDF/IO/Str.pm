@@ -1,8 +1,8 @@
 use v6;
-use PDF::IO::Input;
+use PDF::IO;
 
-class PDF::IO::Input::Str
-    is PDF::IO::Input
+class PDF::IO::Str
+    is PDF::IO
     is Str {
 
     has $!pos = 0;

@@ -1,4 +1,8 @@
     Release 0.2.0
+    - Renamed classes PDF::IO to PDF::IO::Util and PDF::IO::Input::*
+      to PDF::IO::*.
+
+    Release 0.2.0
     - Renamed class PDF::DAO::Type::PDF to PDF. Restored module name
       to PDF
 

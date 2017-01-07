@@ -58,7 +58,7 @@ class PDF::Reader {
     use PDF::Grammar::PDF::Actions;
     use PDF::IO::IndObj;
     use PDF::IO::Serializer;
-    use PDF::IO::Input;
+    use PDF::IO;
     use PDF::IO::Crypt::PDF;
     use PDF::DAO;
     use PDF::DAO::Dict;
@@ -156,7 +156,7 @@ class PDF::Reader {
     }
 
     #| open the named PDF/FDF file
-    multi method open( Str $!file-name where {!.isa(PDF::IO::Input)}, |c) {
+    multi method open( Str $!file-name where {!.isa(PDF::IO)}, |c) {
         $.open( $!file-name.IO, |c );
     }
 
@@ -222,7 +222,7 @@ class PDF::Reader {
     }
 
     multi method open($input!, |c) {
-        $!input = PDF::IO::Input.coerce( $input );
+        $!input = PDF::IO.coerce( $input );
 
         $.load-header( );
         $.load( $.type, |c );

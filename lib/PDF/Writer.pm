@@ -3,9 +3,9 @@ use v6;
 class PDF::Writer {
 
     use PDF::Grammar;
-    use PDF::IO::Input;
+    use PDF::IO;
 
-    has PDF::IO::Input $!input;
+    has PDF::IO $!input;
     has $.ast is rw;
     has UInt $.offset;
     has UInt $.prev;

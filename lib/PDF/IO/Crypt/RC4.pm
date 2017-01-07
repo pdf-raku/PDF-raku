@@ -8,7 +8,7 @@ class PDF::IO::Crypt::RC4
     does PDF::IO::Crypt::AST {
 
     use PDF::IO::Blob;
-    use PDF::IO :resample;
+    use PDF::IO::Util :resample;
     use OpenSSL::Digest;
 
     method type { 'V2' }

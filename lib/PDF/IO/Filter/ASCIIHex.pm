@@ -6,7 +6,7 @@ class PDF::IO::Filter::ASCIIHex {
     # Maintainer's Note: ASCIIHexDecode is described in the PDF 1.7 spec
     # in section 7.4.2.
     use PDF::IO::Blob;
-    use PDF::IO :resample;
+    use PDF::IO::Util :resample;
     BEGIN my uint8 @HexEnc = map *.ord, flat '0' .. '9', 'a' .. 'f';
 
 

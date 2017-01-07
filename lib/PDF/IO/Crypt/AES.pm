@@ -10,7 +10,7 @@ class PDF::IO::Crypt::AES
     use OpenSSL::CryptTools;
     use OpenSSL::Digest;
     use PDF::IO::Blob;
-    use PDF::IO :resample;
+    use PDF::IO::Util :resample;
     
     constant KeyLen = 16;
 

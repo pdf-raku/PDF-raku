@@ -5,7 +5,7 @@ class PDF::IO::Crypt {
     use OpenSSL::Digest;
 
     use PDF::DAO::Dict;
-    use PDF::IO :resample;
+    use PDF::IO::Util :resample;
     use PDF::DAO::Type::Encrypt;
 
     has UInt $!R;         #| encryption revision

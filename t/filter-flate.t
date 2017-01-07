@@ -4,7 +4,7 @@ plan 5;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
-use PDF::IO::Input;
+use PDF::IO;
 use PDF::IO::Filter;
 use PDF::IO::IndObj;
 
@@ -14,7 +14,7 @@ my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
-my $pdf-input = PDF::IO::Input.coerce( $input );
+my $pdf-input = PDF::IO.coerce( $input );
 my $ind-obj = PDF::IO::IndObj.new( :$input, |%ast );
 my $dict = $ind-obj.object;
 my $raw-content = $pdf-input.stream-data( |%ast )[0];
