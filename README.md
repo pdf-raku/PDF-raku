@@ -59,14 +59,14 @@ my %Resources = :Procset[ /'PDF', /'Text'],
 my $doc = PDF.new;
 my $root     = $doc.Root       = { :Type(/'Catalog') };
 my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
-my $pages    = $root<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0), };
+my $pages    = $root<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0) };
 # add some standard meta-data
 my $info = $doc.Info = {};
 $info.CreationDate = DateTime.now;
-$info.Producer = 'PDF-IO';
+$info.Producer = "Perl 6 PDF";
 
 # define some basic content
-my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) });
+my $Contents = PDF::DAO.coerce: :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) };
 
 # create a new page. add it to the page tree
 $pages<Kids>.push: { :Type(/'Page'), :Parent($pages), :$Contents };
@@ -95,6 +95,7 @@ my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  90 250 Td (Good
 $Parent<Kids>.push: { :Type( :name<Page> ), :$Parent, :$Contents };
 $Parent<Count>++;
 
+# update or create document metadata. set modification date
 my $info = $doc.Info //= {};
 $info.ModDate = DateTime.now;
 
@@ -122,19 +123,22 @@ PDF files are serialized as numbered indirect objects. The `t/example.pdf` file 
 %...(control characters)
 1 0 obj <<
   /CreationDate (D:20151225000000Z00'00')
-  /Producer (PDF-IO)
->> endobj
+  /Producer (Perl 6 PDF)
+>>
+endobj
 
 2 0 obj <<
   /Type /Catalog
   /Outlines 3 0 R
   /Pages 4 0 R
->> endobj
+>>
+endobj
 
 3 0 obj <<
   /Type /Outlines
   /Count 0
->> endobj
+>>
+endobj
 
 4 0 obj <<
   /Type /Pages
@@ -147,13 +151,15 @@ PDF files are serialized as numbered indirect objects. The `t/example.pdf` file 
     >>
     /Procset [ /PDF /Text ]
   >>
->> endobj
+>>
+endobj
 
 5 0 obj <<
   /Type /Page
   /Contents 6 0 R
   /Parent 4 0 R
->> endobj
+>>
+endobj
 
 6 0 obj <<
   /Length 46
@@ -167,18 +173,19 @@ endobj
   /Subtype /Type1
   /BaseFont /Helvetica
   /Encoding /MacRomanEncoding
->> endobj
+>>
+endobj
 
 xref
 0 8
 0000000000 65535 f 
 0000000014 00000 n 
-0000000099 00000 n 
-0000000171 00000 n 
-0000000222 00000 n 
-0000000401 00000 n 
-0000000471 00000 n 
-0000000570 00000 n 
+0000000103 00000 n 
+0000000175 00000 n 
+0000000226 00000 n 
+0000000405 00000 n 
+0000000475 00000 n 
+0000000574 00000 n 
 trailer
 <<
   /ID [ <867b4841444e1643c74ca7767ce9dd84> <867b4841444e1643c74ca7767ce9dd84> ]
@@ -187,7 +194,7 @@ trailer
   /Size 8
 >>
 startxref
-677
+681
 %%EOF
 ```
 
@@ -196,14 +203,14 @@ The PDF is composed of a series indirect objects, for example, the first object 
 ```
 1 0 obj <<
   /CreationDate (D:20151225000000Z00'00')
-  /Producer (PDF-IO)
+  /Producer (Perl 6 PDF)
 >> endobj
 ```
 
 It's an indirect object with object number `1` and generation number `0`, with a `<<` ... `>>` delimited dictionary containing the
 author and the date that the document was created. This PDF dictionary is roughly equivalent to a Perl 6 hash:
 
-``` { :CreationDate("D:20151225000000Z00'00'"), :Producer("PDF-IO"), } ```
+``` { :CreationDate("D:20151225000000Z00'00'"), :Producer("Perl 6 PDF"), } ```
 
 The bottom of the PDF contains:
 
@@ -223,10 +230,10 @@ startxref
 The `<<` ... `>>` delimited section is the trailer dictionary and the main entry point into the document. The entry `/Info 1 0 R`
 is an indirect reference to the first object (object number 1, generation 0) described above.
 
-We can quickly put PDF::IO to work using a Perl 6 REPL, to better explore the document:
+We can quickly put PDF to work using the Perl 6 REPL, to better explore the document:
 
 ```
-snoopy: ~/git/perl6-PDF-IO $ perl6 -MPDF
+snoopy: ~/git/perl6-PDF $ perl6 -MPDF
 > my $doc = PDF.open: "t/example.pdf"
 ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
 > $doc.keys
@@ -235,7 +242,7 @@ ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref =
 This is the root of the PDF, loaded from the trailer dictionary
 ```
 > $doc<Info>
-CreationDate => D:20151225000000Z00'00', Producer => PDF-IO;
+CreationDate => D:20151225000000Z00'00', Producer => Perl 6 PDF;
 ```
 That's the document information entry, commonly used to store basic meta-data about the document.
 
