@@ -60,7 +60,7 @@ my $doc = PDF.new;
 my $root     = $doc.Root       = { :Type(/'Catalog') };
 my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
 my $pages    = $root<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0) };
-# add some standard meta-data
+# add some standard metadata
 my $info = $doc.Info = {};
 $info.CreationDate = DateTime.now;
 $info.Producer = "Perl 6 PDF";
@@ -281,7 +281,7 @@ This performs an incremental update to the input pdf, which must be indexed `PDF
 PDF's opened with `:repair`, FDF or JSON files). A new section is appended to the PDF that
 contains only updated and newly created objects. This method can be used as a fast and efficient way to make
 small updates to a large existing PDF document.
-    - `:diffs(IO::handle $fh)` - saves just the updates to an alternate location. This can be later appended to the base PDF to reproduce the updated PDF.
+    - `:diffs(IO::Handle $fh)` - saves just the updates to an alternate location. This can be later appended to the base PDF to reproduce the updated PDF.
 
 - `$doc.save-as("mydoc-2.pdf", :compress, :rebuild, :update)`
 Saves a new document, including any updates. Options:
@@ -295,10 +295,6 @@ Note that the `:compress` and `:rebuild` options are a trade-off. The document m
 - `$doc.save-as("mydoc.json", :compress, :rebuild); my $doc2 = $doc.open: "mydoc.json"`
 Documents can also be saved and opened from an intermediate `JSON` representation. This can
 be handy for debugging, analysis and/or ad-hoc patching of PDF files.
-
-### See also:
-- `bin/pdf-rewriter.pl [--repair] [--rebuild] [--compress] [--uncompress] [--dom] [--password=Xxx] <pdf-or-json-file-in> <pdf-or-json-file-out>`
-This script is a thin wrapper for the `PDF` `.open` and `.save-as` methods. It can typically be used to uncompress a PDF for readability and/or repair a PDF who's cross-reference index or stream lengths have become invalid.
 
 ### Reading PDF Files
 
@@ -324,6 +320,13 @@ $page1 = $doc<Pages><Kids>[0];
 # Tied objects can also be updated directly.
 $reader.trailer<Info><Creator> = PDF::DAO.coerce( :name<t/helloworld.t> );
 ```
+
+### Utility Scripts
+- `pdf-rewriter.pl [--repair] [--rebuild] [--[un]compress] [--password=Xxx] <pdf-or-json-file-in> [<pdf-or-json-file-out>]`
+This script is a thin wrapper for the `PDF` `.open` and `.save-as` methods. It can typically be used to:
+  - uncompress a PDF for readability
+  - repair a PDF who's cross-reference index or stream lengths have become invalid
+  - convert bewtween PDF and JSON
 
 ### Decode Filters
 
