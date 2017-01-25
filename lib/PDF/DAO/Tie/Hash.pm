@@ -5,16 +5,14 @@ use PDF::DAO::Tie;
 role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
     #| resolve a heritable property by dereferencing /Parent entries
-    proto sub inehrit(Hash $, Str $, int :$hops) {*}
-    multi sub inherit(Hash $object, Str $key where { $object{$key}:exists }, :$hops) {
-	$object{$key};
+    sub inherit($object, Str $key, :$seen is copy) {
+	$object{$key} // do with $object<Parent> {
+            $seen //= my %{Hash};
+	    die "cyclical inheritance hierarchy"
+	        if $seen{$object}++;
+	    inherit($_, $key, :$seen);
+        }
     }
-    multi sub inherit(Hash $object, Str $key where { $object<Parent>:exists }, int :$hops is copy = 1) {
-	die "cyclical inheritance hierarchy"
-	    if ++$hops > 100;
-	inherit($object<Parent>, $key, :$hops);
-    }
-    multi sub inherit(Mu $, Str $, :$hops) is default { Nil }
 
     method rw-accessor(Attribute $att, Str :$key!) is rw {
         Proxy.new(
