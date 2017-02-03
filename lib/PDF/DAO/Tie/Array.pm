@@ -26,10 +26,11 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 
        for class.^attributes.grep({.name !~~ /descriptor/ && .can('index') }) -> \att {
            my \pos = att.index;
-           my \key = att.tied.accessor-name;
-           next if @!index[pos];
-           @!index[pos] = att;
-            %.entries{key} = att;
+           without @!index[pos] {
+               $_ = att;
+               my \key = att.tied.accessor-name;
+               %.entries{key} = att;
+           }
        }
     }
 

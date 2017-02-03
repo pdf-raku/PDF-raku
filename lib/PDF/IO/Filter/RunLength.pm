@@ -73,7 +73,7 @@ class PDF::IO::Filter::RunLength {
         }
 
         die "missing end-of-data at end of run-length encoding"
-            if $eod && (n == 0 || input[*-1] != 128);
+            if $eod && (n == 0 || input.tail != 128);
 
         PDF::IO::Blob.new: @out;
     }

@@ -37,7 +37,7 @@ class PDF::IO::Filter::ASCII85 {
 
         if padding {
             @a85.splice(*-1, 1, PadChar xx 5)
-                if @a85[*-1] == NullChar;
+                if @a85.tail == NullChar;
             @a85.pop for 1 .. padding;
         }
 

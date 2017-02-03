@@ -78,7 +78,7 @@ class PDF::DAO::Type::XRef
             my Bool \contiguous = ?( entry<obj-num> && entry<obj-num> == $size );
             @index.push( entry<obj-num>,  0 )
                 unless contiguous;
-            @index[*-1]++;
+            @index.tail++;
             my Array \item = do given entry<type> {
                 when 0|1 { [ entry<type>, entry<offset>, entry<gen-num> ] }
                 when 2   { [ entry<type>, entry<ref-obj-num>, entry<index> ] }

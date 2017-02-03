@@ -16,12 +16,12 @@ use PDF::DAO::Dict;
     my $dict;
     lives-ok { $dict = TestDict.new( :dict{ :IntReq(42) } ) }, 'dict sanity';
     is $dict.IntReq, 42, "dict accessor sanity";
-    lives-ok { $dict.IntReq = 43 }, 'dict accessor assignment';
+    lives-ok { $dict.IntReq = 43 }, 'dict accessor assignment sanity';
     quietly {
-        dies-ok { $dict.IntReq = 'urrgh' }, 'dict accessor assignment';
-        is $dict.IntReq, 43;
-        lives-ok { $dict = TestDict.new( :dict{ :IntReq<oops> } ) }, 'dict type mismatch';
-        dies-ok {$dict.IntReq}, "dict accessor - type mismatch";
+        dies-ok { $dict.IntReq = 'urrgh' }, 'dict accessor assignment typecheck';
+        is $dict.IntReq, 43, 'dict accessor typecheck';
+        lives-ok { $dict = TestDict.new( :dict{ :IntReq<oops> } ) }, 'dict typecheck bypass';
+        dies-ok {$dict.IntReq}, "dict accessor - typecheck";
         dies-ok { TestDict.new( :dict{ } ) }, 'dict without required - dies';
     }
     $dict = TestDict.new( :dict{ :IntReq(42), :DictInd{}, } );
