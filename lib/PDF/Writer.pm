@@ -2,7 +2,7 @@ use v6;
 
 class PDF::Writer {
 
-    use PDF::Grammar;
+    use PDF::Grammar:ver(v0.0.8..*);
     use PDF::IO;
 
     has PDF::IO $!input;
@@ -257,7 +257,7 @@ class PDF::Writer {
            ')';
     }
 
-    constant Name-Reg-Chars = set ('!'..'~').grep({ $_ !~~ /<PDF::Grammar::char_delimiter>/});
+    constant Name-Reg-Chars = set ('!'..'~').grep({ $_ !~~ /<PDF::Grammar::char-delimiter>/});
 
     method write-name( Str $_ ) {
         [~] flat '/', .comb.map( {
