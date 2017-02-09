@@ -7,27 +7,8 @@ class PDF::IO::Filter {
     use PDF::IO::Filter::Flate;
     use PDF::IO::Filter::RunLength;
 
-    #| set P6_PDF_FILTER_CLASS to enable experimental/alternate backends
-    #| aka LibGnuPDF::Filter
-    method filter-backend is rw {
-	state $filter-backend;
-    }
-    method have-backend {
-	state Bool $have-backend //= ? do {
-	    with %*ENV<P6_PDF_FILTER_CLASS> -> \filter-name {
-		try {
-		    require ::(filter-name);
-		    $.filter-backend = ::(filter-name);
-		    # ping the library, just to make sure it's operational
-		    $.filter-backend.ping;
-		}
-	    }
-	}
-    }
-
     method decode( $input, Hash :$dict ) is default {
         with $dict<Filter> {
-            when $.have-backend { $.filter-backend.encode( $input, :$dict) }
             when Str  { self!decode-item( $input, |$dict) }
             when List { self!decode-list( $input, |$dict) }
             default { die "bad filter: $_" }
@@ -62,7 +43,6 @@ class PDF::IO::Filter {
 
     method encode( $input, Hash :$dict ) is default {
         with $dict<Filter> {
-            when $.have-backend { $.filter-backend.encode( $input, :$dict) }
             when Str  { self!encode-item( $input, |$dict) }
             when List { self!encode-list( $input, |$dict) }
             default { die "bad filter: $_" }
@@ -78,7 +58,7 @@ class PDF::IO::Filter {
     }
 
     # object may have an array of filters PDF 1.7 spec Table 3.4 
-    method !encode-list( $data is copy, List :$Filter!, :$DecodeParams) {
+    method !encode-list( $data is copy, List :$Filter!, List :$DecodeParams) {
 
         with $DecodeParams {
             die "Filter array {$Filter} does not have a corresponding DecodeParms array"
@@ -123,8 +103,8 @@ class PDF::IO::Filter {
             DCT => 'DCTDecode',
             );
 
-        $filter-name = %FilterAbbreviations{$filter-name}
-            if %FilterAbbreviations{$filter-name}:exists;
+        $filter-name = $_
+            with %FilterAbbreviations{$filter-name};
 
         die "unknown filter: $filter-name"
             unless %Filters{$filter-name}:exists;

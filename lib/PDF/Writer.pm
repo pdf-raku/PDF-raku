@@ -222,26 +222,26 @@ class PDF::Writer {
            unless .chars == 1;
         die "illegal non-latin hex character: U+" ~ .ord.base(16)
             unless 0 <= .ord <= 0xFF;
-        sprintf '#%02x', .ord
+        .ord.fmt: '#%02x';
     }
 
     method write-hex-string( Str $_ ) {
         [~] flat '<', .encode("latin-1").map({ 
-            sprintf '%02x', $_;
+            .fmt: '%02x';
         }), '>';
     }
 
     method write-ind-obj(@_) {
         my (UInt \obj-num, UInt \gen-num, \object where Pair | Hash) = @_;
 
-        sprintf "%d %d obj %s\nendobj\n", obj-num, gen-num, $.write( object );
+        "%d %d obj %s\nendobj\n".sprintf(obj-num, gen-num, $.write( object ));
     }
 
     method write-ind-ref(Array $_) {
         [ .[0], .[1], 'R' ].join: ' ';
     }
 
-    method write-int(Int $_) {sprintf "%d", $_}
+    method write-int(Int $_) {.fmt: '%d'}
 
     constant %Escapes = %(
         "\b" => '\\b', "\f" => '\\f', "\n" => '\\n', "\r" => '\\r',
@@ -252,7 +252,7 @@ class PDF::Writer {
         [~] flat '(',
         .encode("latin-1").map({
                 my \c = .chr;
-                %Escapes{c} // (32 <= $_ <= 126 ?? c !! sprintf "\\%03o", $_);
+                %Escapes{c} // (32 <= $_ <= 126 ?? c !! .fmt('\%03o'));
             }),
            ')';
     }
@@ -264,7 +264,7 @@ class PDF::Writer {
             when $_ ∈ Name-Reg-Chars { $_ }
             when '#' { '##' }
             default {
-                .encode.list.map({ sprintf '#%02x', $_ }).join('');
+                .encode.list.map({.fmt('#%02x')}).join('');
             }
         } )
     }
@@ -286,14 +286,14 @@ class PDF::Writer {
 
     method write-header($_ ) {
         my Str \type = .<type> // 'PDF';
-        sprintf '%%%s-%.1f', type, .<version> // 1.2;
+        '%%%s-%.1f'.sprintf(type, .<version> // 1.2);
     }
 
     multi method write-real( Num $_ ) {
 	my \int = .round(1).Int;
 	$_ =~= int
 	    ?? ~int
-	    !! sprintf("%.5f", $_);
+	    !! .fmt('%.5f');
     }
 
     multi method write-real( Numeric $_ ) {
@@ -346,7 +346,7 @@ class PDF::Writer {
                  if .<gen-num> > 99_999;
              die "offset {.<offset>} exceeds 10 digits in PDF 1.4 cross reference table"
                  if .<offset> > 9_999_999_999;
-             sprintf '%010d %05d %s ', .<offset>, .<gen-num>, $status
+             '%010d %05d %s '.sprintf(.<offset>, .<gen-num>, $status)
          }),
         ).join: "\n";
     }

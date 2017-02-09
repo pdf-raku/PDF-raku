@@ -19,11 +19,12 @@ class PDF
 
     use PDF::DAO::Type::Encrypt;
     has PDF::DAO::Type::Encrypt $.Encrypt is entry;       #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
+
     use PDF::DAO::Type::Info;
     has PDF::DAO::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary 
     has Str @.ID is entry(:len(2));                       #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array of two byte-strings constituting a file identifier
 
-    has Hash $.Root is entry( :indirect );                #| generic document content, as defined by subclassee, e.g.  PDF::DOM or PDF::FDF
+    has Hash $.Root is entry( :indirect );                #| generic document content, as defined by subclassee, e.g.  PDF::Catalog, PDF::FDF
     has $.crypt is rw;
 
     #| open the input file-name or path
@@ -44,7 +45,7 @@ class PDF
 
     #| perform an incremental save back to the opened input file, or write
     #| differences to the specified file
-    method update(:$compress, IO::Handle :$diffs) {
+    method update(IO::Handle :$diffs, |c) {
 
 	self.?cb-init
 	    unless self<Root>:exists;
@@ -61,7 +62,7 @@ class PDF
 	    unless $diffs;
 
         my PDF::IO::Serializer $serializer .= new( :$reader, :$type );
-        my Array $body = $serializer.body( :updates, :$compress );
+        my Array $body = $serializer.body( :updates, |c );
 	.crypt-ast('body', $body, :mode<encrypt>)
 	    with $!crypt;
 
@@ -103,7 +104,7 @@ class PDF
 	    $.reader.update( :@entries, :$prev, :$size);
 	    $.Size = $size;
 	    @entries = [];
-            with  $.reader.file-name {
+            with $.reader.file-name {
                 die "Unable to incremetally update a JSON file"
                     if  m:i/'.json' $/;
 	        $fh = .IO.open(:a);
@@ -116,13 +117,15 @@ class PDF
     }
 
     method ast(|c) {
-	die "no top-level Root entry"
-	    unless self<Root>:exists;
-	
-	self<Root>.?cb-finish;
-
 	my $type = $.reader.?type;
-	$type //= self<Root><FDF>:exists ?? 'FDF' !! 'PDF';
+	with self<Root> {
+	    .?cb-finish;
+	    $type //= .<FDF> ?? 'FDF' !! 'PDF';
+        }
+        else {
+	    die "no top-level Root entry"
+        }
+
 	self!generate-id( :$type );
 	my PDF::IO::Serializer $serializer .= new;
 	$serializer.ast( self, :$type, :$!crypt, |c);
@@ -172,11 +175,6 @@ class PDF
     #| Generate a new document ID.  
     method !generate-id(Str :$type = 'PDF') {
 
-	my $obj = $type eq 'FDF' ?? self<Root><FDF> !! self;
-
-	my Str $hex-string = Buf.new((^256).pick xx 16).decode("latin-1");
-	my $new-id = PDF::DAO.coerce: :$hex-string;
-
 	# From [PDF 1.7 Section 14.4 File Indentifiers:
 	#   "File identifiers shall be defined by the optional ID entry in a PDF file’s trailer dictionary.
 	# The ID entry is optional but should be used. The value of this entry shall be an array of two
@@ -188,14 +186,18 @@ class PDF
 	# the correct and unchanged file has been found. If only the first identifier matches, a different
 	# version of the correct file has been found.
 	#
-	# This section also include a weird and expensive solution for generating the ID.
+	# This section also includes a weird and expensive solution for generating the ID.
 	# Contrary to this, just generate a random identifier.
 
-	if $obj<ID> {
-	    $obj<ID>[1] = $new-id
+	my $obj = $type eq 'FDF' ?? self<Root><FDF> !! self;
+	my Str $hex-string = Buf.new((^256).pick xx 16).decode("latin-1");
+	my \new-id = PDF::DAO.coerce: :$hex-string;
+
+	with $obj<ID> {
+	    .[1] = new-id
 	}
 	else {
-	    $obj<ID> = [ $new-id, $new-id ];
+	    $_ = [ new-id, new-id ];
 	}
     }
 }

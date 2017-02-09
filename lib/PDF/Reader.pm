@@ -59,7 +59,6 @@ class PDF::Reader {
     use PDF::IO::IndObj;
     use PDF::IO::Serializer;
     use PDF::IO;
-    use PDF::IO::Crypt::PDF;
     use PDF::DAO;
     use PDF::DAO::Dict;
     use PDF::DAO::Util :from-ast, :to-ast;
@@ -76,7 +75,7 @@ class PDF::Reader {
     has UInt $.prev;
     has UInt $.size is rw;   #= /Size entry in trailer dict ~ first free object number
     has UInt @.xrefs = (0);  #= xref position for each revision in the file
-    has PDF::IO::Crypt::PDF $.crypt;
+    has $.crypt;
 
     method actions {
         state $actions //= PDF::Grammar::PDF::Actions.new
@@ -106,7 +105,7 @@ class PDF::Reader {
 	my Hash $doc = self.trailer;
 	return without $doc<Encrypt>;
 
-	$!crypt = PDF::IO::Crypt::PDF.new( :$doc );
+	$!crypt = (require ::('PDF::IO::Crypt::PDF')).new( :$doc );
 	$!crypt.authenticate( $password );
 	my \enc = $doc<Encrypt>;
         my \enc-obj-num = enc.obj-num;
