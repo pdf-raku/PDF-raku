@@ -94,7 +94,7 @@ class PDF::DAO::Delegator {
 	    with $subtype;
 
 	return %handler{$subclass}
-	if %handler{$subclass}:exists;
+	    if %handler{$subclass}:exists;
 
 	my $handler-class = $fallback;
 
@@ -106,9 +106,10 @@ class PDF::DAO::Delegator {
 	    CATCH {
 		when X::CompUnit::UnsatisfiedDependency { }
 	    }
-	}
 
-        self.install-delegate( $subclass, $handler-class );
+            self.install-delegate( $subclass, $handler-class );
+	}
+        $handler-class;
     }
 
     multi method delegate( Hash :$dict! where {$dict<Type>:exists}, :$fallback) {

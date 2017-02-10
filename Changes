@@ -1,6 +1,7 @@
-    Release 0.2.0
+    Release 0.2.1
     - Renamed classes PDF::IO to PDF::IO::Util and PDF::IO::Input::*
       to PDF::IO::*.
+    - Don't cache misses in PDF::DAO::Delegator
 
     Release 0.2.0
     - Renamed class PDF::DAO::Type::PDF to PDF. Restored module name
