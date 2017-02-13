@@ -181,12 +181,12 @@ class PDF::Writer {
     method write-dict(Hash $_) {
 
         # prioritize /Type and /Subtype entries. output /Length as last entry
-        my @keys = .keys.sort({
+        my @keys = .keys.sort: {
             when 'Type'          {"0"}
-            when 'Subtype' | 'S' {"1"}
+            when 'Subtype' | 'S' | /Type$/ {"1"}
             when 'Length'        {"z"}
             default              {$_}
-        });
+        };
 
         ( '<<',
           self!indented({
