@@ -17,12 +17,13 @@ module PDF::DAO::Util {
 
     my %seen{Any};
 
-    multi sub to-ast-native(Associative $_dict!) {
+    multi sub to-ast-native(Hash $_dict!) {
 	my $dict = %seen{$_dict};
 
 	without $dict {
 	    $dict = temp %seen{$_dict} = {};
-	    $dict{.key} = to-ast(.value) for $_dict.pairs;
+	    $dict{.key} = to-ast(.value)
+                for $_dict.pairs;
 	}
 
 	:$dict;
@@ -33,7 +34,8 @@ module PDF::DAO::Util {
 
 	without $array {
 	    $array = temp %seen{$_list} = [ ];
-	    $array.push( to-ast( $_ ) ) for $_list.values;
+	    $array.push( to-ast( $_ ) )
+                for $_list.values;
 	}
 
         :$array;
