@@ -206,9 +206,9 @@ class PDF::Writer {
     }
 
     #| 'if' and 'ifelse' functional expressions
-    multi method write-expr(Hash $_) {
-        my @expr = $.write( .<if> );
-        @expr.append: do with .<else> {
+    multi method write-expr(% (:$if!, :$else) ) {
+        my @expr = $.write( $if );
+        @expr.append: do with $else {
 	    ($.write( $_ ), 'ifelse');
         }
         else {
@@ -271,16 +271,14 @@ class PDF::Writer {
 
     method write-null( $ ) { 'null' }
 
-    method write-pdf( Hash $pdf ) {
-        my Str \header = $.write( $pdf, :node<header> );
-        my Str \comment = $pdf<comment>:exists
-            ?? $.write( $pdf, :node<comment> )
-            !! $.write-comment( q<%¥±ë> );
+    method write-pdf(% (:$header!, :$body!, :$comment = q<%¥±ë>) ) {
+        my Str \header = $.write-header( $header );
+        my Str \comment = $.write-comment($comment);
         $!offset = header.codes + comment.codes + 2;  # since format is byte orientated
         # Form Definition Format is normally written without an xref
-        my Str \type = $pdf<header><type> // 'PDF';
+        my Str \type = $header<type> // 'PDF';
 	my Bool $write-xref = type ne 'FDF';
-        my \body = $.write-body( $pdf<body>, :$write-xref );
+        my \body = $.write-body( $body, :$write-xref );
         (header, comment, body).join: "\n";
     }
 
@@ -300,18 +298,15 @@ class PDF::Writer {
         ~$_
     }
 
-    method write-stream( Hash $stream ) {
-        my %dict = $stream<dict>;
-        my $data = $stream<encoded> // $.input.stream-data( :$stream );
+    method write-stream(% (:%dict!, :$encoded = $.input.stream-data( :stream($_) )) ) {
+        my $data = $encoded;
         $data = $data.decode("latin-1")
             unless $data.isa(Str);
         %dict<Length> //= :int($data.codes);
         [~] $.write-dict(%dict), " stream\n", $data, "\nendstream";
     }
 
-    method write-trailer( Hash $trailer, :$prev, :$size ) {
-        my %dict = $trailer<dict> // {};
-
+    method write-trailer(% (:%dict), :$prev) {
         %dict<Prev> = :int($_)
             with $prev;
 
@@ -332,10 +327,10 @@ class PDF::Writer {
     }
 
     #| write a traditional (PDF 1.4-) cross reference table
-    multi method write-xref(Hash $xref!) {
+    multi method write-xref(% (:$obj-first-num!, :$obj-count!, :$entries!)) {
         (flat
-         $xref<obj-first-num> ~ ' ' ~ $xref<obj-count>,
-         $xref<entries>.map({
+         $obj-first-num ~ ' ' ~ $obj-count,
+         $entries.map({
              my Str $status = do given .<type> {
                  when (0) {'f'} # free
                  when (1) {'n'} # inuse
@@ -357,12 +352,8 @@ class PDF::Writer {
         self."write-{.key}"( .value );
     }
 
-    multi method write( Hash $ast!, :$node) {
-        my %params = $node.defined
-            ?? ($node => $ast{$node})
-            !! $ast;
-
-        $.write( |%params );
+    multi method write( Hash $ast!) {
+        $.write( |$ast );
     }
 
     multi method write( *@args, *%opt ) is default {
