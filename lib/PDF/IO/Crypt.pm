@@ -2,6 +2,7 @@ use v6;
 
 class PDF::IO::Crypt {
 
+    use OpenSSL:ver(v0.1.4..*);
     use OpenSSL::Digest;
 
     use PDF::DAO::Dict;

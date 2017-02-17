@@ -40,11 +40,11 @@ module PDF::IO::Util {
     #| variable resampling, e.g. to decode/encode:
     #|   obj 123 0 << /Type /XRef /W [1, 3, 1]
     multi sub resample( $nums!, 8, Array $W!)  {
-        my int $j = 0;
+        my uint $j = 0;
         my @samples;
         while $j < +$nums {
             my @sample = $W.keys.map: -> $i {
-                my int $s = 0;
+                my uint $s = 0;
                 for 1 .. $W[$i] {
                     $s *= 256;
                     $s += $nums[$j++];
@@ -59,8 +59,8 @@ module PDF::IO::Util {
     multi sub resample( $num-sets, Array $W!, 8)  {
 	my uint8 @sample;
          for $num-sets.list -> Array $nums {
-            my int $i = 0;
-            for $nums.list -> int $num is copy {
+            my uint $i = 0;
+            for $nums.list -> uint $num is copy {
                 my uint8 @bytes;
                 for 1 .. $W[$i++] {
                     @bytes.unshift: $num;
