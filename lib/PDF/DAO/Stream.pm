@@ -27,13 +27,8 @@ class PDF::DAO::Stream
 
     has UInt $.DL is entry;                         #| (Optional; PDF 1.5) A non-negative integer representing the number of bytes in the decoded (defiltered) stream.
 
-    has $!encoded;
-    has $!decoded;
-
-    submethod TWEAK(:$encoded, :$decoded, |c) {
-        self.decoded = $_ with $decoded;
-        self.encoded = $_ with $encoded;
-    }
+    has $.encoded;
+    has $.decoded;
 
     method encoded is rw {
 	Proxy.new(
