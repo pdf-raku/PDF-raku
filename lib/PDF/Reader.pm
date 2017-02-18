@@ -274,17 +274,17 @@ class PDF::Reader {
     #| follow the index. fetch either type-1, or type-2 objects:
     #| type-1: fetch as a top level object from the pdf
     #| type-2: dereference and extract from the containing object
-    method !fetch-ind-obj($idx, :$obj-num, :$gen-num) {
+    method !fetch-ind-obj(% (:$type!, :$ind-obj is copy,
+                             :$offset, :$end,                       # type-1
+                             :$index, :$ref-obj-num, :$is-enc-dict  # type-2
+                            ), :$obj-num, :$gen-num) {
         # stantiate the object
-        my $ind-obj;
         my $actual-obj-num;
         my $actual-gen-num;
 
-        given $idx<type> {
+        given $type {
             when 1 {
                 # type 1 reference to an external object
-                my UInt $offset = $idx<offset>;
-                my UInt $end = $idx<end>;
                 my UInt $max-end = $end - $offset - 1;
                 my $input = $.input.substr( $offset, $max-end );
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
@@ -299,15 +299,14 @@ class PDF::Reader {
                     if $ind-obj[2].key eq 'stream';
 
                 $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> )
-                    if $!crypt && ! $idx<is-enc-dict>;
+                    if $!crypt && ! $is-enc-dict;
             }
             when 2 {
                 # type 2 embedded object
-                my \container-obj = $.ind-obj( $idx<ref-obj-num>, 0 ).object;
+                my \container-obj = $.ind-obj( $ref-obj-num, 0 ).object;
                 my \type2-objects = container-obj.decoded;
 
-                my UInt \index = $idx<index>;
-                my Array \ind-obj-ref = type2-objects[index];
+                my Array \ind-obj-ref = type2-objects[$index];
                 $actual-obj-num = ind-obj-ref[0];
                 $actual-gen-num = 0;
                 my $input = ind-obj-ref[1];
