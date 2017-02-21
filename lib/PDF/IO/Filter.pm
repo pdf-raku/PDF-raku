@@ -11,7 +11,7 @@ class PDF::IO::Filter {
         with $dict<Filter> {
             when Str  { self!decode-item( $input, |$dict) }
             when List { self!decode-list( $input, |$dict) }
-            default { die "bad filter: $_" }
+            default { die "bad filter: {.perl}" }
         }
         else {
             # nothing to do

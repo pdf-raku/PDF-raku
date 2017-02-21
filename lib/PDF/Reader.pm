@@ -303,7 +303,8 @@ class PDF::Reader {
             }
             when 2 {
                 # type 2 embedded object
-                my \container-obj = $.ind-obj( $ref-obj-num, 0 ).object;
+                my subset ObjStm of Hash where { $_ eq 'ObjStm' with .<Type> }
+                my ObjStm \container-obj = $.ind-obj( $ref-obj-num, 0 ).object;
                 my \type2-objects = container-obj.decoded;
 
                 my Array \ind-obj-ref = type2-objects[$index];
@@ -504,7 +505,8 @@ class PDF::Reader {
 
 	my %ast = $parse.ast;
 	my PDF::IO::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
-	$dict = $ind-obj.object;
+        my subset XRef of Hash where { $_ eq 'XRef' with .<Type> }
+	$dict = my XRef $ = $ind-obj.object;
 	$dict.decode-index.list;
     }
 
