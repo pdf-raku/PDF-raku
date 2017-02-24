@@ -134,13 +134,12 @@ class PDF::Writer {
     #| BI <dict> - BeginImage
     multi method write-op('BI', $arg = :dict{}) {
         my Hash $entries = $arg<dict>;
-        my @lines;
-	"BI\n" ~
-	  self!indented({
-	      $entries.pairs.sort.map({
-		  [~] $.indent, $.write-name( .key ), ' ', $.write( .value ),
-	      }).join: "\n"
-	 });
+	join( "\n",
+              "BI",
+              self!indented($entries.pairs.sort,
+                            -> $_ { [~] $.write-name( .key ), ' ', $.write( .value ) }
+                           ),
+            );
     }
  
    multi method write-op( Str $_ where /^\w+/ ) { .Str }
@@ -178,24 +177,23 @@ class PDF::Writer {
         m:s{^ '%'} ?? $_ !! '% ' ~ $_
     }
 
-    method write-dict(Hash $_) {
+    method write-dict(Hash $dict) {
 
         # prioritize /Type and /Subtype entries. output /Length as last entry
-        my @keys = .keys.sort: {
+        my @keys = $dict.keys.sort: {
             when 'Type'          {"0"}
             when 'Subtype' | 'S' | /Type$/ {"1"}
             when 'Length'        {"z"}
             default              {$_}
         };
 
-        ( '<<',
-          self!indented({
-	      @keys.map( -> \key {
-		  [~] $.indent, $.write-name(key), ' ', $.write( .{key} ),
-	      }).join: "\n"
-	  }),
-          $!indent ~ '>>'
-        ).join: "\n";
+        join("\n",
+             '<<',
+             self!indented(@keys,
+	                   -> \k { [~] $.write-name(k), ' ', $.write( $dict{k} ) }
+	                  ),
+             $!indent ~ '>>'
+            );
 
     }
 
@@ -367,8 +365,8 @@ class PDF::Writer {
     }
 
     #| handle indentation.
-    method !indented( &code ) {
+    method !indented(@lines, &sub) {
         temp $!indent ~= '  ';
-        &code();
+        @lines ?? @lines.map({ $!indent ~ &sub($_) }).join("\n") !! ();
     }
 }

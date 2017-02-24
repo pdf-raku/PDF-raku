@@ -22,12 +22,6 @@
               0,
               {
                 "dict": {
-                  "Outlines": {
-                    "ind-ref": [
-                      2,
-                      0
-                    ]
-                  },
                   "Pages": {
                     "ind-ref": [
                       3,
@@ -36,6 +30,12 @@
                   },
                   "Type": {
                     "name": "Catalog"
+                  },
+                  "Outlines": {
+                    "ind-ref": [
+                      2,
+                      0
+                    ]
                   }
                 }
               }
@@ -47,11 +47,11 @@
               0,
               {
                 "dict": {
-                  "Count": {
-                    "int": 0
-                  },
                   "Type": {
                     "name": "Outlines"
+                  },
+                  "Count": {
+                    "int": 0
                   }
                 }
               }
@@ -63,9 +63,6 @@
               0,
               {
                 "dict": {
-                  "Count": {
-                    "int": 1
-                  },
                   "Type": {
                     "name": "Pages"
                   },
@@ -78,6 +75,9 @@
                         ]
                       }
                     ]
+                  },
+                  "Count": {
+                    "int": 1
                   }
                 }
               }
@@ -121,6 +121,9 @@
                       0
                     ]
                   },
+                  "Type": {
+                    "name": "Page"
+                  },
                   "MediaBox": {
                     "array": [
                       {
@@ -136,9 +139,6 @@
                         "int": 595
                       }
                     ]
-                  },
-                  "Type": {
-                    "name": "Page"
                   }
                 }
               }
@@ -169,11 +169,11 @@
                   "Encoding": {
                     "name": "MacRomanEncoding"
                   },
-                  "Name": {
-                    "name": "F1"
-                  },
                   "BaseFont": {
                     "name": "Helvetica"
+                  },
+                  "Name": {
+                    "name": "F1"
                   },
                   "Type": {
                     "name": "Font"

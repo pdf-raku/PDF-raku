@@ -10,6 +10,16 @@
                 0
               ]
             },
+            "ID": {
+              "array": [
+                {
+                  "hex-string": "CÜ{ÃHADCN:C"
+                },
+                {
+                  "hex-string": "H3|0\\Ubêöv©ör1"
+                }
+              ]
+            },
             "Info": {
               "ind-ref": [
                 2,
@@ -24,16 +34,6 @@
             },
             "Size": {
               "int": 9
-            },
-            "ID": {
-              "array": [
-                {
-                  "hex-string": "CÜ{ÃHADCN:C"
-                },
-                {
-                  "hex-string": "H3|0\\Ubêöv©ör1"
-                }
-              ]
             }
           }
         },
@@ -88,12 +88,6 @@
               0,
               {
                 "dict": {
-                  "Outlines": {
-                    "ind-ref": [
-                      4,
-                      0
-                    ]
-                  },
                   "Pages": {
                     "ind-ref": [
                       5,
@@ -102,6 +96,12 @@
                   },
                   "Type": {
                     "name": "Catalog"
+                  },
+                  "Outlines": {
+                    "ind-ref": [
+                      4,
+                      0
+                    ]
                   }
                 }
               }
@@ -113,11 +113,11 @@
               0,
               {
                 "dict": {
-                  "Count": {
-                    "int": 0
-                  },
                   "Type": {
                     "name": "Outlines"
+                  },
+                  "Count": {
+                    "int": 0
                   }
                 }
               }
@@ -129,9 +129,6 @@
               0,
               {
                 "dict": {
-                  "Count": {
-                    "int": 1
-                  },
                   "Type": {
                     "name": "Pages"
                   },
@@ -144,6 +141,9 @@
                         ]
                       }
                     ]
+                  },
+                  "Count": {
+                    "int": 1
                   }
                 }
               }
@@ -191,6 +191,9 @@
                       0
                     ]
                   },
+                  "Type": {
+                    "name": "Page"
+                  },
                   "MediaBox": {
                     "array": [
                       {
@@ -206,9 +209,6 @@
                         "int": 595
                       }
                     ]
-                  },
-                  "Type": {
-                    "name": "Page"
                   }
                 }
               }

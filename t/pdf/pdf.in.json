@@ -25,9 +25,6 @@
               0,
               {
                 "dict": {
-                  "Count": {
-                    "int": 2
-                  },
                   "Type": {
                     "name": "Pages"
                   },
@@ -46,6 +43,9 @@
                         ]
                       }
                     ]
+                  },
+                  "Count": {
+                    "int": 2
                   }
                 }
               }
@@ -89,6 +89,9 @@
                       0
                     ]
                   },
+                  "Type": {
+                    "name": "Page"
+                  },
                   "MediaBox": {
                     "array": [
                       {
@@ -104,9 +107,6 @@
                         "int": 595
                       }
                     ]
-                  },
-                  "Type": {
-                    "name": "Page"
                   }
                 }
               }
