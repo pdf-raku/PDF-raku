@@ -29,6 +29,9 @@ class PDF::DAO::Stream
 
     has $.encoded;
     has $.decoded;
+    submethod TWEAK {
+        self<Length> = .codes with $!encoded;
+    }
 
     method encoded is rw {
 	Proxy.new(
