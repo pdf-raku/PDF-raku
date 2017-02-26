@@ -1,10 +1,11 @@
 use v6;
 
 my sub synopsis($input) {
-    my \desc = ($input.chars < 60
-                ?? $input
-                !! [~] $input.substr(0, 32), ' ... ', $input.substr(*-20))\
-                .subst(/\n+/, ' ', :g);
+    my \desc = (
+        $input.chars < 60
+            ?? $input
+            !! [~] $input.substr(0, 32), ' ... ', $input.substr(*-20)
+    ).subst(/\n+/, ' ', :g);
     desc.perl;
 }
 
@@ -56,9 +57,9 @@ class PDF::Reader {
 
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
+    use PDF::IO;
     use PDF::IO::IndObj;
     use PDF::IO::Serializer;
-    use PDF::IO;
     use PDF::DAO;
     use PDF::DAO::Dict;
     use PDF::DAO::Util :from-ast, :to-ast;
@@ -68,14 +69,14 @@ class PDF::Reader {
     has $.input is rw;       #= raw PDF image (latin-1 encoding)
     has Str $.file-name;
     has Hash %!ind-obj-idx;
-    has $.ast is rw;
     has Bool $.auto-deref is rw = True;
     has Rat $.version is rw;
-    has Str $.type is rw;
+    has Str $.type is rw;    #= 'PDF', 'FDF', etc...
     has UInt $.prev;
     has UInt $.size is rw;   #= /Size entry in trailer dict ~ first free object number
     has UInt @.xrefs = (0);  #= xref position for each revision in the file
     has $.crypt;
+    my enum IndexType <Free External Embedded>;
 
     method actions {
         state $actions //= PDF::Grammar::PDF::Actions.new
@@ -97,7 +98,7 @@ class PDF::Reader {
     method !install-trailer(PDF::DAO::Dict $object = PDF::DAO::Dict.new( :reader(self) ) ) {
         %!ind-obj-idx{"0 0"} = do {
             my PDF::IO::IndObj $ind-obj .= new( :$object, :obj-num(0), :gen-num(0) );
-            { :type(1), :$ind-obj }
+            { :type(External), :$ind-obj }
         }
     }
 
@@ -126,7 +127,7 @@ class PDF::Reader {
 
 		if my $ind-obj := $idx<ind-obj> {
 		    die "too late to setup encryption: $obj-num $gen-num R"
-		    if $idx<type> != 0 | 1
+		    if $idx<type> != Free | External
 		    || $ind-obj.isa(PDF::IO::IndObj);
 
 		    $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> );
@@ -170,15 +171,14 @@ class PDF::Reader {
         for ast<pdf><body>.list {
 
             for .<objects>.list.reverse {
-                next unless .<ind-obj>:exists;
-                my $ind-obj = .<ind-obj>;
-                (my UInt $obj-num, my UInt $gen-num) = $ind-obj.list;
+                with .<ind-obj> -> $ind-obj {
+                    (my UInt $obj-num, my UInt $gen-num) = $ind-obj.list;
 
-                %!ind-obj-idx{"$obj-num $gen-num"} //= {
-                    :type(1),
-                    :$ind-obj,
-                };
-
+                    %!ind-obj-idx{"$obj-num $gen-num"} //= {
+                        :type(External),
+                        :$ind-obj,
+                    };
+                }
             }
 
             with .<trailer> {
@@ -203,10 +203,10 @@ class PDF::Reader {
             my UInt $type = $entry<type>;
 
 	    given $type {
-	        when 0 { # freed
+	        when Free {
                     %!ind-obj-idx{"$obj-num $gen-num"}:delete;
 		}
-	        when 1 { # type 1 entry
+	        when External {
 		    my $ind-obj = $entry<ind-obj>;
 		    %!ind-obj-idx{"$obj-num $gen-num"} = {
 		        :$type,
@@ -239,7 +239,7 @@ class PDF::Reader {
         $obj-raw.value<encoded> //= do {
             my UInt \from = $obj-raw.value<start>:delete;
             my UInt \length = $.deref( $obj-raw.value<dict><Length> )
-                or die X::PDF::BadIndirectObject.new(:$obj-num, :$gen-num, :$offset,
+                // die X::PDF::BadIndirectObject.new(:$obj-num, :$gen-num, :$offset,
                                                      :details("stream mandatory /Length field is missing")
                                                     );
 
@@ -283,8 +283,7 @@ class PDF::Reader {
         my $actual-gen-num;
 
         given $type {
-            when 1 {
-                # type 1 reference to an external object
+            when External {
                 my UInt $max-end = $end - $offset - 1;
                 my $input = $.input.substr( $offset, $max-end );
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
@@ -301,13 +300,12 @@ class PDF::Reader {
                 $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> )
                     if $!crypt && ! $is-enc-dict;
             }
-            when 2 {
-                # type 2 embedded object
+            when Embedded {
                 my subset ObjStm of Hash where { $_ eq 'ObjStm' with .<Type> }
                 my ObjStm \container-obj = $.ind-obj( $ref-obj-num, 0 ).object;
-                my \type2-objects = container-obj.decoded;
+                my \embedded-objects = container-obj.decoded;
 
-                my Array \ind-obj-ref = type2-objects[$index];
+                my Array \ind-obj-ref = embedded-objects[$index];
                 $actual-obj-num = ind-obj-ref[0];
                 $actual-gen-num = 0;
                 my $input = ind-obj-ref[1];
@@ -475,8 +473,8 @@ class PDF::Reader {
 		    my UInt $offset = .<offset>;
 
 		    given $type {
-			when 0  {} # ignore free objects
-			when 1  {
+			when Free  {} # ignore free objects
+			when External  {
 			    @idx.push({ :$type, :$obj-num, :$gen-num, :$offset })
 				if $offset;
 			}
@@ -514,13 +512,13 @@ class PDF::Reader {
     #| via the $.ind-obj() method.
     multi method load('PDF', |c) is default {
         my UInt \tail-bytes = min(1024, $.input.codes);
-        my Str \tail = $.input.substr(* - tail-bytes);
+        my Str $tail = $.input.substr(* - tail-bytes);
 
         my UInt %offsets-seen;
         @!xrefs = [];
 
-        PDF::Grammar::PDF.parse(tail, :$.actions, :rule<postamble>)
-            or die X::PDF::BadTrailer.new( :tail(tail) );
+        PDF::Grammar::PDF.parse($tail, :$.actions, :rule<postamble>)
+            or die X::PDF::BadTrailer.new( :$tail );
 
         $!prev = $/.ast<startxref>;
         my UInt:_ $offset = $!prev;
@@ -534,7 +532,7 @@ class PDF::Reader {
             die "xref '/Prev' cycle detected \@$offset"
                 if %offsets-seen{$offset}++;
             # see if our cross reference table is already contained in the current tail
-	    my Str \xref = self!locate-xref(input-bytes, tail-bytes, tail, $offset, my &fallback);
+	    my Str \xref = self!locate-xref(input-bytes, tail-bytes, $tail, $offset, my &fallback);
 
 	    @obj-idx.append: xref.starts-with('xref')
 		?? self!load-xref-table( xref, $dict, :&fallback, :$offset)
@@ -542,13 +540,8 @@ class PDF::Reader {
 
 	    self!set-trailer: $dict;
 
-            $offset = $dict<Prev>:exists
-                ?? $dict<Prev>
-                !! Nil;
-
-            $.size = $dict<Size>:exists
-                ?? $dict<Size>
-                !! 1; # fix it up later
+            $offset = do with $dict<Prev> { $_ } else { Nil };
+            $.size  = do with $dict<Size> { $_ } else { 1 };
         }
 
         my %obj-entries-of-type = @obj-idx.classify: *.<type>;
@@ -559,21 +552,21 @@ class PDF::Reader {
         for @type1-obj-entries.kv -> \k, $_ {
             my UInt $offset = .<offset>;
             my UInt $end = k + 1 < +@type1-obj-entries ?? @type1-obj-entries[k + 1]<offset> !! input-bytes;
-            %!ind-obj-idx{.<obj-num> ~ ' ' ~ .<gen-num>} = { :type(1), :$offset, :$end };
+            %!ind-obj-idx{.<obj-num> ~ ' ' ~ .<gen-num>} = { :type(External), :$offset, :$end };
         }
 
 	self!setup-crypt(|c);
 
-        my @type2-obj-entries = .list
+        my @embedded-obj-entries = .list
             with %obj-entries-of-type<2>;
 
-        for @type2-obj-entries {
+        for @embedded-obj-entries {
             my UInt $obj-num = .<obj-num>;
             my UInt $gen-num = 0;
             my UInt $index = .<index>;
             my UInt $ref-obj-num = .<ref-obj-num>;
 
-            %!ind-obj-idx{"$obj-num $gen-num"} = { :type(2), :$index, :$ref-obj-num };
+            %!ind-obj-idx{"$obj-num $gen-num"} = { :type(Embedded), :$index, :$ref-obj-num };
         }
 
         #| don't entirely trust /Size entry in trailer dictionary
@@ -621,7 +614,7 @@ class PDF::Reader {
                 }
 
                 %!ind-obj-idx{"$obj-num $gen-num"} //= {
-                    :type(1),
+                    :type(External),
                     :@ind-obj,
                     :$offset,
                 };
@@ -630,12 +623,12 @@ class PDF::Reader {
                     when 'ObjStm' {
                         # Object Stream. Index contents as type 2 objects
                         my \container-obj = $.ind-obj( $obj-num, $gen-num ).object;
-                        my Array \type2-objects = container-obj.decoded;
-                        for type2-objects.kv -> $index, $_ {
+                        my Array \embedded-objects = container-obj.decoded;
+                        for embedded-objects.kv -> $index, $_ {
                             my UInt $sub-obj-num = .[0];
                             my UInt $ref-obj-num = $obj-num;
                             %!ind-obj-idx{"$sub-obj-num 0"} //= {
-                                :type(2),
+                                :type(Embedded),
                                 :$index,
                                 :$ref-obj-num,
                             };
@@ -670,7 +663,7 @@ class PDF::Reader {
         my %objstm-objects;
 
         for %!ind-obj-idx.values {
-            # implicitly an objstm object, if it contains type2 (compressed) objects
+            # implicitly an objstm object, if it contains type2 (embedded) objects
             %objstm-objects{ .<ref-obj-num> }++
                 if .<type> == 2;
         }
@@ -687,17 +680,14 @@ class PDF::Reader {
             my UInt $offset;
 
             given $entry<type> {
-                when 0 {
-                    # type 0 freed object
+                when Free {
                     next;
                 }
-                when 1 {
-                    # type 1 regular top-level/inuse object
+                when External {
                     $offset = $_
                     with $entry<offset>
                 }
-                when 2 {
-                    # type 2 embedded object
+                when Embedded {
                     next unless $unpack;
                     my UInt $parent = $entry<ref-obj-num>;
 		    with %!ind-obj-idx{"$parent 0"} {
