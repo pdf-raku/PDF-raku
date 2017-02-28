@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 15;
+plan 17;
 
 use PDF::IO::Serializer;
 use PDF::DAO::Util :to-ast;
@@ -97,6 +97,10 @@ my $writer = PDF::Writer.new;
 @objects = @(PDF::IO::Serializer.new.body($obj-with-utf8)[0]<objects>);
 is-json-equiv @objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
 is $writer.write( :ind-obj(@objects[0].value)), "1 0 obj <<\n  /Name /Heyd#c9#99r#20#c6#8fliyev\n>>\nendobj\n", 'name write';
+
+my @objects-renumbered = @(PDF::IO::Serializer.new.body($obj-with-utf8, :size(1000))[0]<objects>);
+is-json-equiv @objects-renumbered, [:ind-obj[1000, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'renumbered serialization';
+is $writer.write( :ind-obj(@objects-renumbered[0].value)), "1000 0 obj <<\n  /Name /Heyd#c9#99r#20#c6#8fliyev\n>>\nendobj\n", 'renumbered write';
 
 my @objects-compressed = @(PDF::IO::Serializer.new.body($pdf, :compress)[0]<objects>);
 my $stream = @objects-compressed[*-2].value[2]<stream>;

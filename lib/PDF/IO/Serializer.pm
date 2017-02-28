@@ -34,8 +34,8 @@ class PDF::IO::Serializer {
     multi method analyse($) is default { }
 
     my subset DictIndObj of Pair where {.key eq 'ind-obj'
-					    && .value[2] ~~ Pair
-					    && .value[2].key eq 'dict'}
+					&& .value[2] ~~ Pair
+					&& .value[2].key eq 'dict'}
     
     #| remove and return the root object (trailer dictionary)
     method !get-root(@objects) {
@@ -45,10 +45,12 @@ class PDF::IO::Serializer {
 
     #| Discard Linearization aka "Fast Web View"
     method !discard-linearization(@objects) {
-    	if @objects && @objects[0] ~~ DictIndObj {
-	    my \first-ind-obj = @objects[0].value[2];
-	    @objects.shift
-		if first-ind-obj<dict><Linearized>:exists;
+    	with @objects[0] {
+            when DictIndObj {
+                my Hash:D $dict = .value[2]<dict>;
+	        @objects.shift
+		    with $dict<Linearized>;
+            }
 	}
     }
 
@@ -75,9 +77,11 @@ class PDF::IO::Serializer {
     #| prepare a set of objects for an incremental update. Only return indirect objects:
     #| - objects that have been fetched and updated, and
     #| - the trailer dictionary (returned as first object)
-    multi method body( Bool :$updates! where .so, :$*compress ) {
+    multi method body( Bool :$updates! where .so,
+                       :$*compress,
+                       :$!size = $.reader.size;
+                     ) {
         # only renumber new objects, starting from the highest input number + 1 (size)
-        $.size = $.reader.size;
         my \prev = $.reader.prev;
 
         # disable auto-deref to keep all analysis and freeze stages lazy. if it hasn't been
@@ -218,7 +222,7 @@ class PDF::IO::Serializer {
                 $slot := $ind-obj.value;
             }
 
-            # register prior to traversing the object. in case there are cyclical references
+            # register prior to traversing the object; in case there are cyclical references
             my \ret = $indirect || $.is-indirect( $object )
               ?? self!index-object($ind-obj, :$object )
               !! $ind-obj;
@@ -242,7 +246,7 @@ class PDF::IO::Serializer {
             my $ind-obj = :$array;
             my $slot := $ind-obj.value;
 
-            # register prior to traversing the object. in case there are cyclical references
+            # register prior to traversing the object; in case there are cyclical references
             my \ret = $indirect || $.is-indirect( $object )
                 ?? self!index-object($ind-obj, :$object )
                 !! $ind-obj;
@@ -266,10 +270,10 @@ class PDF::IO::Serializer {
 	Bool    :$compress,
 	        :$crypt,
         ) {
-	$!type //= $.reader.?type;
-	$!type //= (($trailer<Root>:exists) && ($trailer<Root><FDF>:exists)
-		    ?? 'FDF'
-		    !! 'PDF');
+	$!type //= ($.reader.?type
+	            // do given $trailer<Root> {
+                           .defined && .<FDF> ?? 'FDF' !! 'PDF'
+                       });
         my Array $body = self.body($trailer, :$compress );
 	.crypt-ast('body', $body, :mode<encrypt>)
 	    with $crypt;
