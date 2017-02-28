@@ -9,7 +9,7 @@ class PDF::IO::Serializer {
     has UInt $.size is rw = 1;      #| first free object number
     has Pair  @!objects;            #| renumbered objects
     has Array %!objects-idx{Any};   #| unique objects index
-    has UInt %.ref-count{Any};
+    has UInt %!ref-count{Any};
     has Bool $.renumber is rw = True;
     has Str $!type;                 #| 'FDF', 'PDF', .. others?
     has $.reader;
@@ -17,21 +17,21 @@ class PDF::IO::Serializer {
     method type { $!type //= $.reader.?type // 'PDF' }
 
     #| Reference count hashes. Could be derivate class of PDF::DAO::Dict or PDF::DAO::Stream.
-    multi method analyse(Hash $dict) {
+    multi method ref-count(Hash $dict) {
         unless %!ref-count{$dict}++ { # already encountered
-            $.analyse($dict{$_}) for $dict.keys.sort
+            $.ref-count($dict{$_}) for $dict.keys.sort
         }
     }
 
     #| Reference count arrays. Could be derivate class of PDF::DAO::Array
-    multi method analyse(Array $array) {
+    multi method ref-count(Array $array) {
         unless %!ref-count{$array}++ { # already encountered
-            $.analyse($array[$_]) for $array.keys
+            $.ref-count($array[$_]) for $array.keys
         }
     }
 
     #| we don't reference count anything else at the moment.
-    multi method analyse($) is default { }
+    multi method ref-count($) is default { }
 
     my subset DictIndObj of Pair where {.key eq 'ind-obj'
 					&& .value[2] ~~ Pair
@@ -64,7 +64,7 @@ class PDF::IO::Serializer {
 
         %!ref-count = ();
 	@!objects = ();
-        $.analyse( $trailer );
+        $.ref-count( $trailer );
         $.freeze( $trailer, :indirect);
 	my %dict = self!get-root(@!objects);
 
@@ -81,9 +81,6 @@ class PDF::IO::Serializer {
                        :$*compress,
                        :$!size = $.reader.size;
                      ) {
-        # only renumber new objects, starting from the highest input number + 1 (size)
-        my \prev = $.reader.prev;
-
         # disable auto-deref to keep all analysis and freeze stages lazy. if it hasn't been
         # loaded, it hasn't been updated
         temp $.reader.auto-deref = False;
@@ -100,19 +97,13 @@ class PDF::IO::Serializer {
 
         my @updated-objects = $.reader.get-updates.list;
 
-        for @updated-objects -> \object {
-            # reference count new objects
-            $.analyse( object );
-        }
-
-	for @updated-objects -> \object {
-	    $.freeze( object, :indirect )
-	}
+        $.ref-count($_) for @updated-objects;
+	$.freeze($_, :indirect ) for @updated-objects;
 
 	my %dict = self!get-root(@!objects);
 
-        %dict<Prev> = :int(prev);
-        %dict<Size> = :int($.size);
+        %dict<Prev> = :int($.reader.prev);
+        %dict<Size> = :int($!size);
 
         [ { :@!objects, :trailer{ :%dict } }, ]
     }
@@ -131,7 +122,7 @@ class PDF::IO::Serializer {
         [ { :@objects, :trailer{ :%dict } }, ]
     }
 
-    #| construct a reverse index that unique maps unique $objects,
+    #| construct a reverse index that maps unique $objects
     #| to an object-number and generation-number. 
     method !index-object( Pair $ind-obj! is rw, :$object!) {
         my Int $obj-num = $object.obj-num 
