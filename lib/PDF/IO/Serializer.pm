@@ -80,13 +80,14 @@ class PDF::IO::Serializer {
     multi method body( Bool :$updates! where .so,
                        :$*compress,
                        :$!size = $.reader.size;
+                       :$prev = $.reader.prev;
                      ) {
         # disable auto-deref to keep all analysis and freeze stages lazy. if it hasn't been
         # loaded, it hasn't been updated
         temp $.reader.auto-deref = False;
 
-        # preserve existing object numbers. objects need to overwritten using the same
-        # object and generation numbers
+        # preserve existing object numbers. updated objects need to overwritten
+        # using the same object and generation numbers
         temp $.renumber = False;
         %!ref-count = ();
 	@!objects = ();
@@ -102,7 +103,7 @@ class PDF::IO::Serializer {
 
 	my %dict = self!get-root(@!objects);
 
-        %dict<Prev> = :int($.reader.prev);
+        %dict<Prev> = :int($prev);
         %dict<Size> = :int($!size);
 
         [ { :@!objects, :trailer{ :%dict } }, ]

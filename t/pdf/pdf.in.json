@@ -5,7 +5,17 @@
         "trailer": {
           "dict": {
             "Prev": {
-              "int": 644
+              "int": 9999
+            },
+            "ID": {
+              "array": [
+                {
+                  "hex-string": "{HADNCÇL§v|éÝ"
+                },
+                {
+                  "hex-string": "H3|0\\Ubêöv©ör1"
+                }
+              ]
             },
             "Root": {
               "ind-ref": [

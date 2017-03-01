@@ -32,8 +32,8 @@ my $catalog = $pdf<Root>;
 }
 
 # firstly, write and analyse just the updates
-lives-ok { $pdf.update(:diffs("t/pdf/pdf.in-diffs".IO.open(:w)) ) }, 'update to PDF file - lives';
-lives-ok { $pdf.update(:diffs("t/pdf/pdf.in.json".IO.open(:w)) ) }, 'update to JSON file - lives';
+lives-ok { $pdf.update(:prev(9999), :diffs("t/pdf/pdf.in-diffs".IO.open(:w)) ) }, 'update to PDF file - lives';
+lives-ok { $pdf.update(:prev(9999), :diffs("t/pdf/pdf.in.json".IO.open(:w)) ) }, 'update to JSON file - lives';
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 my Str $body-str = "t/pdf/pdf.in-diffs".IO.slurp( :enc<latin-1> );
@@ -44,7 +44,7 @@ my $json-ast =  from-json("t/pdf/pdf.in.json".IO.slurp);
 for $pdf-ast<body>, $json-ast<pdf><body>[0] -> $body {
     is-json-equiv $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
     is-json-equiv $body<trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';
-    is-json-equiv $body<trailer><dict><Prev>, (:int(644)), 'body trailer dict - Prev';
+    is-json-equiv $body<trailer><dict><Prev>, (:int(9999)), 'body trailer dict - Prev';
     my $updated-objects = $body<objects>;
     is +$updated-objects, 3, 'number of updates';
     is-json-equiv $updated-objects[0], (

@@ -58,8 +58,7 @@ class PDF
 	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
 
 	my $type = $reader.type;
-	self!generate-id( :$type )
-	    unless $diffs;
+	self!generate-id( :$type );
 
         my PDF::IO::Serializer $serializer .= new( :$reader, :$type );
         my Array $body = $serializer.body( :updates, |c );
