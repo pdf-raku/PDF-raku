@@ -18,13 +18,11 @@ class PDF::IO {
     }
 
     multi method coerce( IO::Handle $value!, |c ) {
-        require PDF::IO::Handle;
-        ::('PDF::IO::Handle').bless( :$value, |c );
+        (require ::('PDF::IO::Handle')).bless( :$value, |c );
     }
 
     multi method coerce( Str $value! where { !.isa(PDF::IO) }, |c) {
-        require PDF::IO::Str;
-        ::('PDF::IO::Str').bless( :$value, |c );
+        (require ::('PDF::IO::Str')).bless( :$value, |c );
     }
 
     multi method stream-data( Array :$ind-obj! ) {

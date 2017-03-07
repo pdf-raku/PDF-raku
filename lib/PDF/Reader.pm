@@ -386,13 +386,12 @@ class PDF::Reader {
     }
 
     method load-header() {
-        require PDF::Grammar::Doc;
         # file should start with: %PDF-n.m, (where n, m are single
         # digits giving the major and minor version numbers).
 
         my Str $preamble = $.input.substr(0, 8);
 
-        PDF::Grammar::Doc.subparse($preamble, :$.actions, :rule<header>)
+        (require ::('PDF::Grammar::Doc')).subparse($preamble, :$.actions, :rule<header>)
             or die X::PDF::BadHeader.new( :$preamble );
 
         $.version = $/.ast<version>;
@@ -658,7 +657,6 @@ class PDF::Reader {
     method get-objects(
         Bool :$incremental = False       #| only return updated objects
         ) {
-        constant $unpack = True;
         my @object-refs;
         my %objstm-objects;
 
@@ -672,8 +670,7 @@ class PDF::Reader {
             my (UInt $obj-num, UInt $gen-num) = .key.split(' ')>>.Int;
 
             # discard objstm objects (/Type /ObjStm)
-            next
-                if $unpack && %objstm-objects{$obj-num};
+            next with %objstm-objects{$obj-num};
 
             my Hash $entry = .value;
             my UInt $seq = 0;
@@ -688,7 +685,6 @@ class PDF::Reader {
                     with $entry<offset>
                 }
                 when Embedded {
-                    next unless $unpack;
                     my UInt $parent = $entry<ref-obj-num>;
 		    with %!ind-obj-idx{"$parent 0"} {
                         $offset = .<offset>;
