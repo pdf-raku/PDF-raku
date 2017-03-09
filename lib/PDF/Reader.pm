@@ -401,8 +401,7 @@ class PDF::Reader {
     #| Load input in FDF (Form Data Definition) format.
     #| Use full-scan mode, as these are not indexed.
     multi method load('FDF') {
-        require PDF::Grammar::FDF;
-        self!full-scan( ::('PDF::Grammar::FDF'), $.actions);
+        self!full-scan((require ::('PDF::Grammar::FDF')), $.actions);
     }
 
     #| scan the entire PDF, bypass any indices. Populate index with
