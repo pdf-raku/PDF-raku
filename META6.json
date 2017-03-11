@@ -1,5 +1,6 @@
 {   "perl"        : "6.*",
     "name"        : "PDF",
+    "tags"        : ["pdf"],
     "version"     : "0.2.1",
     "auth"        : "github:p6-pdf",
     "api"         : "PDF-1.7",
