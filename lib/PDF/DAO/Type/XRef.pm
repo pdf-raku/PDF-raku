@@ -70,7 +70,7 @@ class PDF::DAO::Type::XRef
     method encode-index(Array $xref-index) {
         my $size = 1;
         my UInt @index;
-        my Array @encoded-index = [];
+        my List @encoded-index = [];
 
         my @entries = $xref-index.list.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
 
@@ -103,15 +103,15 @@ class PDF::DAO::Type::XRef
             // die "missing mandatory /XRef param: /W";
         die "missing mandatory /XRef param: /Size" without $.Size;
 
-        my Array \xref-array := resample( $buf, 8, W );
+        my List @xref-idx = resample( $buf, 8, W );
 
         if my \index = self<Index> {
             my \n = [+] index[1, 3 ... *];
-            die "problem decoding /Type /XRef object. /Index specified {n} objects, got {+xref-array}"
-                unless +xref-array == n;
+            die "problem decoding /Type /XRef object. /Index specified {n} objects, got {+@xref-idx}"
+                unless +@xref-idx == n;
         }
 
-        xref-array;
+        @xref-idx;
     }
 
     #= an extra decoding stage - build index entries from raw decoded data
@@ -125,7 +125,7 @@ class PDF::DAO::Type::XRef
         for index.list -> $obj-num is rw, \num-entries {
 
             for 1 .. num-entries {
-                my Array \idx = decoded[$i++];
+                my List \idx = decoded[$i++];
                 my UInt $type = idx[0];
                 given $type {
                     when 0|1 {

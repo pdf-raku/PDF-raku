@@ -4,12 +4,12 @@ module PDF::IO::Util {
 
     #= resample a buffer as n-bit to m-bit unsigned integers
     proto sub resample( $, $, $ --> Array) is export(:resample) {*};
-    multi sub resample( $nums!, 8, 4)  { my uint8  @s = flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
-    multi sub resample( $nums!, 4, 8)  { my uint8  @s = flat $nums.list.map: -> \hi, \lo { hi +< 4  +  lo } }
-    multi sub resample( $nums!, 8, 16) { my uint16 @s = flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
-    multi sub resample( $nums!, 8, 32) { my uint32 @s = flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
-    multi sub resample( $nums!, 16, 8) { my uint8  @s = flat $nums.list.map: { ($_ +> 8, $_) } }
-    multi sub resample( $nums!, 32, 8) { my uint8  @s = flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
+    multi sub resample( $nums!, 8, 4)  { my uint8  @ = flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
+    multi sub resample( $nums!, 4, 8)  { my uint8  @ = flat $nums.list.map: -> \hi, \lo { hi +< 4  +  lo } }
+    multi sub resample( $nums!, 8, 16) { my uint16 @ = flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
+    multi sub resample( $nums!, 8, 32) { my uint32 @ = flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
+    multi sub resample( $nums!, 16, 8) { my uint8  @ = flat $nums.list.map: { ($_ +> 8, $_) } }
+    multi sub resample( $nums!, 32, 8) { my uint8  @ = flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
     multi sub resample( $nums!, UInt $n!, UInt $ where $n) { $nums }
 
     sub get-bit($num, $bit) { $num +> ($bit) +& 1 }
@@ -41,35 +41,39 @@ module PDF::IO::Util {
     #|   obj 123 0 << /Type /XRef /W [1, 3, 1]
     multi sub resample( $nums!, 8, Array $W!)  {
         my uint $j = 0;
-        my @samples;
+        my uint $k = 0;
+        my uint32 @idx;
+        @idx[+$nums div $W.sum] = 0
+            if +$nums;
         while $j < +$nums {
-            my @sample = $W.keys.map: -> $i {
-                my uint $s = 0;
+            for $W.keys -> $i {
+                my uint32 $s = 0;
                 for 1 .. $W[$i] {
                     $s *= 256;
                     $s += $nums[$j++];
                 }
-                $s;
+                @idx[$k++] = $s;
             }
-            @samples.push: @sample;
         }
-	@samples;
+	@idx.rotor(+$W);
     }
 
     multi sub resample( $num-sets, Array $W!, 8)  {
 	my uint8 @sample;
-         for $num-sets.list -> Array $nums {
-            my uint $i = 0;
+        @sample[$W.sum * +$num-sets - 1] = 0
+            if +$num-sets;
+        my uint32 $i = -1;
+        for $num-sets.list -> List $nums {
+            my uint $k = 0;
             for $nums.list -> uint $num is copy {
-                my uint8 @bytes;
-                for 1 .. $W[$i++] {
-                    @bytes.unshift: $num;
+                my uint $n = +$W[$k++];
+                $i += $n;
+                loop (my $j = 0; $j < $n; $j++) {
+                    @sample[$i - $j] = $num;
                     $num div= 256;
                 }
-                @sample.append: @bytes;
             }
-        }
-	flat @sample;
+         }
+	 @sample;
     }
-
 }
