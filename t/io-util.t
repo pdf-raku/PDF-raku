@@ -26,11 +26,12 @@ quietly {
     is-deeply (@result=resample(@result, 1, 8)), [109], '8 => 1 => 8 round trip';
 }
 
-is-deeply (@result=resample(@bytes, 8, [1, 3, 2])), [(10, 1318440, 12860),], '8 => [1, 3, 2] resample';
-is-deeply array[uint8].new(resample(@result, [1, 3, 2], 8)), @bytes, '[1, 3, 2] => 8 resample';
+my $shaped;
+is-deeply ($shaped=resample(@bytes, 8, [1, 3, 2])).values, (10, 1318440, 12860), '8 => [1, 3, 2] resample';
+is-deeply array[uint8].new(resample($shaped, [1, 3, 2], 8)), @bytes, '[1, 3, 2] => 8 resample';
 
-my $in = [[1, 16, 0], [1, 741, 0], [1, 1030, 0], [1, 1446, 0]];
+my uint32 @in[4;3] = ([1, 16, 0], [1, 741, 0], [1, 1030, 0], [1, 1446, 0]);
 my $W = [1, 2, 1];
 my $out = [1, 0, 16, 0,  1, 2, 229, 0,  1, 4, 6, 0,  1, 5, 166, 0];
 
-is resample($in, $W, 8), $out, '$W[1, 2, 1] 8 bit sample';
+is resample(@in, $W, 8), $out, '$W[1, 2, 1] 8 bit sample';

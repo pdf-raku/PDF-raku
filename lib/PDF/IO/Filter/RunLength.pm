@@ -8,13 +8,14 @@ class PDF::IO::Filter::RunLength {
     use PDF::IO::Blob;
 
     multi method encode(Blob \input --> PDF::IO::Blob) {
-        my @out;
+        my uint8 @out;
         my \n = input.elems - 1;
         my int $i = 0;
         my int $j = 0;
 
         while $i <= n {
-            @out[$j++] := my int $ind;
+            my int $ind = 0;
+            my $ind-pos = $j++;
             my \ord = input[$i++];
             @out[$j++] = ord;
 
@@ -35,6 +36,7 @@ class PDF::IO::Filter::RunLength {
                     $ind++;
                 }
             }
+            @out[$ind-pos] = $ind;
         }
 
         @out[$j] = 128;

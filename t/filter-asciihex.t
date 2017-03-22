@@ -6,7 +6,7 @@ use PDF::IO::Filter::ASCIIHex;
 use PDF::IO::Filter;
 
 my $in = 'This is a test string.';
-my $out = '546869732069732061207465737420737472696e672e';
+my $out = '546869732069732061207465737420737472696E672E';
 
 dies-ok { PDF::IO::Filter::ASCIIHex.decode($out, :eod) },
     q{ASCIIHex missing eod marker handled};
@@ -28,7 +28,7 @@ is(PDF::IO::Filter.decode($out, :%dict),
    $in,
    q{ASCIIHex test string is decoded correctly});
 
-is(PDF::IO::Filter.encode($in, :%dict).Str.lc,
+is(PDF::IO::Filter.encode($in, :%dict).Str,
    $out,
    q{ASCIIHex test string is encoded correctly});
 

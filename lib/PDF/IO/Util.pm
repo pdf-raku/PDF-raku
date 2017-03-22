@@ -40,40 +40,48 @@ module PDF::IO::Util {
     #| variable resampling, e.g. to decode/encode:
     #|   obj 123 0 << /Type /XRef /W [1, 3, 1]
     multi sub resample( $nums!, 8, Array $W!)  {
+        my uint $i = 0;
         my uint $j = 0;
-        my uint $k = 0;
-        my uint32 @idx;
-        @idx[+$nums div $W.sum] = 0
+        my uint32 @out;
+        my $out-len = (+$nums * +$W) div $W.sum;
+        my uint $w_len = +$W;
+
+        @out[$out-len - 1] = 0
             if +$nums;
-        while $j < +$nums {
-            for $W.keys -> $i {
-                my uint32 $s = 0;
-                for 1 .. $W[$i] {
-                    $s *= 256;
-                    $s += $nums[$j++];
-                }
-                @idx[$k++] = $s;
+
+        while $i < +$nums {
+            my uint32 $v = 0;
+            my $n = $W[$j % $w_len];
+            for 1 .. $n {
+                $v +<= 8;
+                $v += $nums[$i++];
             }
+            @out[$j++] = $v;
         }
-	@idx.rotor(+$W);
+        my uint32 @shaped[+@out div +$W;$W] Z= @out;
+        @shaped;
     }
 
-    multi sub resample( $num-sets, Array $W!, 8)  {
-	my uint8 @sample;
-        @sample[$W.sum * +$num-sets - 1] = 0
-            if +$num-sets;
-        my uint32 $i = -1;
-        for $num-sets.list -> List $nums {
-            my uint $k = 0;
-            for $nums.list -> uint $num is copy {
-                my uint $n = +$W[$k++];
-                $i += $n;
-                loop (my $j = 0; $j < $n; $j++) {
-                    @sample[$i - $j] = $num;
-                    $num div= 256;
+    multi sub resample($shaped, Array $W!, 8)  {
+        my uint8 @out;
+        @out[$W.sum * +$shaped - 1] = 0
+            if +$shaped;
+        my int32 $j = -1;
+        my uint32 @in = [ $shaped.values ];
+        my uint32 $in-len = +@in;
+        my uint $w-len = +$W;
+
+        loop (my uint32 $i = 0; $i < $in-len;) {
+            for 0 ..^ $w-len -> $wi {
+                my uint32 $v = @in[$i++];
+                my $n = $W[$wi];
+                $j += $n;
+                loop (my $k = 0; $k < $n; $k++) {
+                    @out[$j - $k] = $v;
+                    $v +>= 8;
                 }
             }
          }
-	 @sample;
+	 @out;
     }
 }
