@@ -43,23 +43,28 @@ class PDF::IO::Filter::Predictors {
 			BPC  :$BitsPerComponent = 8, #| number of bits per color
         ) {
 
-        $buf = resample($buf, 8, $BitsPerComponent)
-            unless $BitsPerComponent == 8;
-
-        my uint $bit-mask = 2 ** $BitsPerComponent  -  1;
+        my uint $bpc = $BitsPerComponent;
         my uint $colors = $Colors;
+        if $bpc > 8 {
+            $colors *= $bpc div 8;
+            $bpc = 8;
+        }
+        $buf = resample($buf, 8, $bpc)
+            unless $bpc == 8;
+
+        my uint $bit-mask = 2 ** $bpc  -  1;
         my uint $row-size = $colors * $Columns;
         my uint $ptr = 0;
         my uint $row = 0;
-        my uint32 @out;
+        my uint8 @out;
         my uint $tag = min($Predictor - 10, 4);
         my int $n = 0;
         my int $len = +$buf;
 
          my $padding = do {
-            my $bits-per-row = $row-size * $BitsPerComponent;
+            my $bits-per-row = $row-size * $bpc;
             my $bit-padding = -$bits-per-row % 8;
-            $bit-padding div $BitsPerComponent;
+            $bit-padding div $bpc;
         }
 
         while $ptr < $len {
@@ -119,8 +124,8 @@ class PDF::IO::Filter::Predictors {
             $ptr++ for 0 ..^ $padding;
          }
 
-       @out = resample($@out, $BitsPerComponent, 8)
-            unless $BitsPerComponent == 8;
+       @out = resample($@out, $bpc, 8)
+            unless $bpc == 8;
         buf8.new: @out;
     }
 
@@ -167,27 +172,32 @@ class PDF::IO::Filter::Predictors {
                         UInt :$BitsPerComponent = 8, #| number of bits per color
         ) {
 
-        $buf = resample($buf, 8, $BitsPerComponent)
-            unless $BitsPerComponent == 8;
-
-        my uint $bit-mask = 2 ** $BitsPerComponent  -  1;
+        my uint $bpc = $BitsPerComponent;
         my uint $colors = $Colors;
+        if $bpc > 8 {
+            $colors *= $bpc div 8;
+            $bpc = 8;
+        }
+        $buf = resample($buf, 8, $bpc)
+            unless $bpc == 8;
+
+        my uint $bit-mask = 2 ** $bpc  -  1;
         my uint $row-size = $colors * $Columns;
         my uint $ptr = 0;
         my uint $len = +$buf;
-        my uint32 @output;
-        my uint32 @up = 0 xx $row-size;
+        my uint8 @output;
+        my uint8 @up = 0 xx $row-size;
 
         my $padding = do {
-            my $bits-per-row = $row-size * $BitsPerComponent;
+            my $bits-per-row = $row-size * $bpc;
             my $bit-padding = -$bits-per-row % 8;
-            $bit-padding div $BitsPerComponent;
+            $bit-padding div $bpc;
         }
 
         while $ptr < $len {
             # PNG prediction can vary from row to row
             my UInt $tag = $buf[$ptr++];
-            my uint32 @out;
+            my uint8 @out;
             my int $n = 0;
             $tag -= 10 if 10 <= $tag <= 14; 
 
@@ -249,8 +259,8 @@ class PDF::IO::Filter::Predictors {
             $ptr++ for 0 ..^ $padding;
         }
 
-        @output = resample($@output, $BitsPerComponent, 8)
-            unless $BitsPerComponent == 8;
+        @output = resample($@output, $bpc, 8)
+            unless $bpc == 8;
 
         buf8.new: @output;
     }
