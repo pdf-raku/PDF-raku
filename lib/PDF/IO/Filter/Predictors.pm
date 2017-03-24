@@ -1,25 +1,21 @@
 use v6;
 
-role PDF::IO::Filter::Predictors {
+class PDF::IO::Filter::Predictors {
 
     my subset BPC of UInt where 1 | 2 | 4 | 8 | 16;
+    my subset Predictor of Int where 1|2|10..15;
 
     use PDF::IO::Util :resample;
     # post prediction functions as described in the PDF 1.7 spec, table 3.8
-    multi method post-prediction($buf where Blob | Buf, 
-                                 UInt :$Predictor! where { $_ <= 1}, #| predictor function
-        ) {
-        $buf; # noop
-    }
 
-    multi method prediction($buf where Blob | Buf, 
-                            UInt :$Predictor! where { $_ == 2}, #| predictor function
-                            UInt :$Columns = 1,          #| number of samples per row
-                            UInt :$Colors = 1,           #| number of colors per sample
-                            BPC  :$BitsPerComponent = 8, #| number of bits per color
+    multi method encode($buf where Blob | Buf, 
+                        Predictor :$Predictor! where 2, #| predictor function
+                        UInt :$Columns = 1,          #| number of samples per row
+                        UInt :$Colors = 1,           #| number of colors per sample
+                        BPC  :$BitsPerComponent = 8, #| number of bits per color
         ) {
         my uint $bit-mask = 2 ** $BitsPerComponent  -  1;
-        my Buf \nums := resample( $buf, 8, $BitsPerComponent );
+        my \nums := resample( $buf, 8, $BitsPerComponent );
         my uint $len = +nums;
         my uint @output;
         my uint $ptr = 0;
@@ -40,11 +36,11 @@ role PDF::IO::Filter::Predictors {
 	buf8.new: resample( @output, $BitsPerComponent, 8);
     }
 
-    multi method prediction($buf where Blob | Buf,
-			    UInt :$Predictor! where { 10 <= $_ <= 15}, #| predictor function
-			    UInt :$Columns = 1,          #| number of samples per row
-			    UInt :$Colors = 1,           #| number of colors per sample
-			    BPC  :$BitsPerComponent = 8, #| number of bits per color
+    multi method encode($buf where Blob | Buf,
+			Predictor :$Predictor! where { 10 <= $_ <= 15}, #| predictor function
+			UInt :$Columns = 1,          #| number of samples per row
+			UInt :$Colors = 1,           #| number of colors per sample
+			BPC  :$BitsPerComponent = 8, #| number of bits per color
         ) {
 
         my uint $bytes-per-col = ceiling($Colors * $BitsPerComponent / 8);
@@ -116,23 +112,21 @@ role PDF::IO::Filter::Predictors {
     }
 
     # prediction filters, see PDF 1.7 spec table 3.8
-    multi method prediction($buf where Blob | Buf,
-			    UInt :$Predictor=1, #| predictor function
+    multi method encode($buf where Blob | Buf,
+			    Predictor :$Predictor where {1} = 1 #| predictor function
         ) {
-        die "Unknown Flate/LZW predictor function: $Predictor"
-            unless $Predictor == 1;
         $buf;
     }
 
     # prediction filters, see PDF 1.7 spec table 3.8
-    multi method post-prediction($buf where Blob | Buf, 
-                                 UInt :$Predictor! where { $_ == 2}, #| predictor function
-                                 UInt :$Columns = 1,          #| number of samples per row
-                                 UInt :$Colors = 1,           #| number of colors per sample
-                                 UInt :$BitsPerComponent = 8, #| number of bits per color
+    multi method decode($buf where Blob | Buf, 
+                        Predictor :$Predictor! where 2, #| predictor function
+                        UInt :$Columns = 1,          #| number of samples per row
+                        UInt :$Colors = 1,           #| number of colors per sample
+                        UInt :$BitsPerComponent = 8, #| number of bits per color
         ) {
         my uint $bit-mask = 2 ** $BitsPerComponent  -  1;
-        my Buf \nums = resample( $buf, 8, $BitsPerComponent );
+        my \nums = resample( $buf, 8, $BitsPerComponent );
         my int $len = +nums;
         my uint $ptr = 0;
         my uint @output;
@@ -153,11 +147,11 @@ role PDF::IO::Filter::Predictors {
         buf8.new: resample( @output, $BitsPerComponent, 8);
     }
 
-    multi method post-prediction($buf,  #| input stream
-                                 UInt :$Predictor! where { 10 <= $_ <= 15}, #| predictor function
-                                 UInt :$Columns = 1,          #| number of samples per row
-                                 UInt :$Colors = 1,           #| number of colors per sample
-                                 UInt :$BitsPerComponent = 8, #| number of bits per color
+    multi method decode($buf where Blob | Buf,  #| input stream
+                        Predictor :$Predictor! where { 10 <= $_ <= 15}, #| predictor function
+                        UInt :$Columns = 1,          #| number of samples per row
+                        UInt :$Colors = 1,           #| number of colors per sample
+                        UInt :$BitsPerComponent = 8, #| number of bits per color
         ) {
 
         my uint $bytes-per-col = ceiling($Colors * $BitsPerComponent / 8);
@@ -170,11 +164,12 @@ role PDF::IO::Filter::Predictors {
 
         while $ptr < $len {
             # PNG prediction can vary from row to row
-            my UInt \tag = $buf[$ptr++];
+            my UInt $tag = $buf[$ptr++];
             my uint8 @out;
             my int $n = 0;
+            $tag -= 10 if 10 <= $tag <= 14; 
 
-            given tag {
+            given $tag {
                 when 0 { # None
                     @out[$n++] = $buf[$ptr++]
                         for 1 .. $bytes-per-row;
@@ -234,9 +229,7 @@ role PDF::IO::Filter::Predictors {
         buf8.new: @output;
     }
 
-    multi method post-prediction($buf, UInt :$Predictor = 1, ) is default {
-        die "Unknown Flate/LZW predictor function: $Predictor"
-            unless $Predictor == 1;
+    multi method decode($buf, Predictor :$Predictor where {1} = 1 ) is default {
         $buf;
     }
 

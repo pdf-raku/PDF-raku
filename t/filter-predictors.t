@@ -1,11 +1,11 @@
 use v6;
 use Test;
-plan 22;
+plan 41;
 
 use PDF::IO::Filter::Predictors;
 use PDF::IO::Filter;
 
-my $prediction-in = buf8.new: [
+my $encode-in = buf8.new: [
     0x2, 0x1, 0x0, 0x10, 0x0,
     0x2, 0x0, 0x2, 0xcd, 0x0,
     0x2, 0x0, 0x1, 0x51, 0x0,
@@ -14,13 +14,13 @@ my $prediction-in = buf8.new: [
     0,   1,   2,   3,    4,
     ];
 
-my $tiff-post-prediction = buf8.new: [
+my $tiff-decode = buf8.new: [
     0x02, 0x01, 0x00, 0x12, 0x01, 0x02, 0x12, 0x03, 0xCF, 0x12, 0x05,
     0xCF, 0x01, 0x51, 0x00, 0x02, 0x51, 0x01, 0x72, 0x51, 0x04, 0x72,
     0x56, 0x7E,
     ];
 
-my $png-post-prediction = buf8.new: [
+my $png-decode = buf8.new: [
     0x1, 0x0, 0x10, 0x0,
     0x1, 0x2, 0xdd, 0x0,
     0x1, 0x3, 0x2e, 0x0,
@@ -29,25 +29,25 @@ my $png-post-prediction = buf8.new: [
     1,   2,   3,    4,
     ];
 
-is-deeply PDF::IO::Filter::Predictors.post-prediction( $prediction-in,
-                                                     :Columns(4),
-                                                     :Colors(3),
-                                                     :Predictor(1), ),
-    $prediction-in,
+is-deeply PDF::IO::Filter::Predictors.decode( $encode-in,
+                                              :Columns(4),
+                                              :Colors(3),
+                                              :Predictor(1), ),
+    $encode-in,
     "NOOP predictive filter sanity";
 
-my $tiff-in = buf8.new: $prediction-in.head(24);
-is-deeply PDF::IO::Filter::Predictors.post-prediction( $tiff-in,
-                                                     :Columns(4),
-                                                     :Colors(3),
-                                                     :Predictor(2), ),
-    $tiff-post-prediction,
+my $tiff-in = buf8.new: $encode-in.head(24);
+is-deeply PDF::IO::Filter::Predictors.decode( $tiff-in,
+                                              :Columns(4),
+                                              :Colors(3),
+                                              :Predictor(2), ),
+    $tiff-decode,
     "TIFF predictive filter sanity";
 
-is-deeply PDF::IO::Filter::Predictors.post-prediction( $prediction-in,
-                                                     :Columns(4),
-                                                     :Predictor(12), ),
-    $png-post-prediction,
+is-deeply PDF::IO::Filter::Predictors.decode( $encode-in,
+                                              :Columns(4),
+                                              :Predictor(12), ),
+    $png-decode,
     "PNG predictive filter sanity";
 
 my $rand-data = buf8.new: [
@@ -57,30 +57,49 @@ my $rand-data = buf8.new: [
     0x7F, 0x01, 0x05, 0x02, 0x04, 0x08, 0x06, 0x05, 0x0F, 0xFE, 0x01, 0x1A,
     ];
 
+my %expected-bpc-pref := {
+    4 => {
+        2 => Buf[uint8].new(18,251,21,248,2,69,71,252,27,253,32,9,101,246,198,159,2,0,45,29,1,74,194,204,160,151,17,57,14,23,246,19,174,100,161,158,127,146,4,13,4,4,14,15,15,255,19,25),
+    },
+    8 => {
+        2 => Buf[uint8].new(18,13,0,253,240,61,140,51,27,8,13,25,61,58,172,69,2,2,45,58,210,15,12,126,160,55,168,58,198,164,253,9,174,2,245,47,220,208,134,1,4,8,2,253,9,249,242,28),
+    },
+    16 => {
+        2 => Buf[uint8].new(18,13,18,10,240,58,124,112,24,193,153,167,74,83,233,127,2,2,47,60,255,73,222,141,158,236,58,168,109,222,194,173,174,2,163,49,208,255,97,209,133,7,1,3,11,246,251,21),
+    },
+};
+
 for flat 1, 2, 10 .. 15 -> $Predictor {
     my $desc = do given $Predictor { when 2 { 'TIFF' }; when 1 { 'no-op'}; default {'PNG'} };
 
-    my $prediction = PDF::IO::Filter::Predictors.prediction( $rand-data,
-                                                           :Columns(4),
-                                                           :$Predictor, );
+    my $encode = PDF::IO::Filter::Predictors.encode( $rand-data,
+                                                     :Columns(4),
+                                                     :$Predictor, );
 
-    my $post-prediction = PDF::IO::Filter::Predictors.post-prediction( $prediction,
-                                                                     :Columns(4),
-                                                                     :$Predictor, );
+    my $decode = PDF::IO::Filter::Predictors.decode( $encode,
+                                                     :Columns(4),
+                                                     :$Predictor, );
 
-    is-deeply $post-prediction, $rand-data, "$desc predictor ($Predictor) - appears lossless";
+    is-deeply $decode, $rand-data, "$desc predictor ($Predictor) - appears lossless";
 
-    my $prediction2c = PDF::IO::Filter::Predictors.prediction( $rand-data,
-								     :Columns(4),
-								     :Colors(2),
-								     :$Predictor, );
+    for 4, 8, 16 -> $BitsPerComponent {
+        my $encode2c = PDF::IO::Filter::Predictors.encode( $rand-data,
+						       :Columns(4),
+						       :Colors(2),
+                                                       :$BitsPerComponent,
+						       :$Predictor, );
+##        warn { :$BitsPerComponent, :$Predictor, :$encode2c }.perl;
+        is-deeply($encode2c, $_, "$desc predictor ($Predictor) multi-channel $BitsPerComponent bpc - encoding")
+            with  %expected-bpc-pref{$BitsPerComponent}{$Predictor};
     
-    my $post-prediction2c = PDF::IO::Filter::Predictors.post-prediction( $prediction2c,
-									 :Columns(4),
-									 :Colors(2),
-									 :$Predictor, );
+        my $decode2c = PDF::IO::Filter::Predictors.decode( $encode2c,
+						           :Columns(4),
+						           :Colors(2),
+                                                           :$BitsPerComponent,
+						           :$Predictor, );
 
-    is-deeply $post-prediction2c, $rand-data, "$desc predictor ($Predictor) multi-channel - appears lossless";
+        is-deeply $decode2c, $rand-data, "$desc predictor ($Predictor) multi-channel $BitsPerComponent bpc - appears lossless";
+    }
 }
 
 my $dict = { :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) } };
@@ -88,10 +107,10 @@ my $dict = { :Filter<FlateDecode>, :DecodeParms{ :Predictor(12), :Columns(4) } }
 my $rand-chrs = [~] $rand-data.list.grep({ $_ <= 0xFF }).map: { .chr };
 
 my $encoded;
-lives-ok {$encoded = PDF::IO::Filter.encode($rand-chrs, :$dict)}, "$dict<Filter> encode with prediction";
+lives-ok {$encoded = PDF::IO::Filter.encode($rand-chrs, :$dict)}, "$dict<Filter> encode with encode";
 
 my $decoded;
-lives-ok {$decoded = PDF::IO::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with prediction";
+lives-ok {$decoded = PDF::IO::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with encode";
 
-is-deeply ~$decoded, $rand-chrs, "$dict<Filter> round-trip with prediction";
+is-deeply ~$decoded, $rand-chrs, "$dict<Filter> round-trip with encode";
 

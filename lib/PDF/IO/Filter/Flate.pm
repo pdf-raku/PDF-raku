@@ -1,11 +1,9 @@
 use v6;
 # based on Perl 5's PDF::API::Core::PDF::Filter::ASCIIHexDecode
 
-use PDF::IO::Filter::Predictors;
+class PDF::IO::Filter::Flate {
 
-class PDF::IO::Filter::Flate
-    does PDF::IO::Filter::Predictors {
-
+    use PDF::IO::Filter::Predictors;
     use Compress::Zlib;
     use PDF::IO::Blob;
 
@@ -17,7 +15,7 @@ class PDF::IO::Filter::Flate
     }
 
     multi method encode(Blob $decoded, :$Predictor, |c --> PDF::IO::Blob) is default {
-        PDF::IO::Blob.new: compress($Predictor ?? $.prediction( $_, :$Predictor, |c ) !! $_)
+        PDF::IO::Blob.new: compress($Predictor ?? PDF::IO::Filter::Predictors.encode( $_, :$Predictor, |c ) !! $_)
             with $decoded;
     }
 
@@ -26,7 +24,7 @@ class PDF::IO::Filter::Flate
     }
 
     multi method decode(Blob $encoded, :$Predictor, |c --> PDF::IO::Blob) {
-        PDF::IO::Blob.new: ($Predictor ?? $.post-prediction( $_, :$Predictor, |c ) !! $_)
+        PDF::IO::Blob.new: ($Predictor ?? PDF::IO::Filter::Predictors.decode( $_, :$Predictor, |c ) !! $_)
             with uncompress( $encoded );
     }
 }

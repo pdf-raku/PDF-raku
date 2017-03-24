@@ -127,8 +127,8 @@ class PDF::Reader {
 
 		if my $ind-obj := $idx<ind-obj> {
 		    die "too late to setup encryption: $obj-num $gen-num R"
-		    if $idx<type> != Free | External
-		    || $ind-obj.isa(PDF::IO::IndObj);
+		        if $idx<type> != Free | External
+		        || $ind-obj.isa(PDF::IO::IndObj);
 
 		    $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> );
 		}
