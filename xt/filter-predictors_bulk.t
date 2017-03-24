@@ -18,7 +18,6 @@ my $ind-obj = PDF::IO::IndObj.new( :$input, |%ast );
 my $object = $ind-obj.object;
 
 my $decoded;
-todo "PNG predictors with BPC < 8";
 lives-ok { $decoded = $object.decode };
 
 done-testing;
