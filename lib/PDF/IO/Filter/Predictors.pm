@@ -55,20 +55,23 @@ class PDF::IO::Filter::Predictors {
         my uint $bit-mask = 2 ** $bpc  -  1;
         my uint $row-size = $colors * $Columns;
         my uint $ptr = 0;
-        my uint $row = 0;
         my uint8 @out;
         my uint $tag = min($Predictor - 10, 4);
         my int $n = 0;
         my int $len = +$buf;
 
-         my $padding = do {
+        my $padding = do {
             my $bits-per-row = $row-size * $bpc;
             my $bit-padding = -$bits-per-row % 8;
             $bit-padding div $bpc;
         }
 
-        while $ptr < $len {
+        my $rows = $len div $row-size;
+        # preallocate, allowing room for per-row data + tag + padding
+        @out[$rows * ($row-size + $padding + 1) - 1] = 0
+                if $rows;
 
+        loop (my uint $row = 0; $row < $rows; $row++) {
             @out[$n++] = $tag;
 
             given $tag {
@@ -120,11 +123,11 @@ class PDF::IO::Filter::Predictors {
                 }
             }
 
-            $row++;
-            $ptr++ for 0 ..^ $padding;
+            @out[$n++] = 0
+                for 0 ..^ $padding;
          }
 
-       @out = resample($@out, $bpc, 8)
+        @out = resample(@out, $bpc, 8)
             unless $bpc == 8;
         buf8.new: @out;
     }
@@ -185,8 +188,8 @@ class PDF::IO::Filter::Predictors {
         my uint $row-size = $colors * $Columns;
         my uint $ptr = 0;
         my uint $len = +$buf;
-        my uint8 @output;
-        my uint8 @up = 0 xx $row-size;
+        my uint8 @out;
+        my int $n = 0;
 
         my $padding = do {
             my $bits-per-row = $row-size * $bpc;
@@ -194,11 +197,15 @@ class PDF::IO::Filter::Predictors {
             $bit-padding div $bpc;
         }
 
-        while $ptr < $len {
+        # each input row also has a tag plus any padding
+        my $rows = $len div ($row-size + $padding + 1);
+        # preallocate
+        @out[$rows * $row-size - 1] = 0
+            if $rows;
+
+        loop (my uint $row = 0; $row < $rows; $row++) {
             # PNG prediction can vary from row to row
             my UInt $tag = $buf[$ptr++];
-            my uint8 @out;
-            my int $n = 0;
             $tag -= 10 if 10 <= $tag <= 14; 
 
             given $tag {
@@ -206,7 +213,7 @@ class PDF::IO::Filter::Predictors {
                     @out[$n++] = $buf[$ptr++]
                         for 1 .. $row-size;
                 }
-                when 1 { # Sub
+                when 1 { # Left
                     @out[$n++] = $buf[$ptr++] for 1 .. $colors;
                     for $colors ^.. $row-size {
                         my \left-val = @out[$n - $colors];
@@ -215,22 +222,22 @@ class PDF::IO::Filter::Predictors {
                 }
                 when 2 { # Up
                     for 1 .. $row-size {
-                        my \up-val = @up[$n];
+                        my \up-val = $row ?? @out[$n - $row-size] !! 0;
                         @out[$n++] = ($buf[$ptr++] + up-val) +& $bit-mask;
                     }
                 }
                 when  3 { # Average
                     for 1 .. $row-size -> \i {
                         my \left-val = i <= $colors ?? 0 !! @out[$n - $colors];
-                        my \up-val = @up[$n];
+                        my \up-val = $row ?? @out[$n - $row-size] !! 0;
                         @out[$n++] = ($buf[$ptr++] + ( (left-val + up-val) div 2 )) +& $bit-mask;
                     }
                 }
                 when 4 { # Paeth
                     for 1 .. $row-size -> \i {
                         my \left-val = i <= $colors ?? 0 !! @out[$n - $colors];
-                        my \up-left-val = i <= $colors ?? 0 !! @up[$n - $colors];
-                        my \up-val = @up[$n];
+                        my \up-val = $row ?? @out[$n - $row-size] !! 0;
+                        my \up-left-val = $row && i > $colors ?? @out[$n - $colors - $row-size] !! 0;
 
                         my int $p = left-val + up-val - up-left-val;
                         my int $pa = abs($p - left-val);
@@ -254,15 +261,13 @@ class PDF::IO::Filter::Predictors {
                 }
             }
 
-            @up := @out;
-            @output.append: @out;
             $ptr++ for 0 ..^ $padding;
         }
 
-        @output = resample($@output, $bpc, 8)
+        @out = resample(@out, $bpc, 8)
             unless $bpc == 8;
 
-        buf8.new: @output;
+        buf8.new: @out;
     }
 
     multi method decode($buf, Predictor :$Predictor where {1} = 1 ) is default {
