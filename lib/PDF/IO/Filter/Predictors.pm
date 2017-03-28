@@ -18,16 +18,16 @@ class PDF::IO::Filter::Predictors {
         my \nums := resample( $buf, 8, $BitsPerComponent );
         my uint $len = +nums;
         my uint @output;
-        my uint $ptr = 0;
+        my uint $idx = 0;
 
-        while $ptr < $len {
+        while $idx < $len {
 	    for 1 .. $Colors {
-		@output.push: nums[ $ptr++ ];
+		@output.push: nums[ $idx++ ];
 	    }
             for 2 .. $Columns {
                 for 1 .. $Colors {
-                    my \prev-color = nums[$ptr - $Colors];
-                    my int $result = (nums[ $ptr++ ] - prev-color) +& $bit-mask;
+                    my \prev-color = nums[$idx - $Colors];
+                    my int $result = (nums[ $idx++ ] - prev-color) +& $bit-mask;
                     @output.push: $result;
                 }
             }
@@ -54,7 +54,7 @@ class PDF::IO::Filter::Predictors {
 
         my uint $bit-mask = 2 ** $bpc  -  1;
         my uint $row-size = $colors * $Columns;
-        my uint $ptr = 0;
+        my uint $idx = 0;
         my uint8 @out;
         my uint $tag = min($Predictor - 10, 4);
         my int $n = 0;
@@ -69,47 +69,47 @@ class PDF::IO::Filter::Predictors {
         my $rows = $len div $row-size;
         # preallocate, allowing room for per-row data + tag + padding
         @out[$rows * ($row-size + $padding + 1) - 1] = 0
-                if $rows;
+            if $rows;
 
         loop (my uint $row = 0; $row < $rows; $row++) {
             @out[$n++] = $tag;
 
             given $tag {
                 when 0 { # None
-                    @out[$n++] = $buf[$ptr++]
+                    @out[$n++] = $buf[$idx++]
                         for 1 .. $row-size;
                 }
                 when 1 { # Left
-                    @out[$n++] = $buf[$ptr++] for 1 .. $colors;
+                    @out[$n++] = $buf[$idx++] for 1 .. $colors;
                     for $colors ^.. $row-size {
-                        my \left-val = $buf[$ptr - $colors];
-                        @out[$n++] = ($buf[$ptr++] - left-val) +& $bit-mask;
+                        my \left-val = $buf[$idx - $colors];
+                        @out[$n++] = ($buf[$idx++] - left-val) +& $bit-mask;
                     }
                 }
                 when 2 { # Up
                     for 1 .. $row-size {
-                        my \up-val = $row ?? $buf[$ptr - $row-size] !! 0;
-                        @out[$n++] = ($buf[$ptr++] - up-val) +& $bit-mask;
+                        my \up-val = $row ?? $buf[$idx - $row-size] !! 0;
+                        @out[$n++] = ($buf[$idx++] - up-val) +& $bit-mask;
                     }
                 }
                 when 3 { # Average
-                   for 1 .. $row-size -> \i {
-                        my \left-val = i <= $colors ?? 0 !! $buf[$ptr - $colors];
-                        my \up-val = $row ?? $buf[$ptr - $row-size] !! 0;
-                        @out[$n++] = ($buf[$ptr++] - ( (left-val + up-val) div 2 )) +& $bit-mask;
+                   for 1 .. $row-size -> int $i {
+                        my \left-val = $i <= $colors ?? 0 !! $buf[$idx - $colors];
+                        my \up-val = $row ?? $buf[$idx - $row-size] !! 0;
+                        @out[$n++] = ($buf[$idx++] - ( (left-val + up-val) div 2 )) +& $bit-mask;
                    }
                 }
                 when 4 { # Paeth
-                   for 1 .. $row-size -> \i {
-                       my \left-val = i <= $colors ?? 0 !! $buf[$ptr - $colors];
-                       my \up-val = $row ?? $buf[$ptr - $row-size] !! 0;
-                       my \up-left-val = $row && i > $colors ?? $buf[$ptr - $row-size - $colors] !! 0;
+                   for 1 .. $row-size -> int $i {
+                       my \left-val = $i <= $colors ?? 0 !! $buf[$idx - $colors];
+                       my \up-val = $row ?? $buf[$idx - $row-size] !! 0;
+                       my \up-left-val = $row && $i > $colors ?? $buf[$idx - $row-size - $colors] !! 0;
 
                        my int $p = left-val + up-val - up-left-val;
                        my int $pa = abs($p - left-val);
                        my int $pb = abs($p - up-val);
                        my int $pc = abs($p - up-left-val);
-                       my \nearest = do if $pa <= $pb and $pa <= $pc {
+                       my \nearest = do if $pa <= $pb && $pa <= $pc {
                            left-val;
                        }
                        elsif $pb <= $pc {
@@ -118,7 +118,7 @@ class PDF::IO::Filter::Predictors {
                        else {
                            up-left-val
                        }
-                       @out[$n++] = ($buf[$ptr++] - nearest) +& $bit-mask;
+                       @out[$n++] = ($buf[$idx++] - nearest) +& $bit-mask;
                    }
                 }
             }
@@ -149,16 +149,16 @@ class PDF::IO::Filter::Predictors {
         my uint $bit-mask = 2 ** $BitsPerComponent  -  1;
         my \nums = resample( $buf, 8, $BitsPerComponent );
         my int $len = +nums;
-        my uint $ptr = 0;
+        my uint $idx = 0;
         my uint @output;
 
-        while $ptr < $len {
+        while $idx < $len {
             my uint @pixels = 0 xx $Colors;
 
             for 1 .. $Columns {
 
                 for 0 ..^ $Colors {
-                    @pixels[$_] = (@pixels[$_] + nums[ $ptr++ ]) +& $bit-mask;
+                    @pixels[$_] = (@pixels[$_] + nums[ $idx++ ]) +& $bit-mask;
                 }
 
                 @output.append: @pixels;
@@ -186,7 +186,7 @@ class PDF::IO::Filter::Predictors {
 
         my uint $bit-mask = 2 ** $bpc  -  1;
         my uint $row-size = $colors * $Columns;
-        my uint $ptr = 0;
+        my uint $idx = 0;
         my uint $len = +$buf;
         my uint8 @out;
         my int $n = 0;
@@ -205,45 +205,45 @@ class PDF::IO::Filter::Predictors {
 
         loop (my uint $row = 0; $row < $rows; $row++) {
             # PNG prediction can vary from row to row
-            my UInt $tag = $buf[$ptr++];
+            my UInt $tag = $buf[$idx++];
             $tag -= 10 if 10 <= $tag <= 14; 
 
             given $tag {
                 when 0 { # None
-                    @out[$n++] = $buf[$ptr++]
+                    @out[$n++] = $buf[$idx++]
                         for 1 .. $row-size;
                 }
                 when 1 { # Left
-                    @out[$n++] = $buf[$ptr++] for 1 .. $colors;
+                    @out[$n++] = $buf[$idx++] for 0 ..^ $colors;
                     for $colors ^.. $row-size {
                         my \left-val = @out[$n - $colors];
-                        @out[$n++] = ($buf[$ptr++] + left-val) +& $bit-mask;
+                        @out[$n++] = ($buf[$idx++] + left-val) +& $bit-mask;
                     }
                 }
                 when 2 { # Up
-                    for 1 .. $row-size {
+                    for 0 ..^ $row-size {
                         my \up-val = $row ?? @out[$n - $row-size] !! 0;
-                        @out[$n++] = ($buf[$ptr++] + up-val) +& $bit-mask;
+                        @out[$n++] = ($buf[$idx++] + up-val) +& $bit-mask;
                     }
                 }
                 when  3 { # Average
-                    for 1 .. $row-size -> \i {
-                        my \left-val = i <= $colors ?? 0 !! @out[$n - $colors];
+                    for 0 ..^ $row-size -> int $i {
+                        my \left-val = $i < $colors ?? 0 !! @out[$n - $colors];
                         my \up-val = $row ?? @out[$n - $row-size] !! 0;
-                        @out[$n++] = ($buf[$ptr++] + ( (left-val + up-val) div 2 )) +& $bit-mask;
+                        @out[$n++] = ($buf[$idx++] + ( (left-val + up-val) div 2 )) +& $bit-mask;
                     }
                 }
                 when 4 { # Paeth
-                    for 1 .. $row-size -> \i {
-                        my \left-val = i <= $colors ?? 0 !! @out[$n - $colors];
+                    for 0 ..^ $row-size -> \i {
+                        my \left-val = i < $colors ?? 0 !! @out[$n - $colors];
                         my \up-val = $row ?? @out[$n - $row-size] !! 0;
-                        my \up-left-val = $row && i > $colors ?? @out[$n - $colors - $row-size] !! 0;
+                        my \up-left-val = $row && i >= $colors ?? @out[$n - $colors - $row-size] !! 0;
 
                         my int $p = left-val + up-val - up-left-val;
                         my int $pa = abs($p - left-val);
                         my int $pb = abs($p - up-val);
                         my int $pc = abs($p - up-left-val);
-                        my \nearest = do if $pa <= $pb and $pa <= $pc {
+                        my \nearest = do if $pa <= $pb && $pa <= $pc {
                             left-val;
                         }
                         elsif $pb <= $pc {
@@ -253,7 +253,7 @@ class PDF::IO::Filter::Predictors {
                             up-left-val
                         }
 
-                        @out[$n++] = ($buf[$ptr++] + nearest) +& $bit-mask;
+                        @out[$n++] = ($buf[$idx++] + nearest) +& $bit-mask;
                     }
                 }
                 default {
@@ -261,7 +261,7 @@ class PDF::IO::Filter::Predictors {
                 }
             }
 
-            $ptr++ for 0 ..^ $padding;
+            $idx += $padding;
         }
 
         @out = resample(@out, $bpc, 8)
