@@ -16,14 +16,14 @@ class PDF::IO::Filter::ASCII85 {
 	my UInt \padding = -$buf % 4;
 	my uint8 @buf = $buf.list;
 	@buf.append: 0 xx padding;
-        my uint32 @buf32 := resample( @buf, 8, 32);
+        my $buf32 := resample( @buf, 8, 32);
 
 	constant NullChar = 'z'.ord;
 	constant PadChar = '!'.ord;
 	constant EOD = '~'.ord, '>'.ord; 
 
         my uint8 @a85;
-        for @buf32.reverse -> int $n is copy {
+        for $buf32.reverse -> int $n is copy {
             if $n {
                 for 0 .. 4 {
                     @a85.unshift: ($n % 85  +  33);
@@ -64,20 +64,22 @@ class PDF::IO::Filter::ASCII85 {
         die "invalid ASCII85 encoded character: {$0.Str.perl}"
             if $str ~~ /(<-[\!..\u\z]>)/;
 
-        my \padding = 'u' x (-$str.codes % 5);
-        my $buf = ($str ~ padding).encode('latin-1');
+        my $padding = -$str.codes % 5;
+        my $buf = ($str ~ ('u' x $padding)).encode('latin-1');
 
         my uint32 @buf32;
+        @buf32[+$buf div 5 - 1] = 0; # preallocate
+
         my int $n = -1;
         for $buf.pairs {
             @buf32[++$n] = 0 if .key %% 5;
             (@buf32[$n] *= 85) += .value - 33;
         }
 
-        my uint8 @buf := resample(@buf32, 32, 8);
-        @buf.pop for 1 .. padding.codes;
+        $buf = resample(@buf32, 32, 8);
+        $buf.pop for 1 .. $padding;
 
-        PDF::IO::Blob.new: @buf;
+        PDF::IO::Blob.new: $buf;
     }
 
 }
