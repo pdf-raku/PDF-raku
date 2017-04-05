@@ -6,7 +6,7 @@ class PDF::IO::Filter::ASCIIHex {
     # Maintainer's Note: ASCIIHexDecode is described in the PDF 1.7 spec
     # in section 7.4.2.
     use PDF::IO::Blob;
-    use PDF::IO::Util :resample;
+    use PDF::IO::Util :pack;
     BEGIN my uint8 @HexEnc = map *.ord, flat '0' .. '9', 'A' .. 'F';
 
 
@@ -15,7 +15,7 @@ class PDF::IO::Filter::ASCIIHex {
     }
     multi method encode(Blob $input --> PDF::IO::Blob) {
 
-	my uint8 @buf = [ resample( $input, 8, 4).map: {@HexEnc[$_]} ];
+	my uint8 @buf = [ unpack( $input, 4).map: {@HexEnc[$_]} ];
 	@buf.push: '>'.ord;
 
 	PDF::IO::Blob.new( @buf );

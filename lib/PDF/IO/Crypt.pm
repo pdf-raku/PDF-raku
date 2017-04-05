@@ -6,7 +6,7 @@ class PDF::IO::Crypt {
     use OpenSSL::Digest;
 
     use PDF::DAO::Dict;
-    use PDF::IO::Util :resample;
+    use PDF::IO::Util :pack;
     use PDF::DAO::Type::Encrypt;
 
     has UInt $!R;         #| encryption revision
@@ -66,7 +66,7 @@ class PDF::IO::Crypt {
 	    unless $doc<ID>;
 
 	@!doc-id = $doc<ID>[0].ords;
-	my uint8 @p8 = resample([ $P ], 32, 8).reverse;
+	my uint8 @p8 = pack-le([ $P ], 32);
 	@!P = @p8;
 
         my uint8 @owner-pass = format-pass($owner-pass);
@@ -120,7 +120,7 @@ class PDF::IO::Crypt {
         else {
             die 'This PDF lacks an ID.  The document cannot be decrypted'
         }
-	@!P = resample([ $P ], 32, 8).reverse;
+	@!P = pack-le([ $P ], 32);
 	@!O = $O.ords;
 	@!U = $U.ords;
 

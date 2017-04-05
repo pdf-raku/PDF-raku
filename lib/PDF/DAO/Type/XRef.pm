@@ -10,7 +10,7 @@ class PDF::DAO::Type::XRef
     is PDF::DAO::Stream
     does PDF::DAO::Tie::Hash {
 
-    use PDF::IO::Util :resample;
+    use PDF::IO::Util :pack;
     use PDF::IO::Blob;
     use PDF::DAO::Tie;
     use PDF::DAO::Name;
@@ -72,7 +72,7 @@ class PDF::DAO::Type::XRef
             $max-bytes;
         } ];
 
-        my \buf := resample( $xref, $W, 8 );
+        my \buf := pack( $xref, $W,);
         nextwith( PDF::IO::Blob.new: buf );
     }
 
@@ -114,7 +114,7 @@ class PDF::DAO::Type::XRef
             // die "missing mandatory /XRef param: /W";
         die "missing mandatory /XRef param: /Size" without $.Size;
 
-        my array $xref-idx = resample( $buf, 8, W );
+        my array $xref-idx = unpack( $buf, W );
 
         if my \index = self<Index> {
             my \n = [+] index[1, 3 ... *];

@@ -2,7 +2,7 @@ use v6;
 
 class PDF::IO::Filter::ASCII85 {
 
-    use PDF::IO::Util :resample;
+    use PDF::IO::Util :pack;
     use PDF::IO::Blob;
 
     # Maintainer's Note: ASCII85Decode is described in the PDF 1.7 spec
@@ -16,7 +16,7 @@ class PDF::IO::Filter::ASCII85 {
 	my UInt \padding = -$buf % 4;
 	my uint8 @buf = $buf.list;
 	@buf.append: 0 xx padding;
-        my $buf32 := resample( @buf, 8, 32);
+        my $buf32 := unpack( @buf, 32);
 
 	constant NullChar = 'z'.ord;
 	constant PadChar = '!'.ord;
@@ -76,7 +76,7 @@ class PDF::IO::Filter::ASCII85 {
             (@buf32[$n] *= 85) += .value - 33;
         }
 
-        $buf = resample(@buf32, 32, 8);
+        $buf = pack(@buf32, 32);
         $buf.pop for 1 .. $padding;
 
         PDF::IO::Blob.new: $buf;

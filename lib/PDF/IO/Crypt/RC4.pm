@@ -8,7 +8,7 @@ class PDF::IO::Crypt::RC4
     does PDF::IO::Crypt::AST {
 
     use PDF::IO::Blob;
-    use PDF::IO::Util :resample;
+    use PDF::IO::Util :pack;
     use OpenSSL::Digest;
 
     method type { 'V2' }
@@ -17,8 +17,8 @@ class PDF::IO::Crypt::RC4
 	die "encryption has not been authenticated"
 	    unless $.key;
 
-	my uint8 @obj-bytes = resample([ $obj-num ], 32, 8).reverse;
-	my uint8 @gen-bytes = resample([ $gen-num ], 32, 8).reverse;
+	my uint8 @obj-bytes = pack-le([ $obj-num ], 32);
+	my uint8 @gen-bytes = pack-le([ $gen-num ], 32);
 	my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
 
 	my UInt $size = +@obj-key;

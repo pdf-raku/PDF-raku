@@ -5,7 +5,7 @@ class PDF::IO::Filter::Predictors {
     my subset BPC of UInt where 1 | 2 | 4 | 8 | 16;
     my subset Predictor of Int where 1|2|10..15;
 
-    use PDF::IO::Util :resample;
+    use PDF::IO::Util :pack;
     # post prediction functions as described in the PDF 1.7 spec, table 3.8
 
     multi method encode($buf where Blob | Buf, 
@@ -15,7 +15,7 @@ class PDF::IO::Filter::Predictors {
                         BPC  :$BitsPerComponent = 8, #| number of bits per color
         ) {
         my uint $bit-mask = 2 ** $BitsPerComponent  -  1;
-        my \nums := resample( $buf, 8, $BitsPerComponent );
+        my \nums := unpack( $buf, $BitsPerComponent );
         my uint $len = +nums;
         my uint @output;
         my uint $idx = 0;
@@ -33,7 +33,7 @@ class PDF::IO::Filter::Predictors {
             }
         }
 
-	buf8.new: resample( @output, $BitsPerComponent, 8);
+	pack( @output, $BitsPerComponent);
     }
 
     multi method encode($buf is copy where Blob | Buf,
@@ -49,7 +49,7 @@ class PDF::IO::Filter::Predictors {
             $colors *= $bpc div 8;
             $bpc = 8;
         }
-        $buf = resample($buf, 8, $bpc)
+        $buf = unpack($buf, $bpc)
             unless $bpc == 8;
 
         my uint $bit-mask = 2 ** $bpc  -  1;
@@ -127,9 +127,7 @@ class PDF::IO::Filter::Predictors {
                 for 0 ..^ $padding;
          }
 
-        @out = resample(@out, $bpc, 8)
-            unless $bpc == 8;
-        buf8.new: @out;
+        pack(@out, $bpc)
     }
 
     # prediction filters, see PDF 1.7 spec table 3.8
@@ -147,7 +145,7 @@ class PDF::IO::Filter::Predictors {
                         UInt :$BitsPerComponent = 8, #| number of bits per color
         ) {
         my uint $bit-mask = 2 ** $BitsPerComponent  -  1;
-        my \nums = resample( $buf, 8, $BitsPerComponent );
+        my \nums = unpack( $buf, $BitsPerComponent );
         my int $len = +nums;
         my uint $idx = 0;
         my uint @output;
@@ -165,7 +163,7 @@ class PDF::IO::Filter::Predictors {
             }
         }
 
-        buf8.new: resample( @output, $BitsPerComponent, 8);
+        pack( @output, $BitsPerComponent);
     }
 
     multi method decode($buf is copy where Blob | Buf,  #| input stream
@@ -181,7 +179,7 @@ class PDF::IO::Filter::Predictors {
             $colors *= $bpc div 8;
             $bpc = 8;
         }
-        $buf = resample($buf, 8, $bpc)
+        $buf = unpack($buf, $bpc)
             unless $bpc == 8;
 
         my uint $bit-mask = 2 ** $bpc  -  1;
@@ -264,10 +262,7 @@ class PDF::IO::Filter::Predictors {
             $idx += $padding;
         }
 
-        @out = resample(@out, $bpc, 8)
-            unless $bpc == 8;
-
-        buf8.new: @out;
+        pack(@out, $bpc);
     }
 
     multi method decode($buf, Predictor :$Predictor where {1} = 1 ) is default {

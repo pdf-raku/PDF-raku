@@ -2,14 +2,19 @@ use v6;
 
 module PDF::IO::Util {
 
-    #= resample a buffer as n-bit to m-bit unsigned integers
-    proto sub resample( $, $, $ --> Buf) is export(:resample) {*};
-    multi sub resample( $nums!, 8, 4)  { buf8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
-    multi sub resample( $nums!, 4, 8)  { buf8.new: flat $nums.list.map: -> \hi, \lo { hi +< 4  +  lo } }
-    multi sub resample( $nums!, 8, 16) { buf16.new: flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
-    multi sub resample( $nums!, 8, 32) { buf32.new: flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
-    multi sub resample( $nums!, 16, 8) { buf8.new: flat $nums.list.map: { ($_ +> 8, $_) } }
-    multi sub resample( $nums!, 32, 8) { buf8.new: flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
+    #= network ordered byte packing and unpacking
+    proto sub unpack( $, $ --> Buf) is export(:pack) {*};
+    proto sub pack( $, $ --> Buf) is export(:pack) {*};
+    proto sub pack-le( $, $ --> Buf) is export(:pack) {*};
+    multi sub unpack( $nums!, 4)  { buf8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
+    multi sub unpack( $nums!, 16) { buf16.new: flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
+    multi sub unpack( $nums!, 32) { buf32.new: flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
+    multi sub unpack( $nums!, $n) { resample( $nums, 8, $n); }
+    multi sub pack( $nums!, 4)  { buf8.new: flat $nums.list.map: -> \hi, \lo { hi +< 4  +  lo } }
+    multi sub pack( $nums!, 16) { buf8.new: flat $nums.list.map: { ($_ +> 8, $_) } }
+    multi sub pack( $nums!, 32) { buf8.new: flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
+    multi sub pack-le( $nums!, 32) { buf8.new: flat $nums.list.map: { ($_, $_ +> 8, $_ +> 16, $_ +> 24) } }
+    multi sub pack( $nums!, $n) { resample( $nums, $n, 8); }
     sub container(UInt $bits) {
         $bits <= 8 ?? uint8 !! ($bits > 16 ?? uint32 !! uint16)
     }
@@ -46,7 +51,7 @@ module PDF::IO::Util {
     }
     #| variable resampling, e.g. to decode/encode:
     #|   obj 123 0 << /Type /XRef /W [1, 3, 1]
-    multi sub resample( $nums!, 8, Array $W!)  {
+    multi sub unpack( $nums!, Array $W!)  {
         my uint $i = 0;
         my uint $j = 0;
         my uint32 @out;
@@ -69,7 +74,7 @@ module PDF::IO::Util {
         @shaped;
     }
 
-    multi sub resample($shaped, Array $W!, 8)  {
+    multi sub pack($shaped, Array $W!)  {
         my uint8 @out;
         @out[$W.sum * +$shaped - 1] = 0
             if +$shaped;

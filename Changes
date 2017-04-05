@@ -3,6 +3,7 @@
       to PDF::IO::*.
     - Don't cache misses in PDF::DAO::Delegator
     - PDF::IO::Filter::Predictors now handles /BitsPerComponent < 8
+    - Replace PDF::IO::Util resample() with pack(), unpack()
 
     Release 0.2.0
     - Renamed class PDF::DAO::Type::PDF to PDF. Restored module name
