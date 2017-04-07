@@ -3,11 +3,15 @@ use Test;
 plan 8;
 
 use PDF::IO::IndObj;
+use PDF::IO::Util;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
+
+diag "*** NOTE installing Lib::PDF will speed up this test ***"
+    unless PDF::IO::Util::libpdf-available;
 
 for <xt/pdf/png-pred-4bpc.in xt/pdf/png-pred-16bpc.in xt/pdf/png-pred-1bpc.in xt/pdf/png-pred-4bpc-odd-col-count.in> {
     my $input = .IO.slurp( :enc<latin-1> );

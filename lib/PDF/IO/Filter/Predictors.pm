@@ -49,8 +49,7 @@ class PDF::IO::Filter::Predictors {
             $colors *= $bpc div 8;
             $bpc = 8;
         }
-        $buf = unpack($buf, $bpc)
-            unless $bpc == 8;
+        $buf = unpack($buf, $bpc);
 
         my uint $bit-mask = 2 ** $bpc  -  1;
         my uint $row-size = $colors * $Columns;
@@ -179,8 +178,7 @@ class PDF::IO::Filter::Predictors {
             $colors *= $bpc div 8;
             $bpc = 8;
         }
-        $buf = unpack($buf, $bpc)
-            unless $bpc == 8;
+        $buf = unpack($buf, $bpc);
 
         my uint $bit-mask = 2 ** $bpc  -  1;
         my uint $row-size = $colors * $Columns;

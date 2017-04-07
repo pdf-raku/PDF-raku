@@ -72,9 +72,9 @@ class PDF::Reader {
     has Bool $.auto-deref is rw = True;
     has Rat $.version is rw;
     has Str $.type is rw;    #= 'PDF', 'FDF', etc...
-    has UInt $.prev;
-    has UInt $.size is rw;   #= /Size entry in trailer dict ~ first free object number
-    has UInt @.xrefs = (0);  #= xref position for each revision in the file
+    has uint $.prev;
+    has uint $.size is rw;   #= /Size entry in trailer dict ~ first free object number
+    has uint32 @.xrefs = (0);  #= xref position for each revision in the file
     has $.crypt;
     my enum IndexType <Free External Embedded>;
 
@@ -139,10 +139,10 @@ class PDF::Reader {
     #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
     method !set-trailer (
         Hash $dict,
-        Array :$keys = [ $dict.keys.grep({
+        Array :$keys = [ $dict.keys.grep: {
 	    $_ ne 'Prev' | 'Size'                    # Recomputed fields
 		| 'Type' | 'DecodeParms' | 'Filter' | 'Index' | 'W' | 'Length' | 'XRefStm' # Unwanted, From XRef Streams
-	}) ],
+	} ],
         ) {
 	temp $.auto-deref = False;
         my Hash $trailer = self.trailer;
@@ -412,7 +412,7 @@ class PDF::Reader {
     }
 
     method !locate-xref($input-bytes, $tail-bytes, $tail, $offset, $fallback is rw) {
-	my Str $xref;
+	my str $xref;
 	constant SIZE = 4096;       # big enough to usually contain xref
 
 	if $offset >= $input-bytes - $tail-bytes {
@@ -754,7 +754,7 @@ class PDF::Reader {
                 next if $compress == is-compressed;
                 # fully stantiate object and adjust compression
                 my \object = self.ind-obj( obj-num, gen-num).object;
-                $compress ?? object.compress !! object.uncompress;
+                $compress ?? .compress !! .uncompress with object;
             }
         }
     }

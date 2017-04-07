@@ -1,3 +1,9 @@
+    Release 0.2.2
+    - Experimental use of Lib::PDF
+      Speed up the slowest test xt/filter-predictos_bulk.t
+      For regression purposes, at this stage. Probably wont
+      persue seriously until Rakudo has better JIT.
+
     Release 0.2.1
     - Renamed classes PDF::IO to PDF::IO::Util and PDF::IO::Input::*
       to PDF::IO::*.

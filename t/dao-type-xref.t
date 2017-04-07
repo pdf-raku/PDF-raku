@@ -6,6 +6,7 @@ use PDF::IO::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
+use PDF::IO::Util;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 

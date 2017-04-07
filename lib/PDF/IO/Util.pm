@@ -2,6 +2,18 @@ use v6;
 
 module PDF::IO::Util {
 
+    our sub libpdf-available {
+        state Bool $haveit = do {
+            CATCH {
+                when X::CompUnit::UnsatisfiedDependency {
+                }
+            }
+            require Lib::PDF:ver(v0.0.1 .. *);
+            True;
+        }
+        $haveit;
+    }
+
     #= network ordered byte packing and unpacking
     proto sub unpack( $, $ --> Buf) is export(:pack) {*};
     proto sub pack( $, $ --> Buf) is export(:pack) {*};
