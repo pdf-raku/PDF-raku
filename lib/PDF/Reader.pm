@@ -163,7 +163,7 @@ class PDF::Reader {
     #| derserialize a json dump
     multi method open(IO::Path $input-path  where .extension.lc eq 'json', |c ) {
         my \ast = from-json( $input-path.IO.slurp );
-        die X::PDF::BadDump.new( :input-file($input-path.abspath) )
+        die X::PDF::BadDump.new( :input-file($input-path.absolute) )
             unless ast.isa(Hash) && (ast<pdf>:exists);
         $!type = ast<pdf><header><type> // 'PDF';
         $!version = ast<pdf><header><version> // 1.2;
