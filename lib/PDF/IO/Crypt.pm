@@ -150,12 +150,9 @@ class PDF::IO::Crypt {
         # } RC4_KEY;
 
         constant RC4_INT = uint32;
-        my \rc4 = Buf[RC4_INT].new;
-        rc4.reallocate(258);
+        my \rc4 = Buf[RC4_INT].allocate(258);
         RC4_set_key(rc4, $key.bytes, $key);
-        my $out = buf8.new;
-        $out.reallocate($in.bytes)
-            if $in.bytes;
+        my buf8 $out .= allocate($in.bytes);
         RC4(rc4, $in.bytes, $in, $out);
         $out;
     }

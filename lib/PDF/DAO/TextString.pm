@@ -23,7 +23,7 @@ PDFDocEncoding or UTF-16BE with a leading byte-order marker
 
     method new( Str :$value! is copy, :$bom is copy, |c ) {
         if $value.starts-with(BOM-BE) {
-	    my @be = $value.ords;
+	    my uint8 @be = $value.ords;
             $value =  Buf.new(@be).decode('utf-16');
             $bom //= True;
         }

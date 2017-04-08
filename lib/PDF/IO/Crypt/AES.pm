@@ -52,14 +52,14 @@ class PDF::IO::Crypt::AES
     }
 
     method encrypt( $key, $dec --> Buf) {
-        my $iv = Buf.new( (^256).pick xx KeyLen );
+        my Buf $iv .= new( (^256).pick xx KeyLen );
         my $enc = $iv;
         $enc.append: self!aes-encrypt($key, $dec, :$iv );
         $enc;
     }
 
     method decrypt( $key, $enc-iv) {
-        my $iv = Buf.new: $enc-iv[0 ..^ KeyLen];
+        my Buf $iv .= new: $enc-iv[0 ..^ KeyLen];
         my @enc = +$enc-iv > KeyLen ?? $enc-iv[KeyLen .. *] !! [];
         self!aes-decrypt($key, Buf.new(@enc), :$iv );
     }
