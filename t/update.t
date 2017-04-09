@@ -10,7 +10,7 @@ use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 use JSON::Fast;
 
-sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
+sub name($name){ PDF::DAO.coerce(:$name) };
 
 # ensure consistant document ID generation
 srand(123456);
@@ -27,7 +27,7 @@ my $catalog = $pdf<Root>;
     my $Resources = $Parent<Kids>[0]<Resources>;
     my $MediaBox = $Parent<Kids>[0]<MediaBox>;
     my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
-    $Parent<Kids>.push: { :Type(/'Page'), :$MediaBox, :$Resources, :$Parent, :$Contents };
+    $Parent<Kids>.push: { :Type(name 'Page'), :$MediaBox, :$Resources, :$Parent, :$Contents };
     $Parent<Count>++;
 }
 

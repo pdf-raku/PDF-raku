@@ -6,9 +6,7 @@ use PDF::Reader;
 use PDF::Writer;
 use PDF::DAO;
 
-sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
-
-my $reader = PDF::Reader.new(:debug);
+my $reader = PDF::Reader.new;
 
 sub deref($val is rw, *@ops) is rw {
     $reader.deref($val, |@ops);

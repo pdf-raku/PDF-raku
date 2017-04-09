@@ -6,11 +6,9 @@ use PDF::IO::Serializer;
 use PDF::DAO::Util :to-ast;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Writer;
+use PDF::DAO;
 
-sub prefix:</>($name){
-    use PDF::DAO;
-    PDF::DAO.coerce(:$name)
-};
+sub name($name){ PDF::DAO.coerce(:$name) };
 
 # construct a nasty cyclic structure
 my $dict1 = { :ID(1) };
@@ -41,24 +39,24 @@ is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => 
 is-deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], ID => :int(2)}]), "circular hash ref resolution";
 
 $pdf = PDF::DAO.coerce: { :Root{
-    :Type(/'Catalog'),
+    :Type(name 'Catalog'),
     :Pages{
-            :Type(/'Pages'),
-            :Kids[ { :Type(/'Page'),
-                     :Resources{ :Font{ :F1{ :Encoding(/'MacRomanEncoding'),
-                                             :BaseFont(/'Helvetica'),
-                                             :Name(/'F1'),
-                                             :Type(/'Font'),
-                                             :Subtype(/'Type1')},
+            :Type(name 'Pages'),
+            :Kids[ { :Type(name 'Page'),
+                     :Resources{ :Font{ :F1{ :Encoding(name 'MacRomanEncoding'),
+                                             :BaseFont(name 'Helvetica'),
+                                             :Name(name 'F1'),
+                                             :Type(name 'Font'),
+                                             :Subtype(name 'Type1')},
                                  },
-                                 :Procset[ /'PDF',  /'Text' ],
+                                 :Procset[ name('PDF'),  name('Text') ],
                      },
                      :Contents( PDF::DAO.coerce( :stream{ :encoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET") } ) ),
                    },
                 ],
             :Count(1),
     },
-    :Outlines{ :Type(/'Outlines'), :Count(0) },
+    :Outlines{ :Type(name 'Outlines'), :Count(0) },
 } };
 
 $pdf<Root><Pages><Kids>[0]<Parent> = $pdf<Root><Pages>;
@@ -90,7 +88,7 @@ is-json-equiv @objects[3], (:ind-obj[4, 0, :dict{
                                                },
                                    ]), 'page object';
 
-my $obj-with-utf8 = PDF::DAO.coerce: { :Root{ :Name(/"Heydər Əliyev") } };
+my $obj-with-utf8 = PDF::DAO.coerce: { :Root{ :Name(name "Heydər Əliyev") } };
 $obj-with-utf8<Root>.is-indirect = True;
 my $writer = PDF::Writer.new;
 

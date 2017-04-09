@@ -8,7 +8,7 @@ use PDF::IO::Serializer;
 use PDF::DAO;
 use PDF::DAO::Array;
 
-sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
+sub name($name){ PDF::DAO.coerce(:$name) };
 
 my $reader = PDF::Reader.new();
 isa-ok $reader, PDF::Reader;
@@ -71,7 +71,7 @@ my UInt $Length = $decoded.codes;
 
 lives-ok {
     my $Resources = $Pages<Kids>[0]<Resources>;
-    my $new-page = PDF::DAO.coerce: { :Type(/'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
+    my $new-page = PDF::DAO.coerce: { :Type(name 'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
     my $contents = PDF::DAO.coerce( :stream{ :$decoded, :dict{ :$Length } } );
     $new-page<Contents> = $contents;
     $new-page<Parent> = $Pages;
@@ -86,7 +86,7 @@ ok !$contents.Length.defined, '$stream<Length>:delete propagates to $stream.Leng
 
 $contents = Nil;
 
-my $pdf = PDF::DAO.coerce: { :Root{ :Type(/'Catalog') } };
+my $pdf = PDF::DAO.coerce: { :Root{ :Type(name 'Catalog') } };
 $pdf<Root><Outlines> = $root-obj<Outlines>;
 $pdf<Root><Pages> = $root-obj<Pages>;
 
