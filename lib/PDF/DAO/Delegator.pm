@@ -67,14 +67,13 @@ class PDF::DAO::Delegator {
         $obj;
     }
 
-    multi method coerce( $obj, $role) is default {
+    my subset Role where { .does($_) && !.isa($_) };
+    multi method coerce( $obj, Role $role)  {
+        $obj does $role;
+    }
 
-	if $role.does($role) && !$role.isa($role) {
-	    $obj does $role
-	}
-	else {
-	    warn X::PDF::Coerce.new( :$obj, :$role );
-	}
+    multi method coerce( $obj, $role) {
+	warn X::PDF::Coerce.new( :$obj, :$role );
         $obj;
     }
 
