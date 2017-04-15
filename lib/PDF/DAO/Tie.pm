@@ -106,11 +106,11 @@ role PDF::DAO::Tie {
 	    $.apply($lval);
 	}
 
-        multi method type-check($val, :$*key) is rw {
+        multi method type-check($val, :$*key) {
 	    $.type-check($val, $.type)
 	}
 
-	multi method type-check($val, Positional[Mu] $type) is rw {
+	multi method type-check($val, Positional[Mu] $type) {
 	    with $val -> \v {
 		$.type-check(v, Array);
                 with $.length {
@@ -129,7 +129,7 @@ role PDF::DAO::Tie {
 	    }
 	}
 
-	multi method type-check($val, Associative[Mu] $type) is rw {
+	multi method type-check($val, Associative[Mu] $type) {
 	    with $val -> \v {
 		$.type-check(v, Hash);
 		my \of-type = $type.of;
@@ -145,7 +145,7 @@ role PDF::DAO::Tie {
 	}
 
 	#| untyped attribute
-	multi method type-check($val, Mu $type) is rw {
+	multi method type-check($val, Mu $type) {
             with $val {
                 $_;
             }
@@ -156,7 +156,7 @@ role PDF::DAO::Tie {
 	    }
 	}
 	#| type attribute
-	multi method type-check($val, $type = $.type) is rw is default {
+	multi method type-check($val, $type = $.type) is default {
 	    with $val {
 		die "{.WHAT.^name}.$*key: {.WHAT.gist} - not of type: {$type.gist}"
 		    unless $_ ~~ $type | Pair;	#| undereferenced - don't know it's type yet
