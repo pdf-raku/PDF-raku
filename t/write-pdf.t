@@ -9,6 +9,12 @@ use PDF::Grammar::Test;
 use PDF::IO;
 use PDF::Writer;
 
+unless $*PERL.compiler.version >= v2017.04 {
+    plan 0;
+    skip-rest "Rakudo/JSON < 2017.04 compatibilty";
+    exit;
+}
+
 my $actions = PDF::Grammar::Doc::Actions.new();
 
 for 't/pdf'.IO.dir.list.sort {
