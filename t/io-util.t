@@ -21,8 +21,9 @@ is-deeply ($buf = pack([1415192289,], 32)), buf8.new(84, 90, 30, 225), '32 bit p
 is-deeply ($buf = pack([2 ** 32 - 1415192289 - 1,], 32)), buf8.new(255-84, 255-90, 255-30, 255-225), '32 bit packing (twos comp)';
 
 quietly {
-    is-deeply ($buf = unpack(@bytes, 6)), buf8.new(2, 33, 16, 30, 10, 3, 8, 60), '6 bit unpack';
-    is-deeply pack($buf, 6), $bytes, 'resample round-trip: 8 => 6 => 8';
+    use PDF::IO::Util :pack-pp;
+    is-deeply ($buf = unpack-pp(@bytes, 6)), buf8.new(2, 33, 16, 30, 10, 3, 8, 60), '6 bit unpack';
+    is-deeply pack-pp($buf, 6), $bytes, 'resample round-trip: 8 => 6 => 8';
 
     is-deeply ($buf = unpack([109], 1)), buf8.new(0, 1, 1, 0, 1, 1, 0, 1), '1 bit unpack';
     is-deeply ($buf = pack($buf, 1)), buf8.new(109), '8 => 1 => 8 round trip';
