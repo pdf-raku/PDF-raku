@@ -108,15 +108,9 @@ class PDF::IO::Filter::Predictors {
                        my int $pa = abs($p - left-val);
                        my int $pb = abs($p - up-val);
                        my int $pc = abs($p - up-left-val);
-                       my \nearest = do if $pa <= $pb && $pa <= $pc {
-                           left-val;
-                       }
-                       elsif $pb <= $pc {
-                           up-val;
-                       }
-                       else {
-                           up-left-val
-                       }
+                       my \nearest = $pa <= $pb && $pa <= $pc 
+                           ?? left-val
+                           !! ($pb <= $pc ?? up-val !! up-left-val);
                        @out[$n++] = ($buf[$idx++] - nearest) +& $bit-mask;
                    }
                 }
@@ -239,15 +233,9 @@ class PDF::IO::Filter::Predictors {
                         my int $pa = abs($p - left-val);
                         my int $pb = abs($p - up-val);
                         my int $pc = abs($p - up-left-val);
-                        my \nearest = do if $pa <= $pb && $pa <= $pc {
-                            left-val;
-                        }
-                        elsif $pb <= $pc {
-                            up-val;
-                        }
-                        else {
-                            up-left-val
-                        }
+                        my \nearest = $pa <= $pb && $pa <= $pc
+                           ?? left-val
+                           !! ($pb <= $pc ?? up-val !! up-left-val);
 
                         @out[$n++] = ($buf[$idx++] + nearest) +& $bit-mask;
                     }
