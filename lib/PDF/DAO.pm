@@ -123,8 +123,8 @@ role PDF::DAO {
         $class.new( :$dict, |%params, |c );
     }
 
-    multi method coerce(*%args where (.<null>:exists)) {
-        $.required("PDF::DAO::Null").new;
+    multi method coerce(:$null!) {
+        state $ = $.required("PDF::DAO::Null").new;
     }
 
     multi method coerce($val) is default { $val }
