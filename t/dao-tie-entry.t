@@ -57,7 +57,7 @@ use PDF::DAO::Dict;
     # coercement tests
     my role MyRole {};
     class TestDict3
-    is PDF::DAO::Dict {
+        is PDF::DAO::Dict {
         use PDF::DAO::Tie;
 
         multi sub coerce($v, MyRole) { $v does MyRole }

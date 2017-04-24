@@ -63,9 +63,9 @@ role PDF::DAO::Tie {
 		    if ($!type ~~ Positional[Mu] && $lval ~~ Array)
                     || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
 			# of-att typed array declaration, e.g.:
-			# has PDF::DOM::Type::Catalog @.Kids is entry(:indirect);
+			#     has PDF::Catalog @.Kids is entry(:indirect);
                         # or, typed hash declarations, e.g.:
-                        # has PDF::DOM::Type::ExtGState %.ExtGState is entry;
+                        #     has PDF::ExtGState %.ExtGState is entry;
 			my \of-type = $!type.of;
 			my Attribute $att = $lval.of-att;
 			if $att {
@@ -82,8 +82,8 @@ role PDF::DAO::Tie {
 			    $lval.of-att = $att;
 			
 			    for $lval.values {
-				next if $_ ~~ Pair | $att.tied.type;
-				($att.tied.coerce)($_, $att.tied.type);
+				next if $_ ~~ Pair | of-type;
+				($att.tied.coerce)($_, of-type);
 				.reader //= reader if reader && .can('reader');
 			    }
 			}
