@@ -46,7 +46,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
 	my Attribute \att = %.entries{$key} // $.of-att;
          with att {
-	     .apply($val);
+	     .tie($val);
              .tied.type-check($val, :$key)
                  if $.strict;
          }
@@ -59,7 +59,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
 	my Attribute \att = %.entries{$key} // $.of-att;
         with att {
-	    .apply($lval);
+	    .tie($lval);
             .tied.type-check($lval, :$key)
                  if $.strict;
         }

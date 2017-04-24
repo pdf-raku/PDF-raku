@@ -27,7 +27,7 @@ role PDF::DAO::Tie {
 
     my role TiedAtt {
         #| override standard Attribute method for generating accessors
-	has Tied $.tied is rw handles <apply> = Tied.new;
+	has Tied $.tied is rw handles <tie> = Tied.new;
         method compose(Mu $package) {
             my $key = self.tied.accessor-name;
             my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
@@ -52,7 +52,7 @@ role PDF::DAO::Tie {
 	has Code $.coerce is rw = sub ($lval is rw, Mu $type) { PDF::DAO.coerce($lval, $type) };
         has UInt $.length is rw;
 
-	multi method apply($lval is rw) {
+	multi method tie($lval is rw) {
 	    unless $lval.isa(Pair) {
 		if $lval.defined && ! ($lval ~~ $!type) {
 
@@ -69,6 +69,7 @@ role PDF::DAO::Tie {
 			my \of-type = $!type.of;
 			my Attribute $att = $lval.of-att;
 			if $att {
+                            # already processed elsewhere. check that the type matches
 			    die "conflicting types for {$att.name} {$att.type.gist} {of-type.gist}"
 				unless of-type ~~ $att.type;
 			}
@@ -102,8 +103,8 @@ role PDF::DAO::Tie {
 	    $lval;
 	}
 
-	multi method apply($lval is copy) is default {
-	    $.apply($lval);
+	multi method tie($lval is copy) is default {
+	    $.tie($lval);
 	}
 
         multi method type-check($val, :$*key) {

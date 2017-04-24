@@ -43,7 +43,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 
 	my Attribute \att = $.index[$pos] // $.of-att;
         with att {
-	    .apply($val);
+	    .tie($val);
             .tied.type-check($val, :key(.index))
                 if $.strict;
         }
@@ -57,7 +57,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
 
 	my Attribute \att = $.index[$pos] // $.of-att;
         with att {
-	    .apply($lval);
+	    .tie($lval);
             .tied.type-check($lval, :key(.index))
                 if $.strict;
         }
