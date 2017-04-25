@@ -1,7 +1,7 @@
 {   "perl"        : "6.*",
     "name"        : "PDF",
     "tags"        : ["pdf"],
-    "license"     : "Artistic 2.0",
+    "license"     : "Artistic-2.0",
     "version"     : "0.2.2",
     "auth"        : "github:p6-pdf",
     "api"         : "PDF-1.7",
