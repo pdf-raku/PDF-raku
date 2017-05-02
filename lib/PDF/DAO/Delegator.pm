@@ -105,9 +105,9 @@ class PDF::DAO::Delegator {
 	    CATCH {
 		when X::CompUnit::UnsatisfiedDependency { }
 	    }
-
-            self.install-delegate( $subclass, $handler-class );
 	}
+
+	self.install-delegate( $subclass, $handler-class );
         $handler-class;
     }
 
