@@ -1,9 +1,9 @@
-perl6-PDF-Tools
-===============
+PDF-p6
+========
 
 ## Overview
 
-perl6-PDF-Tools is a low-level tool-kit for accessing and manipulating data from PDF documents.
+This is a low-level tool-kit for accessing and manipulating data from PDF documents.
 
 It presents a seamless view of the data in PDF or FDF documents; behind the scenes handling
 indexing, compression, encryption, fetching of indirect objects and unpacking of object
