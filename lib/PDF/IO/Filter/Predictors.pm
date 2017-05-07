@@ -2,7 +2,7 @@ use v6;
 
 class PDF::IO::Filter::Predictors {
 
-    my subset BPC of UInt where 1 | 2 | 4 | 8 | 16;
+    my subset BPC of UInt where 1 | 2 | 4 | 8 | 16 | 32;
     my subset Predictor of Int where 1|2|10..15;
 
     use PDF::IO::Util :pack;
@@ -125,7 +125,7 @@ class PDF::IO::Filter::Predictors {
 
     # prediction filters, see PDF 1.7 spec table 3.8
     multi method encode($buf where Blob | Buf,
-			    Predictor :$Predictor where {1} = 1 #| predictor function
+			Predictor :$Predictor where {1} = 1 #| predictor function
         ) {
         $buf;
     }
