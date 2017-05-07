@@ -43,14 +43,14 @@ role PDF::DAO::Tie {
 	has UInt $.index is rw;
     }
 
-    my class Tied {
-        has $.type is rw;
-	has Bool $.is-required is rw = False;
-	has Bool $.is-indirect is rw = False;
-	has Bool $.is-inherited is rw = False;
-	has Str $.accessor-name is rw;
-	has Code $.coerce is rw = sub ($lval is rw, Mu $type) { PDF::DAO.coerce($lval, $type) };
-        has UInt $.length is rw;
+    my class Tied is rw {
+        has $.type;
+	has Bool $.is-required = False;
+	has Bool $.is-indirect = False;
+	has Bool $.is-inherited = False;
+	has Str $.accessor-name;
+	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::DAO.coerce($lval, $type) };
+        has UInt $.length;
 
 	multi method tie($lval is rw) {
 	    unless $lval.isa(Pair) {
@@ -233,7 +233,7 @@ role PDF::DAO::Tie {
     method lvalue($_) is rw {
         when PDF::DAO  { $_ }
         when Hash | Array | DateTime { $.coerce($_, :$.reader) }
-        default           { $_ }
+        default        { $_ }
     }
 
     #| indirect reference
