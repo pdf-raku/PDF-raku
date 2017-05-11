@@ -121,4 +121,3 @@ class PDF::DAO::Delegator {
 	$fallback;
     }
 }
-

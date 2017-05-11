@@ -142,6 +142,7 @@ class PDF::Writer {
             );
     }
  
+   multi method write-op('comment', $_) { $.write-comment($_); }
    multi method write-op( Str $_ where /^\w+/ ) { .Str }
 
     #| ID <bytes> - ImageData

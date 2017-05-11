@@ -16,4 +16,5 @@
 { "ast" : { "content" : [ { "BI" : [ { "dict" : { "CS" : { "name" : "RGB" }, "F" : { "array" : [ { "name" : "A85" }, { "name" : "LZW" } ] }, "W" : { "int" : 17 }, "H" : { "int" : 17 }, "BPC" : { "int" : 8 } } } ] }, { "ID" : { "encoded" : "J1/gKA>.]AN&J?]-<HW]aRVcg*bb.\\eKAdVV%/PcZ\n%R.s(4KE3&d&7hb*7[%Ct2HCqC~>" } }, { "EI" : [  ] } ] }, "pdf" : "BI\n  /BPC 8\n  /CS /RGB\n  /F [ /A85 /LZW ]\n  /H 17\n  /W 17\nID\nJ1/gKA>.]AN&J?]-<HW]aRVcg*bb.\\eKAdVV%/PcZ\n%R.s(4KE3&d&7hb*7[%Ct2HCqC~>\nEI" }
 { "ast" : { "expr" : [ { "int" : 2 }, { "int" : 1 }, { "int" : 1 }, { "op" : "add" }, { "op" : "eq" }, { "expr" : { "else" : { "expr" : [ { "int" : 7 }, { "int" : 6 }, { "op" : "mul" } ] }, "if" : { "expr" : [ { "literal" : "howdy" } ] } } } ] }, "pdf" : "{ 2 1 1 add eq { (howdy) } { 7 6 mul } ifelse }" }
 { "ast" : { "content" : { "m" : [ {"int" : 10}, { "real" : 20.5}, { "comment" : "MoveTo" } ] } }, "pdf" : "10 20.5 m % MoveTo" }
+{ "ast" : { "content" : { "comment" : [ "Hi!" ] } }, "pdf" : "% Hi!" }
 
