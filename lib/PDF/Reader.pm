@@ -55,6 +55,7 @@ class X::PDF::BadIndirectObject::Parse is X::PDF::BadIndirectObject {
 
 class PDF::Reader {
 
+    use PDF::Grammar::Doc;
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
     use PDF::IO;
@@ -391,7 +392,7 @@ class PDF::Reader {
 
         my Str $preamble = $.input.substr(0, 8);
 
-        (require ::('PDF::Grammar::Doc')).subparse($preamble, :$.actions, :rule<header>)
+        PDF::Grammar::Doc.subparse($preamble, :$.actions, :rule<header>)
             or die X::PDF::BadHeader.new( :$preamble );
 
         $.version = $/.ast<version>;
