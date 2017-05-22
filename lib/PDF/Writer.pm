@@ -54,7 +54,7 @@ class PDF::Writer {
             !! [~] ( $.write-trailer( trailer-dict ), '%%EOF' );
 
         @out.push: trailer-bytes;
-        $!offset += trailer-bytes.codes + 2;
+        $!offset += trailer-bytes.codes  +  2 * "\n".codes;
 
         @out.join: "\n";
     }
