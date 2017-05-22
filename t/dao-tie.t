@@ -94,8 +94,8 @@ my $body = PDF::IO::Serializer.new.body( $pdf );
 
 # write the two page pdf
 my $ast = :pdf{ :header{ :version(1.2) }, :$body };
-my $writer = PDF::Writer.new( );
-ok 't/hello-and-bye.pdf'.IO.spurt( $writer.write($ast), :enc<latin-1> ), 'output 2 page pdf';
+my $writer = PDF::Writer.new: :$ast;
+ok 't/hello-and-bye.pdf'.IO.spurt( $writer.Blob), 'output 2 page pdf';
 
 use PDF::DAO::Tie;
 use PDF::DAO::Tie::Hash;

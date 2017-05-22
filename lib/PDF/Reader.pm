@@ -784,9 +784,9 @@ class PDF::Reader {
 
     #| write to PDF/FDF
     multi method save-as( Str $output-path, |c ) is default {
-        my PDF::Writer $writer .= new: :$.input;
-        my \ast = $.ast(|c);
-        $output-path.IO.spurt( $writer.write( ast ), :enc<latin1> );
+        my $ast = $.ast(|c);
+        my PDF::Writer $writer .= new: :$.input, :$ast;
+	$output-path.IO.spurt: $writer.Blob;
     }
 
 }

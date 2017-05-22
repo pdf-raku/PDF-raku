@@ -28,7 +28,7 @@ for 't/pdf'.IO.dir.list.sort {
     my $pdf-output-file = $json-file.subst( /'.json'$/, '.out' );
     my $input = PDF::IO.coerce( $pdf-input-file.IO );
     my $pdf-output = PDF::Writer.new( :$input, :offset(0), :%ast );
-    $pdf-output-file.IO.spurt( ~$pdf-output, :enc<latin-1> );
+    $pdf-output-file.IO.spurt: $pdf-output.Blob;
 
     my ($rule) = %ast.keys;
     my %expected = :%ast;

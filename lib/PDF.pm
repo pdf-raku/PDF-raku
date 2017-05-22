@@ -149,8 +149,9 @@ class PDF
     }
 
     multi method save-as(IO::Handle $ioh, |c) is default {
-        my PDF::Writer $writer .= new;
-	$ioh.write: $writer.write( $.ast(|c) ).encode('latin-1')
+        my $ast = $.ast(|c);
+        my PDF::Writer $writer .= new: :$ast;
+        $ioh.write: $writer.Blob;
     }
 
     #| stringify to the serialized PDF
