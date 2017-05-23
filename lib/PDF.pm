@@ -175,7 +175,7 @@ class PDF
     #| Generate a new document ID.  
     method !generate-id(Str :$type = 'PDF') {
 
-	# From [PDF 1.7 Section 14.4 File Indentifiers:
+	# From [PDF 1.7 Section 14.4 File Identifiers:
 	#   "File identifiers shall be defined by the optional ID entry in a PDF file’s trailer dictionary.
 	# The ID entry is optional but should be used. The value of this entry shall be an array of two
 	# byte strings. The first byte string shall be a permanent identifier based on the contents of the
