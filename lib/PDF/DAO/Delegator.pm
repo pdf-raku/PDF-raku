@@ -51,13 +51,13 @@ class PDF::DAO::Delegator {
     }
 
     multi method coerce( Array $obj where PDF::DAO, $role where PDF::DAO::Tie::Array ) {
-	$obj does $role;
+	$obj.^mixin: $role;
         $obj.tie-init;
         $obj;
     }
 
     multi method coerce( Hash $obj where PDF::DAO, $role where PDF::DAO::Tie::Hash ) {
-	$obj does $role;
+	$obj.^mixin: $role;
         $obj.tie-init;
         $obj;
     }
@@ -69,7 +69,7 @@ class PDF::DAO::Delegator {
 
     my subset Role where { .does($_) && !.isa($_) };
     multi method coerce( $obj, Role $role)  {
-        $obj does $role;
+        $obj.^mixin: $role;
     }
 
     multi method coerce( $obj, $role) {
