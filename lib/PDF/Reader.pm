@@ -223,7 +223,6 @@ class PDF::Reader {
 
     multi method open($input!, |c) {
         $!input = PDF::IO.coerce( $input );
-
         $.load-header( );
         $.load( $.type, |c );
     }

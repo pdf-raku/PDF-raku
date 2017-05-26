@@ -16,19 +16,16 @@ class PDF::IO::Handle
     }
 
     multi method Str {
-        $!str //= do {
-            $!value.seek( 0, SeekFromBeginning );
-            $.value.slurp-rest;
-        }
+        $.substr(0, $!codes);
     }
 
-    multi method subbuf( WhateverCode $whence!, |c --> Buf) {
-        my UInt $from = $whence( $.codes );
+    multi method subbuf( WhateverCode $whence!, |c --> Blob) {
+        my UInt $from = $whence( $!codes );
         $.subbuf( $from, |c );
     }
 
-    multi method subbuf( UInt $from!, UInt $length = $.codes - $from + 1 --> Buf) {
-        with $!str {i
+    multi method subbuf( UInt $from!, UInt $length = $.codes - $from + 1 --> Blob) {
+        with $!str {
             .substr-rw( $from, $length )
         }
         else {

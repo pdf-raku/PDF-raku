@@ -14,7 +14,7 @@ class PDF::IO {
     }
 
     multi method coerce( IO::Path $value, |c ) {
-	self.coerce( $value.open( :enc<latin-1>, |c ) );
+	self.coerce( $value.open( :bin, |c ) );
     }
 
     multi method coerce( IO::Handle $value!, |c ) {
