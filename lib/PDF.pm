@@ -106,7 +106,7 @@ class PDF
             with $.reader.file-name {
                 die "Unable to incremetally update a JSON file"
                     if  m:i/'.json' $/;
-	        $fh = .IO.open(:a);
+	        $fh = .IO.open(:a, :bin);
             }
 	}
 
@@ -140,10 +140,10 @@ class PDF
 	}
 	when $update && $.reader.defined {
 	    $.reader.file-name.IO.copy( $iop );
-	    $.update( :to($iop.open(:a)), |c);
+	    $.update( :to($iop.open(:a, :bin)), |c);
 	}
 	default {
-	    my $ioh = $iop.open(:w);
+	    my $ioh = $iop.open(:w, :bin);
 	    $.save-as($ioh, |c);
 	}
     }

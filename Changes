@@ -1,9 +1,10 @@
     Release 0.2.2
+    - [PDF::IO::Handle] Open I/O as :bin 
     - Experimental use of Lib::PDF
       -- Speed up the slowest test xt/filter-predictors_bulk.t
       -- Fast packing alternative for PDF::IO::Util
-      For regression purposes, at this stage. Probably wont
-      persue seriously until Rakudo has better JIT.
+      Optional and For regression purposes, at this stage. Probably
+      wont persue seriously until Rakudo has better JIT.
 
     Release 0.2.1
     - Renamed classes PDF::IO to PDF::IO::Util and PDF::IO::Input::*
