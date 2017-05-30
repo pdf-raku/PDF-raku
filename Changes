@@ -3,7 +3,7 @@
     - Experimental use of Lib::PDF
       -- Speed up the slowest test xt/filter-predictors_bulk.t
       -- Fast packing alternative for PDF::IO::Util
-      Optional and For regression purposes, at this stage. Probably
+      Optional and for regression purposes, at this stage. Probably
       wont persue seriously until Rakudo has better JIT.
 
     Release 0.2.1
