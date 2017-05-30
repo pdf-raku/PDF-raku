@@ -8,7 +8,7 @@ module PDF::IO::Util {
                 when X::CompUnit::UnsatisfiedDependency {
                 }
             }
-            require Lib::PDF:ver(v0.0.1 .. *);
+            (require Lib::PDF:ver(v0.0.1 .. *)).so;
             True;
         }
         $haveit;
@@ -94,26 +94,24 @@ module PDF::IO::Util {
         @shaped;
     }
 
-    multi sub pack-pp($shaped, Array $W!)  {
-        my uint8 @out;
-        @out[$W.sum * +$shaped - 1] = 0
-            if +$shaped;
+    multi sub pack-pp(array[uint32] $shaped, Array $W!)  {
+        my buf8 $out .= allocate($W.sum * +$shaped);
+        my buf32 $in .= new: $shaped;
+        my uint32 $in-len = +$in;
         my int32 $j = -1;
-        my uint32 @in = [ $shaped.values ];
-        my uint32 $in-len = +@in;
         my uint $w-len = +$W;
 
         loop (my uint32 $i = 0; $i < $in-len;) {
             for 0 ..^ $w-len -> uint $wi {
-                my uint32 $v = @in[$i++];
+                my uint32 $v = $in[$i++];
                 my $n = $W[$wi];
                 $j += $n;
                 loop (my $k = 0; $k < $n; $k++) {
-                    @out[$j - $k] = $v;
+                    $out[$j - $k] = $v;
                     $v +>= 8;
                 }
             }
          }
-	 buf8.new: @out;
+	 $out;
     }
 }
