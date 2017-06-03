@@ -12,8 +12,8 @@ It presents a seamless view of the data in PDF or FDF documents; behind the scen
 indexing, compression, encryption, fetching of indirect objects and unpacking of object
 streams. It is capable of reading, editing and creation or incremental update of PDF files.
 
-This module understands physical data structures rather than the logical document structure. It is primarily intended as base for higher level modules. It can also be used to explore or
-patch data in PDF or FDF files.
+This module understands physical data structures rather than the logical document structure. It is primarily intended as base for higher level
+modules; or to explore or patch data in PDF or FDF files.
 
 It is possible to construct basic documents and perform simple edits by direct manipulation of PDF data. This requires some
 knowledge of how PDF documents are structured. Please see 'The Basics' and 'Recommended Reading' sections below.
@@ -350,7 +350,7 @@ RunLengthDecode | RL  | PDF::IO::Filter::RunLength
 
 Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding is recommended to enforce this.
 
-Each file has `encode` and `decode` methods. Both return latin-1 encoded strings.
+Each filter has `encode` and `decode` methods, which accept and return latin-1 encoded strings, or binary blobs.
 
 ```
 my $encoded = PDF::IO::Filter.encode( :dict{ :Filter<RunLengthDecode> },
@@ -429,7 +429,7 @@ my $object2 = PDF::DAO.coerce({ :Type( :name<Pages> ),
                                 :Kids[ :array[ :ind-ref[4, 0] ] ], },
 				:$reader);
 
-# same but with a casting from native types
+# same but with a casting from Perl types
 my $object3 = PDF::DAO.coerce({ :Type( :name<Pages> ),
                                 :Count(1),
                                 :Kids[ :ind-ref[4, 0],  ] },

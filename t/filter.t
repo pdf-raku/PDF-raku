@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 80;
+plan 92;
 
 use PDF::IO::Filter;
 
@@ -32,4 +32,10 @@ for 'ASCIIHexDecode', 'FlateDecode', 'RunLengthDecode', ['FlateDecode', 'RunLeng
             or diag :$input.perl;
 
     }
+
+    my Blob $encoded-buf;
+    my Blob $decoded-buf = $latin-chars.encode("latin-1");
+    lives-ok { $encoded-buf = PDF::IO::Filter.encode($decoded-buf, :%dict); }, $filter-name ~' Blob encoding - lives';
+    lives-ok { $decoded-buf = PDF::IO::Filter.decode($encoded-buf, :%dict); }, $filter-name ~' Blob decoding - lives';
+    is $decoded-buf.decode("latin-1"), $latin-chars, 'Blob round-trip';
 }
