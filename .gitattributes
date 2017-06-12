@@ -1,3 +1,6 @@
 *.pm linguist-language=Perl6
 *.t  linguist-language=Perl6
 *.pl linguist-language=Perl6
+*.in binary
+*.out binary
+*.pdf binary
