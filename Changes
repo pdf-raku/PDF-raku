@@ -1,4 +1,5 @@
     Release 0.2.2
+    - [PDF::Writer] handle ' (MoveShow) and " (MoveSetShow) operators
     - [PDF::IO::Handle] Open I/O as :bin 
     - Experimental use of Lib::PDF
       -- Speed up the slowest test xt/filter-predictors_bulk.t

@@ -147,7 +147,6 @@ class PDF::Writer {
     }
  
    multi method write-op('comment', $_) { $.write-comment($_); }
-   multi method write-op( Str $_ where /^\w+/ ) { .Str }
 
     #| ID <bytes> - ImageData
     multi method write-op('ID', $image-data) {
@@ -173,6 +172,8 @@ class PDF::Writer {
 
         @out.join: ' ';
     }
+
+    multi method write-op( Str $_ ) { .Str }
 
     multi method write-comment(List $_) {
         .map({ $.write-comment($_) }).join: "\n";
