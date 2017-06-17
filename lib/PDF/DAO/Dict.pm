@@ -10,7 +10,7 @@ class PDF::DAO::Dict
     does PDF::DAO
     does PDF::DAO::Tie::Hash {
 
-    use PDF::DAO::Util :from-ast, :to-ast-native;
+    use PDF::DAO::Util :from-ast, :ast-coerce;
 
     my %seen{Any} = (); #= to catch circular references
 
@@ -34,6 +34,6 @@ class PDF::DAO::Dict
     }
 
     method content {
-        to-ast-native self;
+        ast-coerce self;
     }
 }

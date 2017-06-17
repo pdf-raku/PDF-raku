@@ -8,7 +8,7 @@ class PDF::DAO::Stream
 
     use PDF::DAO::Tie;
     use PDF::IO::Filter;
-    use PDF::DAO::Util :from-ast, :to-ast-native;
+    use PDF::DAO::Util :from-ast, :ast-coerce;
 
     # see [PDF 1.7 TABLE 5 Entries common to all stream dictionaries]
 
@@ -87,7 +87,7 @@ class PDF::DAO::Stream
 
     method content {
         my \encoded = $.encoded; # may update $.dict<Length>
-        my Pair $dict = to-ast-native self;
+        my Pair $dict = ast-coerce self;
 	with encoded {
 	    stream => %( $dict, :encoded(.Str) );
 	}

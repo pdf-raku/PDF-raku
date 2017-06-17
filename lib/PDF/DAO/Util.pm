@@ -8,16 +8,17 @@ module PDF::DAO::Util {
     multi sub to-ast(Pair $p!) {$p}
     multi sub to-ast(PDF::DAO $object!) {$object.content}
     multi sub to-ast($other!) is default {
-        to-ast-native $other
+        ast-coerce $other
     }
-    proto sub to-ast-native(|) is export(:to-ast-native) {*};
-    multi sub to-ast-native(Int $int!) {:$int}
-    multi sub to-ast-native(Numeric $real!) {:$real}
-    multi sub to-ast-native(Str $literal!) {:$literal}
+    proto sub ast-coerce(|) is export(:ast-coerce) {*};
+    multi sub ast-coerce(Enumeration $enum!) {:int($enum.Int)}
+    multi sub ast-coerce(Int $int!) {:$int}
+    multi sub ast-coerce(Numeric $real!) {:$real}
+    multi sub ast-coerce(Str $literal!) {:$literal}
 
     my %seen{Any};
 
-    multi sub to-ast-native(Hash $_dict!) {
+    multi sub ast-coerce(Hash $_dict!) {
 	my $dict = %seen{$_dict};
 
 	without $dict {
@@ -29,7 +30,7 @@ module PDF::DAO::Util {
 	:$dict;
     }
 
-    multi sub to-ast-native(List $_list!) {
+    multi sub ast-coerce(List $_list!) {
 	my $array = %seen{$_list};
 
 	without $array {
@@ -63,12 +64,12 @@ module PDF::DAO::Util {
        [~] "D:", $date-spec, $time-spec, $tz-spec;
     }
 
-    multi sub to-ast-native(DateTime $date-time!) {
+    multi sub ast-coerce(DateTime $date-time!) {
 	my Str $literal = date-time-formatter($date-time);
 	:$literal
     }
-    multi sub to-ast-native(Bool $bool!) {:$bool}
-    multi sub to-ast-native($other) is default {
+    multi sub ast-coerce(Bool $bool!) {:$bool}
+    multi sub ast-coerce($other) is default {
         return (:null(Any))
             without $other;
         die "don't know how to to-ast: {$other.perl}";

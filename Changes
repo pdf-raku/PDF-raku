@@ -1,10 +1,15 @@
+    Release 0.2.3
+    - [PDF::DAO::Util]
+      -- convert enums to ints in to-ast()
+      -- rename sub to-ast-native() -> ast-coerce()
+
     Release 0.2.2
     - [PDF::Writer] handle ' (MoveShow) and " (MoveSetShow) operators
     - [PDF::IO::Handle] Open I/O as :bin 
     - Experimental use of Lib::PDF
       -- Speed up the slowest test xt/filter-predictors_bulk.t
       -- Fast packing alternative for PDF::IO::Util
-      Optional and for regression purposes, at this stage. Probably
+      Optional, and for regression purposes, at this stage. Probably
       wont persue seriously until Rakudo has better JIT.
 
     Release 0.2.1
