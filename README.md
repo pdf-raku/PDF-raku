@@ -35,7 +35,7 @@ To create a one page PDF that displays 'Hello, World!'.
 
 ```
 #!/usr/bin/env perl6
-# creates t/example.pdf
+# creates examples/helloworld.pdf
 use v6;
 use PDF::DAO;
 use PDF;
@@ -45,7 +45,7 @@ sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 # construct a simple PDF document from scratch
 
 # page size is A5 (420pt X 520pt)
-my @MediaBox  = 0, 0, 420, 595;
+my @MediaBox  = 0, 0, 250, 100;
 
 # define font /F1 as core-font Helvetica
 my %Resources = :Procset[ /'PDF', /'Text'],
@@ -69,15 +69,17 @@ $info.CreationDate = DateTime.now;
 $info.Producer = "Perl 6 PDF";
 
 # define some basic content
-my $Contents = PDF::DAO.coerce: :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) };
+my $Contents = PDF::DAO.coerce: :stream{ :decoded("BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET" ) };
 
 # create a new page. add it to the page tree
 $pages<Kids>.push: { :Type(/'Page'), :Parent($pages), :$Contents };
 $pages<Count>++;
 
 # save the PDF to a file
-$doc.save-as: 't/example.pdf';
+$doc.save-as: 'examples/helloworld.pdf';
 ```
+
+![example.pdf](examples/.previews/helloworld-001.png)
 
 Then to update the PDF, adding another page:
 
@@ -85,14 +87,14 @@ Then to update the PDF, adding another page:
 use v6;
 use PDF;
 
-my $doc = PDF.open: 't/example.pdf';
+my $doc = PDF.open: 'examples/helloworld.pdf';
 
 # locate the document root and page tree
 my $catalog = $doc<Root>;
 my $Parent = $catalog<Pages>;
 
 # create additional content, use existing font /F1
-my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  90 250 Td (Goodbye for now!) Tj ET" ) } );
+my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  15 25 Td (Goodbye for now!) Tj ET" ) } );
 
 # create a new page. add it to the page-tree
 $Parent<Kids>.push: { :Type( :name<Page> ), :$Parent, :$Contents };
@@ -105,6 +107,9 @@ $info.ModDate = DateTime.now;
 # incrementally update the existing PDF
 $doc.update;
 ```
+
+![example.pdf](examples/.previews/helloworld-002.png)
+
 
 ## Description
 
@@ -120,7 +125,7 @@ This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/d
 
 ## The Basics
 
-PDF files are serialized as numbered indirect objects. The `t/example.pdf` file that we created above contains:
+PDF files are serialized as numbered indirect objects. The `examples/helloworld.pdf` file that we created above contains:
 ```
 %PDF-1.3
 %...(control characters)
@@ -237,7 +242,7 @@ We can quickly put PDF to work using the Perl 6 REPL, to better explore the docu
 
 ```
 snoopy: ~/git/perl6-PDF $ perl6 -MPDF
-> my $doc = PDF.open: "t/example.pdf"
+> my $doc = PDF.open: "examples/helloworld.pdf"
 ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
 > $doc.keys
 (Root Info ID)
@@ -311,7 +316,7 @@ use PDF::Reader;
 use PDF::DAO;
 
 my $reader = PDF::Reader.new;
-$reader.open: 't/example.pdf';
+$reader.open: 'examples/helloworld.pdf';
 
 # objects can be directly fetched by object-number and generation-number:
 my $page1 = $reader.ind-obj(4, 0).object;
