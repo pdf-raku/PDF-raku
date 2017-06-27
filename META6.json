@@ -6,7 +6,7 @@
     "auth"        : "github:p6-pdf",
     "api"         : "PDF-1.7",
     "description" : "Base classes for reading, manipulation and writing of PDF data",
-    "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Fast", "OpenSSL" ],
+    "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Fast", "OpenSSL", "File::Temp" ],
     "source-url"  : "git://github.com/p6-pdf/PDF-p6.git",
     "provides"    : {
 
@@ -60,5 +60,3 @@
         "PDF::IO::Serializer" : "lib/PDF/IO/Serializer.pm"
      }
 }
-
- 
