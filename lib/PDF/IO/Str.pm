@@ -29,7 +29,7 @@ class PDF::IO::Str
     method slurp-rest {
         my \codes = $.codes;
         my \rest := $!pos == 0
-            ?? .Str
+            ?? self.Str
             !! $.ords.subbuf($!pos, codes - $!pos).decode: "latin-1";
         $!pos = codes;
         rest;
