@@ -1,4 +1,7 @@
     Release 0.2.3
+    - [PDF::DAO::Tie]
+      -- Simplify method accessors. direct use of AT-KEY, ASSIGN-KEY,
+         etc. 20% speed up of test suite run.
     - [PDF::DAO::Util]
       -- convert enums to ints in to-ast()
       -- rename sub to-ast-native() -> ast-coerce()

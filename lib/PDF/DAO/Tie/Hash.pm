@@ -6,7 +6,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
     #| resolve a heritable property by dereferencing /Parent entries
     sub inherit($object, Str $key, :$seen is copy) {
-	$object{$key} // do with $object<Parent> {
+	$object.AT-KEY($key, :check) // do with $object<Parent> {
             $seen //= my %{Hash};
 	    die "cyclical inheritance hierarchy"
 	        if $seen{$object}++;
