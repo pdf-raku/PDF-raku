@@ -11,13 +11,11 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
         my UInt \pos = $att.index;
 
 	Proxy.new(
-	    FETCH => sub (\p) {
-                temp self.strict = True;
-		self[pos];
+	    FETCH => sub ($) {
+		self.AT-POS(pos, :check);
 	    },
-	    STORE => sub (\p, \v) {
-                temp self.strict = True;
-		self[pos] := v;
+	    STORE => sub ($, \v) {
+		self.ASSIGN-POS(pos, v, :check);
 	    });
     }
 
@@ -35,7 +33,7 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
     }
 
     #| for array lookups, typically $foo[42]
-    method AT-POS($pos) is rw {
+    method AT-POS($pos, :$check) is rw {
         my $val := callsame;
 
         $val := $.deref(:$pos, $val)
@@ -45,21 +43,21 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
         with att {
 	    .tie($val);
             .tied.type-check($val, :key(.index))
-                if $.strict;
+                if $check;
         }
 
 	$val;
     }
 
     #| handle array assignments: $foo[42] = 'bar'; $foo[99] := $baz;
-    method ASSIGN-POS($pos, $val) {
+    method ASSIGN-POS($pos, $val, :$check) {
 	my $lval = $.lvalue($val);
 
 	my Attribute \att = $.index[$pos] // $.of-att;
         with att {
 	    .tie($lval);
             .tied.type-check($lval, :key(.index))
-                if $.strict;
+                if $check;
         }
 
 	nextwith($pos, $lval )

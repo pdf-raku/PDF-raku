@@ -5,7 +5,6 @@ role PDF::DAO::Tie {
     use PDF::DAO;
     has Attribute $.of-att is rw;      #| default attribute
     has Attribute %.entries;
-    has Bool $.strict is rw = False;
 
     #| generate an indirect reference to ourselves
     method ind-ref {
