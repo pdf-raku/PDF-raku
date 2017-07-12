@@ -476,6 +476,7 @@ PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 
 ## See also
 
+- [Lib::PDF](https://github.com/p6-pdf/libpdf-p6) An optional library of native functions (experimental). Installing this module may improve performance.
 - [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing (released)
 - [PDF::Lite](https://github.com/p6-pdf/perl6-PDF-Lite) - basic graphics; including images, fonts, text and general graphics (under construction) 
 

@@ -5,6 +5,8 @@
     - [PDF::DAO::Util]
       -- convert enums to ints in to-ast()
       -- rename sub to-ast-native() -> ast-coerce()
+    - [PDF::Writer]
+      -- use native functions from Lib::PDF::Writer, when available.
 
     Release 0.2.2
     - [PDF::Writer] handle ' (MoveShow) and " (MoveSetShow) operators

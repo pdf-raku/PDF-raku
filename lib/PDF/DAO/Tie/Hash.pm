@@ -6,22 +6,23 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 
     #| resolve a heritable property by dereferencing /Parent entries
     sub inherit($object, Str $key, :$seen is copy) {
-	$object.AT-KEY($key, :check) // do with $object<Parent> {
-            $seen //= my %{Hash};
-	    die "cyclical inheritance hierarchy"
-	        if $seen{$object}++;
-	    inherit($_, $key, :$seen);
-        }
+	$object.AT-KEY($key, :check)
+            // do with $object.AT-KEY('Parent', :check) {
+                 $seen //= my %{Hash};
+                 die "cyclical inheritance hierarchy"
+                     if $seen{$object}++;
+                 inherit($_, $key, :$seen);
+               }
     }
 
     method rw-accessor(Attribute $att, Str :$key!) is rw {
         Proxy.new(
-            FETCH => sub (\p) {
+            FETCH => sub ($) {
                 $att.tied.is-inherited
 	            ?? inherit(self, $key)
 	            !! self.AT-KEY($key, :check);
             },
-            STORE => sub (\p, \v) {
+            STORE => sub ($, \v) {
                 self.ASSIGN-KEY($key, v, :check) = v;
             }
         );

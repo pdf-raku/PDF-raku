@@ -84,16 +84,14 @@ class PDF
         my Numeric $offset = $.reader.input.codes + Preamble.codes;
         my PDF::Writer $writer .= new( :$offset, :$prev );
         my Str $new-body = $writer.write-body( $body[0], my @entries, :$prev, :$trailer );
-	my IO::Handle $fh;
-
-	with $diffs {
+	my IO::Handle $fh = do with $diffs {
 	    # saving updates elsewhere
 	    my Str $path = ~ .path;
 
 	    die "to file and input PDF are the same: $path"
                if $path eq $.reader.file-name;
 
-	    $fh = $_;
+	    $_;
 	}
 	else {
 	    # in-place update. merge the updated entries in the index
@@ -103,10 +101,10 @@ class PDF
 	    $.reader.update( :@entries, :$prev, :$size);
 	    $.Size = $size;
 	    @entries = [];
-            with $.reader.file-name {
-                die "Unable to incremetally update a JSON file"
+            given $.reader.file-name {
+                die "Unable to incrementally update a JSON file"
                     if  m:i/'.json' $/;
-	        $fh = .IO.open(:a, :bin);
+	        .IO.open(:a, :bin);
             }
 	}
 

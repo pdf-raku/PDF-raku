@@ -2,13 +2,13 @@ use v6;
 
 module PDF::IO::Util {
 
-    our sub libpdf-available {
+    our sub libpdf-available($ver = v0.0.1) {
         state Bool $haveit = do {
             CATCH {
                 when X::CompUnit::UnsatisfiedDependency {
                 }
             }
-            (require Lib::PDF:ver(v0.0.1 .. *)).so;
+            (require Lib::PDF:ver($ver .. *)).so;
             True;
         }
         $haveit;

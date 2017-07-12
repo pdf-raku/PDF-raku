@@ -4,6 +4,7 @@ class PDF::Writer {
 
     use PDF::Grammar:ver(v0.0.8..*);
     use PDF::IO;
+    use PDF::IO::Util;
 
     has PDF::IO $!input;
     has $.ast is rw;
@@ -85,23 +86,9 @@ class PDF::Writer {
     }
 
     method !make-trailer( Hash $trailer, @idx ) {
-	@idx = @idx.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
-
-	my Hash @xrefs;
-        my Hash $xref;
-
-	for @idx {
-	    # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
-	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
-	    my \contiguous = $xref && .<obj-num> && .<obj-num> == $!size;
-	    @xrefs.push: ($xref = %( :obj-first-num(.<obj-num>), :entries[] ))
-		unless contiguous;
-	    $xref<entries>.push: $_;
-	    $xref<obj-count>++;
-	    $!size = .<obj-num> + 1;
-	}
-
-	my Str \xref-str = $.write-xref( @xrefs );
+	my uint32 @xref = flat @idx.sort({ $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> }).map: {[.<type>, .<obj-num>, .<gen-num>, .<offset> ]};
+        $!size = @xref.tail(3)[0] + 1;
+	my Str \xref-str = $.write( 'xref-array' => @xref );
 	my UInt \startxref = $.offset;
 
 	my \trailer = [~] (
@@ -324,14 +311,38 @@ class PDF::Writer {
         "startxref\n" ~ $.write-int($_) ~ "\n"
     }
 
-    multi method write-xref(Array $_) {
+    method write-xref-array(uint32 @xref) {
+        my Hash @xrefs;
+        my Hash $xref-seg;
+        my uint $entries = +@xref div 4;
+        my uint32 $next = 65535;
+        my uint $i = 0;
+
+	for (0 ..^ $entries) {
+            my uint8  $type    = @xref[$i++];
+            my uint32 $obj-num = @xref[$i++];
+            my uint32 $gen-num = @xref[$i++];
+            my uint32 $offset  = @xref[$i++];
+	    # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
+	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
+	    @xrefs.push: ($xref-seg = %( :obj-first-num($obj-num), :entries[] ))
+		unless $obj-num == $next;
+	    $xref-seg<entries>.push: { :$type, :$obj-num, :$gen-num, :$offset };
+            $xref-seg<obj-count>++;
+            $next = $obj-num + 1;
+        }
+
+        self.write-xref(@xrefs);
+    }
+
+    multi method write-xref(Array $_) is default {
         (flat 'xref',
-          .map({ $.write-xref($_) }),
+         .map({ self!write-xref-segment($_) }),
 	 '').join: "\n";
     }
 
     #| write a traditional (PDF 1.4-) cross reference table
-    multi method write-xref(% (:$obj-first-num!, :$obj-count!, :$entries!)) {
+    method !write-xref-segment(% (:$obj-first-num!, :$obj-count!, :$entries!)) {
         (flat
          $obj-first-num ~ ' ' ~ $obj-count,
          $entries.map({
@@ -351,6 +362,18 @@ class PDF::Writer {
     }
 
     proto method write(|c) returns Str {*}
+
+    constant fast-track = set <hex-string literal real xref-array>;
+
+    multi method write( Pair $_! where {.key ∈ fast-track && PDF::IO::Util::libpdf-available}) {
+        state $fast-writer;
+        state $ready;
+        $ready //= do {
+            $fast-writer = (require ::('Lib::PDF::Writer'));
+            True
+        }
+        $fast-writer."write-{.key}"( .value );
+    }
 
     multi method write( Pair $_!) {
         self."write-{.key}"( .value );
