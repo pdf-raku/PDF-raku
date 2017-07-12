@@ -8,15 +8,11 @@ PDF-p6
 
 This is a low-level tool-kit for accessing and manipulating data from PDF documents.
 
-It presents a seamless view of the data in PDF or FDF documents; behind the scenes handling
-indexing, compression, encryption, fetching of indirect objects and unpacking of object
-streams. It is capable of reading, editing and creation or incremental update of PDF files.
+It presents a seamless view of the data in PDF or FDF documents; behind the scenes handling indexing, compression, encryption, fetching of indirect objects and unpacking of object streams. It is capable of reading, editing and creation or incremental update of PDF files.
 
-This module understands physical data structures rather than the logical document structure. It is primarily intended as base for higher level
-modules; or to explore or patch data in PDF or FDF files.
+This module understands physical data structures rather than the logical document structure. It is primarily intended as base for higher level modules; or to explore or patch data in PDF or FDF files.
 
-It is possible to construct basic documents and perform simple edits by direct manipulation of PDF data. This requires some
-knowledge of how PDF documents are structured. Please see 'The Basics' and 'Recommended Reading' sections below.
+It is possible to construct basic documents and perform simple edits by direct manipulation of PDF data. This requires some knowledge of how PDF documents are structured. Please see 'The Basics' and 'Recommended Reading' sections below.
 
 Classes/roles in this module include:
 
@@ -113,15 +109,13 @@ $doc.update;
 
 ## Description
 
-A PDF file consists of data structures, including dictionaries (hashes) arrays, numbers and strings, plus streams
-for holding data such as images, fonts and general content.
+A PDF file consists of data structures, including dictionaries (hashes) arrays, numbers and strings, plus streams for holding data such as images, fonts and general content.
 
 PDF files are also indexed for random access and may also have filters for stream compression and encryption of streams and strings.
 
-They have a reasonably well specified structure. The document starts from
-`Root` entry in the trailer dictionary, which is the main entry point into a PDF.
+They have a reasonably well specified structure. The document starts from the `Root` entry in the trailer dictionary, which is the main entry point into a PDF.
 
-This module is based on the <a href='http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/PDF32000_2008.pdf'>PDF PDF 32000-1:2008 1.7<a> specification. It implements syntax, basic data-types, serialization and encryption rules as described in the first four chapters of the specification. Read and write access to data structures is via direct manipulation of tied arrays and hashes.
+This module is based on the [PDF PDF 32000-1:2008 1.7](http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/PDF32000_2008.pdf) specification. It implements syntax, basic data-types, serialization and encryption rules as described in the first four chapters of the specification. Read and write access to data structures is via direct manipulation of tied arrays and hashes.
 
 ## The Basics
 
@@ -215,8 +209,7 @@ The PDF is composed of a series indirect objects, for example, the first object 
 >> endobj
 ```
 
-It's an indirect object with object number `1` and generation number `0`, with a `<<` ... `>>` delimited dictionary containing the
-author and the date that the document was created. This PDF dictionary is roughly equivalent to a Perl 6 hash:
+It's an indirect object with object number `1` and generation number `0`, with a `<<` ... `>>` delimited dictionary containing the author and the date that the document was created. This PDF dictionary is roughly equivalent to a Perl 6 hash:
 
 ``` { :CreationDate("D:20151225000000Z00'00'"), :Producer("Perl 6 PDF"), } ```
 
@@ -235,13 +228,12 @@ startxref
 %%EOF
 ```
 
-The `<<` ... `>>` delimited section is the trailer dictionary and the main entry point into the document. The entry `/Info 1 0 R`
-is an indirect reference to the first object (object number 1, generation 0) described above.
+The `<<` ... `>>` delimited section is the trailer dictionary and the main entry point into the document. The entry `/Info 1 0 R` is an indirect reference to the first object (object number 1, generation 0) described above.
 
 We can quickly put PDF to work using the Perl 6 REPL, to better explore the document:
 
 ```
-snoopy: ~/git/perl6-PDF $ perl6 -MPDF
+snoopy: ~/git/perl6-PDF $ perl6 -M PDF
 > my $doc = PDF.open: "examples/helloworld.pdf"
 ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
 > $doc.keys
@@ -259,8 +251,7 @@ That's the document information entry, commonly used to store basic meta-data ab
 > $doc<Root>
 Outlines => ind-ref => [3 0], Pages => ind-ref => [4 0], Type => Catalog
 ````
-The trailer `Root` entry references the document catalog, which contains the actual PDF content. Exploring
-further; the catalog potentially contains a number of pages, each with content.
+The trailer `Root` entry references the document catalog, which contains the actual PDF content. Exploring further; the catalog potentially contains a number of pages, each with content.
 ```
 > $doc<Root><Pages>
 Count => 1, Kids => [ind-ref => [5 0]], MediaBox => [0 0 420 595], Resources => Font => F1 => ind-ref => [7 0], Type => Pages
@@ -285,10 +276,7 @@ The page `/Contents` entry is a PDF stream which contains graphical instructions
   - `:repair` causes the reader to perform a full scan, ignoring and recalculating the cross reference stream/index and stream lengths. This can be handy if the PDF document has been hand-edited.
 
 - `$doc.update`
-This performs an incremental update to the input pdf, which must be indexed `PDF` (not applicable to
-PDF's opened with `:repair`, FDF or JSON files). A new section is appended to the PDF that
-contains only updated and newly created objects. This method can be used as a fast and efficient way to make
-small updates to a large existing PDF document.
+This performs an incremental update to the input pdf, which must be indexed `PDF` (not applicable to PDFs opened with `:repair`, FDF or JSON files). A new section is appended to the PDF that contains only updated and newly created objects. This method can be used as a fast and efficient way to make small updates to a large existing PDF document.
     - `:diffs(IO::Handle $fh)` - saves just the updates to an alternate location. This can be later appended to the base PDF to reproduce the updated PDF.
 
 - `$doc.save-as("mydoc-2.pdf", :compress, :rebuild, :update)`
@@ -301,8 +289,7 @@ Saves a new document, including any updates. Options:
 Note that the `:compress` and `:rebuild` options are a trade-off. The document may take longer to save, however file-sizes and the time needed to reopen the document may improve.
 
 - `$doc.save-as("mydoc.json", :compress, :rebuild); my $doc2 = $doc.open: "mydoc.json"`
-Documents can also be saved and opened from an intermediate `JSON` representation. This can
-be handy for debugging, analysis and/or ad-hoc patching of PDF files.
+Documents can also be saved and opened from an intermediate `JSON` representation. This can be handy for debugging, analysis and/or ad-hoc patching of PDF files.
 
 ### Reading PDF Files
 
@@ -334,7 +321,7 @@ $reader.trailer<Info><Creator> = PDF::DAO.coerce( :name<t/helloworld.t> );
 This script is a thin wrapper for the `PDF` `.open` and `.save-as` methods. It can typically be used to:
   - uncompress a PDF for readability
   - repair a PDF who's cross-reference index or stream lengths have become invalid
-  - convert bewtween PDF and JSON
+  - convert between PDF and JSON
 
 ### Decode Filters
 
@@ -358,9 +345,9 @@ Input to all filters is strings, with characters in the range \x0 ... \0xFF. lat
 Each filter has `encode` and `decode` methods, which accept and return latin-1 encoded strings, or binary blobs.
 
 ```
-my $encoded = PDF::IO::Filter.encode( :dict{ :Filter<RunLengthDecode> },
+my Blob $encoded = PDF::IO::Filter.encode( :dict{ :Filter<RunLengthDecode> },
                                       "This    is waaay toooooo loooong!");
-say $encoded.codes;
+say $encoded.bytes;
  ```
 
 ### Encryption
@@ -372,11 +359,9 @@ To open an encrypted PDF document, specify either the user or owner password: `P
 A document can be encrypted using the `encrypt` method: `$doc.encrypt( :owner-pass<ssh1>, :user-pass<abc>, :aes )`
    - `:aes` encrypts the document using stronger V4 AES encryption, introduced with PDF 1.6.
 
-Note that it's quite common to leave the user-password blank. This indicates that the document is readable by anyone, but may have
-restrictions on update, printing or copying of the PDF.
+Note that it's quite common to leave the user-password blank. This indicates that the document is readable by anyone, but may have restrictions on update, printing or copying of the PDF.
 
-An encrypted PDF can be saved as JSON. It will remain encrypted and
-passwords may be required, to reopen it.
+An encrypted PDF can be saved as JSON. It will remain encrypted and passwords may be required, to reopen it.
 
 ## Data-types and Coercion
 
