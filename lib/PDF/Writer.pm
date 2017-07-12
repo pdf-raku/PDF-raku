@@ -363,7 +363,7 @@ class PDF::Writer {
 
     proto method write(|c) returns Str {*}
 
-    constant fast-track = set <hex-string literal real xref-array>;
+    constant fast-track = set <hex-string literal name real xref-array>;
 
     multi method write( Pair $_! where {.key ∈ fast-track && PDF::IO::Util::libpdf-available}) {
         state $fast-writer;
