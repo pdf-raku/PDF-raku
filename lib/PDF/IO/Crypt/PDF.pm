@@ -56,7 +56,7 @@ class PDF::IO::Crypt::PDF
 	    unless $doc<ID>;
 
         my $encrypt = $doc<Encrypt>;
-        PDF::DAO.delegator.coerce($encrypt, PDF::DAO::Type::Encrypt);
+        PDF::DAO.coerce($encrypt, PDF::DAO::Type::Encrypt);
         
 	given $encrypt.V {
 	    when 1..3 {

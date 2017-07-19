@@ -2,7 +2,7 @@
     "name"        : "PDF",
     "tags"        : ["pdf"],
     "license"     : "Artistic-2.0",
-    "version"     : "0.2.3",
+    "version"     : "0.2.4",
     "auth"        : "github:p6-pdf",
     "api"         : "PDF-1.7",
     "description" : "Base classes for reading, manipulation and writing of PDF data",
@@ -16,7 +16,8 @@
         "PDF::Writer" : "lib/PDF/Writer.pm",
 
         "PDF::DAO" : "lib/PDF/DAO.pm",
-        "PDF::DAO::Delegator" : "lib/PDF/DAO/Delegator.pm",
+        "PDF::DAO::Loader" : "lib/PDF/DAO/Loader.pm",
+        "PDF::DAO::Coercer" : "lib/PDF/DAO/Coercer.pm",
         "PDF::DAO::Array" : "lib/PDF/DAO/Array.pm",
         "PDF::DAO::Bool" : "lib/PDF/DAO/Bool.pm",
         "PDF::DAO::ByteString" : "lib/PDF/DAO/ByteString.pm",

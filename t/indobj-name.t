@@ -9,7 +9,7 @@ use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 
 my subset MyName of PDF::DAO::Name where 'Foo' | 'Bar';
-lives-ok {PDF::DAO.delegator.coerce( 'Foo', MyName)}, 'coerce to name subset';
+lives-ok {PDF::DAO.coerce( 'Foo', MyName)}, 'coerce to name subset';
 nok 'Foo' ~~ MyName, "role hasn't leaked";
 my $actions = PDF::Grammar::PDF::Actions.new;
 

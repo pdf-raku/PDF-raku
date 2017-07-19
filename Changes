@@ -1,3 +1,7 @@
+    Relase 0.2.4
+    - Created classes PDF::DAO::Loader and PDF::DAO::Coercer. These
+      replace the PDF::DAO::Delegator class.
+
     Release 0.2.3
     - [PDF::DAO::Tie]
       -- Simplify method accessors. direct use of AT-KEY, ASSIGN-KEY,

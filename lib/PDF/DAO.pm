@@ -1,6 +1,6 @@
 use v6;
 
-our $delegator;
+our $loader;
 our %required;
 
 role PDF::DAO {
@@ -12,8 +12,8 @@ role PDF::DAO {
     method is-indirect is rw returns Bool {
 	Proxy.new(
 	    FETCH => sub (\p) { ? self.obj-num },
-	    STORE => sub (\p, Bool \yup) {
-		if yup {
+	    STORE => sub (\p, Bool \indirect) {
+		if indirect {
 		    # Ensure this object is indirect. Serializer will renumber
 		    self.obj-num //= -1;
 		}
@@ -25,7 +25,10 @@ role PDF::DAO {
     }
 
     multi method coerce(Mu $obj is rw, Mu $type ) {
-	$.delegator.coerce( $obj, $type )
+	self!coercer.coerce( $obj, $type )
+    }
+    multi method coerce(Mu $obj, Mu $type ) {
+	self!coercer.coerce( $obj, $type )
     }
 
     multi method coerce(PDF::DAO $val!) { $val }
@@ -41,7 +44,7 @@ role PDF::DAO {
         $.coerce( :$array, |c )
     }
     multi method coerce(DateTime $dt, |c) {
-	$.delegator.coerce( $dt, DateTime, |c)
+	self!coercer.coerce( $dt, DateTime, |c)
     }
     multi method coerce(Pair %_!, |c) {
 	$.coerce( |%_, |c)
@@ -63,8 +66,8 @@ role PDF::DAO {
     }
 
     multi method coerce( Array :$array!, |c ) {
-        state $fallback //= $.required("PDF::DAO::Array");
-        $.delegate( :$array, :$fallback ).new( :$array, |c );
+        state $fallback = $.required('PDF::DAO::Array');
+        $.load( :$array, :$fallback ).new( :$array, |c );
     }
 
     multi method coerce( Array :$ind-ref!) {
@@ -72,42 +75,42 @@ role PDF::DAO {
     }
 
     multi method coerce( Int :$int! is rw) {
-        self!add-role($int, "PDF::DAO::Int");
+        self!add-role($int, 'PDF::DAO::Int');
     }
     multi method coerce( Int :$int! is copy) { self.coerce: :$int }
 
     multi method coerce( Numeric :$real! is rw) {
-        self!add-role($real, "PDF::DAO::Real");
+        self!add-role($real, 'PDF::DAO::Real');
     }
     multi method coerce( Numeric :$real! is copy) { self.coerce: :$real }
 
     multi method coerce( Str :$hex-string! is rw) {
-        self!add-role($hex-string, "PDF::DAO::ByteString");
+        self!add-role($hex-string, 'PDF::DAO::ByteString');
         $hex-string.type = 'hex-string';
         $hex-string;
     }
     multi method coerce( Str :$hex-string! is copy) { self.coerce: :$hex-string }
 
     multi method coerce( Str :$literal! is rw) {
-        self!add-role( $literal, "PDF::DAO::ByteString");
+        self!add-role( $literal, 'PDF::DAO::ByteString');
         $literal.type = 'literal';
         $literal;
     }
     multi method coerce( Str :$literal! is copy) { self.coerce: :$literal }
 
     multi method coerce( Str :$name! is rw) {
-        self!add-role($name, "PDF::DAO::Name");
+        self!add-role($name, 'PDF::DAO::Name');
     }
     multi method coerce( Str :$name! is copy) { self.coerce: :$name }
 
     multi method coerce( Bool :$bool! is rw) {
-        self!add-role($bool, "PDF::DAO::Bool");
+        self!add-role($bool, 'PDF::DAO::Bool');
     }
     multi method coerce( Bool :$bool! is copy) { self.coerce: :$bool }
 
     multi method coerce( Hash :$dict!, |c ) {
-	state $fallback //= $.required("PDF::DAO::Dict");
-	my $class = $.delegate( :$dict, :$fallback );
+	state $fallback = $.required('PDF::DAO::Dict');
+	my $class = $.load( :$dict, :$fallback );
 	$class.new( :$dict, |c );
     }
 
@@ -118,25 +121,30 @@ role PDF::DAO {
                 with $stream{k};
         }
         my Hash $dict = $stream<dict> // {};
-	my $fallback = $.required("PDF::DAO::Stream");
-	my $class = $.delegate( :$dict, :$fallback );
+        state $fallback = $.required('PDF::DAO::Stream');
+	my $class = $.load( :$dict, :$fallback );
         $class.new( :$dict, |%params, |c );
     }
 
     multi method coerce(:$null!) {
-        state $ = $.required("PDF::DAO::Null").new;
+        state $ = $.required('PDF::DAO::Null').new;
     }
 
     multi method coerce($val) is default { $val }
 
-    method delegator is rw {
-	unless $delegator.can('delegate') {
-	    $delegator = $.required('PDF::DAO::Delegator');
-	}
-	$delegator
+    method !coercer {
+        state $coercer = $.required('PDF::DAO::Coercer');
+        $coercer;
     }
-    method delegate(|c) {
-	$.delegator.delegate(|c);
+
+    method loader is rw {
+	unless $loader.can('load') {
+	    $loader = $.required('PDF::DAO::Loader');
+	}
+	$loader
+    }
+    method load(|c) {
+	$.loader.load(|c);
     }
 
 }

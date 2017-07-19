@@ -7,6 +7,9 @@ module PDF::IO::Util {
             CATCH {
                 when X::CompUnit::UnsatisfiedDependency {
                 }
+                default {
+                    warn "error loading Lib::PDF: $_";
+                }
             }
             (require Lib::PDF:ver($ver .. *)).so;
             True;

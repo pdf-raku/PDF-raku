@@ -1,5 +1,3 @@
-use v6;
-
 class X::PDF::Coerce
     is Exception {
 	has $.obj is required;
@@ -9,7 +7,7 @@ class X::PDF::Coerce
 	}
 }
 
-class PDF::DAO::Delegator {
+class PDF::DAO::Coercer {
 
     use PDF::DAO;
     use PDF::DAO::Util :from-ast;
@@ -22,6 +20,7 @@ class PDF::DAO::Delegator {
 
     use PDF::DAO::Name;
     use PDF::DAO::DateString;
+    use PDF::DAO::TextString;
 
     multi method coerce( $obj, $role where {$obj ~~ $role}) {
 	# already does it
@@ -35,7 +34,6 @@ class PDF::DAO::Delegator {
     multi method coerce( DateTime $obj is rw, DateTime $class where PDF::DAO, |c) {
 	$obj = $class.new( $obj, |c );
     }
-    use PDF::DAO::TextString;
     multi method coerce( Str $obj is rw, PDF::DAO::TextString $class, Str :$type is copy, |c) {
 	$type //= $obj.?type // 'literal';
 	$obj = $class.new( :value($obj), :$type, |c );
@@ -77,47 +75,4 @@ class PDF::DAO::Delegator {
         $obj;
     }
 
-    method class-paths { <PDF::DAO::Type> }
-
-    our %handler;
-    method handler {%handler}
-
-    method install-delegate( Str $subclass, $class-def ) is rw {
-        %handler{$subclass} = $class-def;
-    }
-
-    method find-delegate( Str $type!, $subtype?, :$fallback! ) is default {
-
-	my $subclass = $type;
-	$subclass ~= '::' ~ $_
-	    with $subtype;
-
-	return %handler{$subclass}
-	    if %handler{$subclass}:exists;
-
-	my $handler-class = $fallback;
-
-	for self.class-paths -> \class-path {
-            my \class-name = class-path ~ '::' ~ $subclass;
-	    PDF::DAO.required(class-name);
-	    $handler-class = ::(class-name);
-	    last;
-	    CATCH {
-		when X::CompUnit::UnsatisfiedDependency { }
-	    }
-	}
-
-	self.install-delegate( $subclass, $handler-class );
-        $handler-class;
-    }
-
-    multi method delegate( Hash :$dict! where {$dict<Type>:exists}, :$fallback) {
-	my \type = from-ast($dict<Type>);
-	my \subtype = from-ast($dict<Subtype> // $dict<S>);
-	$.find-delegate( type, subtype, :$fallback );
-    }
-
-    multi method delegate( :$fallback! ) is default {
-	$fallback;
-    }
 }
