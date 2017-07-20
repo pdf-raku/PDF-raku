@@ -48,7 +48,7 @@ class PDF::DAO::Type::XRef
         die 'mandatory /Size entry is missing or zero'
             unless $.next-obj-num;
 
-        my uint @width;
+        my uint32 @width;
         for $xref.pairs {
             my $v = .value;
             with @width[.key[1]] {
@@ -61,15 +61,11 @@ class PDF::DAO::Type::XRef
 
         # /W resize to widest byte-widths, if needed
         my $W = self<W> = [ @width.map: {
-            my uint $val = $_;
-            my uint8 $max-bytes;
+            $_ < 256             ?? 1
+                !! $_ < 65536    ?? 2
+                !! $_ < 16777216 ?? 3
+                !! 4;
 
-            repeat {
-                $max-bytes++;
-                $val +>= 8;
-            } until $val == 0;
-
-            $max-bytes;
         } ];
 
         my \buf := pack( $xref, $W,);
@@ -135,7 +131,7 @@ class PDF::DAO::Type::XRef
         for index.list -> $obj-num is rw, \num-entries {
 
             for 0 ..^ num-entries -> uint $i {
-                my UInt $type = decoded[$i;0];
+                my uint $type = decoded[$i;0];
                 my $v1 = decoded[$i;1];
                 my $v2 = decoded[$i;2];
                 given $type {
