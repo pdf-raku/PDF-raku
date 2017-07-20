@@ -2,14 +2,20 @@ use v6;
 
 class PDF::IO::Filter::Predictors {
 
-    my subset BPC of UInt where 1 | 2 | 4 | 8 | 16 | 32;
-    my subset Predictor of Int where 1|2|10..15;
+    subset BPC of UInt where 1 | 2 | 4 | 8 | 16 | 32;
+
+    constant None = 1;
+    constant TIFF = 2;
+    constant PNG = 10;
+    constant PNG-Range = 10 .. 15;
+
+    subset Predictor of Int where None | TIFF | PNG-Range;
 
     use PDF::IO::Util :pack;
     # post prediction functions as described in the PDF 1.7 spec, table 3.8
 
     multi method encode($buf where Blob | Buf, 
-                        Predictor :$Predictor! where 2, #| predictor function
+                        Predictor :$Predictor! where TIFF, #| predictor function
                         UInt :$Columns = 1,          #| number of samples per row
                         UInt :$Colors = 1,           #| number of colors per sample
                         BPC  :$BitsPerComponent = 8, #| number of bits per color
@@ -37,7 +43,7 @@ class PDF::IO::Filter::Predictors {
     }
 
     multi method encode($buf is copy where Blob | Buf,
-			Predictor :$Predictor! where { 10 <= $_ <= 15}, #| predictor function
+			Predictor :$Predictor! where PNG-Range, #| predictor function
 			UInt :$Columns = 1,          #| number of samples per row
 			UInt :$Colors = 1,           #| number of colors per sample
 			BPC  :$BitsPerComponent = 8, #| number of bits per color
@@ -125,14 +131,14 @@ class PDF::IO::Filter::Predictors {
 
     # prediction filters, see PDF 1.7 spec table 3.8
     multi method encode($buf where Blob | Buf,
-			Predictor :$Predictor where {1} = 1 #| predictor function
+			Predictor :$Predictor where None = None #| predictor function
         ) {
         $buf;
     }
 
     # prediction filters, see PDF 1.7 spec table 3.8
     multi method decode($buf where Blob | Buf, 
-                        Predictor :$Predictor! where 2, #| predictor function
+                        Predictor :$Predictor! where TIFF, #| predictor function
                         UInt :$Columns = 1,          #| number of samples per row
                         UInt :$Colors = 1,           #| number of colors per sample
                         UInt :$BitsPerComponent = 8, #| number of bits per color
@@ -160,7 +166,7 @@ class PDF::IO::Filter::Predictors {
     }
 
     multi method decode($buf is copy where Blob | Buf,  #| input stream
-                        Predictor :$Predictor! where { 10 <= $_ <= 15}, #| predictor function
+                        Predictor :$Predictor! where PNG-Range, #| predictor function
                         UInt :$Columns = 1,          #| number of samples per row
                         UInt :$Colors = 1,           #| number of colors per sample
                         UInt :$BitsPerComponent = 8, #| number of bits per color
@@ -251,7 +257,7 @@ class PDF::IO::Filter::Predictors {
         pack(@out, $bpc);
     }
 
-    multi method decode($buf, Predictor :$Predictor where {1} = 1 ) is default {
+    multi method decode($buf, Predictor :$Predictor where {None} = None ) is default {
         $buf;
     }
 
