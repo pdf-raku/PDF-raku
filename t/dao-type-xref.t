@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 22;
+plan 23;
 
 use PDF::IO::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
@@ -69,3 +69,8 @@ is $xref-wide.Type, 'XRef', '$xref.new .Name auto-setup';
 is-json-equiv $xref-wide.W, [ 1, 3, 2], '$xref.new .W auto-setup';
 is-json-equiv $xref-wide.Index, [ 42, 2 ], '$xref.new .Index auto-setup';
 is $xref-wide<Foo>, 'bar', ':dict constructor option';
+
+my @values = (1, 1,0,  2, 1,1,  3, 0,255);
+my Str $encoded = buf8.new(@values).decode: "latin-1";
+my $xref-narrow = PDF::DAO.coerce( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>), :W[0,1,0,2,0], :Size(3) }, :$encoded} );
+is [$xref-narrow.decoded.values], [0,1,0,256,0, 0,2,0,257,0, 0,3,0,255,0], 'zero width in /W';
