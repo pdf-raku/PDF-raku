@@ -73,25 +73,22 @@ class PDF::DAO::Type::XRef
     }
 
     #= inverse of $.decode-index . handily calculates and sets $.Size and $.Index
-    method encode-index(Array[Hash] $xref-index) {
+    method encode-index(Array[array] $xref-index) {
         my $size = 1;
         my UInt @index;
         my uint32 @encoded-index = [];
 
-        my @entries = $xref-index.list.sort: { $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> };
+        my @entries = $xref-index.list.sort: { $^a[0] <=> $^b[0] };
 
-        for @entries -> \entry {
-            my Bool \contiguous = ?( entry<obj-num> && entry<obj-num> == $size );
-            @index.push( entry<obj-num>,  0 )
+        for @entries {
+            my @entry = .list;
+            my $obj-num = @entry.shift;
+            my Bool \contiguous = ?( $obj-num == $size );
+            @index.push( $obj-num, 0 )
                 unless contiguous;
             @index.tail++;
-            my @item = do given entry<type> {
-                when 0|1 { [ entry<type>, entry<offset>, entry<gen-num> ] }
-                when 2   { [ entry<type>, entry<ref-obj-num>, entry<index> ] }
-                default  { die "unknown object type in XRef index: $_"}
-            };
-            @encoded-index.append: @item;
-            $size = entry<obj-num> + 1;
+            @encoded-index.append: @entry;
+            $size = $obj-num + 1;
         }
 
         self<Size> = $size;
@@ -126,31 +123,14 @@ class PDF::DAO::Type::XRef
 
         my Array \index = self<Index> // [ 0, $.Size ];
         my array \decoded = $.decode( $encoded );
-        my Hash @decoded-index = [];
+        my array @decoded-index = [];
 
         for index.list -> $obj-num is rw, \num-entries {
 
             for 0 ..^ num-entries -> uint $i {
-                my uint $type = decoded[$i;0];
-                my $v1 = decoded[$i;1];
-                my $v2 = decoded[$i;2];
-                given $type {
-                    when 0|1 {
-                        # free or inuse objects
-                        my uint $offset = $v1;
-                        my uint $gen-num = $v2;
-                        @decoded-index.push: { :$type, :$obj-num, :$gen-num, :$offset };
-                    }
-                    when 2 {
-                        # embedded objects
-                        my uint $ref-obj-num = $v1;
-                        my uint $index = $v2;
-                        @decoded-index.push: { :$type, :$obj-num, :$ref-obj-num, :$index };
-                    }
-                    default {
-                        die "XRef index object type outside range 0..2: $type"
-                    }
-                }
+
+                my uint32 @xref = $obj-num, decoded[$i;0], decoded[$i;1], decoded[$i;2];
+                @decoded-index.push: @xref;
                 $obj-num++;
             }
         }

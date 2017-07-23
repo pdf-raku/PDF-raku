@@ -26,20 +26,19 @@ class PDF::DAO::Loader {
 	my $handler-class = $fallback;
 
 	for self.class-paths -> \class-path {
-            my \class-name = class-path ~ '::' ~ $subclass;
-	    PDF::DAO.required(class-name);
-	    $handler-class = ::(class-name);
-	    last;
 	    CATCH {
 		when X::CompUnit::UnsatisfiedDependency { }
 	    }
+            my \class-name = class-path ~ '::' ~ $subclass;
+	    $handler-class = PDF::DAO.required(class-name);
+	    last;
 	}
 
 	self.install-delegate( $subclass, $handler-class );
         $handler-class;
     }
 
-    multi method load( Hash :$dict! where {$dict<Type>:exists}, :$fallback) {
+    multi method load( Hash :$dict! where {$dict<Type>:exists}, :$fallback = $dict.WHAT) {
 	my \type = from-ast($dict<Type>);
 	my \subtype = from-ast($dict<Subtype> // $dict<S>);
 	$.find-delegate( type, subtype, :$fallback );

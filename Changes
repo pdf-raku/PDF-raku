@@ -1,6 +1,8 @@
     Relase 0.2.4
     - Created classes PDF::DAO::Loader and PDF::DAO::Coercer. These
       replace the PDF::DAO::Delegator class.
+    - [PDF::DAO::Type::Xref]
+      streamlined index decoding and encoding
 
     Release 0.2.3
     - [PDF::DAO::Tie]

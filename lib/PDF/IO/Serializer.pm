@@ -157,22 +157,12 @@ class PDF::IO::Serializer {
     }
 
     #| should this be serialized as an indirect object?
-    multi method is-indirect($ --> Bool) {*}
-
-    #| streams always need to be indirect objects
-    multi method is-indirect(PDF::DAO::Stream $)                    {True}
-
-    #| multiply referenced objects need to be indirect
-    multi method is-indirect($ where %!ref-count{$_} > 1)           {True}
-
-    #| typed objects should be indirect, e.g. << /Type /Catalog .... >>
-    multi method is-indirect(Hash $ where {.<Type>:exists})         {True}
-
-    #| presumably sourced as an indirect object, so output as such.
-    multi method is-indirect($ where {.can('obj-num') && .obj-num}) {True}
-
-    #| allow anything else to inline
-    multi method is-indirect($) is default                          {False}
+    method is-indirect($_) {
+        %!ref-count{$_} > 1            #| multiply referenced; needs to be indirect
+            || ? .?obj-num             #| indirect if it has an object number
+            || $_~~ PDF::DAO::Stream   #| streams need to indirect
+            || ($_ ~~ Hash && (.<Type>:exists)) # typed hash?
+   }
 
     #| prepare an object for output.
     #| - if already encountered, return an indirect reference

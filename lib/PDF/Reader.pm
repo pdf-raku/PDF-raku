@@ -99,7 +99,7 @@ class PDF::Reader {
     method !install-trailer(PDF::DAO::Dict $object = PDF::DAO::Dict.new( :reader(self) ) ) {
         %!ind-obj-idx{"0 0"} = do {
             my PDF::IO::IndObj $ind-obj .= new( :$object, :obj-num(0), :gen-num(0) );
-            { :type(External), :$ind-obj }
+            %( :type(External), :$ind-obj );
         }
     }
 
@@ -175,10 +175,10 @@ class PDF::Reader {
                 with .<ind-obj> -> $ind-obj {
                     (my UInt $obj-num, my UInt $gen-num) = $ind-obj.list;
 
-                    %!ind-obj-idx{"$obj-num $gen-num"} //= {
+                    %!ind-obj-idx{"$obj-num $gen-num"} //= %(
                         :type(External),
                         :$ind-obj,
-                    };
+                    );
                 }
             }
 
@@ -209,10 +209,10 @@ class PDF::Reader {
 		}
 	        when External {
 		    my $ind-obj = $entry<ind-obj>;
-		    %!ind-obj-idx{"$obj-num $gen-num"} = {
+		    %!ind-obj-idx{"$obj-num $gen-num"} = %(
 		        :$type,
 		        :$ind-obj,
-	            }
+                    );
 		}
                 default {
 		    die "unable to handle indirect object update of type: $_";
@@ -466,18 +466,14 @@ class PDF::Reader {
 	    for .list {
 		my uint $obj-num = .<obj-first-num>;
 		for @( .<entries> ) {
-		    my UInt $type = .<type>;
-		    my UInt $gen-num = .<gen-num>;
-		    my UInt $offset = .<offset>;
+		    my uint32 $type = .<type>;
+		    my uint32 $gen-num = .<gen-num>;
+		    my uint32 $offset = .<offset>;
 
-		    given $type {
-			when Free  {} # ignore free objects
-			when External  {
-			    @idx.push({ :$type, :$obj-num, :$gen-num, :$offset })
-				if $offset;
-			}
-			default { die "unhandled type: $_" }
-		    }
+                    if $offset && $type == External {
+                        my uint32 @xref = $obj-num, $type, $offset, $gen-num;
+                        @idx.push: @xref;
+                    }
 		    $obj-num++;
 		}
 	    }
@@ -522,7 +518,7 @@ class PDF::Reader {
         my UInt:_ $offset = $!prev;
         my UInt \input-bytes = $.input.codes;
 
-        my Hash @obj-idx;
+        my array @obj-idx;
         my Hash $dict;
 
         while $offset.defined {
@@ -542,15 +538,21 @@ class PDF::Reader {
             $.size  = do with $dict<Size> { $_ } else { 1 };
         }
 
-        my %obj-entries-of-type = @obj-idx.classify: *.<type>;
+        enum ( :ObjNum(0), :Type(1),
+               :Offset(2), :GenNum(3),     # Type 1 (External) Objects
+               :RefObjNum(2), :Index(3)    # Type 2 (Embedded) Objects
+            );
 
-        my @type1-obj-entries = .list.sort({ $^a<offset> })
+        my %obj-entries-of-type = @obj-idx.classify: *.[Type];
+
+        my @type1-obj-entries = .list.sort({ $^a[Offset] })
             with %obj-entries-of-type<1>;
 
+
         for @type1-obj-entries.kv -> \k, $_ {
-            my UInt $offset = .<offset>;
-            my UInt $end = k + 1 < +@type1-obj-entries ?? @type1-obj-entries[k + 1]<offset> !! input-bytes;
-            %!ind-obj-idx{.<obj-num> ~ ' ' ~ .<gen-num>} = { :type(External), :$offset, :$end };
+            my uint32 $end = k + 1 < +@type1-obj-entries ?? @type1-obj-entries[k + 1][Offset] !! input-bytes;
+            my uint32 $offset = .[Offset];
+            %!ind-obj-idx{.[ObjNum] ~ ' ' ~ .[GenNum]} = %( :type(External), :$offset, :$end );
         }
 
 	self!setup-crypt(|c);
@@ -559,12 +561,12 @@ class PDF::Reader {
             with %obj-entries-of-type<2>;
 
         for @embedded-obj-entries {
-            my UInt $obj-num = .<obj-num>;
+            my UInt $obj-num = .[ObjNum];
+            my UInt $index = .[Index];
+            my UInt $ref-obj-num = .[RefObjNum];
             my UInt $gen-num = 0;
-            my UInt $index = .<index>;
-            my UInt $ref-obj-num = .<ref-obj-num>;
 
-            %!ind-obj-idx{"$obj-num $gen-num"} = { :type(Embedded), :$index, :$ref-obj-num };
+            %!ind-obj-idx{"$obj-num $gen-num"} = %( :type(Embedded), :$index, :$ref-obj-num );
         }
 
         #| don't entirely trust /Size entry in trailer dictionary
@@ -611,11 +613,11 @@ class PDF::Reader {
 		    }
                 }
 
-                %!ind-obj-idx{"$obj-num $gen-num"} //= {
+                %!ind-obj-idx{"$obj-num $gen-num"} //= %(
                     :type(External),
                     :@ind-obj,
                     :$offset,
-                };
+                );
 
                 with $stream-type {
                     when 'ObjStm' {
@@ -625,11 +627,11 @@ class PDF::Reader {
                         for embedded-objects.kv -> $index, $_ {
                             my UInt $sub-obj-num = .[0];
                             my UInt $ref-obj-num = $obj-num;
-                            %!ind-obj-idx{"$sub-obj-num 0"} //= {
+                            %!ind-obj-idx{"$sub-obj-num 0"} //= %(
                                 :type(Embedded),
                                 :$index,
                                 :$ref-obj-num,
-                            };
+                            );
                         }
                     }
                 }
@@ -676,9 +678,6 @@ class PDF::Reader {
             my UInt $offset;
 
             given $entry<type> {
-                when Free {
-                    next;
-                }
                 when External {
                     $offset = $_
                     with $entry<offset>
@@ -692,6 +691,9 @@ class PDF::Reader {
 			die "unable to find object: $parent 0 R"
                     }
                     $seq = $entry<index>;
+                }
+                when Free {
+                    next;
                 }
                 default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
             }
