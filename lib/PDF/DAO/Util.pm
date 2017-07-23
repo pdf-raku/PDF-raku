@@ -82,7 +82,7 @@ module PDF::DAO::Util {
     }
 
     #| for JSON deserialization, e.g. { :int(42) } => :int(42)
-    use PDF::Grammar:ver(v0.1.0..*) :AST-Types;
+    use PDF::Grammar:ver(v0.1.0+) :AST-Types;
     BEGIN my %ast-types = AST-Types.enums;
     multi sub from-ast( Hash $h! where { .keys == 1 && (%ast-types{.keys[0]}:exists)} ) {
         from-ast( |$h )

@@ -2,7 +2,7 @@ use v6;
 
 class PDF::Writer {
 
-    use PDF::Grammar:ver(v0.0.8..*);
+    use PDF::Grammar:ver(v0.0.8+);
     use PDF::IO;
     use PDF::IO::Util;
 
