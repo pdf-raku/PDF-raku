@@ -3,6 +3,8 @@
       replace the PDF::DAO::Delegator class.
     - [PDF::DAO::Type::Xref]
       streamlined index decoding and encoding
+    - [PDF::Writer]
+      tweak write-real method to match Lib::PDF::Writer.write-real
 
     Release 0.2.3
     - [PDF::DAO::Tie]

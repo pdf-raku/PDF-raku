@@ -278,15 +278,15 @@ class PDF::Writer {
         '%%%s-%.1f'.sprintf(type, .<version> // 1.2);
     }
 
-    multi method write-real( Num $_ ) {
-	my \int = .round(1).Int;
-	$_ =~= int
-	    ?? ~int
-	    !! .fmt('%.5f');
+    multi method write-real( Int $_ ) {
+        .Str
     }
 
     multi method write-real( Numeric $_ ) {
-        ~$_
+        my Str $num = .fmt('%.5f');
+        $num ~~ s/(\.\d*?)0+$/$0/;
+        $num ~~ s/\.$//;
+        $num;
     }
 
     method write-stream(% (:%dict!, :$encoded = $.input.stream-data( :stream($_) )) ) {

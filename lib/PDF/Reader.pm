@@ -115,7 +115,7 @@ class PDF::Reader {
 
 	for %!ind-obj-idx.pairs {
 
-            my (UInt $obj-num, UInt $gen-num) = .key.split(' ')>>.Int;
+            my UInt ($obj-num, $gen-num) = .key.split(' ')>>.Int;
             next unless $obj-num;
 	    my Hash $idx = .value;
 
@@ -125,8 +125,7 @@ class PDF::Reader {
 		$idx<is-enc-dict> = True;
 	    }
 	    else {
-
-		if my $ind-obj := $idx<ind-obj> {
+		with $idx<ind-obj> -> $ind-obj {
 		    die "too late to setup encryption: $obj-num $gen-num R"
 		        if $idx<type> != Free | External
 		        || $ind-obj.isa(PDF::IO::IndObj);
@@ -576,7 +575,7 @@ class PDF::Reader {
             if $.size <= actual-size;
     }
 
-    #| bypass any indices. directly parse and reconstruct index fromn objects.
+    #| bypass any indices. directly parse and reconstruct index from objects.
     method !full-scan( $grammar, $actions, Bool :$repair, |c) {
         temp $actions.get-offsets = True;
         my Str $input = ~$.input;
@@ -668,7 +667,7 @@ class PDF::Reader {
         }
 
         for %!ind-obj-idx.pairs.sort {
-            my (UInt $obj-num, UInt $gen-num) = .key.split(' ')>>.Int;
+            my UInt ($obj-num, $gen-num) = .key.split(' ')>>.Int;
 
             # discard objstm objects (/Type /ObjStm)
             next with %objstm-objects{$obj-num};
