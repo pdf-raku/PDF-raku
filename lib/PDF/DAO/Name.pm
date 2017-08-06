@@ -6,6 +6,6 @@ role PDF::DAO::Name
 
     method content {
         :name(self~'')
-    };
+    }
 }
 

@@ -11,7 +11,7 @@ module PDF::DAO::Util {
         ast-coerce $other
     }
     proto sub ast-coerce(|) is export(:ast-coerce) {*};
-    multi sub ast-coerce(Enumeration $enum!) {:int($enum.Int)}
+    multi sub ast-coerce(Enumeration $enum!) {ast-coerce($enum.value)}
     multi sub ast-coerce(Int $int!) {:$int}
     multi sub ast-coerce(Numeric $real!) {:$real}
     multi sub ast-coerce(Str $literal!) {:$literal}
