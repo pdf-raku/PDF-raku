@@ -6,7 +6,7 @@
     "auth"        : "github:p6-pdf",
     "api"         : "PDF-1.7",
     "description" : "Base classes for reading, manipulation and writing of PDF data",
-    "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Fast", "OpenSSL", "File::Temp" ],
+    "depends"     : [ "Compress::Zlib", "PDF::Grammar", "JSON::Fast", "OpenSSL" ],
     "source-url"  : "git://github.com/p6-pdf/PDF-p6.git",
     "provides"    : {
 
