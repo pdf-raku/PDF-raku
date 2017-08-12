@@ -140,8 +140,8 @@ class PDF::Reader {
     method !set-trailer (
         Hash $dict,
         Array :$keys = [ $dict.keys.grep: {
-	    $_ ne 'Prev' | 'Size'                    # Recomputed fields
-		| 'Type' | 'DecodeParms' | 'Filter' | 'Index' | 'W' | 'Length' | 'XRefStm' # Unwanted, From XRef Streams
+	    $_ ne 'Prev'|'Size'                    # Recomputed fields
+		|'Type'|'DecodeParms'|'Filter'|'Index'|'W'|'Length'|'XRefStm' # Unwanted, From XRef Streams
 	} ],
         ) {
 	temp $.auto-deref = False;

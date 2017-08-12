@@ -61,11 +61,10 @@ class PDF::DAO::Type::XRef
 
         # /W resize to widest byte-widths, if needed
         my $W = self<W> = [ @width.map: {
-            $_ < 256             ?? 1
-                !! $_ < 65536    ?? 2
-                !! $_ < 16777216 ?? 3
-                !! 4;
-
+            when * < 256 { 1 }
+            when * < 65536 { 2 }
+            when * < 16777216 { 3 }
+            default { 4 }
         } ];
 
         my \buf := pack( $xref, $W,);
