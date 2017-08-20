@@ -279,11 +279,11 @@ The page `/Contents` entry is a PDF stream which contains graphical instructions
 This performs an incremental update to the input pdf, which must be indexed `PDF` (not applicable to PDFs opened with `:repair`, FDF or JSON files). A new section is appended to the PDF that contains only updated and newly created objects. This method can be used as a fast and efficient way to make small updates to a large existing PDF document.
     - `:diffs(IO::Handle $fh)` - saves just the updates to an alternate location. This can be later appended to the base PDF to reproduce the updated PDF.
 
-- `$doc.save-as("mydoc-2.pdf", :compress, :rebuild, :update)`
+- `$doc.save-as("mydoc-2.pdf", :compress, :rebuild, :preserve)`
 Saves a new document, including any updates. Options:
   - `:compress` - compress objects for minimal size
   - `:!compress` - uncompress objects for human readability
-  - `:update` - copy the input PDF, then incrementally update. This is generally faster and ensures that any digital signatures are not invalidated,
+  - `:preserve` - copy the input PDF, then incrementally update. This is generally faster and ensures that any digital signatures are not invalidated,
   - `:rebuild` - discard any unreferenced objects. renumber remaining objects. It may be a good idea to rebuild a PDF Document, that's been incrementally updated a number of times.
 
 Note that the `:compress` and `:rebuild` options are a trade-off. The document may take longer to save, however file-sizes and the time needed to reopen the document may improve.
@@ -463,5 +463,5 @@ PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 
 - [Lib::PDF](https://github.com/p6-pdf/libpdf-p6) An optional library of native functions (experimental). Installing this module may improve performance.
 - [PDF::Grammar](https://github.com/p6-pdf/perl6-PDF-Grammar) - base grammars for PDF parsing (released)
-- [PDF::Lite](https://github.com/p6-pdf/perl6-PDF-Lite) - basic graphics; including images, fonts, text and general graphics (under construction) 
+- [PDF::Lite](https://github.com/p6-pdf/perl6-PDF-Lite) - basic graphics; including images, fonts, text and general graphics
 

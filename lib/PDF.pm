@@ -132,11 +132,11 @@ class PDF
 	$.save-as($file-name.IO, |c );
     }
 
-    multi method save-as(IO::Path $iop, Bool :$update, |c) {
+    multi method save-as(IO::Path $iop, Bool :$preserve, |c) {
 	when $iop.extension.lc eq 'json' {
 	    $iop.spurt( to-json( $.ast(|c) ));
 	}
-	when $update && $.reader.defined {
+	when $preserve && $.reader.defined {
 	    $.reader.file-name.IO.copy( $iop );
 	    $.update( :to($iop.open(:a, :bin)), |c);
 	}

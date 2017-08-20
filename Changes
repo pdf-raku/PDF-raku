@@ -1,4 +1,6 @@
     Relase 0.2.4
+    - [PDF]
+      renamed .save-as :update option to :preserve
     - Created classes PDF::DAO::Loader and PDF::DAO::Coercer. These
       replace the PDF::DAO::Delegator class.
     - [PDF::DAO::Type::Xref]
