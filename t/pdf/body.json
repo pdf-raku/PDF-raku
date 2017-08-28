@@ -80,37 +80,37 @@
         "obj-first-num" : 0,
         "obj-count" : 2,
         "entries" : [
-          {
-            "offset" : 0,
-            "gen-num" : 65535,
-            "type": 0
-          },
-          {
-            "offset" : 0,
-            "gen-num" : 0,
-            "type" : 1
-          }
+          [
+            0,
+            65535,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
         ]
       },
       {
         "obj-first-num" : 3,
         "obj-count" : 3,
         "entries" : [
-          {
-            "offset" : 193,
-            "gen-num" : 0,
-            "type": 1
-          },
-          {
-            "offset" : 244,
-            "gen-num" : 2,
-            "type" : 1
-          },
-          {
-            "offset" : 72,
-            "gen-num" : 0,
-            "type" : 1
-          }
+          [
+            193,
+            0,
+            1
+          ],
+          [
+            244,
+            2,
+            1
+          ],
+          [
+            72,
+            0,
+            1
+          ]
         ]
       }
     ],

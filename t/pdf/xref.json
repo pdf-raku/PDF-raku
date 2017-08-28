@@ -4,46 +4,46 @@
       "obj-first-num" : 0,
       "obj-count" : 8,
       "entries" : [
-        {
-          "offset" : 0,
-          "gen-num" : 65535,
-          "type" : 0
-        },
-        {
-          "offset" : 9,
-          "gen-num" : 0,
-          "type" : 1
-        },
-        {
-          "offset" : 74,
-          "gen-num" : 0,
-          "type" : 1
-        },
-        {
-          "offset" : 120,
-          "gen-num" : 0,
-          "type" : 1
-        },
-        {
-          "offset" : 179,
-          "gen-num" : 0,
-          "type" : 1
-        },
-        {
-          "offset" : 322,
-          "gen-num" : 0,
-          "type" : 1
-        },
-        {
-          "offset" : 415,
-          "gen-num" : 0,
-          "type" : 1
-        },
-        {
-          "offset" : 445,
-          "gen-num" : 0,
-          "type" : 1
-        }
+        [
+          0,
+          65535,
+          0
+        ],
+        [
+          9,
+          0,
+          1
+        ],
+        [
+          74,
+          0,
+          1
+        ],
+        [
+          120,
+          0,
+          1
+        ],
+        [
+          179,
+          0,
+          1
+        ],
+        [
+          322,
+          0,
+          1
+        ],
+        [
+          415,
+          0,
+          1
+        ],
+        [
+          445,
+          0,
+          1
+        ]
       ]
     }
   ]

@@ -1,4 +1,8 @@
-    Relase 0.2.4
+    Release 0.2.5
+    - [PDF::Reader][PDF::Writer]
+      -- adjust to PDF::Grammar v0.1.1 shaped cross reference streams.
+      -- upgrade index offsets from uint32 to uint64 (for PDF files > 4.2Gb)
+    Release 0.2.4
     - [PDF]
       renamed .save-as :update option to :preserve
     - Created classes PDF::DAO::Loader and PDF::DAO::Coercer. These

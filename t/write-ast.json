@@ -1,5 +1,5 @@
 { "ast" : { "literal" : "Hello World!" }, "pdf" : "(Hello World!)" }
-{ "ast" : { "array" : [ { "hex-string" : "hi" }, { "bool" : true }, { "bool" : false }, { "null" : null} ] }, "pdf" : "[ <6869> true false null ]" }
+{ "ast" : { "array" : [ { "hex-string" : "hi" }, { "bool" : true }, { "bool" : false }, { "null" : null}, { "real" : 0.074877 } ] }, "pdf" : "[ <6869> true false null 0.07488 ]" }
 { "ast" : { "dict" : { "foo" : { "literal" : "bar" }, "baz" : { "array" : [ { "int" : 42 }, { "real" : 4.2 } ] } } }, "pdf" : "<<\n  /baz [ 42 4.2 ]\n  /foo (bar)\n>>" }
 { "ast" : { "dict" : { } }, "pdf" : "<<\n>>" }
 { "ast" : { "stream" : { "dict" : { "Length" : { "int" : 9 } }, "encoded" : "Hi there!" } }, "pdf" : "<<\n  /Length 9\n>> stream\nHi there!\nendstream" }

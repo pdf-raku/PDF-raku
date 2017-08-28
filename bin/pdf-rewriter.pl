@@ -13,11 +13,11 @@ sub MAIN (
     Bool :$rebuild    = False,   #| rebuild object tree (renumber, garbage collect and deduplicate objects)
     Bool :$compress   = False,   #| compress streams
     Bool :$uncompress = False,   #| uncompress streams
-    Bool :$struct     = False,   #| require PDF::Struct
+    Bool :$zen        = False,   #| require PDF::Zen
     ) {
 
-    if $struct {
-	require ::('PDF::Struct')
+    if $zen {
+	require ::('PDF::Zen')
     }
 
     die "conflicting arguments: --compress --uncompress"

@@ -4,37 +4,37 @@
       "obj-first-num" : 0,
       "obj-count" : 2,
       "entries" : [
-        {
-          "offset" : 0,
-          "gen-num" : 65535,
-          "type" : 0
-        },
-        {
-          "offset" : 18,
-          "gen-num" : 0,
-          "type" : 1
-        }
+        [
+          0,
+          65535,
+          0
+        ],
+        [
+          18,
+          0,
+          1
+        ]
       ]
     },
     {
       "obj-first-num" : 2,
       "obj-count" : 3,
       "entries" : [
-        {
-          "offset" : 77,
-          "gen-num" : 1,
-          "type" : 1
-        },
-        {
-          "offset" : 178,
-          "gen-num" : 0,
-          "type" : 0
-        },
-        {
-          "offset" : 457,
-          "gen-num" : 0,
-          "type" : 1
-        }
+        [
+          77,
+          1,
+          1
+        ],
+        [
+          178,
+          0,
+          0
+        ],
+        [
+          457,
+          0,
+          1
+        ]
       ]
     }
   ]

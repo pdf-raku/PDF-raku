@@ -37,7 +37,7 @@ module PDF::IO::Util {
     multi sub pack-pp( $nums!, 16) { buf8.new: flat $nums.list.map: { ($_ +> 8, $_) } }
     multi sub pack-pp( $nums!, 32) { buf8.new: flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
     multi sub pack-le( $nums!, 32) { buf8.new: flat $nums.list.map: { ($_, $_ +> 8, $_ +> 16, $_ +> 24) } }
-    multi sub pack-pp( $nums!, $n) { resample( $nums, $n, 8); }
+    multi sub pack-pp( $nums!, UInt $n) { resample( $nums, $n, 8); }
     sub container(UInt $bits) {
         $bits <= 8 ?? uint8 !! ($bits > 16 ?? uint32 !! uint16)
     }
@@ -97,7 +97,7 @@ module PDF::IO::Util {
         @shaped;
     }
 
-    multi sub pack-pp(array[uint32] $shaped, Array $W!)  {
+    multi sub pack-pp(array $shaped, Array $W!)  {
         my buf8 $out .= allocate($W.sum * +$shaped);
         my buf32 $in .= new: $shaped;
         my uint32 $in-len = +$in;

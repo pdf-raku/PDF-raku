@@ -75,7 +75,7 @@ class PDF::Reader {
     has Str $.type is rw;    #= 'PDF', 'FDF', etc...
     has uint $.prev;
     has uint $.size is rw;   #= /Size entry in trailer dict ~ first free object number
-    has uint32 @.xrefs = (0);  #= xref position for each revision in the file
+    has uint64 @.xrefs = (0);  #= xref position for each revision in the file
     has $.crypt;
     my enum IndexType <Free External Embedded>;
 
@@ -464,16 +464,19 @@ class PDF::Reader {
 	with index<xref> {
 	    for .list {
 		my uint $obj-num = .<obj-first-num>;
-		for @( .<entries> ) {
-		    my uint32 $type = .<type>;
-		    my uint32 $gen-num = .<gen-num>;
-		    my uint32 $offset = .<offset>;
+		with .<entries> {
+                    my uint $n = .elems;
+                    loop (my uint $i = 0; $i < $n; $i++) {
+                        my uint64 $offset  = .[$i;0];
+                        my uint64 $gen-num = .[$i;1];
+                        my uint64 $type    = .[$i;2];
 
-                    if $offset && $type == External {
-                        my uint32 @xref = $obj-num, $type, $offset, $gen-num;
-                        @idx.push: @xref;
+                        if $offset && $type == External {
+                            my uint64 @xref = $obj-num, $type, $offset, $gen-num;
+                            @idx.push: @xref;
+                        }
+                        $obj-num++;
                     }
-		    $obj-num++;
 		}
 	    }
 	}
@@ -549,8 +552,8 @@ class PDF::Reader {
 
 
         for @type1-obj-entries.kv -> \k, $_ {
-            my uint32 $end = k + 1 < +@type1-obj-entries ?? @type1-obj-entries[k + 1][Offset] !! input-bytes;
-            my uint32 $offset = .[Offset];
+            my uint64 $end = k + 1 < +@type1-obj-entries ?? @type1-obj-entries[k + 1][Offset] !! input-bytes;
+            my uint64 $offset = .[Offset];
             %!ind-obj-idx{.[ObjNum] ~ ' ' ~ .[GenNum]} = %( :type(External), :$offset, :$end );
         }
 

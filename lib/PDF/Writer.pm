@@ -2,7 +2,7 @@ use v6;
 
 class PDF::Writer {
 
-    use PDF::Grammar:ver(v0.0.8+);
+    use PDF::Grammar:ver(v0.1.1+);
     use PDF::IO;
     use PDF::IO::Util;
 
@@ -33,12 +33,12 @@ class PDF::Writer {
 	self.Str.encode: "latin-1";
     }
 
-    method write-array( Array $_ ) {
+    method write-array(List $_ ) {
 	temp $!indent ~= '  ';  # for indentation of child dictionarys
 	('[', .map({ $.write($_) }), ']').join: ' ';
     }
 
-    multi method write-body( Array $_, |c ) {
+    multi method write-body(List $_, |c ) {
         temp $!prev = Nil;
         .map({ $.write-body( $_, |c )}).join: "\n";
     }
@@ -86,7 +86,7 @@ class PDF::Writer {
     }
 
     method !make-trailer( Hash $trailer, @idx ) {
-	my uint32 @xref = flat @idx.sort({ $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> }).map: {[.<type>, .<obj-num>, .<gen-num>, .<offset> ]};
+	my uint64 @xref[+@idx;4] = @idx.sort({ $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> }).map: {[.<type>, .<obj-num>, .<gen-num>, .<offset> ]};
         $!size = @xref.tail(3)[0] + 1;
 	my Str \xref-str = $.write( 'xref-array' => @xref );
 	my UInt \startxref = $.offset;
@@ -110,11 +110,11 @@ class PDF::Writer {
 
     #| inverter for PDF::Grammar::Content::Actions
 
-    multi method write-content( Array $_ ) {
+    multi method write-content(List $_ ) {
         .map({ $.write-content($_) }).join("\n");
     }
 
-    multi method write-content( $_ where Pair | Hash) {
+    multi method write-content($_ where Pair | Hash) {
         my ($op, $args) = .kv;
         $args //= [];
         $.write-op($op, |@$args);
@@ -142,10 +142,10 @@ class PDF::Writer {
 
     multi method write-op(Str $op, *@args) is default {
         my @vals;
-        my Str @comments;
+        my @comments;
         for @args -> \arg {
             with arg<comment> {
-                @comments.push: $_
+                @comments.push: $_;
             }
             else {
                 @vals.push: arg;
@@ -192,7 +192,7 @@ class PDF::Writer {
 
     #| invertors for PDF::Grammar::Function expr term
     #| an array is a sequence of sub-expressions
-    multi method write-expr(Array $_) {
+    multi method write-expr(List $_) {
 	[~] '{ ', .map({ $.write($_) }).join(' '), ' }';
     }
 
@@ -228,7 +228,7 @@ class PDF::Writer {
         "%d %d obj %s\nendobj\n".sprintf(obj-num, gen-num, $.write( object ));
     }
 
-    method write-ind-ref(Array $_) {
+    method write-ind-ref(List $_) {
         [ .[0], .[1], 'R' ].join: ' ';
     }
 
@@ -311,59 +311,83 @@ class PDF::Writer {
         "startxref\n" ~ $.write-int($_) ~ "\n"
     }
 
-    method write-xref-array(uint32 @xref) {
-        my Hash @xrefs;
+    method !xref-segment-length($xref where .shape[1] ~~ 4, $i, $n) {
+        my $next-obj-num = $xref[$i;1];
+        loop (my $j = $i; $j < $n && $next-obj-num == $xref[$j;1]; $j++) {
+            $next-obj-num++;
+        }
+        $j - $i;
+    }
+
+    method write-xref-array($xref where .shape[1] ~~ 4) {
         my Hash $xref-seg;
-        my uint $entries = +@xref div 4;
+        my uint $total-entries = $xref.elems;
         my uint32 $next = 65535;
         my uint $i = 0;
+        my @xrefs;
+        while $i < $total-entries {
+            my uint $obj-count = self!xref-segment-length($xref, $i, $total-entries);
+            my uint32 $obj-first-num = $xref[$i;1];
 
-	for (0 ..^ $entries) {
-            my uint8  $type    = @xref[$i++];
-            my uint32 $obj-num = @xref[$i++];
-            my uint32 $gen-num = @xref[$i++];
-            my uint32 $offset  = @xref[$i++];
+            my uint64 @entries[$obj-count;3];
+            for 0 ..^ $obj-count {
+                my uint8  $type    = $xref[$i;0];
+                my uint32 $gen-num = $xref[$i;2];
+                my uint64 $offset  = $xref[$i;3];
+                @entries[$_;0] = $offset;
+                @entries[$_;1] = $gen-num;
+                @entries[$_;2] = $type;
+                $i++;
+            }
 	    # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
 	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
-	    @xrefs.push: ($xref-seg = %( :obj-first-num($obj-num), :entries[] ))
-		unless $obj-num == $next;
-	    $xref-seg<entries>.push: { :$type, :$obj-num, :$gen-num, :$offset };
-            $xref-seg<obj-count>++;
-            $next = $obj-num + 1;
+	    @xrefs.push: %( :$obj-first-num, :$obj-count, :@entries );
         }
 
         self.write-xref(@xrefs);
     }
 
-    multi method write-xref(Array $_) is default {
+    method write-xref(List $_) {
         (flat 'xref',
-         .map({ self!write-xref-segment($_) }),
+         .map({ self!write-xref-section(|$_) }),
 	 '').join: "\n";
     }
 
     #| write a traditional (PDF 1.4-) cross reference table
-    method !write-xref-segment(% (:$obj-first-num!, :$obj-count!, :$entries!)) {
-        (flat
-         $obj-first-num ~ ' ' ~ $obj-count,
-         $entries.map({
-             my Str $status = do given .<type> {
-                 when (0) {'f'} # free
-                 when (1) {'n'} # inuse
-                 when (2) { die "unable to write type-2 (embedded) objects in a PDF 1.4 cross reference table"}
-                 default  { die "unhandled index type: $_" }
-             };
-             die "generation number {.<gen_num>} exceeds 5 digits in PDF 1.4 cross reference table"
-                 if .<gen-num> > 99_999;
-             die "offset {.<offset>} exceeds 10 digits in PDF 1.4 cross reference table"
-                 if .<offset> > 9_999_999_999;
-             '%010d %05d %s '.sprintf(.<offset>, .<gen-num>, $status)
-         }),
-        ).join: "\n";
+    method !write-xref-section(:$obj-first-num!, :$obj-count!, :$entries!) {
+        die "xref $obj-count != {$entries.elems}"
+            unless $obj-count == +$entries;
+         $obj-first-num ~ ' ' ~ $obj-count ~ "\n"
+             ~ self.write( :$entries );
+    }
+
+    multi method write-entries($_ where .shape[1] ~~ 3) {
+        ((0 ..^ .elems).map: -> int $i {
+            my uint64 $offset  = .[$i;0];
+            my uint32 $gen-num = .[$i;1];
+            my uint32 $type    = .[$i;2];
+            my Str $status = do given $type {
+                when (0) {'f'} # free
+                when (1) {'n'} # inuse
+                when (2) { die "unable to write type-2 (embedded) objects in a PDF 1.4 cross reference table"}
+                default  { die "unhandled index type: $_" }
+            };
+            die "generation number $gen-num exceeds 5 digits in PDF 1.4 cross reference table"
+                if $gen-num > 99_999;
+            die "offset $offset exceeds 10 digits in PDF 1.4 cross reference table"
+                if $offset > 9_999_999_999;
+            '%010d %05d %s '.sprintf($offset, $gen-num, $status)
+        }).join: "\n";
+    }
+
+    multi method write-entries($_) is default {
+        my @shaped[.elems;3] = .list;
+        self.write-entries(@shaped);
     }
 
     proto method write(|c) returns Str {*}
 
-    constant fast-track = set <hex-string literal name real xref-array>;
+    constant fast-track = set <hex-string literal name real write-xref>;
 
     multi method write( Pair $_! where {.key ∈ fast-track && PDF::IO::Util::libpdf-available}) {
         state $fast-writer;
