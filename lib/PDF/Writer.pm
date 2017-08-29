@@ -348,9 +348,7 @@ class PDF::Writer {
     }
 
     method write-xref(List $_) {
-        (flat 'xref',
-         .map({ self!write-xref-section(|$_) }),
-	 '').join: "\n";
+        "xref\n" ~ .map({ self!write-xref-section(|$_) }).join;
     }
 
     #| write a traditional (PDF 1.4-) cross reference table
@@ -358,7 +356,7 @@ class PDF::Writer {
         die "xref $obj-count != {$entries.elems}"
             unless $obj-count == +$entries;
          $obj-first-num ~ ' ' ~ $obj-count ~ "\n"
-             ~ self.write( :$entries );
+             ~ self.write('entries' => $entries );
     }
 
     multi method write-entries($_ where .shape[1] ~~ 3) {
@@ -376,18 +374,18 @@ class PDF::Writer {
                 if $gen-num > 99_999;
             die "offset $offset exceeds 10 digits in PDF 1.4 cross reference table"
                 if $offset > 9_999_999_999;
-            '%010d %05d %s '.sprintf($offset, $gen-num, $status)
-        }).join: "\n";
+            "%010d %05d %s \n".sprintf($offset, $gen-num, $status)
+        }).join;
     }
 
     multi method write-entries($_) is default {
-        my @shaped[.elems;3] = .list;
+        my uint64 @shaped[.elems;3] = .List;
         self.write-entries(@shaped);
     }
 
     proto method write(|c) returns Str {*}
 
-    constant fast-track = set <hex-string literal name real write-xref>;
+    constant fast-track = set <hex-string literal name real entries>;
 
     multi method write( Pair $_! where {.key ∈ fast-track && PDF::IO::Util::libpdf-available}) {
         state $fast-writer;
