@@ -86,9 +86,8 @@ class PDF::Writer {
     }
 
     method !make-trailer( Hash $trailer, @idx ) {
-	my uint64 @xref[+@idx;4] = @idx.sort({ $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> }).map: {[.<type>, .<obj-num>, .<gen-num>, .<offset> ]};
-        $!size = @xref.tail(3)[0] + 1;
-	my Str \xref-str = $.write( 'xref-array' => @xref );
+        my @xrefs := self!idx-to-xref( @idx );
+	my Str \xref-str = self.write-xref(@xrefs);
 	my UInt \startxref = $.offset;
 
 	my \trailer = [~] (
@@ -319,32 +318,30 @@ class PDF::Writer {
         $j - $i;
     }
 
-    method write-xref-array($xref where .shape[1] ~~ 4) {
-        my Hash $xref-seg;
-        my uint $total-entries = $xref.elems;
-        my uint32 $next = 65535;
-        my uint $i = 0;
-        my @xrefs;
-        while $i < $total-entries {
-            my uint $obj-count = self!xref-segment-length($xref, $i, $total-entries);
-            my uint32 $obj-first-num = $xref[$i;1];
+    method !idx-to-xref(Array $idx) {
+        my uint $total-entries = +$idx;
+	my uint64 @idx[+$total-entries;4] = $idx.sort({ $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> }).map: {[.<type>, .<obj-num>, .<gen-num>, .<offset> ]};
+        $!size = @idx[$total-entries-1;1] + 1;
+        my Hash @xrefs;
+        loop (my uint $i = 0; $i < $total-entries;) {
+            my uint $obj-count = self!xref-segment-length(@idx, $i, $total-entries);
+            my uint32 $obj-first-num = @idx[$i;1];
 
+	    # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
+	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
             my uint64 @entries[$obj-count;3];
             for 0 ..^ $obj-count {
-                my uint8  $type    = $xref[$i;0];
-                my uint32 $gen-num = $xref[$i;2];
-                my uint64 $offset  = $xref[$i;3];
+                my uint8  $type    = @idx[$i;0];
+                my uint32 $gen-num = @idx[$i;2];
+                my uint64 $offset  = @idx[$i;3];
                 @entries[$_;0] = $offset;
                 @entries[$_;1] = $gen-num;
                 @entries[$_;2] = $type;
                 $i++;
             }
-	    # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
-	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
 	    @xrefs.push: %( :$obj-first-num, :$obj-count, :@entries );
         }
-
-        self.write-xref(@xrefs);
+        @xrefs;
     }
 
     method write-xref(List $_) {
@@ -360,13 +357,14 @@ class PDF::Writer {
     }
 
     multi method write-entries($_ where .shape[1] ~~ 3) {
+        enum Str ( :Free<f>, :Inuse<n> );
         ((0 ..^ .elems).map: -> int $i {
             my uint64 $offset  = .[$i;0];
             my uint32 $gen-num = .[$i;1];
             my uint32 $type    = .[$i;2];
             my Str $status = do given $type {
-                when (0) {'f'} # free
-                when (1) {'n'} # inuse
+                when (0) {Free}
+                when (1) {Inuse} # inuse
                 when (2) { die "unable to write type-2 (embedded) objects in a PDF 1.4 cross reference table"}
                 default  { die "unhandled index type: $_" }
             };
