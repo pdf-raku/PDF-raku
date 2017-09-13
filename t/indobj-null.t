@@ -11,8 +11,8 @@ my $actions = PDF::Grammar::PDF::Actions.new;
 my $input = '42 5 obj null endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
-my $ast = $/.ast;
-my $ind-obj = PDF::IO::IndObj.new( |%$ast, :$input );
+my Pair $ast = $/.ast;
+my $ind-obj = PDF::IO::IndObj.new( |$ast, :$input );
 isa-ok $ind-obj.object, ::('PDF::DAO')::('Null');
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';

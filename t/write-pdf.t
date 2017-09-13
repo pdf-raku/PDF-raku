@@ -11,16 +11,14 @@ use PDF::Writer;
 
 unless $*PERL.compiler.version >= v2017.04 {
     plan 0;
-    skip-rest "Rakudo/JSON < 2017.04 compatibilty";
+    skip-rest "Rakudo/JSON < 2017.04 incompatibilty";
     exit;
 }
 
 my $actions = PDF::Grammar::Doc::Actions.new();
 
-for 't/pdf'.IO.dir.list.sort {
+for 't/pdf'.IO.dir.grep(/ [\w|'-']*? '.json'$/).sort -> $json-file {
 
-    next unless / [\w|'-']*? '.json'$/;
-    my $json-file = ~$_;
     my %ast = from-json( $json-file.IO.slurp );
 
     my $pdf-input-file = $json-file.subst( /'.json'$/, '.in' );
