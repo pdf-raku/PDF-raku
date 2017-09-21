@@ -158,7 +158,7 @@ role PDF::DAO::Tie {
 	#| type attribute
 	multi method type-check($val, $type = $.type) is default {
 	    with $val {
-		die "{.WHAT.^name}.$*key: {.WHAT.gist} - not of type: {$type.gist}"
+		die "{.WHAT.^name}.$*key: {.gist} - not of type: {$type.gist}"
 		    unless $_ ~~ $type | Pair;	#| undereferenced - don't know it's type yet
                 $_;
 	    }

@@ -11,7 +11,7 @@ use PDF::DAO::Dict;
         use PDF::DAO::Tie;
         has Int $.IntReq is entry(:required);
         has Hash $.DictInd is entry(:indirect);
-        subset FredDict of Hash where {.<name> ~~ 'Fred'}
+        subset FredDict of Hash where {.<Name> ~~ 'Fred'}
         has FredDict $.SubsetDict is entry; # todo
     }
 
@@ -28,9 +28,8 @@ use PDF::DAO::Dict;
     }
     $dict = TestDict.new( :dict{ :IntReq(42), :DictInd{}, } );
     ok $dict.DictInd.is-indirect, 'indirect entry';
-    my $fred = %( :name<Fred> );
+    my $fred = %( :Name<Fred> );
     ok $fred ~~ TestDict::FredDict, 'subset sanity';
-    todo("rakudo RT#132073");
     lives-ok {$dict.SubsetDict =  $fred;}, 'subset dict - valid';
     dies-ok {$dict.SubsetDict =  %()}, 'subset dict - invalid';
 }
