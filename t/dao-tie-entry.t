@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 34;
+plan 37;
 
 use PDF::DAO::Dict;
 
@@ -40,20 +40,26 @@ use PDF::DAO::Dict;
     class TestDict2
     is PDF::DAO::Dict {
         use PDF::DAO::Tie;
-        has UInt @.Pos is entry;
+        has UInt @.I is entry;
+        has Str @.S is entry;
         my subset NegInt of Int where * < 0;
         has UInt @.LenThree is entry(:len(3));
         has NegInt %.Neg is entry;
     }
 
     my $dict;
-    lives-ok { $dict = TestDict2.new( :dict{ :Pos[3, 4], :Neg{ :n1(-7),  :n2(-8) } } ) }, 'container sanity';
-    is $dict.Pos[1], 4, 'array container deref sanity';
-    lives-ok { $dict.Pos[1] = 5 }, 'array assignment sanity';
-    dies-ok { $dict.Pos[1] = -5 }, 'array assignment typecheck';
+    lives-ok { $dict = TestDict2.new( :dict{ :I[3, 4], :S['xx'], :Neg{ :n1(-7),  :n2(-8) } } ) }, 'container sanity';
+    is $dict.I[1], 4, 'array container deref sanity';
+    is $dict.S[0], 'xx', 'array container deref sanity';
+    lives-ok { $dict.I[1] = 5 }, 'array assignment sanity';
+    lives-ok { $dict.S[1] = 'yy' }, 'array assignment sanity';
+    todo "typecheck on array elements", 2;
+    dies-ok { $dict.I[1] = -5 }, 'array assignment typecheck';
+    lives-ok { $dict.I[1] = 42 }, 'array assignment typecheck';
 
     is $dict.Neg<n2>,-8, 'hash container deref sanity';
     lives-ok { $dict.Neg<n2> = -5 }, 'hash assignment sanity';
+    todo "typecheck on hash elements";
     dies-ok { $dict.Neg<n2> = 5 }, 'hash assignment typecheck';
 
     dies-ok { $dict.LenThree = [10, 20] }, 'length check, invalid';
