@@ -5,15 +5,15 @@ use PDF::Reader;
 
 #| rewrite a PDF or FDF and/or convert to/from JSON
 sub MAIN (
-    Str $file-in,                #| input PDF, FDF or JSON file (.json extension)
-    Str $file-out = $file-in,    #| output PDF, FDF or JSON file (.json extension)
-    Str  :$password   = '';      #| password for encrypted documents
-    Bool :$repair     = False,   #| bypass and repair index. recompute stream lengths. Handy when
-                                 #| PDF files have been hand-edited.
-    Bool :$rebuild    = False,   #| rebuild object tree (renumber, garbage collect and deduplicate objects)
-    Bool :$compress   = False,   #| compress streams
-    Bool :$uncompress = False,   #| uncompress streams
-    Bool :$zen        = False,   #| require PDF::Zen
+    Str $file-in,                #= input PDF, FDF or JSON file (.json extension)
+    Str $file-out = $file-in,    #= output PDF, FDF or JSON file (.json extension)
+    Str  :$password   = '';      #= password for encrypted documents
+    Bool :$repair     = False,   #= bypass and repair index. recompute stream lengths. Handy when
+                                 #= PDF files have been hand-edited.
+    Bool :$rebuild    = False,   #= rebuild object tree (renumber, garbage collect and deduplicate objects)
+    Bool :$compress   = False,   #= compress streams
+    Bool :$uncompress = False,   #= uncompress streams
+    Bool :$zen        = False,   #= require PDF::Zen
     ) {
 
     if $zen {
