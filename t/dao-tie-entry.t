@@ -31,7 +31,7 @@ use PDF::DAO::Dict;
     my $fred = %( :Name<Fred> );
     ok $fred ~~ TestDict::FredDict, 'subset sanity';
     lives-ok {$dict.SubsetDict =  $fred;}, 'subset dict - valid';
-    dies-ok {$dict.SubsetDict =  %()}, 'subset dict - invalid';
+    quietly dies-ok {$dict.SubsetDict =  %()}, 'subset dict - invalid';
 }
 
 {
@@ -53,13 +53,13 @@ use PDF::DAO::Dict;
     lives-ok { $dict.I[1] = 5 }, 'array assignment sanity';
     lives-ok { $dict.S[1] = 'yy' }, 'array assignment sanity';
     todo "typecheck on array elements", 2;
-    dies-ok { $dict.I[1] = -5 }, 'array assignment typecheck';
+    quietly dies-ok { $dict.I[1] = -5 }, 'array assignment typecheck';
     lives-ok { $dict.I[1] = 42 }, 'array assignment typecheck';
 
     is $dict.Neg<n2>,-8, 'hash container deref sanity';
     lives-ok { $dict.Neg<n2> = -5 }, 'hash assignment sanity';
     todo "typecheck on hash elements";
-    dies-ok { $dict.Neg<n2> = 5 }, 'hash assignment typecheck';
+    quietly dies-ok { $dict.Neg<n2> = 5 }, 'hash assignment typecheck';
 
     dies-ok { $dict.LenThree = [10, 20] }, 'length check, invalid';
     lives-ok { $dict.LenThree = [10, 20, 30] }, 'length check, valid';

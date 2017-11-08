@@ -1,9 +1,9 @@
 class X::PDF::Coerce
     is Exception {
 	has $.obj is required;
-	has $.role is required;
+	has $.type is required;
 	method message {
-	    "unable to coerce object $!obj of type {$!obj.WHAT.gist} to role {$!role.WHAT.gist}"
+	    "unable to coerce object $!obj of type {$!obj.WHAT.gist} to {$!type.WHAT.gist}"
 	}
 }
 
@@ -60,8 +60,8 @@ class PDF::DAO::Coercer {
         $obj;
     }
 
-    multi method coerce( $obj, $role where PDF::DAO::Tie ) {
-	warn X::PDF::Coerce.new( :$obj, :$role );
+    multi method coerce( $obj, $type where PDF::DAO::Tie ) {
+	warn X::PDF::Coerce.new( :$obj, :$type );
         $obj;
     }
 
@@ -70,8 +70,8 @@ class PDF::DAO::Coercer {
         $obj.^mixin: $role;
     }
 
-    multi method coerce( $obj, $role) {
-	warn X::PDF::Coerce.new( :$obj, :$role );
+    multi method coerce( $obj, $type) {
+	warn X::PDF::Coerce.new( :$obj, :$type );
         $obj;
     }
 

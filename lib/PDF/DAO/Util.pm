@@ -30,6 +30,20 @@ module PDF::DAO::Util {
 	:$dict;
     }
 
+    multi sub ast-coerce(array $a) {
+        my $tag = do given $a.of {
+                 when num|num64 { 'real' }
+                 when str       { 'literal' }
+                 default        { 'int'  }
+        };
+        :array[ $a.map({ $tag => $_ }) ]
+    }
+
+    multi sub ast-coerce(Array $a where .of ~~ Numeric) {
+        my $tag = $a.of ~~ Int ?? 'int' !! 'real';
+        :array[ $a.map({ $tag => $_ }) ]
+    }
+
     multi sub ast-coerce(List $_list!) {
 	my $array = %seen{$_list};
 

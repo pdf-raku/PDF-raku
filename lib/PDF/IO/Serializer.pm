@@ -244,7 +244,7 @@ class PDF::IO::Serializer {
 	to-ast $other
     }
 
-    #| do a full save to the named file
+    #| build AST, starting at the trailer.
     method ast(
 	PDF::DAO $trailer!,
 	Numeric :$version=1.3,

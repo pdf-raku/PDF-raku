@@ -160,7 +160,7 @@ class PDF::Reader {
         $.open( $!file-name.IO, |c );
     }
 
-    #| derserialize a json dump
+    #| deserialize a JSON dump
     multi method open(IO::Path $input-path  where .extension.lc eq 'json', |c ) {
         my \ast = from-json( $input-path.IO.slurp );
         die X::PDF::BadDump.new( :input-file($input-path.absolute) )
