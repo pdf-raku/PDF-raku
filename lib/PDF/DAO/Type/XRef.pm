@@ -60,14 +60,15 @@ class PDF::DAO::Type::XRef
         }
 
         # /W resize to widest byte-widths, if needed
-        my $W = self<W> = [ @width.map: {
+        my UInt @W = @width.map: {
             when * < 256 { 1 }
             when * < 65536 { 2 }
             when * < 16777216 { 3 }
             default { 4 }
-        } ];
+        };
+        self<W> = @W;
 
-        my \buf := pack( $xref, $W,);
+        my \buf := pack( $xref, @W,);
         nextwith( PDF::IO::Blob.new: buf );
     }
 

@@ -2,6 +2,7 @@
     - [PDF::Reader][PDF::Writer]
       -- adjust to PDF::Grammar v0.1.1 shaped cross reference streams.
       -- upgrade index offsets from uint32 to uint64 (for PDF files > 4.2Gb)
+      -- don't escape binary characters when writing literal strings
     - [PDF::DAO::Util]
       -- add coercements for typed arrays
     Release 0.2.4

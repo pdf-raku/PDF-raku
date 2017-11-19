@@ -55,10 +55,10 @@ class PDF::DAO::Type::ObjStm
         my UInt \first = $.First;
         my UInt \n = $.N;
 
-        my Str \object-index-str = substr-rw(bytes, 0, first - 1);
-        my Str \objects-str = substr-rw(bytes, first);
+        my Str \object-index-str = substr(bytes, 0, first - 1);
+        my Str \objects-str = substr(bytes, first);
 
-        my $actions = PDF::Grammar::PDF::Actions.new;
+        my PDF::Grammar::PDF::Actions $actions .= new;
         PDF::Grammar::PDF.parse(object-index-str, :rule<object-stream-index>, :$actions)
             or die "unable to parse object stream index: {object-index-str}";
 

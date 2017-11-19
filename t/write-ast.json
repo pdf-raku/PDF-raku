@@ -10,7 +10,7 @@
 { "ast" : { "comment" : "I hope this works" }, "pdf" : "% I hope this works" }
 { "ast" : { "startxref" : 42 }, "pdf" : "startxref\n42\n" }
 { "ast" : { "content" : { "Tj" : [ { "literal" : "Hello, World!" } ] } }, "pdf": "(Hello, World!) Tj" }
-{ "ast" : { "content" : { "TJ" : [ { "array" : [ { "literal" : "DOS\r\nCR1(" }, { "hex-string" : "DOS\r\nCR2" } ] } ] } }, "pdf": "[ (DOS\\r\\nCR1\\() <444f530d0a435232> ] TJ" }
+{ "ast" : { "content" : { "TJ" : [ { "array" : [ { "literal" : "DOS\r\nCR1(\u0000" }, { "hex-string" : "DOS\r\nCR2" } ] } ] } }, "pdf": "[ (DOS\\r\\nCR1\\(\u0000) <444f530d0a435232> ] TJ" }
 { "ast" : { "content" : [ "q", { "m" : [ { "int" : 100 }, { "int" : 125 } ] }, { "Tm" : [ { "int" : 9 }, { "int" : 0 } , { "int" : 0 }, { "int" : 9 }, { "real" : 476.48 }, { "int" : 750 } ] }, "Q" ] }, "pdf" : "q\n100 125 m\n9 0 0 9 476.48 750 Tm\nQ" }
 { "ast" : { "content" : [ { "BDC" : [ { "name" : "foo" }, { "dict" : { "xKey" : { "name" : "yVal" } } } ] }, { "m" : [ { "int" : 50 }, { "int" : 50 } ] }, { "BT" : [  ] }, { "Td" : [ { "int" : 200 }, { "int" : 200 } ] }, { "ET" : [  ] }, { "EMC" : [  ] } ] }, "pdf" : "/foo <<\n  /xKey /yVal\n>> BDC\n50 50 m\nBT\n200 200 Td\nET\nEMC" }
 { "ast" : { "content" : [ { "BI" : [ { "dict" : { "CS" : { "name" : "RGB" }, "F" : { "array" : [ { "name" : "A85" }, { "name" : "LZW" } ] }, "W" : { "int" : 17 }, "H" : { "int" : 17 }, "BPC" : { "int" : 8 } } } ] }, { "ID" : { "encoded" : "J1/gKA>.]AN&J?]-<HW]aRVcg*bb.\\eKAdVV%/PcZ\n%R.s(4KE3&d&7hb*7[%Ct2HCqC~>" } }, { "EI" : [  ] } ] }, "pdf" : "BI\n  /BPC 8\n  /CS /RGB\n  /F [ /A85 /LZW ]\n  /H 17\n  /W 17\nID\nJ1/gKA>.]AN&J?]-<HW]aRVcg*bb.\\eKAdVV%/PcZ\n%R.s(4KE3&d&7hb*7[%Ct2HCqC~>\nEI" }

@@ -550,7 +550,6 @@ class PDF::Reader {
         my @type1-obj-entries = .list.sort({ $^a[Offset] })
             with %obj-entries-of-type<1>;
 
-
         for @type1-obj-entries.kv -> \k, $_ {
             my uint64 $end = k + 1 < +@type1-obj-entries ?? @type1-obj-entries[k + 1][Offset] !! input-bytes;
             my uint64 $offset = .[Offset];

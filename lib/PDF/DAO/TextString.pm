@@ -27,7 +27,7 @@ PDFDocEncoding or UTF-16BE with a leading byte-order marker
             $value =  Buf.new(@be).decode('utf-16');
             $bom //= True;
         }
-        my \obj = nextwith(:$value, |c);
+        my \obj = nextwith(:$value, |c); # dispatch to Str.new
         obj.bom = $_ with $bom;
         obj;
     }

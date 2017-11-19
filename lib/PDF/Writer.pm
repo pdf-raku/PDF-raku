@@ -242,7 +242,7 @@ class PDF::Writer {
         [~] flat '(',
         .encode("latin-1").map({
                 my \c = .chr;
-                %Escapes{c} // (32 <= $_ <= 126 ?? c !! .fmt('\%03o'));
+                %Escapes{c} // c
             }),
            ')';
     }
