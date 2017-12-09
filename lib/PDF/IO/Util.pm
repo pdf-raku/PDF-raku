@@ -2,7 +2,7 @@ use v6;
 
 module PDF::IO::Util {
 
-    our sub libpdf-available($ver = v0.0.1) {
+    our sub libpdf-available {
         state Bool $haveit = do {
             CATCH {
                 when X::CompUnit::UnsatisfiedDependency {
@@ -11,7 +11,7 @@ module PDF::IO::Util {
                     warn "error loading Lib::PDF: {.perl}";
                 }
             }
-            (require Lib::PDF:ver($ver .. *)).so;
+            (require Lib::PDF:ver(v0.0.1 .. *)).so;
             True;
         }
         $haveit;
@@ -27,8 +27,8 @@ module PDF::IO::Util {
     proto sub pack-pp( $, $ --> Buf) is export(:pack-pp) {*};
     proto sub pack-le( $, $ --> Buf) is export(:pack,:pack-pp) {*};
     my constant Packer = 'Lib::PDF::Buf';
-    our &pack is export(:pack) = libpdf-available() ?? xs(Packer, 'pack') !! &pack-pp;
-    our &unpack is export(:pack) = libpdf-available() ?? xs(Packer, 'unpack') !! &unpack-pp;
+    our &pack is export(:pack) = BEGIN libpdf-available() ?? xs(Packer, 'pack') !! &pack-pp;
+    our &unpack is export(:pack) = BEGIN libpdf-available() ?? xs(Packer, 'unpack') !! &unpack-pp;
     multi sub unpack-pp( $nums!, 4)  { buf8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
     multi sub unpack-pp( $nums!, 16) { buf16.new: flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
     multi sub unpack-pp( $nums!, 32) { buf32.new: flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
