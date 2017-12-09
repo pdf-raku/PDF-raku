@@ -2,7 +2,7 @@
     "name"        : "PDF",
     "tags"        : ["pdf"],
     "license"     : "Artistic-2.0",
-    "version"     : "0.2.5",
+    "version"     : "0.2.6",
     "auth"        : "github:p6-pdf",
     "api"         : "PDF-1.7",
     "description" : "Base classes for reading, manipulation and writing of PDF data",

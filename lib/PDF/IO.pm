@@ -25,7 +25,7 @@ class PDF::IO {
         (require ::('PDF::IO::Str')).bless( :$value, |c );
     }
 
-    multi method stream-data( Array :$ind-obj! ) {
+    multi method stream-data( List :$ind-obj! ) {
         $.stream-data( |$ind-obj[2] );
     }
     multi method stream-data( Hash :$stream! ) is default {

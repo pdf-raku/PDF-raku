@@ -37,20 +37,20 @@ class PDF::IO::Crypt {
 
     submethod TWEAK(:$doc!, Str :$owner-pass, |c) {
         $owner-pass
-            ?? self.generate( :$doc, :$owner-pass, |c)
-            !! self.load( :$doc, |c)
+            ?? self!generate( :$doc, :$owner-pass, |c)
+            !! self!load( :$doc, |c)
     }
 
     #| perform initial document encryption
-    method generate(:$doc!,
-                    Str  :$owner-pass!,
-                    Str  :$user-pass = '',
-                    UInt :$!R = 3,  #| revision (2 is faster)
-                    UInt :$V = self.type eq 'AESV2' ?? 4 !! 2,
-                    Bool :$!EncryptMetadata = True,
-                    UInt :$Length = $V > 1 ?? 128 !! 40,
-                    Int  :$P = -64,  #| permissions mask
-                    --> PDF::DAO::Type::Encrypt
+    method !generate(:$doc!,
+                     Str  :$owner-pass!,
+                     Str  :$user-pass = '',
+                     UInt :$!R = 3,  #| revision (2 is faster)
+                     UInt :$V = self.type eq 'AESV2' ?? 4 !! 2,
+                     Bool :$!EncryptMetadata = True,
+                     UInt :$Length = $V > 1 ?? 128 !! 40,
+                     Int  :$P = -64,  #| permissions mask
+                     --> PDF::DAO::Type::Encrypt
         ) {
 
         die "this document is already encrypted"
@@ -103,16 +103,16 @@ class PDF::IO::Crypt {
         $enc;
     }
 
-    method load(PDF::DAO::Dict :$doc!,
-                UInt :$!R!,
-                Bool :$!EncryptMetadata = True,
-                UInt :$V!,
-                Int  :$P!,
-                Str  :$O!,
-                Str  :$U!,
-                UInt :$Length = 40,
-                Str  :$Filter = 'Standard',
-               ) {
+    method !load(PDF::DAO::Dict :$doc!,
+                 UInt :$!R!,
+                 Bool :$!EncryptMetadata = True,
+                 UInt :$V!,
+                 Int  :$P!,
+                 Str  :$O!,
+                 Str  :$U!,
+                 UInt :$Length = 40,
+                 Str  :$Filter = 'Standard',
+                ) {
 
         with $doc<ID>[0] {
 	    @!doc-id = .ords;

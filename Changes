@@ -1,152 +1,160 @@
-    Release 0.2.5
-    - [PDF::Reader][PDF::Writer]
-      -- adjust to PDF::Grammar v0.1.1 shaped cross reference streams.
-      -- upgrade index offsets from uint32 to uint64 (for PDF files > 4.2Gb)
-      -- don't escape binary characters when writing literal strings
-    - [PDF::DAO::Util]
-      -- add coercements for typed arrays
-    Release 0.2.4
-    - [PDF]
-      renamed .save-as :update option to :preserve
-    - Created classes PDF::DAO::Loader and PDF::DAO::Coercer. These
-      replace the PDF::DAO::Delegator class.
-    - [PDF::DAO::Type::Xref]
-      streamlined index decoding and encoding
-    - [PDF::Writer]
-      tweak write-real method to match Lib::PDF::Writer.write-real
+Release 0.2.6
+- [PDF::DAO::Util] setup libpdf at BEGIN time
+- Rename or hide overused load() method in various classes/roles
+  -- [PDF::DAO] [PDF::DAO::Loader] deprecate load() -> load-delegate()
+  -- [PDF::Reader] rename load() -> load-pdf()
+  -- [PDF::IO::Crypt] made load() method private
 
-    Release 0.2.3
-    - [PDF::DAO::Tie]
-      -- Simplify method accessors. direct use of AT-KEY, ASSIGN-KEY,
-         etc. 20% speed up of test suite run.
-    - [PDF::DAO::Util]
-      -- convert enums to ints in to-ast()
-      -- rename sub to-ast-native() -> ast-coerce()
-    - [PDF::Writer]
-      -- use native functions from Lib::PDF::Writer, when available.
+Release 0.2.5
+- [PDF::Reader][PDF::Writer]
+  -- adjust to PDF::Grammar v0.1.1 shaped cross reference streams.
+  -- upgrade index offsets from uint32 to uint64 (for PDF files > 4.2Gb)
+  -- don't escape binary characters when writing literal strings
+- [PDF::DAO::Util]
+  -- add coercements for typed arrays
 
-    Release 0.2.2
-    - [PDF::Writer] handle ' (MoveShow) and " (MoveSetShow) operators
-    - [PDF::IO::Handle] Open I/O as :bin 
-    - Experimental use of Lib::PDF
-      -- Speed up the slowest test xt/filter-predictors_bulk.t
-      -- Fast packing alternative for PDF::IO::Util
-      Optional, and for regression purposes, at this stage. Probably
-      wont persue seriously until Rakudo has better JIT.
+Release 0.2.4
+- [PDF]
+  renamed .save-as :update option to :preserve
+- Created classes PDF::DAO::Loader and PDF::DAO::Coercer. These
+  replace the PDF::DAO::Delegator class.
+- [PDF::DAO::Type::Xref]
+  streamlined index decoding and encoding
+- [PDF::Writer]
+  tweak write-real method to match Lib::PDF::Writer.write-real
 
-    Release 0.2.1
-    - Renamed classes PDF::IO to PDF::IO::Util and PDF::IO::Input::*
-      to PDF::IO::*.
-    - Don't cache misses in PDF::DAO::Delegator
-    - PDF::IO::Filter::Predictors now handles /BitsPerComponent < 8
-    - Replace PDF::IO::Util resample() with pack(), unpack()
+Release 0.2.3
+- [PDF::DAO::Tie]
+  -- Simplify method accessors. direct use of AT-KEY, ASSIGN-KEY,
+     etc. 20% speed up of test suite run.
+- [PDF::DAO::Util]
+  -- convert enums to ints in to-ast()
+  -- rename sub to-ast-native() -> ast-coerce()
+- [PDF::Writer]
+  -- use native functions from Lib::PDF::Writer, when available.
 
-    Release 0.2.0
-    - Renamed class PDF::DAO::Type::PDF to PDF. Restored module name
-      to PDF
+Release 0.2.2
+- [PDF::Writer] handle ' (MoveShow) and " (MoveSetShow) operators
+- [PDF::IO::Handle] Open I/O as :bin 
+- Experimental use of Lib::PDF
+  -- Speed up the slowest test xt/filter-predictors_bulk.t
+  -- Fast packing alternative for PDF::IO::Util
+  Optional, and for regression purposes, at this stage. Probably
+  wont persue seriously until Rakudo has better JIT.
 
-    Release 0.1.1
-    - [PDF::Reader] now handles very large xref tables or streams (> 65K)
-    - [PDF::DAO] use 'but' to apply roles to simple scalars, not 'does'.
+Release 0.2.1
+- Renamed classes PDF::IO to PDF::IO::Util and PDF::IO::Input::*
+  to PDF::IO::*.
+- Don't cache misses in PDF::DAO::Delegator
+- PDF::IO::Filter::Predictors now handles /BitsPerComponent < 8
+- Replace PDF::IO::Util resample() with pack(), unpack()
 
-    Release 0.1.0
-    Renamed class namespace PDF::Storage -> PDF::IO. Used as the module
-    name
+Release 0.2.0
+- Renamed class PDF::DAO::Type::PDF to PDF. Restored module name
+  to PDF
 
-    Release 0.0.9
-    - class PDF::DAO::Stream is now based on PDF::DAO::Dict
-    - withdrew non-standard PDF::DAO::Dict.new( $dict) positionals,
-      in favour of PDF::DAO::Dict.new( :$dict ) named arguments.
-      Same also for stream and array object constructors.
-    - Use of siglless variables, where appropriate.
-    - Revamped handing of PDF::DAO::Tie :entry and :index traits.
-    - Fixes for PDF::Storage::Input::Str (byte-string reader) and
-      PDF::Storage::Filter::Predictors
+Release 0.1.1
+- [PDF::Reader] now handles very large xref tables or streams (> 65K)
+- [PDF::DAO] use 'but' to apply roles to simple scalars, not 'does'.
 
-    Release 0.0.8
-    - [PDF::DAO::Doc] .update( :diffs(...) ) - now supports JSON
-    - Renamed classes
-      -- PDF::DAO::Doc -> PDF::DAO::Type::PDF
-      -- PDF::DAO::Storage::Crypt::Doc -> PDF::DAO::Storage::Crypt::PDF
-    - [PDF::DAO::Type::XRef] renamed methods
-      -- decode-to-stage2 -> decode-index
-      -- encode-from-stage2 -> encode-index
-    - [PDF::Writer]
-      -- refactored 'write' multi method into node-specific methods
-         (write-array, write-bool, ... etc)
-      -- handle comments in write-op method
-    - [PDF::Writer] [PDF::Storage::Filter::RunLength] fixed handling
-      of DOS newline graphemes "\r\n"
-    - [bin/pdf-rewriter.pl] fixed --rebuild option
+Release 0.1.0
+Renamed class namespace PDF::Storage -> PDF::IO. Used as the module
+name
 
-    Release 0.0.7
-    - [PDF::Storage::Crypt] Encryption refactored to use OpenSSL. Added support for
-      PDF 1.6+ AES-128 encryption.
-    - [PDF::DAO::Doc] add saves-as( :update ) option.
-      The input PDF is copied to the destination PDF, which is then incrementally
-      updated. This should generally be faster than a regular .save-as.
-    - [PDF::Reader] Bug fixes to JSON serialization
-    - [PDF::Storage::Filter] simplified filter dispatch
-    
-    Release 0.0.6
-    - [bin/pdf-rewriter.pl] unbust rewriting/recompression of encrypted PDFs
-    - [PDF::Storage::Serializer][PDF::DAO::{Array|Dict|Stream}] use Perl 6 object hashes
-      -- Refactored `my %h; ...; %hash{$object.WHICH}` with `my %h{Any}; ...; %hash{$object}` 
-         (See http://doc.perl6.org/type/Hash#Object_hashes_and_type_constraints)
+Release 0.0.9
+- class PDF::DAO::Stream is now based on PDF::DAO::Dict
+- withdrew non-standard PDF::DAO::Dict.new( $dict) positionals,
+  in favour of PDF::DAO::Dict.new( :$dict ) named arguments.
+  Same also for stream and array object constructors.
+- Use of siglless variables, where appropriate.
+- Revamped handing of PDF::DAO::Tie :entry and :index traits.
+- Fixes for PDF::Storage::Input::Str (byte-string reader) and
+  PDF::Storage::Filter::Predictors
 
-    - [PDF::DAO::Doc]
-      -- added $doc.ast method. factored out from $doc.save-as
-      -- Added $doc.Str method; for in-memory serialization
-      -- $doc.save-as($target); # can now be file-name, io-path, or io-handle
-      -- added $.update( :diffs(...) ) option.
-      This allows the update body to be saved to a separate 'differences' file, as an
-      alternative to appending to the original PDF.
-      
-      Useful in a mail-merge scenario where multiple documents are being produced
-      from a common template and each can be reconstituted by appending the
-      update file to the original template.
+Release 0.0.8
+- [PDF::DAO::Doc] .update( :diffs(...) ) - now supports JSON
+- Renamed classes
+  -- PDF::DAO::Doc -> PDF::DAO::Type::PDF
+  -- PDF::DAO::Storage::Crypt::Doc -> PDF::DAO::Storage::Crypt::PDF
+- [PDF::DAO::Type::XRef] renamed methods
+  -- decode-to-stage2 -> decode-index
+  -- encode-from-stage2 -> encode-index
+- [PDF::Writer]
+  -- refactored 'write' multi method into node-specific methods
+     (write-array, write-bool, ... etc)
+  -- handle comments in write-op method
+- [PDF::Writer] [PDF::Storage::Filter::RunLength] fixed handling
+  of DOS newline graphemes "\r\n"
+- [bin/pdf-rewriter.pl] fixed --rebuild option
 
-      Possible further work:
-      -- JSON output of 'to' files
-      -- add `$doc.open( $file, :diff(...))` option - load a base pdf, then apply
-         differences.
-    - [PDF::Reader] bug-fixes:
-      -- avoid encrypting the encryption dictionary
-      -- fixed de-Linearization. Now handled by PDF::Storage::Serializer
-    - [PDF::Storage::Filter] bug fixes:
-      -- fixed ascii-85, ascii-hex and run-length encoders to add
-         end-of-data markers
-      -- withdrew LZW encoding
+Release 0.0.7
+- [PDF::Storage::Crypt] Encryption refactored to use OpenSSL. Added support for
+  PDF 1.6+ AES-128 encryption.
+- [PDF::DAO::Doc] add saves-as( :update ) option.
+  The input PDF is copied to the destination PDF, which is then incrementally
+  updated. This should generally be faster than a regular .save-as.
+- [PDF::Reader] Bug fixes to JSON serialization
+- [PDF::Storage::Filter] simplified filter dispatch
 
-    Release 0.0.5
-    - added some reader exception classes, e.g. X::PDF::BadXRef
-    - renamed META.info => META6.json
-    - changed $.delegator.find-delegate method
-    - removed PDF::DAO::Type
-    - [PDF::DAO::Delegator]
-      -- simplified and more general coercement to roles
-      -- added X::PDF::Coerce warning
-    - [PDF::DAO::Tie]
-      -- removed support for method aliases
-    - [PDF::Storage::Filter::Predictors]
-      -- fixed multi-channel (color) PNG prediction
+Release 0.0.6
+- [bin/pdf-rewriter.pl] unbust rewriting/recompression of encrypted PDFs
+- [PDF::Storage::Serializer][PDF::DAO::{Array|Dict|Stream}] use Perl 6 object hashes
+  -- Refactored `my %h; ...; %hash{$object.WHICH}` with `my %h{Any}; ...; %hash{$object}` 
+     (See http://doc.perl6.org/type/Hash#Object_hashes_and_type_constraints)
 
-    Release 0.0.4
-    - encrypted document creation is now supported. RC4 (Encryption revisions 1-4)
-      only at this stage. 
-    - [PDF::Writer]
-      -- add extra new-line after each indirect object - readability improvement
+- [PDF::DAO::Doc]
+  -- added $doc.ast method. factored out from $doc.save-as
+  -- Added $doc.Str method; for in-memory serialization
+  -- $doc.save-as($target); # can now be file-name, io-path, or io-handle
+  -- added $.update( :diffs(...) ) option.
+  This allows the update body to be saved to a separate 'differences' file, as an
+  alternative to appending to the original PDF.
 
-    Release 0.0.3
-    - [PDF::DAO::Util] from-ast() sub now handles cyclical hashes and arrays
+  Useful in a mail-merge scenario where multiple documents are being produced
+  from a common template and each can be reconstituted by appending the
+  update file to the original template.
 
-    Release 0.0.2
-    - [META.info] Correct PDF::Storage::Filter::Predictors entry
-    - [PDF::Writer]
-      -- improved formatting of PDF output. Reduced number of new-lines in output.
-         --- '>> stream' are now cuddled together on a line
-         --- as are 'endstream endobj'
-      -- added $.make-body and $.make-xref methods
+  Possible further work:
+  -- JSON output of 'to' files
+  -- add `$doc.open( $file, :diff(...))` option - load a base pdf, then apply
+     differences.
+- [PDF::Reader] bug-fixes:
+  -- avoid encrypting the encryption dictionary
+  -- fixed de-Linearization. Now handled by PDF::Storage::Serializer
+- [PDF::Storage::Filter] bug fixes:
+  -- fixed ascii-85, ascii-hex and run-length encoders to add
+     end-of-data markers
+  -- withdrew LZW encoding
 
-    Release 0.0.1
-    - Initial release
+Release 0.0.5
+- added some reader exception classes, e.g. X::PDF::BadXRef
+- renamed META.info => META6.json
+- changed $.delegator.find-delegate method
+- removed PDF::DAO::Type
+- [PDF::DAO::Delegator]
+  -- simplified and more general coercement to roles
+  -- added X::PDF::Coerce warning
+- [PDF::DAO::Tie]
+  -- removed support for method aliases
+- [PDF::Storage::Filter::Predictors]
+  -- fixed multi-channel (color) PNG prediction
+
+Release 0.0.4
+- encrypted document creation is now supported. RC4 (Encryption revisions 1-4)
+  only at this stage. 
+- [PDF::Writer]
+  -- add extra new-line after each indirect object - readability improvement
+
+Release 0.0.3
+- [PDF::DAO::Util] from-ast() sub now handles cyclical hashes and arrays
+
+Release 0.0.2
+- [META.info] Correct PDF::Storage::Filter::Predictors entry
+- [PDF::Writer]
+  -- improved formatting of PDF output. Reduced number of new-lines in output.
+     --- '>> stream' are now cuddled together on a line
+     --- as are 'endstream endobj'
+  -- added $.make-body and $.make-xref methods
+
+Release 0.0.1
+- Initial release

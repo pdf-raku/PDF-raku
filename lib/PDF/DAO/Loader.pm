@@ -38,13 +38,14 @@ class PDF::DAO::Loader {
         $handler-class;
     }
 
-    multi method load( Hash :$dict! where {$dict<Type>:exists}, :$fallback = $dict.WHAT) {
+    multi method load-delegate( Hash :$dict! where {$dict<Type>:exists}, :$fallback = $dict.WHAT) {
 	my \type = from-ast($dict<Type>);
 	my \subtype = from-ast($dict<Subtype> // $dict<S>);
 	$.find-delegate( type, subtype, :$fallback );
     }
 
-    multi method load( :$fallback! ) is default {
+    multi method load-delegate( :$fallback!, |c ) is default {
 	$fallback;
     }
+
 }

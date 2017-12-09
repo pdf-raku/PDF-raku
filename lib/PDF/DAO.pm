@@ -67,7 +67,7 @@ role PDF::DAO {
 
     multi method coerce( Array :$array!, |c ) {
         state $fallback = $.required('PDF::DAO::Array');
-        $.load( :$array, :$fallback ).new( :$array, |c );
+        $.load-delegate( :$array, :$fallback ).new( :$array, |c );
     }
 
     multi method coerce( Array :$ind-ref!) {
@@ -110,7 +110,7 @@ role PDF::DAO {
 
     multi method coerce( Hash :$dict!, |c ) {
 	state $fallback = $.required('PDF::DAO::Dict');
-	my $class = $.load( :$dict, :$fallback );
+	my $class = $.load-delegate( :$dict, :$fallback );
 	$class.new( :$dict, |c );
     }
 
@@ -122,7 +122,7 @@ role PDF::DAO {
         }
         my Hash $dict = $stream<dict> // {};
         state $fallback = $.required('PDF::DAO::Stream');
-	my $class = $.load( :$dict, :$fallback );
+	my $class = $.load-delegate( :$dict, :$fallback );
         $class.new( :$dict, |%params, |c );
     }
 
@@ -138,13 +138,13 @@ role PDF::DAO {
     }
 
     method loader is rw {
-	unless $loader.can('load') {
+	unless $loader.can('load-delegate') {
 	    $loader = $.required('PDF::DAO::Loader');
 	}
 	$loader
     }
-    method load(|c) {
-	$.loader.load(|c);
-    }
 
+    method load-delegate(|c) {
+	$.loader.load-delegate(|c);
+    }
 }

@@ -223,7 +223,7 @@ class PDF::Reader {
     multi method open($input!, |c) {
         $!input = PDF::IO.coerce( $input );
         $.load-header( );
-        $.load( $.type, |c );
+        $.load-pdf( $.type, |c );
     }
 
     #| load the data for a stream object. Cross check actual size versus expected /Length
@@ -399,14 +399,14 @@ class PDF::Reader {
 
     #| Load input in FDF (Form Data Definition) format.
     #| Use full-scan mode, as these are not indexed.
-    multi method load('FDF') {
+    multi method load-pdf('FDF') {
         self!full-scan((require ::('PDF::Grammar::FDF')), $.actions);
     }
 
     #| scan the entire PDF, bypass any indices. Populate index with
     #| raw ast indirect objects. Useful if the index is corrupt and/or
     #| the PDF has been hand-created/edited.
-    multi method load('PDF', :$repair! where .so, |c ) {
+    multi method load-pdf('PDF', :$repair! where .so, |c ) {
         self!full-scan( PDF::Grammar::PDF, $.actions, :repair, |c );
     }
 
@@ -506,7 +506,7 @@ class PDF::Reader {
 
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
     #| via the $.ind-obj() method.
-    multi method load('PDF', |c) is default {
+    multi method load-pdf('PDF', |c) is default {
         my UInt \tail-bytes = min(1024, $.input.codes);
         my Str $tail = $.input.substr(* - tail-bytes);
 
