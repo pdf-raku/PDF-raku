@@ -24,9 +24,19 @@ class X::PDF::BadTrailer is Exception {
     method message {"expected file trailer 'startxref ... \%\%EOF', got: {synopsis($!tail)}"}
 }
 
-class X::PDF::BadXRef is Exception {
+class X::PDF::BadXRef is Exception {}
+
+class X::PDF::BadXRef::Parse is X::PDF::BadXRef {
     has Str $.xref is required;
     method message {"unable to parse index: {synopsis($!xref)}"}
+}
+
+class X::PDF::BadXRef::Entry is X::PDF::BadXRef {
+    has UInt $.obj-num;
+    has UInt $.gen-num;
+    has UInt $.actual-obj-num;
+    has UInt $.actual-gen-num;
+    method message {"Cross reference mismatch. Index entry was: $!obj-num $!gen-num R. actual object: $!actual-obj-num $!actual-gen-num R. Please inform the author of the PDF and/or try opening this PDF with :repair"}
 }
 
 class X::PDF::ParseError is Exception {
@@ -316,7 +326,7 @@ class PDF::Reader {
             default {die "unhandled index type: $_"};
         }
 
-        die "index entry was: $obj-num $gen-num R. actual object: $actual-obj-num $actual-gen-num R"
+        die X::PDF::BadXRef::Entry.new( :$obj-num, :$actual-obj-num, :$gen-num, :$actual-gen-num )
             unless $obj-num == $actual-obj-num && $gen-num == $actual-gen-num;
 
         $ind-obj;
@@ -455,7 +465,7 @@ class PDF::Reader {
             || PDF::Grammar::PDF.subparse( &fallback(2, $xref), :rule<index>, :$.actions )
         ) if &fallback;
 
-	die X::PDF::BadXRef.new( :$offset, :$xref )
+	die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
             unless $parse;
 
 	my \index = $parse.ast;
