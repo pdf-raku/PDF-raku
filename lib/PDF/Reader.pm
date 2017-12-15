@@ -39,6 +39,12 @@ class X::PDF::BadXRef::Entry is X::PDF::BadXRef {
     method message {"Cross reference mismatch. Index entry was: $!obj-num $!gen-num R. actual object: $!actual-obj-num $!actual-gen-num R. Please inform the author of the PDF and/or try opening this PDF with :repair"}
 }
 
+class X::PDF::BadXRef::Section is X::PDF::BadXRef {
+    has UInt $.obj-count;
+    has UInt $.entry-count;
+    method message {"xref section size mismatch. Expected $!obj-count entries, got $!entry-count"}
+}
+
 class X::PDF::ParseError is Exception {
     has Str $.input is required;
     method message {"unable to parse PDF document: {synopsis($!input)}"}
@@ -95,7 +101,7 @@ class PDF::Reader {
 
     method trailer {
         Proxy.new(
-            FETCH => sub ($) { 
+            FETCH => sub ($) {
                 self!install-trailer
                     without %!ind-obj-idx{"0 0"};
                 self.ind-obj(0, 0).object;
@@ -473,6 +479,9 @@ class PDF::Reader {
 
 	with index<xref> {
 	    for .list {
+                warn X::PDF::BadXRef::Section.new( :obj-count(.<obj-count>), :entry-count(+.<entries>))
+                    unless .<obj-count> == +.<entries>;
+
 		my uint $obj-num = .<obj-first-num>;
 		with .<entries> {
                     my uint $n = .elems;
