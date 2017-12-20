@@ -460,6 +460,6 @@ PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 - [PDF Reference version 1.7](http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf) Adobe Systems Incorporated - This is the main reference used in the construction of this module.
 
 ## See also
-- [PDF::Lite](https://github.com/p6-pdf/perl6-PDF-Lite) - basic graphics; including images, fonts, text and general graphics
-- [PDF::API6](https://github.com/p6-pdf/perl6-PDF-API6) - eneral purpose PDF manipulation (under construction)
+- [PDF::Lite](https://github.com/p6-pdf/PDF-Lite-p6) - basic graphics; including images, fonts, text and general graphics
+- [PDF::API6](https://github.com/p6-pdf/PDF-API6) - eneral purpose PDF manipulation (under construction)
 
