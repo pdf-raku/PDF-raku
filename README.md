@@ -242,26 +242,24 @@ ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref =
 This is the root of the PDF, loaded from the trailer dictionary
 ```
 > $doc<Info>
-CreationDate => D:20151225000000Z00'00', Producer => Perl 6 PDF;
+{CreationDate => D:20151225000000Z00'00', Producer => Perl 6 PDF}
 ```
 That's the document information entry, commonly used to store basic meta-data about the document.
 
 (PDF::IO has conveniently fetched indirect object 1 from the PDF, when we dereferenced this entry).
 ```
 > $doc<Root>
-Outlines => ind-ref => [3 0], Pages => ind-ref => [4 0], Type => Catalog
+{Outlines => ind-ref => [3 0], Pages => ind-ref => [4 0], Type => Catalog}
 ````
 The trailer `Root` entry references the document catalog, which contains the actual PDF content. Exploring further; the catalog potentially contains a number of pages, each with content.
 ```
 > $doc<Root><Pages>
-Count => 1, Kids => [ind-ref => [5 0]], MediaBox => [0 0 420 595], Resources => Font => F1 => ind-ref => [7 0], Type => Pages
+{Count => 1, Kids => [ind-ref => [5 0]], MediaBox => [0 0 420 595], Resources => Font => F1 => ind-ref => [7 0], Type => Pages}
 > $doc<Root><Pages><Kids>[0]
-Contents => ind-ref => [6 0], Parent => ind-ref => [4 0], Procset => [PDF Text], Type => Page
+{Contents => ind-ref => [6 0], Parent => ind-ref => [4 0], Procset => [PDF Text], Type => Page}
 > $doc<Root><Pages><Kids>[0]<Contents>
-Length => 46
-> $doc<Root><Pages><Kids>[0]<Contents>.decoded
+{Length => 46}
 BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
-> 
 ```
 
 The page `/Contents` entry is a PDF stream which contains graphical instructions. In the above example, to output the text `Hello, world!` at coordinates 100, 250.

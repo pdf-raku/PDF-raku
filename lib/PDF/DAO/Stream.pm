@@ -33,7 +33,7 @@ class PDF::DAO::Stream
     submethod TWEAK {
         self<Length> = .codes with $!encoded;
     }
- 
+
     method encoded is rw {
 	Proxy.new(
 	    FETCH => sub ($) {
@@ -97,23 +97,28 @@ class PDF::DAO::Stream
     }
 
     method uncompress {
-        if self<Filter>:exists {
+        with self<Filter> {
             if try { $.decoded(); True } {
                 $!encoded = Nil;
                 self<Filter>:delete;
                 self<DecodeParms>:delete;
                 self<Length> = $!decoded.codes;
+                $!decoded;
             }
         }
     }
 
     method compress {
-        unless self<Filter>:exists {
+        self<Filter> //= do {
             $!decoded //= $!encoded;
             $!encoded = Nil;
-            self<Filter> = PDF::DAO.coerce( :name<FlateDecode> );
             self<Length>:delete;        # recompute this later
+            PDF::DAO.coerce( :name<FlateDecode> );
         }
+    }
+
+    method gist {
+        callsame() ~ "\n" ~ self.encoded.Str.gist;
     }
 
 }

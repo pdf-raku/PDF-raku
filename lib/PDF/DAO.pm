@@ -147,4 +147,5 @@ role PDF::DAO {
     method load-delegate(|c) {
 	$.loader.load-delegate(|c);
     }
+
 }
