@@ -4,6 +4,7 @@ Release 0.2.6
   -- [PDF::DAO] [PDF::DAO::Loader] deprecate load() -> load-delegate()
   -- [PDF::Reader] rename load() -> load-pdf()
   -- [PDF::IO::Crypt] made load() method private
+- Fix PNG predictors for BitsPerComponent < 8 (issue #18)
 
 Release 0.2.5
 - [PDF::Reader][PDF::Writer]
