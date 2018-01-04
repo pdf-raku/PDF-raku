@@ -3,7 +3,8 @@ use v6;
 module PDF::IO::Util {
 
     our sub libpdf-available {
-        state Bool $haveit = do {
+        # experimental loading of Lib::PDF (WIP)
+        state Bool $haveit = ? %*ENV<USE_LIB_PDF> && do {
             CATCH {
                 when X::CompUnit::UnsatisfiedDependency {
                 }
@@ -12,8 +13,7 @@ module PDF::IO::Util {
                 }
             }
             (require Lib::PDF:ver(v0.0.1 .. *)).so;
-            (require ::('Lib::PDF::Writer')).write-bool(True);
-            True;
+            ::('Lib::PDF').lib-version >= v0.0.1; # ping the library
         }
         $haveit;
     }
