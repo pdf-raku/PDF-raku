@@ -97,14 +97,19 @@ class PDF::DAO::Stream
     }
 
     method uncompress {
+        my Bool $uncompressed;
         with self<Filter> {
-            if try { $.decoded(); True } {
-                $!encoded = Nil;
-                self<Filter>:delete;
-                self<DecodeParms>:delete;
-                self<Length> = $!decoded.codes;
-                $!decoded;
-            }
+            CATCH { when X::NYI {} }
+            $.decoded();
+            $uncompressed = True;
+        }
+
+        if $uncompressed {
+            $!encoded = Nil;
+            self<Filter>:delete;
+            self<DecodeParms>:delete;
+            self<Length> = $!decoded.codes;
+            $!decoded;
         }
     }
 

@@ -111,7 +111,7 @@ class PDF::IO::Filter {
 
         my $filter-class = %Filters{$filter-name};
 
-        die "filter not implemented: '$filter-name'"
+        X::NYI.new(:feature("filter not implemented: '$filter-name'")).throw
             unless $filter-class.can('decode');
 
         $filter-class;
