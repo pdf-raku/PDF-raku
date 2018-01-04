@@ -12,6 +12,7 @@ module PDF::IO::Util {
                 }
             }
             (require Lib::PDF:ver(v0.0.1 .. *)).so;
+            (require ::('Lib::PDF::Writer')).write-bool(True);
             True;
         }
         $haveit;
