@@ -131,7 +131,7 @@ class PDF::Writer {
                            ),
             );
     }
- 
+
    multi method write-op('comment', $_) { $.write-comment($_); }
 
     #| ID <bytes> - ImageData

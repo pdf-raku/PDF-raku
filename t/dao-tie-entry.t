@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 37;
+plan 38;
 
 use PDF::DAO::Dict;
 
@@ -9,7 +9,7 @@ use PDF::DAO::Dict;
     class TestDict
     is PDF::DAO::Dict {
         use PDF::DAO::Tie;
-        has Int $.IntReq is entry(:required);
+        has Int $.IntReq is entry(:required, :alias<required-int>);
         has Hash $.DictInd is entry(:indirect);
         subset FredDict of Hash where {.<Name> ~~ 'Fred'}
         has FredDict $.SubsetDict is entry; # todo
@@ -18,6 +18,7 @@ use PDF::DAO::Dict;
     my $dict;
     lives-ok { $dict = TestDict.new( :dict{ :IntReq(42) } ) }, 'dict sanity';
     is $dict.IntReq, 42, "dict accessor sanity";
+    is $dict.required-int, 42, "dict alias accessor";
     lives-ok { $dict.IntReq = 43 }, 'dict accessor assignment sanity';
     quietly {
         dies-ok { $dict.IntReq = 'urrgh' }, 'dict accessor assignment typecheck';

@@ -36,7 +36,7 @@ class PDF::IO::Serializer {
     my subset DictIndObj of Pair where {.key eq 'ind-obj'
 					&& .value[2] ~~ Pair
 					&& .value[2].key eq 'dict'}
-    
+
     #| remove and return the root object (trailer dictionary)
     method !get-root(@objects) {
 	my DictIndObj \root-ind-obj = @objects.shift; # first object is trailer dict

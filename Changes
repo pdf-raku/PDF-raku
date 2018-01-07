@@ -1,3 +1,6 @@
+Release 0.2.7
+- [PDF::DAO::Tie] reintroduce method :entry(:alias<foo>) sub-trait. Should
+  prove useful in using PDF::Class as a base class for PDF::API6.
 Release 0.2.6
 - [PDF::DAO::Util] setup libpdf at BEGIN time
 - Rename or hide overused load() method in various classes/roles

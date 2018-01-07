@@ -15,7 +15,7 @@ role PDF::DAO::Tie {
     }
 
     #| generate an indirect reference, include the reader, if spanning documents
-    method link { 
+    method link {
 	my \obj-num = $.obj-num;
 	obj-num && obj-num > 0
 	    ?? :ind-ref[ obj-num, $.gen-num, $.reader ]
@@ -31,6 +31,8 @@ role PDF::DAO::Tie {
             my $key = self.tied.accessor-name;
             my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
             $package.^add_method( $key, &accessor );
+            $package.^add_method( self.tied.alias, &accessor)
+                if self.tied.alias;
         }
     }
 
@@ -48,6 +50,7 @@ role PDF::DAO::Tie {
 	has Bool $.is-indirect = False;
 	has Bool $.is-inherited = False;
 	has Str $.accessor-name;
+        has Str $.alias;
 	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::DAO.coerce($lval, $type) };
         has UInt $.length;
 
@@ -79,7 +82,7 @@ role PDF::DAO::Tie {
 			    $att.tied = $.clone;
 			    $att.tied.type = of-type;
 			    $lval.of-att = $att;
-			
+
 			    for $lval.values {
 				next if $_ ~~ Pair | of-type;
 				($att.tied.coerce)($_, of-type);
@@ -159,7 +162,7 @@ role PDF::DAO::Tie {
 	multi method type-check($val, $type = $.type) is default {
 	    with $val {
 		die "{.WHAT.^name}.$*key: {.gist} - not of type: {$type.gist}"
-		    unless $_ ~~ $type | Pair;	#| undereferenced - don't know it's type yet
+		    unless $_ ~~ $type | Pair;  #| undereferenced - don't know it's type yet
                 $_;
 	    }
 	    else {
@@ -182,6 +185,7 @@ role PDF::DAO::Tie {
 		    when 'indirect' { $att.tied.is-indirect  = val }
 		    when 'coerce'   { $att.tied.coerce       = val }
                     when 'len'      { $att.tied.length       = val }
+                    when 'alias'    { $att.tied.alias        = val }
 		    default         { warn "ignoring entry attribute: $_" }
 	        }
             }
