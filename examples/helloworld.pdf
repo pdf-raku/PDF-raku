@@ -8,46 +8,39 @@ endobj
 
 2 0 obj <<
   /Type /Catalog
-  /Outlines 3 0 R
-  /Pages 4 0 R
+  /Pages 3 0 R
 >>
 endobj
 
 3 0 obj <<
-  /Type /Outlines
-  /Count 0
->>
-endobj
-
-4 0 obj <<
   /Type /Pages
   /Count 1
-  /Kids [ 5 0 R ]
+  /Kids [ 4 0 R ]
   /MediaBox [ 0 0 250 100 ]
   /Resources <<
     /Font <<
-      /F1 7 0 R
+      /F1 6 0 R
     >>
     /Procset [ /PDF /Text ]
   >>
 >>
 endobj
 
-5 0 obj <<
+4 0 obj <<
   /Type /Page
-  /Contents 6 0 R
-  /Parent 4 0 R
+  /Contents 5 0 R
+  /Parent 3 0 R
 >>
 endobj
 
-6 0 obj <<
+5 0 obj <<
   /Length 44
 >> stream
 BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET
 endstream
 endobj
 
-7 0 obj <<
+6 0 obj <<
   /Type /Font
   /Subtype /Type1
   /BaseFont /Helvetica
@@ -56,24 +49,23 @@ endobj
 endobj
 
 xref
-0 8
+0 7
 0000000000 65535 f 
 0000000014 00000 n 
 0000000103 00000 n 
-0000000175 00000 n 
-0000000226 00000 n 
-0000000405 00000 n 
-0000000475 00000 n 
-0000000572 00000 n 
+0000000157 00000 n 
+0000000336 00000 n 
+0000000406 00000 n 
+0000000503 00000 n 
 trailer
 <<
   /ID [ <d743a886fcdcf87b69c36548219ea941> <d743a886fcdcf87b69c36548219ea941> ]
   /Info 1 0 R
   /Root 2 0 R
-  /Size 8
+  /Size 7
 >>
 startxref
-679
+610
 %%EOF
 
 1 0 obj <<
@@ -83,28 +75,28 @@ startxref
 >>
 endobj
 
-4 0 obj <<
+3 0 obj <<
   /Type /Pages
   /Count 2
-  /Kids [ 5 0 R 8 0 R ]
+  /Kids [ 4 0 R 7 0 R ]
   /MediaBox [ 0 0 250 100 ]
   /Resources <<
     /Font <<
-      /F1 7 0 R
+      /F1 6 0 R
     >>
     /Procset [ /PDF /Text ]
   >>
 >>
 endobj
 
-8 0 obj <<
+7 0 obj <<
   /Type /Page
-  /Contents 9 0 R
-  /Parent 4 0 R
+  /Contents 8 0 R
+  /Parent 3 0 R
 >>
 endobj
 
-9 0 obj <<
+8 0 obj <<
   /Length 47
 >> stream
 BT /F1 16 Tf  15 25 Td (Goodbye for now!) Tj ET
@@ -114,20 +106,20 @@ endobj
 xref
 0 2
 0000000000 65535 f 
-0000001001 00000 n 
-4 1
-0000001127 00000 n 
-8 2
-0000001312 00000 n 
-0000001382 00000 n 
+0000000912 00000 n 
+3 1
+0000001038 00000 n 
+7 2
+0000001223 00000 n 
+0000001293 00000 n 
 trailer
 <<
   /ID [ <d743a886fcdcf87b69c36548219ea941> <308b4244b3437c4e7b3a67166c885e43> ]
   /Info 1 0 R
-  /Prev 679
+  /Prev 610
   /Root 2 0 R
-  /Size 10
+  /Size 9
 >>
 startxref
-1482
+1393
 %%EOF

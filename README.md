@@ -39,8 +39,9 @@ use PDF;
 sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
 
 # construct a simple PDF document from scratch
+my $doc = PDF.new;
+my $root     = $doc.Root       = { :Type(/'Catalog') };
 
-# page size is A5 (420pt X 520pt)
 my @MediaBox  = 0, 0, 250, 100;
 
 # define font /F1 as core-font Helvetica
@@ -54,10 +55,6 @@ my %Resources = :Procset[ /'PDF', /'Text'],
                     },
                 };
 
-# set up an empty PDF
-my $doc = PDF.new;
-my $root     = $doc.Root       = { :Type(/'Catalog') };
-my $outlines = $root<Outlines> = { :Type(/'Outlines'), :Count(0) };
 my $pages    = $root<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0) };
 # add some standard metadata
 my $info = $doc.Info = {};
@@ -131,46 +128,39 @@ endobj
 
 2 0 obj <<
   /Type /Catalog
-  /Outlines 3 0 R
-  /Pages 4 0 R
+  /Pages 3 0 R
 >>
 endobj
 
 3 0 obj <<
-  /Type /Outlines
-  /Count 0
->>
-endobj
-
-4 0 obj <<
   /Type /Pages
   /Count 1
-  /Kids [ 5 0 R ]
-  /MediaBox [ 0 0 420 595 ]
+  /Kids [ 4 0 R ]
+  /MediaBox [ 0 0 250 100 ]
   /Resources <<
     /Font <<
-      /F1 7 0 R
+      /F1 6 0 R
     >>
     /Procset [ /PDF /Text ]
   >>
 >>
 endobj
 
-5 0 obj <<
+4 0 obj <<
   /Type /Page
-  /Contents 6 0 R
-  /Parent 4 0 R
+  /Contents 5 0 R
+  /Parent 3 0 R
 >>
 endobj
 
-6 0 obj <<
-  /Length 46
+5 0 obj <<
+  /Length 44
 >> stream
-BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
+BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET
 endstream
 endobj
 
-7 0 obj <<
+6 0 obj <<
   /Type /Font
   /Subtype /Type1
   /BaseFont /Helvetica
@@ -179,24 +169,23 @@ endobj
 endobj
 
 xref
-0 8
+0 7
 0000000000 65535 f 
 0000000014 00000 n 
 0000000103 00000 n 
-0000000175 00000 n 
-0000000226 00000 n 
-0000000405 00000 n 
-0000000475 00000 n 
-0000000574 00000 n 
+0000000157 00000 n 
+0000000336 00000 n 
+0000000406 00000 n 
+0000000503 00000 n 
 trailer
 <<
-  /ID [ <867b4841444e1643c74ca7767ce9dd84> <867b4841444e1643c74ca7767ce9dd84> ]
+  /ID [ <d743a886fcdcf87b69c36548219ea941> <d743a886fcdcf87b69c36548219ea941> ]
   /Info 1 0 R
   /Root 2 0 R
-  /Size 8
+  /Size 7
 >>
 startxref
-681
+610
 %%EOF
 ```
 
@@ -218,13 +207,13 @@ The bottom of the PDF contains:
 ```
 trailer
 <<
-  /ID [ <4386dc7bc3489e418b44434e3a168843> <4386dc7bc3489e418b44434e3a168843> ]
+  /ID [ <d743a886fcdcf87b69c36548219ea941> <d743a886fcdcf87b69c36548219ea941> ]
   /Info 1 0 R
   /Root 2 0 R
-  /Size 8
+  /Size 7
 >>
 startxref
-680
+610
 %%EOF
 ```
 
@@ -249,17 +238,17 @@ That's the document information entry, commonly used to store basic meta-data ab
 (PDF::IO has conveniently fetched indirect object 1 from the PDF, when we dereferenced this entry).
 ```
 > $doc<Root>
-{Outlines => ind-ref => [3 0], Pages => ind-ref => [4 0], Type => Catalog}
+{Pages => ind-ref => [3 0], Type => Catalog}
 ````
 The trailer `Root` entry references the document catalog, which contains the actual PDF content. Exploring further; the catalog potentially contains a number of pages, each with content.
 ```
 > $doc<Root><Pages>
-{Count => 1, Kids => [ind-ref => [5 0]], MediaBox => [0 0 420 595], Resources => Font => F1 => ind-ref => [7 0], Type => Pages}
+{Count => 1, Kids => [ind-ref => [4 0]], MediaBox => [0 0 420 595], Resources => Font => F1 => ind-ref => [6 0], Type => Pages}
 > $doc<Root><Pages><Kids>[0]
-{Contents => ind-ref => [6 0], Parent => ind-ref => [4 0], Procset => [PDF Text], Type => Page}
+{Contents => ind-ref => [5 0], Parent => ind-ref => [3 0], Type => Page}
 > $doc<Root><Pages><Kids>[0]<Contents>
-{Length => 46}
-BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET
+{Length => 44}
+BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET
 ```
 
 The page `/Contents` entry is a PDF stream which contains graphical instructions. In the above example, to output the text `Hello, world!` at coordinates 100, 250.
