@@ -60,7 +60,7 @@ role PDF::DAO::Tie {
 
                 my \reader  = $lval.?reader;
 
-                if ($!type ~~ Positional[Mu] && $lval ~~ Array)
+                if ($!type ~~ Positional[Mu] && $lval ~~ List)
                 || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
                     # of-att typed array declaration, e.g.:
                     #     has PDF::Catalog @.Kids is entry(:indirect);
@@ -236,14 +236,16 @@ role PDF::DAO::Tie {
 
     #| indirect reference
     multi method deref(Pair $ind-ref! where {.key eq 'ind-ref'}) {
-	(my Int $obj-num, my Int $gen-num, my $reader) = $ind-ref.value.list;
+	my (Int $obj-num, Int $gen-num, $reader) = $ind-ref.value.list;
 
-	$reader //= $.reader
-	    // die "indirect reference without associated reader: $obj-num $gen-num R";
-
-	$reader.auto-deref
-	    ?? $reader.ind-obj( $obj-num, $gen-num ).object
-	    !! $ind-ref;
+        with $reader // $.reader {
+            .auto-deref
+                ?? .ind-obj( $obj-num, $gen-num ).object
+                !! $ind-ref;
+        }
+        else {
+            die "indirect reference without associated reader: $obj-num $gen-num R";
+        }
     }
     #| already an object
     multi method deref(PDF::DAO $value) { $value }
