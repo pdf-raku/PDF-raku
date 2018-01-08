@@ -54,54 +54,49 @@ role PDF::DAO::Tie {
 	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::DAO.coerce($lval, $type) };
         has UInt $.length;
 
+        multi method tie(Pair $lval is rw) { $lval } # undereferenced - don't know it's type yet
 	multi method tie($lval is rw) {
-	    unless $lval.isa(Pair) {
-		if $lval.defined && ! ($lval ~~ $!type) {
+            if $lval.defined && ! ($lval ~~ $!type) {
 
-		    my \reader  = $lval.?reader;
-		    my \obj-num = $lval.?obj-num;
-		    my \gen-num = $lval.?gen-num;
+                my \reader  = $lval.?reader;
 
-		    if ($!type ~~ Positional[Mu] && $lval ~~ Array)
-                    || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
-			# of-att typed array declaration, e.g.:
-			#     has PDF::Catalog @.Kids is entry(:indirect);
-                        # or, typed hash declarations, e.g.:
-                        #     has PDF::ExtGState %.ExtGState is entry;
-			my \of-type = $!type.of;
-			my Attribute $att = $lval.of-att;
-			if $att {
-                            # already processed elsewhere. check that the type matches
-			    die "conflicting types for {$att.name} {$att.type.gist} {of-type.gist}"
-				unless of-type ~~ $att.type;
-			}
-			else {
-			    # init
-			    $att = Attribute.new( :name('@!' ~ $.accessor-name), :type(of-type), :package<?> );
-			    $att does TiedIndex;
-			    $att.tied = $.clone;
-			    $att.tied.type = of-type;
-			    $lval.of-att = $att;
+                if ($!type ~~ Positional[Mu] && $lval ~~ Array)
+                || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
+                    # of-att typed array declaration, e.g.:
+                    #     has PDF::Catalog @.Kids is entry(:indirect);
+                    # or, typed hash declarations, e.g.:
+                    #     has PDF::ExtGState %.ExtGState is entry;
+                    my \of-type = $!type.of;
+                    my Attribute $att = $lval.of-att;
+                    if $att {
+                        # already processed elsewhere. check that the type matches
+                        die "conflicting types for {$att.name} {$att.type.gist} {of-type.gist}"
+                            unless of-type ~~ $att.type;
+                    }
+                    else {
+                        # init
+                        $att = Attribute.new( :name('@!' ~ $.accessor-name), :type(of-type), :package<?> );
+                        $att does TiedIndex;
+                        $att.tied = $.clone;
+                        $att.tied.type = of-type;
+                        $lval.of-att = $att;
 
-			    for $lval.values {
-				next if $_ ~~ Pair | of-type;
-				($att.tied.coerce)($_, of-type);
-				.reader //= reader if reader && .can('reader');
-			    }
-			}
-		    }
-		    else {
-			($.coerce)($lval, $!type);
-			$lval.reader  //= $_ with reader;
-			$lval.obj-num //= $_ with obj-num;
-			$lval.gen-num //= $_ with gen-num;
-		    }
-		}
-		else {
-		    $lval.obj-num //= -1
-			if $.is-indirect && $lval ~~ PDF::DAO;
-		}
-	    }
+                        for $lval.values {
+                            next if $_ ~~ Pair | of-type;
+                            ($att.tied.coerce)($_, of-type);
+                            .reader //= reader if reader && .can('reader');
+                        }
+                    }
+                }
+                else {
+                    ($.coerce)($lval, $!type);
+                    $lval.reader  //= $_ with reader;
+                }
+            }
+            else {
+                $lval.obj-num //= -1
+                    if $.is-indirect && $lval ~~ PDF::DAO;
+            }
 	    $lval;
 	}
 
@@ -162,7 +157,7 @@ role PDF::DAO::Tie {
 	multi method type-check($val, $type = $.type) is default {
 	    with $val {
 		die "{.WHAT.^name}.$*key: {.gist} - not of type: {$type.gist}"
-		    unless $_ ~~ $type | Pair;  #| undereferenced - don't know it's type yet
+		    unless $_ ~~ $type | Pair;  # undereferenced - don't know it's type yet
                 $_;
 	    }
 	    else {
