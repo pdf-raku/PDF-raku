@@ -23,14 +23,14 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	            !! self.AT-KEY($key, :check);
             },
             STORE => sub ($, \v) {
-                self.ASSIGN-KEY($key, v, :check) = v;
+                self.ASSIGN-KEY($key, v, :check);
             }
         );
     }
 
     method tie-init {
        my \class = self.WHAT;
-       for class.^attributes.grep({.name !~~ /descriptor/ && .can('entry') }) -> \att {
+       for class.^attributes.grep(*.can('entry')) -> \att {
            my \key = att.tied.accessor-name;
            next if %.entries{key}:exists;
            %.entries{key} = att;
