@@ -40,28 +40,21 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
     #| for hash lookups, typically $foo<bar>
     method AT-KEY($key, :$check) is rw {
         my $val := callsame;
+	my Attribute \att = %.entries{$key} // $.of-att;
+
         $val := $.deref(:$key, $val)
 	    if $val ~~ Pair | Array | Hash;
 
-	my Attribute \att = %.entries{$key} // $.of-att;
-         with att {
-	     .tie($val);
-             .tied.type-check($val, :$key)
-                 if $check;
-         }
-         $val;
+        .tie($val, :$check) with att;
+        $val;
     }
 
     #| handle hash assignments: $foo<bar> = 42; $foo{$baz} := $x;
     method ASSIGN-KEY($key, $val, :$check) {
 	my $lval = $.lvalue($val);
-
 	my Attribute \att = %.entries{$key} // $.of-att;
-        with att {
-	    .tie($lval);
-            .tied.type-check($lval, :$key)
-                 if $check;
-        }
+
+        .tie($lval, :$check) with att;
 	nextwith($key, $lval )
     }
 

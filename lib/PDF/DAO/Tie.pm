@@ -6,8 +6,10 @@ role PDF::DAO::Tie {
     has Attribute $.of-att is rw;      #| default attribute
     has Attribute %.entries;
 
+    my subset IndRef of Pair where {.key eq 'ind-ref'};
+
     #| generate an indirect reference to ourselves
-    method ind-ref {
+    method ind-ref returns IndRef {
 	my \obj-num = $.obj-num;
 	obj-num && obj-num > 0
 	    ?? :ind-ref[ obj-num, $.gen-num ]
@@ -54,8 +56,8 @@ role PDF::DAO::Tie {
 	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::DAO.coerce($lval, $type) };
         has UInt $.length;
 
-        multi method tie(Pair $lval is rw) { $lval } # undereferenced - don't know it's type yet
-	multi method tie($lval is rw) {
+        multi method tie(IndRef $lval is rw) { $lval } # undereferenced - don't know it's type yet
+	multi method tie($lval is rw, :$check) {
             if $lval.defined && ! ($lval ~~ $!type) {
 
                 my \reader  = $lval.?reader;
@@ -81,19 +83,39 @@ role PDF::DAO::Tie {
                         $att.tied.type = of-type;
                         $lval.of-att = $att;
 
-                        for $lval.values {
-                            next if $_ ~~ Pair | of-type;
+                        my \v = $lval.values;
+                        if $check {
+                            with $.length {
+                                die "array not of length: {$_}"
+                                    if +v != $_;
+                            }
+                        }
+
+                        for v {
+                            next if $_ ~~ of-type | IndRef;
                             ($att.tied.coerce)($_, of-type);
+                            if $check {
+                                die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.gist}"
+                                unless $_ ~~ of-type;
+                            }
                             .reader //= reader if reader && .can('reader');
                         }
                     }
                 }
                 else {
                     ($.coerce)($lval, $!type);
+                    if $check {
+                        with $lval {
+                            die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.gist}"
+                                unless $_ ~~ $!type;
+                        }
+                    }
                     $lval.reader  //= $_ with reader;
                 }
             }
             else {
+                die "missing required field: $.accessor-name"
+                    if $check && !$lval.defined && $.is-required;
                 $lval.obj-num //= -1
                     if $.is-indirect && $lval ~~ PDF::DAO;
             }
@@ -104,85 +126,25 @@ role PDF::DAO::Tie {
 	    $.tie($lval);
 	}
 
-        multi method type-check($val, :$*key) {
-	    $.type-check($val, $.type)
-	}
-
-	multi method type-check($val, Positional[Mu] $type) {
-	    with $val -> \v {
-		$.type-check(v, Array);
-                with $.length {
-		    die "array not of length: {$_}"
-		    if +v != $_;
-                }
-		my \of-type = $type.of;
-		$.type-check($_, of-type)
-		    for v.values;
-                v;
-	    }
-	    else {
-		die "missing required field: $*key"
-		    if $.is-required;
-		Nil;
-	    }
-	}
-
-	multi method type-check($val, Associative[Mu] $type) {
-	    with $val -> \v {
-		$.type-check(v, Hash);
-		my \of-type = $type.of;
-		$.type-check($_, of-type)
-		    for v.values;
-                v;
-	    }
-	    else {
-		die "missing required field: $*key"
-		    if $.is-required;
-		Nil;
-	    }
-	}
-
-	#| untyped attribute
-	multi method type-check($val, Mu $type) {
-            with $val {
-                $_;
-            }
-	    else {
-		die "missing required field: $*key"
-		    if $.is-required;
-		Nil;
-	    }
-	}
-	#| type attribute
-	multi method type-check($val, $type = $.type) is default {
-	    with $val {
-		die "{.WHAT.^name}.$*key: {.gist} - not of type: {$type.gist}"
-		    unless $_ ~~ $type | Pair;  # undereferenced - don't know it's type yet
-                $_;
-	    }
-	    else {
-	      die "{$val.WHAT.^name}: missing required field: $*key"
-		  if $.is-required;
-	      Nil;
-	    }
-	}
-
     }
 
     sub process-args($entry, Attribute $att) {
 
+        my constant %Args = %(
+            :inherit<is-inherited>, :required<is-required>, :indirect<is-indirect>,
+            :coerce<coerce>, :len<length>, :alias<alias>
+        );
+        my $tied = $att.tied;
+
 	for $entry.list -> \arg {
             if arg ~~ Pair {
 	        my \val = arg.value;
-	        given arg.key {
-		    when 'inherit'  { $att.tied.is-inherited = val }
-		    when 'required' { $att.tied.is-required  = val }
-		    when 'indirect' { $att.tied.is-indirect  = val }
-		    when 'coerce'   { $att.tied.coerce       = val }
-                    when 'len'      { $att.tied.length       = val }
-                    when 'alias'    { $att.tied.alias        = val }
-		    default         { warn "ignoring entry attribute: $_" }
-	        }
+                with %Args{arg.key} {
+                    $tied."$_"() = val;
+                }
+                else {
+                    warn "ignoring entry attribute: {arg.key}";
+                }
             }
             else {
 		warn "ignoring entry trait attribute: {arg.perl}"
@@ -235,7 +197,7 @@ role PDF::DAO::Tie {
     }
 
     #| indirect reference
-    multi method deref(Pair $ind-ref! where {.key eq 'ind-ref'}) {
+    multi method deref(IndRef $ind-ref!) {
 	my (Int $obj-num, Int $gen-num, $reader) = $ind-ref.value.list;
 
         with $reader // $.reader {

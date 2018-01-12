@@ -35,31 +35,21 @@ role PDF::DAO::Tie::Array does PDF::DAO::Tie {
     #| for array lookups, typically $foo[42]
     method AT-POS($pos, :$check) is rw {
         my $val := callsame;
+	my Attribute \att = $.index[$pos] // $.of-att;
 
         $val := $.deref(:$pos, $val)
 	    if $val ~~ Pair | Array | Hash;
 
-	my Attribute \att = $.index[$pos] // $.of-att;
-        with att {
-	    .tie($val);
-            .tied.type-check($val, :key(.index))
-                if $check;
-        }
-
+        .tie($val, :$check) with att;
 	$val;
     }
 
     #| handle array assignments: $foo[42] = 'bar'; $foo[99] := $baz;
     method ASSIGN-POS($pos, $val, :$check) {
 	my $lval = $.lvalue($val);
-
 	my Attribute \att = $.index[$pos] // $.of-att;
-        with att {
-	    .tie($lval);
-            .tied.type-check($lval, :key(.index))
-                if $check;
-        }
 
+        .tie($lval, :$check) with att;
 	nextwith($pos, $lval )
     }
 
