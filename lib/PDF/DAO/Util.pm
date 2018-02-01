@@ -91,7 +91,7 @@ module PDF::DAO::Util {
 
     proto sub from-ast(|) is export(:from-ast) {*};
 
-    multi sub from-ast( Pair $p! ) {
+    multi sub from-ast( Pair $p) {
         from-ast( |$p );
     }
 
@@ -100,6 +100,10 @@ module PDF::DAO::Util {
     BEGIN my %ast-types = AST-Types.enums;
     multi sub from-ast( Hash $h! where { .keys == 1 && (%ast-types{.keys[0]}:exists)} ) {
         from-ast( |$h )
+    }
+
+    multi sub from-ast( $other!) {
+        $other
     }
 
     multi sub from-ast( Array :$array! ) {
@@ -145,16 +149,13 @@ module PDF::DAO::Util {
         $stream;
     }
 
-    multi sub from-ast( $other! where !.isa(Pair) ) {
-        return $other
+    multi sub from-ast( :$null! ) {
+        Any;
     }
 
     multi sub from-ast( *@args, *%opt ) is default {
-        return Any if %opt<null>:exists;
-
         die "unexpected from-ast arguments: {[@args].perl}"
             if @args;
-        
         die "unable to from-ast {%opt.keys} struct: {%opt.perl}"
     }
 
