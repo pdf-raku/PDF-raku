@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 38;
+plan 39;
 
 use PDF::DAO::Dict;
 
@@ -53,6 +53,9 @@ use PDF::DAO::Dict;
     is $dict.S[0], 'xx', 'array container deref sanity';
     lives-ok { $dict.I[1] = 5 }, 'array assignment sanity';
     lives-ok { $dict.S[1] = 'yy' }, 'array assignment sanity';
+    my @s = $dict.S;
+    todo "listy accessor";
+    is @s[1], 'yy', "array container assignment";
     todo "typecheck on array elements", 2;
     quietly dies-ok { $dict.I[1] = -5 }, 'array assignment typecheck';
     lives-ok { $dict.I[1] = 42 }, 'array assignment typecheck';

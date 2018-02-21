@@ -448,5 +448,5 @@ PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
 
 ## See also
 - [PDF::Lite](https://github.com/p6-pdf/PDF-Lite-p6) - basic graphics; including images, fonts, text and general graphics
-- [PDF::API6](https://github.com/p6-pdf/PDF-API6) - eneral purpose PDF manipulation (under construction)
+- [PDF::API6](https://github.com/p6-pdf/PDF-API6) - general purpose PDF manipulation (under construction)
 

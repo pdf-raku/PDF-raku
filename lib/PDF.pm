@@ -117,12 +117,11 @@ class PDF:ver<0.2.7>
 	my $type = $.reader.?type;
 	with self<Root> {
 	    .?cb-finish;
-	    $type //= .<FDF> ?? 'FDF' !! 'PDF';
+	    $type //= do with .<FDF> {'FDF'} else {'PDF'};
         }
         else {
 	    die "no top-level Root entry"
         }
-
 	self!generate-id( :$type );
 	my PDF::IO::Serializer $serializer .= new;
 	$serializer.ast( self, :$type, :$!crypt, |c);
