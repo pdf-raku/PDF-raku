@@ -43,7 +43,7 @@ role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
 	my Attribute \att = %.entries{$key} // $.of-att;
 
         $val := $.deref(:$key, $val)
-	    if $val ~~ Pair | Array | Hash;
+	    if $val ~~ Pair | List | Hash;
 
         .tie($val, :$check) with att;
         $val;

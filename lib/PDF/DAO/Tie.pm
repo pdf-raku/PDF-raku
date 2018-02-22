@@ -192,7 +192,7 @@ role PDF::DAO::Tie {
 
     method lvalue($_) is rw {
         when PDF::DAO  { $_ }
-        when Hash | Array | DateTime { $.coerce($_, :$.reader) }
+        when Hash | List | DateTime { $.coerce($_, :$.reader) }
         default        { $_ }
     }
 
@@ -213,12 +213,12 @@ role PDF::DAO::Tie {
     multi method deref(PDF::DAO $value) { $value }
 
     #| coerce and save hash entry
-    multi method deref($value where Hash | Array , :$key!) {
+    multi method deref($value where Hash | List, :$key!) {
         self.ASSIGN-KEY($key, $value);
     }
 
     #| coerce and save array entry
-    multi method deref($value where Hash | Array , :$pos!) {
+    multi method deref($value where Hash | List, :$pos!) {
         self.ASSIGN-POS($pos, $value);
     }
 

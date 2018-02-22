@@ -124,7 +124,7 @@ class PDF::IO::Serializer {
     }
 
     #| construct a reverse index that maps unique $objects
-    #| to an object-number and generation-number. 
+    #| to an object-number and generation-number.
     method !index-object( Pair $ind-obj! is rw, :$object!) {
         my Int $obj-num = $object.obj-num 
 	    if $object.can('obj-num')

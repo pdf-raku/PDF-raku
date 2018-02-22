@@ -14,11 +14,11 @@ class PDF::DAO::Stream
 
     has UInt $.Length is entry;                     #| (Required) The number of bytes from the beginning of the line following the keyword stream to the last byte just before the keyword endstream
 
-    my subset StrOrArray of Any where Str|Array;
+    my subset StrOrArray where Str|Array;
 
     has StrOrArray $.Filter is entry;               #| (Optional) The name of a filter to be applied in processing the stream data found between the keywords stream and endstream, or an array of such names
 
-    my subset DictOrArray of Any where Hash|Array;
+    my subset DictOrArray where Hash|Array;
     has DictOrArray $.DecodeParms is entry;         #| (Optional) A parameter dictionary or an array of such dictionaries, used by the filters specified by Filter
 
     has Str $.F is entry;                           #| (Optional; PDF 1.2) The file containing the stream data. If this entry is present, the bytes between stream and endstream are ignored

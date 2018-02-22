@@ -40,7 +40,7 @@ role PDF::DAO {
 	    ?? $.coerce( |$dict, |c )    # JSON munged pair
 	    !! $.coerce( :$dict, |c );
     }
-    multi method coerce(Array $array!, |c) {
+    multi method coerce(List $array!, |c) {
         $.coerce( :$array, |c )
     }
     multi method coerce(DateTime $dt, |c) {
@@ -65,12 +65,12 @@ role PDF::DAO {
             !! $obj = $obj but $role
     }
 
-    multi method coerce( Array :$array!, |c ) {
+    multi method coerce( List :$array!, |c ) {
         state $fallback = $.required('PDF::DAO::Array');
         $.load-delegate( :$array, :$fallback ).new( :$array, |c );
     }
 
-    multi method coerce( Array :$ind-ref!) {
+    multi method coerce( List :$ind-ref!) {
 	:$ind-ref
     }
 

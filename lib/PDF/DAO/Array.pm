@@ -12,7 +12,7 @@ class PDF::DAO::Array
 
     my %seen{Any} = (); #= to catch circular references
 
-    method new(Array :$array = [], |c) {
+    method new(List :$array = [], |c) {
         my $obj = %seen{$array};
         without $obj {
             temp %seen{$array} = $obj = self.bless(:$array, |c);

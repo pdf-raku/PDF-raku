@@ -88,7 +88,7 @@ class PDF:ver<0.2.7>
 	    # saving updates elsewhere
 	    my Str $path = ~ .path;
 
-	    die "to file and input PDF are the same: $path"
+	    die "to-file and input PDF are the same: $path"
                if $path eq $.reader.file-name;
 
 	    $_;
@@ -169,7 +169,7 @@ class PDF:ver<0.2.7>
 	return $perms.flag-is-set( $flag );
     }
 
-    #| Generate a new document ID.  
+    #| Generate a new document ID.
     method !generate-id(Str :$type = 'PDF') {
 
 	# From [PDF 1.7 Section 14.4 File Identifiers:
