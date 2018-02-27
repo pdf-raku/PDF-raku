@@ -197,8 +197,8 @@ role PDF::DAO::Tie {
     }
 
     method mixin($role) {
-        $.^mixin($role);
-        $.tie-init;
+        self.^mixin($role);
+        self.tie-init;
         self;
     }
 
