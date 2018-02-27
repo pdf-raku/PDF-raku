@@ -14,7 +14,7 @@ class PDF::DAO::Loader {
         %handler{$subclass} = $class-def;
     }
 
-    method find-delegate( Str $type!, $subtype?, :$fallback! ) is default {
+    method find-delegate( Str $type!, $subtype?, :$base-class! ) is default {
 
 	my $subclass = $type;
 	$subclass ~= '::' ~ $_
@@ -23,7 +23,7 @@ class PDF::DAO::Loader {
 	return %handler{$subclass}
 	    if %handler{$subclass}:exists;
 
-	my $handler-class = $fallback;
+	my $handler-class = $base-class;
 
 	for self.class-paths -> \class-path {
 	    CATCH {
@@ -31,6 +31,8 @@ class PDF::DAO::Loader {
 	    }
             my \class-name = class-path ~ '::' ~ $subclass;
 	    $handler-class = PDF::DAO.required(class-name);
+            $handler-class = $base-class.^mixin($handler-class)
+                unless $handler-class.isa($base-class);
 	    last;
 	}
 
@@ -38,14 +40,14 @@ class PDF::DAO::Loader {
         $handler-class;
     }
 
-    multi method load-delegate( Hash :$dict! where {$dict<Type>:exists}, :$fallback = $dict.WHAT) {
+    multi method load-delegate( Hash :$dict! where {$dict<Type>:exists}, :$base-class = $dict.WHAT) {
 	my \type = from-ast($dict<Type>);
 	my \subtype = from-ast($dict<Subtype> // $dict<S>);
-	$.find-delegate( type, subtype, :$fallback );
+	$.find-delegate( type, subtype, :$base-class );
     }
 
-    multi method load-delegate( :$fallback!, |c ) is default {
-	$fallback;
+    multi method load-delegate( :$base-class!, |c ) is default {
+	$base-class;
     }
 
 }

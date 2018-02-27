@@ -196,6 +196,12 @@ role PDF::DAO::Tie {
         default        { $_ }
     }
 
+    method mixin($role) {
+        $.^mixin($role);
+        $.tie-init;
+        self;
+    }
+
     #| indirect reference
     multi method deref(IndRef $ind-ref!) {
 	my (Int $obj-num, Int $gen-num, $reader) = $ind-ref.value.list;

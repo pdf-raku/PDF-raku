@@ -49,15 +49,11 @@ class PDF::DAO::Coercer {
     }
 
     multi method coerce( Array $obj where PDF::DAO, $role where PDF::DAO::Tie::Array ) {
-	$obj.^mixin: $role;
-        $obj.tie-init;
-        $obj;
+	$obj.mixin: $role;
     }
 
     multi method coerce( Hash $obj where PDF::DAO, $role where PDF::DAO::Tie::Hash ) {
-	$obj.^mixin: $role;
-        $obj.tie-init;
-        $obj;
+	$obj.mixin: $role;
     }
 
     multi method coerce( $obj, $type where PDF::DAO::Tie ) {

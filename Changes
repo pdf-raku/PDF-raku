@@ -1,3 +1,10 @@
+Release 0.2.8
+- [PDF::DAO]
+  -- better support for lists and list to array coercion
+- [PDF::DAO::Loader]
+  -- replaced :$fallback option with :$base-class
+- [PDF::DAO::Tie]
+  -- add mixin method
 Release 0.2.7
 - [PDF::DAO::Tie]
   -- reintroduce method :entry(:alias<foo>) sub-trait.

@@ -66,8 +66,8 @@ role PDF::DAO {
     }
 
     multi method coerce( List :$array!, |c ) {
-        state $fallback = $.required('PDF::DAO::Array');
-        $.load-delegate( :$array, :$fallback ).new( :$array, |c );
+        state $base-class = $.required('PDF::DAO::Array');
+        $.load-delegate( :$array, :$base-class ).new( :$array, |c );
     }
 
     multi method coerce( List :$ind-ref!) {
@@ -109,8 +109,8 @@ role PDF::DAO {
     multi method coerce( Bool :$bool! is copy) { self.coerce: :$bool }
 
     multi method coerce( Hash :$dict!, |c ) {
-	state $fallback = $.required('PDF::DAO::Dict');
-	my $class = $.load-delegate( :$dict, :$fallback );
+	state $base-class = $.required('PDF::DAO::Dict');
+	my $class = $.load-delegate( :$dict, :$base-class );
 	$class.new( :$dict, |c );
     }
 
@@ -121,8 +121,8 @@ role PDF::DAO {
                 with $stream{k};
         }
         my Hash $dict = $stream<dict> // {};
-        state $fallback = $.required('PDF::DAO::Stream');
-	my $class = $.load-delegate( :$dict, :$fallback );
+        state $base-class = $.required('PDF::DAO::Stream');
+	my $class = $.load-delegate( :$dict, :$base-class);
         $class.new( :$dict, |%params, |c );
     }
 

@@ -4,7 +4,7 @@ use PDF::DAO::Dict;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
-class PDF:ver<0.2.7>
+class PDF:ver<0.2.8>
     is PDF::DAO::Dict {
 
     use PDF::IO::Serializer;
