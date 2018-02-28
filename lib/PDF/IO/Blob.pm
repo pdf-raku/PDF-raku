@@ -8,5 +8,5 @@ class PDF::IO::Blob does Blob[uint8]  is repr('VMArray') {
         my UInt \from = $from-whatever( $.codes );
         $.substr( from, |c );
     }
-    multi method substr(Int $from, UInt $len) is default { self.subbuf($from, $len).decode("latin-1") }
+    multi method substr(Int $from, UInt $len = $.codes - $from) is default { self.subbuf($from, $len).decode("latin-1") }
 }

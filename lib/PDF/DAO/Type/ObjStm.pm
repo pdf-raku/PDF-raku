@@ -55,8 +55,8 @@ class PDF::DAO::Type::ObjStm
         my UInt \first = $.First;
         my UInt \n = $.N;
 
-        my Str \object-index-str = substr(bytes, 0, first - 1);
-        my Str \objects-str = substr(bytes, first);
+        my Str \object-index-str = bytes.substr(0, first - 1);
+        my Str \objects-str = bytes.substr(first);
 
         my PDF::Grammar::PDF::Actions $actions .= new;
         PDF::Grammar::PDF.parse(object-index-str, :rule<object-stream-index>, :$actions)
