@@ -1,0 +1,101 @@
+{
+  "pdf": {
+    "body": [
+      {
+        "trailer": {
+          "dict": {
+            "ID": {
+              "array": [
+                {
+                  "hex-string": "×C¨üÜø{iÃeH!©A"
+                },
+                {
+                  "hex-string": "0BD³C|N{:g\u0016l^C"
+                }
+              ]
+            },
+            "Root": {
+              "ind-ref": [
+                1,
+                0
+              ]
+            },
+            "Size": {
+              "int": 4
+            }
+          }
+        },
+        "objects": [
+          {
+            "ind-obj": [
+              1,
+              0,
+              {
+                "dict": {
+                  "Classes": {
+                    "array": [
+                      {
+                        "ind-ref": [
+                          2,
+                          0
+                        ]
+                      }
+                    ]
+                  },
+                  "Language": {
+                    "name": "LOLCODE"
+                  },
+                  "Version": {
+                    "literal": "1.2"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj": [
+              2,
+              0,
+              {
+                "dict": {
+                  "Source": {
+                    "ind-ref": [
+                      3,
+                      0
+                    ]
+                  },
+                  "Name": {
+                    "name": "MAIN"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "ind-obj": [
+              3,
+              0,
+              {
+                "stream": {
+                  "encoded": "xópôT0Ô3ârvôSðp\u000cV\u0008\u000eqñô·ç\nó\u000cötòqUPò\u0000Êû\u0007ù¸(*qyxD8Eºr\u0001\u0000G \u000c",
+                  "dict": {
+                    "Filter": {
+                      "literal": "FlateDecode"
+                    },
+                    "Length": {
+                      "int": 59
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "header": {
+      "type": "JAR",
+      "version": 1.3
+    }
+  }
+}

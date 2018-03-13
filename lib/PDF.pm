@@ -114,7 +114,7 @@ class PDF:ver<0.2.8>
     }
 
     method ast(|c) {
-	my $type = $.reader.?type;
+	my $type = $.reader.?type // self.?type;
 	with self<Root> {
 	    .?cb-finish;
 	    $type //= do with .<FDF> {'FDF'} else {'PDF'};
