@@ -45,7 +45,7 @@ module PDF::IO::Util {
     multi sub resample( $nums! is copy, UInt $n!, UInt $ where $n) {
         $nums ~~ Buf
             ?? $nums
-            !!  Buf[container($n)].new: $nums
+            !! Buf[container($n)].new: $nums
     }
 
     sub get-bit($num, $bit) { $num +> ($bit) +& 1 }
@@ -74,28 +74,23 @@ module PDF::IO::Util {
         }
     }
     #| variable resampling, e.g. to decode/encode:
-    #|   obj 123 0 << /Type /XRef /W [1, 3, 1]
+    #|   obj 123 0 << /Type /XRef /W [1, 3, 1] ... >>
     multi sub unpack-pp( $nums!, Array $W!)  {
-        my uint $i = 0;
-        my uint $j = 0;
-        my uint32 @out;
-        my $out-len = (+$nums * +$W) div $W.sum;
         my uint $w-len = +$W;
+        my $out-len = (+$nums * $w-len) div $W.sum;
+        my uint32 @out[$out-len div $w-len; $w-len];
+        my uint $i = 0;
 
-        @out[$out-len - 1] = 0
-            if +$nums;
-
-        while $i < +$nums {
+        loop (my uint $j = 0; $j < $out-len;) {
             my uint32 $v = 0;
-            my $n = $W[$j % $w-len];
-            for 1 .. $n {
+            my $k = $j % $w-len;
+            for 1 .. $W[$k] {
                 $v +<= 8;
                 $v += $nums[$i++];
             }
-            @out[$j++] = $v;
+            @out[$j++ div $w-len; $k] = $v;
         }
-        my uint32 @shaped[+@out div +$W;$W] Z= @out;
-        @shaped;
+        @out;
     }
 
     multi sub pack-pp(array $shaped, Array $W!)  {
