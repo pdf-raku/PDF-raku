@@ -33,7 +33,7 @@ $pages<Count>++;
 
 my $info = $pdf.Info = {};
 $info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
-$info.Author = 'PDF-Tools/t/dao-doc.t';
+$info.Author = 'PDF-Tools/t/cos-doc.t';
 
 lives-ok {$pdf.save-as("t/helloworld.pdf")}, 'save-as pdf';
 ok $pdf.ID, 'doc ID generated';
