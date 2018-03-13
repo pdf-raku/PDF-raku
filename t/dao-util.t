@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 8;
 
-use PDF::DAO::Util :from-ast, :to-ast, :ast-coerce;
+use PDF::COS::Util :from-ast, :to-ast, :ast-coerce;
 
 for (
      (my @ = [1.1, 2, '3']) => (:array[ :real(1.1), :int(2), :literal('3') ]),

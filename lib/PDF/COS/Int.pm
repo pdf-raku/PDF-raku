@@ -1,8 +1,8 @@
 use v6;
-use PDF::DAO;
+use PDF::COS;
 
-role PDF::DAO::Int
-    does PDF::DAO {
+role PDF::COS::Int
+    does PDF::COS {
 
     method flag-is-set(uint $flag-num) returns Bool {
 	my uint $i = self;

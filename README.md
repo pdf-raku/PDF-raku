@@ -23,7 +23,7 @@ Classes/roles in this module include:
 - `PDF::IO::Serializer` - data marshalling utilities for the preparation of full or incremental updates
 - `PDF::IO::Crypt` - decryption / encryption
 - `PDF::Writer` - for the creation or update of PDF files
-- `PDF::DAO` - an intermediate Data Access and Object representation layer (<a href="https://en.wikipedia.org/wiki/Data_access_object">DAO</a>)
+- `PDF::COS` - Perl 6 Bindings to PDF objects [Carousel Object System, see <a href="http://jimpravetz.com/blog/2012/12/in-defense-of-cos/">COS</a>]
 
 ## Example Usage
 
@@ -33,10 +33,10 @@ To create a one page PDF that displays 'Hello, World!'.
 #!/usr/bin/env perl6
 # creates examples/helloworld.pdf
 use v6;
-use PDF::DAO;
 use PDF;
+use PDF::COS;
 
-sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
+sub prefix:</>($name){ PDF::COS.coerce(:$name) };
 
 # construct a simple PDF document from scratch
 my $doc = PDF.new;
@@ -62,7 +62,7 @@ $info.CreationDate = DateTime.now;
 $info.Producer = "Perl 6 PDF";
 
 # define some basic content
-my $Contents = PDF::DAO.coerce: :stream{ :decoded("BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET" ) };
+my $Contents = PDF::COS.coerce: :stream{ :decoded("BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET" ) };
 
 # create a new page. add it to the page tree
 $pages<Kids>.push: { :Type(/'Page'), :Parent($pages), :$Contents };
@@ -87,7 +87,7 @@ my $catalog = $doc<Root>;
 my $Parent = $catalog<Pages>;
 
 # create additional content, use existing font /F1
-my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  15 25 Td (Goodbye for now!) Tj ET" ) } );
+my $Contents = PDF::COS.coerce( :stream{ :decoded("BT /F1 16 Tf  15 25 Td (Goodbye for now!) Tj ET" ) } );
 
 # create a new page. add it to the page-tree
 $Parent<Kids>.push: { :Type( :name<Page> ), :$Parent, :$Contents };
@@ -287,7 +287,7 @@ The document can be traversed by dereferencing Array and Hash objects. The reade
 
 ```
 use PDF::Reader;
-use PDF::DAO;
+use PDF::COS;
 
 my $reader = PDF::Reader.new;
 $reader.open: 'examples/helloworld.pdf';
@@ -300,7 +300,7 @@ my $doc = $reader.trailer<Root>;
 $page1 = $doc<Pages><Kids>[0];
 
 # Tied objects can also be updated directly.
-$reader.trailer<Info><Creator> = PDF::DAO.coerce( :name<t/helloworld.t> );
+$reader.trailer<Info><Creator> = PDF::COS.coerce( :name<t/helloworld.t> );
 ```
 
 ### Utility Scripts
@@ -312,7 +312,7 @@ This script is a thin wrapper for the `PDF` `.open` and `.save-as` methods. It c
 
 ### Decode Filters
 
-Filters are used to compress or decompress stream data in objects of type `PDF::DAO::Stream`. These are implemented as follows:
+Filters are used to compress or decompress stream data in objects of type `PDF::COS::Stream`. These are implemented as follows:
 
 *Filter Name* | *Short Name* | Filter Class
 --- | --- | ---
@@ -352,29 +352,31 @@ An encrypted PDF can be saved as JSON. It will remain encrypted and passwords ma
 
 ## Data-types and Coercion
 
-The `PDF::DAO` name-space provides roles and classes for the representation and manipulation of PDF objects.
+The `PDF::COS` name-space provides roles and classes for the representation and manipulation of PDF objects.
+
+[COS (Carousel Object System) is the original name for the file structure and object system used for PDF and FDF files - see https://en.wikipedia.org/wiki/Portable_Document_Format#File_structure].
 
 ```
-use PDF::DAO::Stream;
+use PDF::COS::Stream;
 my %dict = :Filter( :name<ASCIIHexDecode> );
 my $obj-num = 123;
 my $gen-num = 4;
 my $decoded = "100 100 Td (Hello, world!) Tj";
-my $stream-obj = PDF::DAO::Stream.new( :$obj-num, :$gen-num, :%dict, :$decoded );
+my $stream-obj = PDF::COS::Stream.new( :$obj-num, :$gen-num, :%dict, :$decoded );
 say $stream-obj.encoded;
 ```
 
-`PDF::DAO.coerce` is a method for the construction of objects.
+`PDF::COS.coerce` is a method for the construction of objects.
 
 It is used internally to build objects from parsed AST data, e.g.:
 
 ```
 use v6;
-use PDF::Grammar::Doc;
-use PDF::Grammar::Doc::Actions;
-use PDF::DAO;
-my $actions = PDF::Grammar::Doc::Actions.new;
-my \p = PDF::Grammar::Doc.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :rule<object>, :$actions)
+use PDF::Grammar::COS;
+use PDF::Grammar::COS::Actions;
+use PDF::COS;
+my $actions = PDF::Grammar::COS::Actions.new;
+my \p = PDF::Grammar::COS.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :rule<object>, :$actions)
     or die "parse failed";
 my %ast = p.ast;
 
@@ -382,32 +384,32 @@ say '#'~%ast.perl;
 #:dict({:Count(:int(1)), :Kids(:array([:ind-ref([4, 0])])), :Type(:name("Pages"))})
 
 my $reader = class { has $.auto-deref = False }.new; # dummy reader
-my $object = PDF::DAO.coerce( %ast, :$reader );
+my $object = PDF::COS.coerce( %ast, :$reader );
 
 say '#'~$object.WHAT.gist;
-#(PDF::DAO::Dict)
+#(PDF::COS::Dict)
 
 say '#'~$object.perl;
 #{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
 
 say '#'~$object<Type>.WHAT.^name;
-#(Str+{PDF::DAO::Name})
+#(Str+{PDF::COS::Name})
 ```
-The `PDF::DAO.coerce` method is also used to construct new objects from application data.
+The `PDF::COS.coerce` method is also used to construct new objects from application data.
 
 In many cases, AST tags will coerce if omitted. E.g. we can use `1`, instead of `:int(1)`:
 ```
 # using explicit AST tags
-use PDF::DAO;
+use PDF::COS;
 my $reader = class { has $.auto-deref = False }.new; # dummy reader
 
-my $object2 = PDF::DAO.coerce({ :Type( :name<Pages> ),
+my $object2 = PDF::COS.coerce({ :Type( :name<Pages> ),
                                 :Count(:int(1)),
                                 :Kids[ :array[ :ind-ref[4, 0] ] ], },
 				:$reader);
 
 # same but with a casting from Perl types
-my $object3 = PDF::DAO.coerce({ :Type( :name<Pages> ),
+my $object3 = PDF::COS.coerce({ :Type( :name<Pages> ),
                                 :Count(1),
                                 :Kids[ :ind-ref[4, 0],  ] },
 				:$reader);
@@ -419,27 +421,27 @@ A table of Object types and coercements follows:
 
 *AST Tag* | Object Role/Class | *Perl 6 Type Coercion | PDF Example | Description |
 --- | --- | --- | --- | --- |
- `array` | PDF::DAO::Array | Array | `[ 1 (foo) /Bar ]` | array objects
-`bool` | PDF::DAO::Bool | Bool | `true`
-`int` | PDF::DAO::Int | Int | `42`
-`literal` | PDF::DAO::ByteString (literal) | Str | `(hello world)`
-`literal` | PDF::DAO::DateString | DateTime | `(D:199812231952-08'00')`
-`hex-string` | PDF::DAO::ByteString (hex-string) | | `<736E6F6f7079>`
-`dict` | PDF::DAO::Dict | Hash | `<< /Length 42 /Apples(oranges) >>` | abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
-`name` | PDF::DAO::Name | | `/Catalog`
-`null` | PDF::DAO::Null | Any | `null`
-`real` | PDF::DAO::Real | Numeric | `3.14159`
-`stream`| PDF::DAO::Stream | | | abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
+ `array` | PDF::COS::Array | Array | `[ 1 (foo) /Bar ]` | array objects
+`bool` | PDF::COS::Bool | Bool | `true`
+`int` | PDF::COS::Int | Int | `42`
+`literal` | PDF::COS::ByteString (literal) | Str | `(hello world)`
+`literal` | PDF::COS::DateString | DateTime | `(D:199812231952-08'00')`
+`hex-string` | PDF::COS::ByteString (hex-string) | | `<736E6F6f7079>`
+`dict` | PDF::COS::Dict | Hash | `<< /Length 42 /Apples(oranges) >>` | abstract class for dictionary based indirect objects. Root Object, Catalog, Pages tree etc.
+`name` | PDF::COS::Name | | `/Catalog`
+`null` | PDF::COS::Null | Any | `null`
+`real` | PDF::COS::Real | Numeric | `3.14159`
+`stream`| PDF::COS::Stream | | | abstract class for stream based indirect objects - base class from Xref and Object streams, fonts and general content.
 
-`PDF::DAO` also provides a few essential derived classes:
+`PDF::COS` also provides a few essential derived classes, that form part of the basic PDF infrastructure.
 
 *Class* | *Base Class* | *Description*
 --- | --- | --- |
-PDF | PDF::DAO::Dict | document entry point - the trailer dictionary
-PDF::DAO::Type::Encrypt | PDF::DAO::Dict | PDF Encryption/Permissions dictionary
-PDF::DAO::Type::Info | PDF::DAO::Dict | Document Information Dictionary
-PDF::DAO::Type::ObjStm | PDF::DAO::Stream | PDF 1.5+ Object stream (holds compressed objects)
-PDF::DAO::Type::XRef | PDF::DAO::Stream | PDF 1.5+ Cross Reference stream
+PDF | PDF::COS::Dict | document entry point - the trailer dictionary
+PDF::COS::Type::Encrypt | PDF::COS::Dict | PDF Encryption/Permissions dictionary
+PDF::COS::Type::Info | PDF::COS::Dict | Document Information Dictionary
+PDF::COS::Type::ObjStm | PDF::COS::Stream | PDF 1.5+ Object stream (holds compressed objects)
+PDF::COS::Type::XRef | PDF::COS::Stream | PDF 1.5+ Cross Reference stream
 
 ## Further Reading
 

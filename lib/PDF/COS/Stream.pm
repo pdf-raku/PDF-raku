@@ -1,14 +1,14 @@
 use v6;
 
-use PDF::DAO::Dict;
+use PDF::COS::Dict;
 
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
-class PDF::DAO::Stream
-    is PDF::DAO::Dict {
+class PDF::COS::Stream
+    is PDF::COS::Dict {
 
-    use PDF::DAO::Tie;
+    use PDF::COS::Tie;
     use PDF::IO::Filter;
-    use PDF::DAO::Util :from-ast, :ast-coerce;
+    use PDF::COS::Util :from-ast, :ast-coerce;
 
     # see [PDF 1.7 TABLE 5 Entries common to all stream dictionaries]
 
@@ -118,7 +118,7 @@ class PDF::DAO::Stream
             $!decoded //= $!encoded;
             $!encoded = Nil;
             self<Length>:delete;        # recompute this later
-            PDF::DAO.coerce( :name<FlateDecode> );
+            PDF::COS.coerce( :name<FlateDecode> );
         }
     }
 

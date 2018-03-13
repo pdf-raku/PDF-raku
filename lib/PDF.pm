@@ -1,27 +1,27 @@
 use v6;
 
-use PDF::DAO::Dict;
+use PDF::COS::Dict;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
 class PDF:ver<0.2.8>
-    is PDF::DAO::Dict {
+    is PDF::COS::Dict {
 
     use PDF::IO::Serializer;
     use PDF::Reader;
     use PDF::Writer;
-    use PDF::DAO::Tie;
+    use PDF::COS::Tie;
     use JSON::Fast;
 
     # See [PDF 1.7 TABLE 15 Entries in the file trailer dictionary]
 
     has Int $.Size is entry;                              #| (Required; shall not be an indirect reference) greater than the highest object number defined in the file.
 
-    use PDF::DAO::Type::Encrypt;
-    has PDF::DAO::Type::Encrypt $.Encrypt is entry;       #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
+    use PDF::COS::Type::Encrypt;
+    has PDF::COS::Type::Encrypt $.Encrypt is entry;       #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
 
-    use PDF::DAO::Type::Info;
-    has PDF::DAO::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary
+    use PDF::COS::Type::Info;
+    has PDF::COS::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary
     has Str @.ID is entry(:len(2));                       #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array of two byte-strings constituting a file identifier
 
     has Hash $.Root is entry( :indirect );                #| generic document content, as defined by subclassee, e.g.  PDF::Catalog, PDF::FDF
@@ -188,7 +188,7 @@ class PDF:ver<0.2.8>
 
 	my $obj = $type eq 'FDF' ?? self<Root><FDF> !! self;
 	my Str $hex-string = Buf.new((^256).pick xx 16).decode("latin-1");
-	my \new-id = PDF::DAO.coerce: :$hex-string;
+	my \new-id = PDF::COS.coerce: :$hex-string;
 
 	with $obj<ID> {
 	    .[1] = new-id

@@ -1,8 +1,8 @@
 use v6;
 
-role PDF::DAO::Tie {
+role PDF::COS::Tie {
 
-    use PDF::DAO;
+    use PDF::COS;
     has Attribute $.of-att is rw;      #| default attribute
     has Attribute %.entries;
 
@@ -53,7 +53,7 @@ role PDF::DAO::Tie {
 	has Bool $.is-inherited = False;
 	has Str $.accessor-name;
         has Str $.alias;
-	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::DAO.coerce($lval, $type) };
+	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::COS.coerce($lval, $type) };
         has UInt $.length;
 
         multi method tie(IndRef $lval is rw) { $lval } # undereferenced - don't know it's type yet
@@ -117,7 +117,7 @@ role PDF::DAO::Tie {
                 die "missing required field: $.accessor-name"
                     if $check && !$lval.defined && $.is-required;
                 $lval.obj-num //= -1
-                    if $.is-indirect && $lval ~~ PDF::DAO;
+                    if $.is-indirect && $lval ~~ PDF::COS;
             }
 	    $lval;
 	}
@@ -191,7 +191,7 @@ role PDF::DAO::Tie {
     }
 
     method lvalue($_) is rw {
-        when PDF::DAO  { $_ }
+        when PDF::COS  { $_ }
         when Hash | List | DateTime { $.coerce($_, :$.reader) }
         default        { $_ }
     }
@@ -216,7 +216,7 @@ role PDF::DAO::Tie {
         }
     }
     #| already an object
-    multi method deref(PDF::DAO $value) { $value }
+    multi method deref(PDF::COS $value) { $value }
 
     #| coerce and save hash entry
     multi method deref($value where Hash | List, :$key!) {
@@ -234,29 +234,29 @@ role PDF::DAO::Tie {
 
 =begin pod
 
-This is a role used by PDF::DAO. It makes the PDF object tree appear as a seamless
+This is a role used by PDF::COS. It makes the PDF object tree appear as a seamless
 structure comprised of nested hashs (PDF dictionarys) and arrays.
 
-PDF::DAO::Tie::Hash and PDF::DAO::Tie::Array encapsulate Hash and Array accces.
+PDF::COS::Tie::Hash and PDF::COS::Tie::Array encapsulate Hash and Array accces.
 
 - If the object has an associated  `reader` property, indirect references are resolved lazily and transparently
 as elements in the structure are dereferenced.
 - Hashs and arrays automaticaly coerced to objects on assignment to a parent object. For example:
 
 ```
-sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
-my $catalog = PDF::DAO.coerce({ :Type(/'Catalog') });
-$catalog<Outlines> = PDF::DAO.coerce( { :Type(/'Outlines'), :Count(0) } );
+sub prefix:</>($name){ PDF::COS.coerce(:$name) };
+my $catalog = PDF::COS.coerce({ :Type(/'Catalog') });
+$catalog<Outlines> = PDF::COS.coerce( { :Type(/'Outlines'), :Count(0) } );
 ```
 
 is equivalent to:
 
 ```
-sub prefix:</>($name){ PDF::DAO.coerce(:$name) };
-my $catalog = PDF::DAO.coerce({ :Type(/'Catalog') });
+sub prefix:</>($name){ PDF::COS.coerce(:$name) };
+my $catalog = PDF::COS.coerce({ :Type(/'Catalog') });
 $catalog<Outlines> = { :Type(/'Outlines'), :Count(0) };
 ```
 
-PDF::DAO::Tie also provides the `entry` trait (hashes) and `index` (arrays) trait for declaring accessors.
+PDF::COS::Tie also provides the `entry` trait (hashes) and `index` (arrays) trait for declaring accessors.
 
 =end pod

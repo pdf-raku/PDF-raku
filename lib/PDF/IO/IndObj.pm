@@ -2,11 +2,11 @@ use v6;
 
 class PDF::IO::IndObj {
 
-    use PDF::DAO;
+    use PDF::COS;
     has $.object handles <content obj-num gen-num>;
 
-    #| construct by wrapping a pre-existing PDF::DAO
-    multi submethod BUILD( PDF::DAO :$!object!, :$obj-num, :$gen-num ) {
+    #| construct by wrapping a pre-existing PDF::COS
+    multi submethod BUILD( PDF::COS :$!object!, :$obj-num, :$gen-num ) {
 	$!object.obj-num = $_ with $obj-num;
 	$!object.gen-num = $_ with $gen-num;
     }
@@ -14,7 +14,7 @@ class PDF::IO::IndObj {
     #| construct an object instance from a PDF::Grammar::PDF ast representation of
     #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
     multi submethod BUILD( Array :$ind-obj!, |c ) {
-        $!object = PDF::DAO.coerce( |$ind-obj[2], |c );
+        $!object = PDF::COS.coerce( |$ind-obj[2], |c );
         $!object.obj-num = $ind-obj[0];
         $!object.gen-num = $ind-obj[1];
     }

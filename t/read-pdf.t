@@ -3,8 +3,8 @@ use Test;
 plan 20;
 
 use PDF::Reader;
-use PDF::DAO::Dict;
-use PDF::DAO::Stream;
+use PDF::COS::Dict;
+use PDF::COS::Stream;
 use PDF::Grammar::Test :is-json-equiv;
 
 # ensure consistant document ID generation
@@ -17,8 +17,8 @@ is $pdf-in.version, 1.2, 'loaded version';
 is $pdf-in.type, 'PDF', 'loaded type';
 is $pdf-in.size, 9, 'loaded size';
 is $pdf-in.trailer<Root>.obj-num, 1, 'root-obj.obj-num';
-isa-ok $pdf-in.ind-obj(3, 0).object, PDF::DAO::Dict, 'fetch via index';
-isa-ok $pdf-in.ind-obj(5, 0).object, PDF::DAO::Stream, 'fetch via index';
+isa-ok $pdf-in.ind-obj(3, 0).object, PDF::COS::Dict, 'fetch via index';
+isa-ok $pdf-in.ind-obj(5, 0).object, PDF::COS::Stream, 'fetch via index';
 is $pdf-in.ind-obj(5, 0).object.encoded, "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET", 'stream content';
 
 my $ast = $pdf-in.ast( :rebuild );

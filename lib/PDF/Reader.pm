@@ -71,15 +71,15 @@ class X::PDF::BadIndirectObject::Parse is X::PDF::BadIndirectObject {
 
 class PDF::Reader {
 
-    use PDF::Grammar::Doc;
+    use PDF::Grammar::COS;
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
     use PDF::IO;
     use PDF::IO::IndObj;
     use PDF::IO::Serializer;
-    use PDF::DAO;
-    use PDF::DAO::Dict;
-    use PDF::DAO::Util :from-ast, :to-ast;
+    use PDF::COS;
+    use PDF::COS::Dict;
+    use PDF::COS::Util :from-ast, :to-ast;
     use PDF::Writer;
     use JSON::Fast;
 
@@ -112,14 +112,14 @@ class PDF::Reader {
         );
     }
 
-    method !install-trailer(PDF::DAO::Dict $object = PDF::DAO::Dict.new( :reader(self) ) ) {
+    method !install-trailer(PDF::COS::Dict $object = PDF::COS::Dict.new( :reader(self) ) ) {
         %!ind-obj-idx{"0 0"} = do {
             my PDF::IO::IndObj $ind-obj .= new( :$object, :obj-num(0), :gen-num(0) );
             %( :type(External), :$ind-obj );
         }
     }
 
-    method !setup-crypt( Str :$password = '') {
+    method !setup-crypt(Str :$password = '') {
 	my Hash $doc = self.trailer;
 	return without $doc<Encrypt>;
 
@@ -198,7 +198,7 @@ class PDF::Reader {
             }
 
             with .<trailer> {
-                my Hash $dict = PDF::DAO.coerce( |$_ );
+                my Hash $dict = PDF::COS.coerce( |$_ );
                 self!set-trailer( $dict.content<dict> );
 		self!setup-crypt(|c);
             }
@@ -239,7 +239,7 @@ class PDF::Reader {
     multi method open($input!, |c) {
         $!input = PDF::IO.coerce( $input );
         $.load-header( );
-        $.load-pdf( $.type, |c );
+        $.load-cos( $.type, |c );
     }
 
     #| load the data for a stream object. Cross check actual size versus expected /Length
@@ -406,7 +406,7 @@ class PDF::Reader {
 
         my Str $preamble = $.input.substr(0, 8);
 
-        PDF::Grammar::Doc.subparse($preamble, :$.actions, :rule<header>)
+        PDF::Grammar::COS.subparse($preamble, :$.actions, :rule<header>)
             or die X::PDF::BadHeader.new( :$preamble );
 
         $.version = $/.ast<version>;
@@ -415,15 +415,23 @@ class PDF::Reader {
 
     #| Load input in FDF (Form Data Definition) format.
     #| Use full-scan mode, as these are not indexed.
-    multi method load-pdf('FDF') {
+    multi method load-cos('FDF') {
         self!full-scan((require ::('PDF::Grammar::FDF')), $.actions);
     }
 
     #| scan the entire PDF, bypass any indices. Populate index with
     #| raw ast indirect objects. Useful if the index is corrupt and/or
     #| the PDF has been hand-created/edited.
-    multi method load-pdf('PDF', :$repair! where .so, |c ) {
+    multi method load-cos('PDF', :$repair! where .so, |c ) {
         self!full-scan( PDF::Grammar::PDF, $.actions, :repair, |c );
+    }
+
+    multi method load-cos('PDF', |c ) {
+        self!load-index( PDF::Grammar::PDF, $.actions, |c );
+    }
+
+    multi method load-cos($type, |c) is default {
+        self!load-index(PDF::Grammar::COS, $.actions, |c );
     }
 
     method !locate-xref($input-bytes, $tail-bytes, $tail, $offset, $fallback is rw) {
@@ -500,7 +508,7 @@ class PDF::Reader {
 	    }
 	}
 
-	$dict = PDF::DAO.coerce( |index<trailer>, :reader(self) );
+	$dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
 
 	@idx;
     }
@@ -525,14 +533,14 @@ class PDF::Reader {
 
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
     #| via the $.ind-obj() method.
-    multi method load-pdf('PDF', |c) is default {
+    method !load-index($grammar, $actions, |c) is default {
         my UInt \tail-bytes = min(1024, $.input.codes);
         my Str $tail = $.input.substr(* - tail-bytes);
 
         my UInt %offsets-seen;
         @!xrefs = [];
 
-        PDF::Grammar::PDF.parse($tail, :$.actions, :rule<postamble>)
+        $grammar.parse($tail, :$actions, :rule<postamble>)
             or die X::PDF::BadTrailer.new( :$tail );
 
         $!prev = $/.ast<startxref>;
@@ -658,7 +666,7 @@ class PDF::Reader {
             }
 
             with .<trailer> {
-                my Hash \trailer = PDF::DAO.coerce( |$_ );
+                my Hash \trailer = PDF::COS.coerce( |$_ );
                 self!set-trailer( trailer.content<dict> );
 		self!setup-crypt(|c);
             }

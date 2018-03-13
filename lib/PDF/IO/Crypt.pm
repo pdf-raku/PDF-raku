@@ -5,9 +5,9 @@ class PDF::IO::Crypt {
     use OpenSSL:ver(v0.1.4+);
     use OpenSSL::Digest;
 
-    use PDF::DAO::Dict;
+    use PDF::COS::Dict;
     use PDF::IO::Util :pack;
-    use PDF::DAO::Type::Encrypt;
+    use PDF::COS::Type::Encrypt;
 
     has UInt $!R;         #| encryption revision
     has Bool $!EncryptMetadata;
@@ -50,7 +50,7 @@ class PDF::IO::Crypt {
                      Bool :$!EncryptMetadata = True,
                      UInt :$Length = $V > 1 ?? 128 !! 40,
                      Int  :$P = -64,  #| permissions mask
-                     --> PDF::DAO::Type::Encrypt
+                     --> PDF::COS::Type::Encrypt
         ) {
 
         die "this document is already encrypted"
@@ -103,7 +103,7 @@ class PDF::IO::Crypt {
         $enc;
     }
 
-    method !load(PDF::DAO::Dict :$doc!,
+    method !load(PDF::COS::Dict :$doc!,
                  UInt :$!R!,
                  Bool :$!EncryptMetadata = True,
                  UInt :$V!,

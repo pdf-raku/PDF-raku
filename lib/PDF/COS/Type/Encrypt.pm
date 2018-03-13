@@ -1,20 +1,20 @@
 use v6;
 
-use PDF::DAO::Tie::Hash;
+use PDF::COS::Tie::Hash;
 
 # /Encrypt - trailer encryption info
 
-role PDF::DAO::Type::Encrypt
-    does PDF::DAO::Tie::Hash {
+role PDF::COS::Type::Encrypt
+    does PDF::COS::Tie::Hash {
 
 # See [PDF 1.7 TABLE 20 Entries common to all encryption dictionaries]
 
-    use PDF::DAO::Tie;
-    use PDF::DAO::Name;
-    has PDF::DAO::Name $.Filter is entry(:required);    #| (Required) The name of the preferred security handler for this document. Typically, it is the name of the security handler that was used to encrypt the document. If SubFilter is not present, only this security handler should be used when opening the document. If it is present, consumer applications can use any security handler that implements the format specified by SubFilter.
+    use PDF::COS::Tie;
+    use PDF::COS::Name;
+    has PDF::COS::Name $.Filter is entry(:required);    #| (Required) The name of the preferred security handler for this document. Typically, it is the name of the security handler that was used to encrypt the document. If SubFilter is not present, only this security handler should be used when opening the document. If it is present, consumer applications can use any security handler that implements the format specified by SubFilter.
                                                         #| 'Standard' is the name of the built-in password-based security handler.
 
-   has PDF::DAO::Name $.SubFilter is entry;             #| Optional; PDF 1.3) A name that completely specifies the format and interpretation of the contents of the encryption dictionary. It is needed to allow security handlers other than the one specified by Filter to decrypt the document. If this entry is absent, other security handlers should not be allowed to decrypt the document.
+   has PDF::COS::Name $.SubFilter is entry;             #| Optional; PDF 1.3) A name that completely specifies the format and interpretation of the contents of the encryption dictionary. It is needed to allow security handlers other than the one specified by Filter to decrypt the document. If this entry is absent, other security handlers should not be allowed to decrypt the document.
                                                         #| Note: This entry was introduced in PDF 1.3 to support the use of public-key cryptography in PDF files; however, it was not incorporated into the PDF Reference until the fourth edition (PDF 1.5).
 
     has UInt $.V is entry;                              #| (Optional but strongly recommended) A code specifying the algorithm to be used in encrypting and decrypting the document:
@@ -29,13 +29,13 @@ role PDF::DAO::Type::Encrypt
 
     has Hash $.CF is entry;                             #| (Optional; meaningful only when the value of V is 4; PDF 1.5) A dictionary whose keys are crypt filter names and whose values are the corresponding crypt filter dictionaries (see Table 3.22). Every crypt filter used in the document must have an entry in this dictionary, except for the standard crypt filter names
 
-    has PDF::DAO::Name $.StmF is entry;                 #| (Optional; meaningful only when the value of V is 4; PDF 1.5) The name of the crypt filter that is used by default when decrypting streams. The name must be a key in the CF dictionary or a standard crypt filter name specified in Table 3.23. All streams in the document, except for cross-reference streams (see Section 3.4.7, “Cross-Reference Streams”) or streams that have a Crypt entry in their Filter array (see Table 3.5), are decrypted by the security handler, using this crypt filter.
+    has PDF::COS::Name $.StmF is entry;                 #| (Optional; meaningful only when the value of V is 4; PDF 1.5) The name of the crypt filter that is used by default when decrypting streams. The name must be a key in the CF dictionary or a standard crypt filter name specified in Table 3.23. All streams in the document, except for cross-reference streams (see Section 3.4.7, “Cross-Reference Streams”) or streams that have a Crypt entry in their Filter array (see Table 3.5), are decrypted by the security handler, using this crypt filter.
                                                         #| Default value: Identity.
 
-    has PDF::DAO::Name $.StrF is entry;                 #| (Optional; meaningful only when the value of V is 4; PDF 1.5) The name of the crypt filter that is used when decrypting all strings in the document. The name must be a key in the CF dictionary or a standard crypt filter name specified in Table 3.23.
+    has PDF::COS::Name $.StrF is entry;                 #| (Optional; meaningful only when the value of V is 4; PDF 1.5) The name of the crypt filter that is used when decrypting all strings in the document. The name must be a key in the CF dictionary or a standard crypt filter name specified in Table 3.23.
                                                         #| Default value: Identity.
 
-    has PDF::DAO::Name $.EFF is entry;                  #| (Optional; meaningful only when the value of V is 4; PDF 1.6) The name of the crypt filter that should be used by default when encrypting embedded file streams; it must correspond to a key in the CF dictionary or a standard crypt filter name specified in Table 3.23.
+    has PDF::COS::Name $.EFF is entry;                  #| (Optional; meaningful only when the value of V is 4; PDF 1.6) The name of the crypt filter that should be used by default when encrypting embedded file streams; it must correspond to a key in the CF dictionary or a standard crypt filter name specified in Table 3.23.
                                                         #| This entry is provided by the security handler. Applications should respect this value when encrypting embedded files, except for embedded file streams that have their own crypt filter specifier. If this entry is not present, and the embedded file stream does not contain a crypt filter specifier, the stream should be encrypted using the default stream crypt filter specified by StmF.
 
    # See [PDF 1.7 TABLE 3.19 Additional encryption dictionary entries for the standard security handler]

@@ -1,8 +1,8 @@
 use v6;
-use PDF::DAO;
+use PDF::COS;
 
-role PDF::DAO::ByteString
-    does PDF::DAO {
+role PDF::COS::ByteString
+    does PDF::COS {
     has Str $.type is rw;
 
     method content { $!type => self~'' };

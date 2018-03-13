@@ -1,8 +1,8 @@
 use v6;
 
-use PDF::DAO::Tie;
+use PDF::COS::Tie;
 
-role PDF::DAO::Tie::Hash does PDF::DAO::Tie {
+role PDF::COS::Tie::Hash does PDF::COS::Tie {
 
     #| resolve a heritable property by dereferencing /Parent entries
     sub inherit($object, Str $key, :$seen is copy) {

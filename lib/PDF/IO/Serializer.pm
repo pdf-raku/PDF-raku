@@ -2,9 +2,9 @@ use v6;
 
 class PDF::IO::Serializer {
 
-    use PDF::DAO;
-    use PDF::DAO::Stream;
-    use PDF::DAO::Util :to-ast;
+    use PDF::COS;
+    use PDF::COS::Stream;
+    use PDF::COS::Util :to-ast;
 
     has UInt $.size is rw = 1;      #| first free object number
     has Pair  @!objects;            #| renumbered objects
@@ -16,14 +16,14 @@ class PDF::IO::Serializer {
 
     method type { $!type //= $.reader.?type // 'PDF' }
 
-    #| Reference count hashes. Could be derivate class of PDF::DAO::Dict or PDF::DAO::Stream.
+    #| Reference count hashes. Could be derivate class of PDF::COS::Dict or PDF::COS::Stream.
     multi method ref-count(Hash $dict) {
         unless %!ref-count{$dict}++ { # already encountered
             $.ref-count($dict{$_}) for $dict.keys.sort
         }
     }
 
-    #| Reference count arrays. Could be derivate class of PDF::DAO::Array
+    #| Reference count arrays. Could be derivate class of PDF::COS::Array
     multi method ref-count(Array $array) {
         unless %!ref-count{$array}++ { # already encountered
             $.ref-count($array[$_]) for $array.keys
@@ -57,7 +57,7 @@ class PDF::IO::Serializer {
     proto method body(|c --> Array) {*}
 
     #| rebuild document body from root
-    multi method body( PDF::DAO $trailer!, Bool:_ :$*compress, UInt :$!size = 1) {
+    multi method body( PDF::COS $trailer!, Bool:_ :$*compress, UInt :$!size = 1) {
 
 	temp $trailer.obj-num = 0;
 	temp $trailer.gen-num = 0;
@@ -160,7 +160,7 @@ class PDF::IO::Serializer {
     method is-indirect($_) {
         %!ref-count{$_} > 1            #| multiply referenced; needs to be indirect
             || ? .?obj-num             #| indirect if it has an object number
-            || $_~~ PDF::DAO::Stream   #| streams need to indirect
+            || $_~~ PDF::COS::Stream   #| streams need to indirect
             || ($_ ~~ Hash && (.<Type>:exists)) # typed hash?
    }
 
@@ -171,7 +171,7 @@ class PDF::IO::Serializer {
     #|   generating or reusing the object-number in the process.
     proto method freeze(|) {*}
 
-    #| handles PDF::DAO::Dict, PDF::DAO::Stream, (plain) Hash
+    #| handles PDF::COS::Dict, PDF::COS::Stream, (plain) Hash
     multi method freeze( Hash $object!, Bool :$indirect) {
 
         with %!objects-idx{$object} -> $ind-ref {
@@ -180,7 +180,7 @@ class PDF::IO::Serializer {
         }
         else {
             my $stream;
-	    if $object.isa(PDF::DAO::Stream) {
+	    if $object.isa(PDF::COS::Stream) {
 	        with $*compress {
 		    $_ ?? $object.compress !! $object.uncompress
 	        }
@@ -215,7 +215,7 @@ class PDF::IO::Serializer {
         }
     }
 
-    #| handles PDF::DAO::Array, (plain) Array
+    #| handles PDF::COS::Array, (plain) Array
     multi method freeze( Array $object!, Bool :$indirect ) {
 
         with %!objects-idx{$object} -> $ind-ref {
@@ -246,7 +246,7 @@ class PDF::IO::Serializer {
 
     #| build AST, starting at the trailer.
     method ast(
-	PDF::DAO $trailer!,
+	PDF::COS $trailer!,
 	Numeric :$version=1.3,
 	Str     :$!type,     #| e.g. 'PDF', 'FDF;
 	Bool    :$compress,

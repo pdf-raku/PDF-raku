@@ -2,19 +2,19 @@ use v6;
 use Test;
 plan 8;
 
-use PDF::DAO::Dict;
-use PDF::DAO::Type::Info;
+use PDF::COS::Dict;
+use PDF::COS::Type::Info;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
 class DummyCatalog
-    is PDF::DAO::Dict {
+    is PDF::COS::Dict {
 
-    use PDF::DAO::Tie;
+    use PDF::COS::Tie;
 
-    has PDF::DAO::Type::Info $.Info is entry;
+    has PDF::COS::Type::Info $.Info is entry;
 }
 
 my $input = q:to"--ENOUGH!!--";
@@ -35,10 +35,10 @@ my %dict = $/.ast.value;
 
 my $catalog = DummyCatalog.new( :%dict );
 isa-ok $catalog, DummyCatalog, 'catalog sanity';
-isa-ok $catalog.Info, PDF::DAO::Dict;
-does-ok $catalog.Info, PDF::DAO::Type::Info;
+isa-ok $catalog.Info, PDF::COS::Dict;
+does-ok $catalog.Info, PDF::COS::Type::Info;
 isa-ok $catalog.Info.CreationDate, DateTime, 'Info.CreationDate';
 is $catalog.Info.CreationDate.year, 1997, 'Info.CreationDate.year';
 is ~ $catalog.Info.CreationDate, "D:19970915110347-08'00'", 'Info.CreationDate stringification';
-isa-ok $catalog.Info.Title, ::('PDF::DAO::TextString'), 'Info.Title';
+isa-ok $catalog.Info.Title, ::('PDF::COS::TextString'), 'Info.Title';
 is $catalog.Info.Title, "PostScript Language Reference, Third Edition", 'Info.Title';

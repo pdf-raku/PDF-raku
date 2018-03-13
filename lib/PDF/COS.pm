@@ -3,7 +3,8 @@ use v6;
 our $loader;
 our %required;
 
-role PDF::DAO {
+#| Perl 6 bindings to the Carousel Object System (http://jimpravetz.com/blog/2012/12/in-defense-of-cos/)
+role PDF::COS {
 
     has $.reader is rw;
     has Int $.obj-num is rw;
@@ -31,7 +32,7 @@ role PDF::DAO {
 	self!coercer.coerce( $obj, $type )
     }
 
-    multi method coerce(PDF::DAO $val!) { $val }
+    multi method coerce(PDF::COS $val!) { $val }
 
     multi method coerce(Hash $dict!, |c) {
 	use PDF::Grammar:ver(v0.1.0+) :AST-Types;
@@ -66,7 +67,7 @@ role PDF::DAO {
     }
 
     multi method coerce( List :$array!, |c ) {
-        state $base-class = $.required('PDF::DAO::Array');
+        state $base-class = $.required('PDF::COS::Array');
         $.load-delegate( :$array, :$base-class ).new( :$array, |c );
     }
 
@@ -75,41 +76,41 @@ role PDF::DAO {
     }
 
     multi method coerce( Int :$int! is rw) {
-        self!add-role($int, 'PDF::DAO::Int');
+        self!add-role($int, 'PDF::COS::Int');
     }
     multi method coerce( Int :$int! is copy) { self.coerce: :$int }
 
     multi method coerce( Numeric :$real! is rw) {
-        self!add-role($real, 'PDF::DAO::Real');
+        self!add-role($real, 'PDF::COS::Real');
     }
     multi method coerce( Numeric :$real! is copy) { self.coerce: :$real }
 
     multi method coerce( Str :$hex-string! is rw) {
-        self!add-role($hex-string, 'PDF::DAO::ByteString');
+        self!add-role($hex-string, 'PDF::COS::ByteString');
         $hex-string.type = 'hex-string';
         $hex-string;
     }
     multi method coerce( Str :$hex-string! is copy) { self.coerce: :$hex-string }
 
     multi method coerce( Str :$literal! is rw) {
-        self!add-role( $literal, 'PDF::DAO::ByteString');
+        self!add-role($literal, 'PDF::COS::ByteString');
         $literal.type = 'literal';
         $literal;
     }
     multi method coerce( Str :$literal! is copy) { self.coerce: :$literal }
 
     multi method coerce( Str :$name! is rw) {
-        self!add-role($name, 'PDF::DAO::Name');
+        self!add-role($name, 'PDF::COS::Name');
     }
     multi method coerce( Str :$name! is copy) { self.coerce: :$name }
 
     multi method coerce( Bool :$bool! is rw) {
-        self!add-role($bool, 'PDF::DAO::Bool');
+        self!add-role($bool, 'PDF::COS::Bool');
     }
     multi method coerce( Bool :$bool! is copy) { self.coerce: :$bool }
 
     multi method coerce( Hash :$dict!, |c ) {
-	state $base-class = $.required('PDF::DAO::Dict');
+	state $base-class = $.required('PDF::COS::Dict');
 	my $class = $.load-delegate( :$dict, :$base-class );
 	$class.new( :$dict, |c );
     }
@@ -121,25 +122,25 @@ role PDF::DAO {
                 with $stream{k};
         }
         my Hash $dict = $stream<dict> // {};
-        state $base-class = $.required('PDF::DAO::Stream');
+        state $base-class = $.required('PDF::COS::Stream');
 	my $class = $.load-delegate( :$dict, :$base-class);
         $class.new( :$dict, |%params, |c );
     }
 
     multi method coerce(:$null!) {
-        state $ = $.required('PDF::DAO::Null').new;
+        state $ = $.required('PDF::COS::Null').new;
     }
 
     multi method coerce($val) is default { $val }
 
     method !coercer {
-        state $coercer = $.required('PDF::DAO::Coercer');
+        state $coercer = $.required('PDF::COS::Coercer');
         $coercer;
     }
 
     method loader is rw {
 	unless $loader.can('load-delegate') {
-	    $loader = $.required('PDF::DAO::Loader');
+	    $loader = $.required('PDF::COS::Loader');
 	}
 	$loader
     }

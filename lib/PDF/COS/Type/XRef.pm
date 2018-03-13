@@ -1,22 +1,22 @@
 use v6;
 
-use PDF::DAO;
-use PDF::DAO::Stream;
-use PDF::DAO::Tie::Hash;
+use PDF::COS;
+use PDF::COS::Stream;
+use PDF::COS::Tie::Hash;
 
 # /Type /XRef - cross reference stream, introduced with PDF 1.5
 # see [PDF 1.7 Section 3.4.7 Cross-Reference Streams]
-class PDF::DAO::Type::XRef
-    is PDF::DAO::Stream
-    does PDF::DAO::Tie::Hash {
+class PDF::COS::Type::XRef
+    is PDF::COS::Stream
+    does PDF::COS::Tie::Hash {
 
     use PDF::IO::Util :pack;
     use PDF::IO::Blob;
-    use PDF::DAO::Tie;
-    use PDF::DAO::Name;
+    use PDF::COS::Tie;
+    use PDF::COS::Name;
 
     # See [PDF 1.7 TABLE 17 Additional entries specific to a cross-reference stream dictionary]
-    my subset XRef-Name of PDF::DAO::Name where 'XRef';
+    my subset XRef-Name of PDF::COS::Name where 'XRef';
     has XRef-Name $.Type is entry(:required);   #| (Required) The type of PDF object that this dictionary describes; shall be XRef for a cross-reference stream.
 
     has UInt $.Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
@@ -32,7 +32,7 @@ class PDF::DAO::Type::XRef
     method next-obj-num is rw { self<Size> }
 
     method cb-init {
-	self<Type> = PDF::DAO.coerce( :name<XRef> );
+	self<Type> = PDF::COS.coerce( :name<XRef> );
         self<W> //= [ 1, 2, 1 ];
         self<Size> //= 0;
     }

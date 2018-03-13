@@ -24,7 +24,7 @@ for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
     isa-ok $pdf.reader, ::('PDF::Reader'), "$desc reader type";
 
     ok $pdf<Root>, "$desc document has a root";
-    isa-ok $pdf<Root>, ::('PDF::DAO::Dict'), "$desc document root";
+    isa-ok $pdf<Root>, ::('PDF::COS::Dict'), "$desc document root";
 
     if ext eq 'fdf' {
 	ok $pdf<Root> && $pdf<Root><FDF>, "$desc <Root><FDF> entry";
@@ -33,7 +33,7 @@ for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
 	ok $pdf<Root> && $pdf<Root><Pages>, "$desc <Root><Pages> entry";
 
 	unless pdf-file ~~ /'no-pages'/ {
-	    does-ok $pdf.Info, ::('PDF::DAO::Type::Info'), "$desc document info";
+	    does-ok $pdf.Info, ::('PDF::COS::Type::Info'), "$desc document info";
 	    ok $pdf.Info && $pdf.Info.CreationDate // $pdf.Info.ModDate, "$desc <Info><CreationDate> entry";
 	    isa-ok $pdf<Info><CreationDate>//$pdf<Info><ModDate>, DateTime, "$desc CreationDate";
         }

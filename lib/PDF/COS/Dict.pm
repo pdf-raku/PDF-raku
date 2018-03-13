@@ -1,16 +1,16 @@
 use v6;
 
-use PDF::DAO;
-use PDF::DAO::Tie;
-use PDF::DAO::Tie::Hash;
+use PDF::COS;
+use PDF::COS::Tie;
+use PDF::COS::Tie::Hash;
 
 #| Dict - base class for dictionary objects, e.g. Catalog Page ...
-class PDF::DAO::Dict
+class PDF::COS::Dict
     is Hash
-    does PDF::DAO
-    does PDF::DAO::Tie::Hash {
+    does PDF::COS
+    does PDF::COS::Tie::Hash {
 
-    use PDF::DAO::Util :from-ast, :ast-coerce;
+    use PDF::COS::Util :from-ast, :ast-coerce;
 
     my %seen{Any} = (); #= to catch circular references
 
@@ -19,8 +19,8 @@ class PDF::DAO::Dict
         without $obj {
             temp %seen{$dict} = $obj = self.bless(|c);
             $obj.tie-init;
-            # this may trigger cascading PDF::DAO::Tie coercians
-            # e.g. native Array to PDF::DAO::Array
+            # this may trigger cascading PDF::COS::Tie coercians
+            # e.g. native Array to PDF::COS::Array
             $obj{.key} = from-ast(.value) for $dict.pairs;
             $obj.?cb-init;
 

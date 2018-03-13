@@ -1,8 +1,8 @@
 use v6;
-use PDF::DAO;
+use PDF::COS;
 
-class PDF::DAO::Null
-    does PDF::DAO
+class PDF::COS::Null
+    does PDF::COS
     is Any {
     method defined { False }
     method content { :null(Any) };

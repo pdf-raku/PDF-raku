@@ -1,12 +1,12 @@
 use v6;
 
-module PDF::DAO::Util {
+module PDF::COS::Util {
 
-    use PDF::DAO;
+    use PDF::COS;
 
     proto sub to-ast(|) is export(:to-ast) {*};
     multi sub to-ast(Pair $p!) {$p}
-    multi sub to-ast(PDF::DAO $object!) {$object.content}
+    multi sub to-ast(PDF::COS $object!) {$object.content}
     multi sub to-ast($other!) is default {
         ast-coerce $other
     }
@@ -120,7 +120,7 @@ module PDF::DAO::Util {
 
     multi sub from-ast( Str :$encoded! ) { $encoded }
 
-    multi sub from-ast( Str :$hex-string! ) { PDF::DAO.coerce( :$hex-string ) }
+    multi sub from-ast( Str :$hex-string! ) { PDF::COS.coerce( :$hex-string ) }
 
     multi sub from-ast( Array :$ind-ref! ) {
         :$ind-ref;
@@ -132,17 +132,17 @@ module PDF::DAO::Util {
     }
 
     multi sub from-ast( Numeric :$int! ) {
-        PDF::DAO.coerce :$int;
+        PDF::COS.coerce :$int;
     }
 
     multi sub from-ast( Str :$literal! ) { $literal }
 
     multi sub from-ast( Str :$name! ) {
-        PDF::DAO.coerce :$name;
+        PDF::COS.coerce :$name;
     }
 
     multi sub from-ast( Numeric :$real! ) {
-        PDF::DAO.coerce :$real;
+        PDF::COS.coerce :$real;
     }
 
     multi sub from-ast( Hash :$stream! ) {

@@ -1,8 +1,8 @@
 use v6;
 
-use PDF::DAO::Tie;
+use PDF::COS::Tie;
 
-role PDF::DAO::Tie::Array does PDF::DAO::Tie {
+role PDF::COS::Tie::Array does PDF::COS::Tie {
 
     has Attribute @.index is rw;    #| for typed indices
 

@@ -3,8 +3,8 @@ use Test;
 plan 27;
 
 use PDF::IO::IndObj;
-use PDF::DAO::Util :to-ast;
-use PDF::DAO::Dict;
+use PDF::COS::Util :to-ast;
+use PDF::COS::Dict;
 use PDF::Grammar::Test :is-json-equiv;
 
 my $reader = class {
@@ -25,7 +25,7 @@ sub ind-obj-tests( :$ind-obj!, :$class!, :$to-json) {
 ind-obj-tests(
     :ind-obj[ 21, 0, :dict{ D => :array[ :ind-ref[216, 0], :name<XYZ>, :int(0), :int(441), :null(Any)],
                             S => :name<GoTo>}],
-    :class(PDF::DAO::Dict),
+    :class(PDF::COS::Dict),
     :to-json{ :D[ :ind-ref[216, 0], "XYZ", 0, 441, Any], :S<GoTo> },
     );
 
@@ -38,7 +38,7 @@ ind-obj-tests(
                                               Obj => :ind-ref[233, 0]},
                                ]},
     ],
-    :class(PDF::DAO::Dict),
+    :class(PDF::COS::Dict),
     :to-json{ :P{ :ind-ref[ 142, 0 ] },
               :S<Link>,
               :K[ :ind-ref[ 207, 0 ],
@@ -49,12 +49,12 @@ ind-obj-tests(
                   ] },
     );
 
-use PDF::DAO::Tie;
-use PDF::DAO::Tie::Hash;
-use PDF::DAO::Dict;
-role ResourceRole does PDF::DAO::Tie::Hash {method foo {42}}
-role KidRole does PDF::DAO::Tie::Hash {method bar {42}}
-role MyPages does PDF::DAO::Tie::Hash {
+use PDF::COS::Tie;
+use PDF::COS::Tie::Hash;
+use PDF::COS::Dict;
+role ResourceRole does PDF::COS::Tie::Hash {method foo {42}}
+role KidRole does PDF::COS::Tie::Hash {method bar {42}}
+role MyPages does PDF::COS::Tie::Hash {
     multi sub coerce(Hash $h is rw, KidRole) { $h does KidRole }
     multi sub coerce(Hash $h is rw, ResourceRole) { $h does ResourceRole }
     has KidRole @.Kids is entry(:required, :indirect, :&coerce );
@@ -62,7 +62,7 @@ role MyPages does PDF::DAO::Tie::Hash {
 }
 
 class MyCat
-    is PDF::DAO::Dict {
+    is PDF::COS::Dict {
     has MyPages $.Pages is entry(:required, :indirect);
     has Bool $.NeedsRendering is entry;
 }

@@ -4,7 +4,7 @@ plan 4;
 
 use PDF::Reader;
 use PDF::Writer;
-use PDF::DAO;
+use PDF::COS;
 
 my $reader = PDF::Reader.new;
 

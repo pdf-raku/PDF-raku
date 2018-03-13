@@ -1,8 +1,8 @@
 use v6;
-use PDF::DAO;
+use PDF::COS;
 
-role PDF::DAO::Name
-    does PDF::DAO {
+role PDF::COS::Name
+    does PDF::COS {
 
     method content {
         :name(self~'')

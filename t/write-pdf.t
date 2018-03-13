@@ -3,8 +3,8 @@
 use Test;
 use JSON::Fast;
 
-use PDF::Grammar::Doc;
-use PDF::Grammar::Doc::Actions;
+use PDF::Grammar::COS;
+use PDF::Grammar::COS::Actions;
 use PDF::Grammar::Test;
 use PDF::IO;
 use PDF::Writer;
@@ -15,7 +15,7 @@ unless $*PERL.compiler.version >= v2017.04 {
     exit;
 }
 
-my $actions = PDF::Grammar::Doc::Actions.new();
+my $actions = PDF::Grammar::COS::Actions.new();
 
 for 't/pdf'.IO.dir.grep(/ [\w|'-']*? '.json'$/).sort -> $json-file {
 
@@ -31,7 +31,7 @@ for 't/pdf'.IO.dir.grep(/ [\w|'-']*? '.json'$/).sort -> $json-file {
     my ($rule) = %ast.keys;
     my %expected = :%ast;
 
-    my $class = PDF::Grammar::Doc;
+    my $class = PDF::Grammar::COS;
 
     PDF::Grammar::Test::parse-tests($class, ~$input, :$rule, :$actions, :suite("[$pdf-input-file]"), :%expected );
 

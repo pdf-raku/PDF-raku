@@ -1,12 +1,12 @@
 use v6;
 
-use PDF::DAO;
+use PDF::COS;
 
-class PDF::DAO::DateString
-    does PDF::DAO
+class PDF::COS::DateString
+    does PDF::COS
     is DateTime {
 
-    use PDF::DAO::Util :date-time-formatter;
+    use PDF::COS::Util :date-time-formatter;
     BEGIN our &formatter = &date-time-formatter;
 
     multi method new(Str $pdf-date!) {

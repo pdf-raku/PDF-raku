@@ -28,7 +28,7 @@ class PDF::IO::Crypt::PDF
         $!str-f := $!stm-f;
     }
 
-    method !v4-crypt( Hash $doc, PDF::DAO::Type::Encrypt $encrypt, Str $cf-entry, |c) {
+    method !v4-crypt( Hash $doc, PDF::COS::Type::Encrypt $encrypt, Str $cf-entry, |c) {
         return Nil
             if $cf-entry eq 'Identity';
 
@@ -56,7 +56,7 @@ class PDF::IO::Crypt::PDF
 	    unless $doc<ID>;
 
         my $encrypt = $doc<Encrypt>;
-        PDF::DAO.coerce($encrypt, PDF::DAO::Type::Encrypt);
+        PDF::COS.coerce($encrypt, PDF::COS::Type::Encrypt);
         
 	given $encrypt.V {
 	    when 1..3 {

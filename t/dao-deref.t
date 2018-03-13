@@ -2,9 +2,9 @@ use v6;
 use Test;
 plan 35;
 
-use PDF::DAO;
-use PDF::DAO::Dict;
-use PDF::DAO::Array;
+use PDF::COS;
+use PDF::COS::Dict;
+use PDF::COS::Array;
 use PDF::IO::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
 
@@ -26,7 +26,7 @@ class t::DummyReader {
 
 my $reader = t::DummyReader.new;
 
-my $obj = PDF::DAO.coerce( {
+my $obj = PDF::COS.coerce( {
         :A(10),
         :B(:ind-ref[42,4]),
         :Kids[
@@ -38,7 +38,7 @@ my $obj = PDF::DAO.coerce( {
     :$reader
     );
 
-isa-ok $obj, PDF::DAO::Dict;
+isa-ok $obj, PDF::COS::Dict;
 is $obj.reader, $reader, 'reader attribute';
 is $obj<A>, 10, 'shallow reference';
 is-json-equiv $obj<B>, {Desc => "indirect object: 42 4 R", :Name<Test>}, 'hash dereference';
@@ -51,7 +51,7 @@ is-json-equiv $obj<B>, {Desc => "indirect object: 42 4 R", :Name<Test>}, 'hash d
 $obj<B> = :ind-ref[42, 5];
 is-json-equiv $obj<B>, {Desc => "indirect object: 42 5 R", :Name<Test>}, 'hash dereference - updated';
 
-isa-ok $obj<Kids>, PDF::DAO::Array;
+isa-ok $obj<Kids>, PDF::COS::Array;
 is-deeply $obj<Kids>.reader, $reader, 'reader array stickyness';
 is-json-equiv $obj<Kids>[2], {Desc => "indirect object: 99 0 R", :Name<Test>}, 'array dereference';
 $obj<B><SubRef> = :ind-ref[77, 0];
@@ -75,18 +75,18 @@ $obj<Kids>.push( (:ind-ref[123,0]) );
 is-json-equiv $obj<Kids>[3], {Desc => "indirect object: 123 0 R", :Name<Test>}, 'new ind-ref array entry - deref';
 lives-ok {$obj<Y><Z> = 'foo'}, 'vivification - lives';
 is $obj<Y><Z>, 'foo', 'vivification - value';
-isa-ok $obj<Y>, PDF::DAO::Dict, 'vivification - type';
+isa-ok $obj<Y>, PDF::COS::Dict, 'vivification - type';
 is-deeply $obj<Y>.reader, $reader, 'vivification - reader stickyness';
 # other abstracted methods
 $obj<Kids>[4] = $obj<B><SubRef>;
 $obj<Kids>.push: [1,2,3];
 is +$obj<Kids>, 6, '+$obj<Kids>';
-isa-ok $obj<Kids>[*-1], PDF::DAO::Array, 'push coercian';
+isa-ok $obj<Kids>[*-1], PDF::COS::Array, 'push coercian';
 $obj<Kids>.splice(1,4, {:Foo<bar>});
 is +$obj<Kids>, 3, '+$obj<Kids>';
-isa-ok $obj<Kids>[1], PDF::DAO::Dict, 'splice coercian';
+isa-ok $obj<Kids>[1], PDF::COS::Dict, 'splice coercian';
 $obj<Kids>.unshift([99]);
-isa-ok $obj<Kids>[0], PDF::DAO::Array, 'unshift coercian';
+isa-ok $obj<Kids>[0], PDF::COS::Array, 'unshift coercian';
 
 lives-ok {$obj<Kids>[4] = {}}, 'bind-pos array';
 my $x = 'before';

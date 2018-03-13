@@ -28,16 +28,16 @@ is-json-equiv $content, ( :array[:real(0.9505e0), :real(1e0), :real(1.089e0),
 
 is-json-equiv $ind-obj.ast, %ast, 'ast regeneration';
 
-use PDF::DAO::Array;
-use PDF::DAO::Tie;
-use PDF::DAO::Tie::Hash;
+use PDF::COS::Array;
+use PDF::COS::Tie;
+use PDF::COS::Tie::Hash;
 
-role ColorSpaceDict does PDF::DAO::Tie::Hash {
+role ColorSpaceDict does PDF::COS::Tie::Hash {
      method yay{42}
 }
 
 class ColorSpaceArray
-    is PDF::DAO::Array {
+    is PDF::COS::Array {
 
     method type {'ColorSpace'}
     has Str $.Subtype is index(0);

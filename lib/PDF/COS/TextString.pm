@@ -1,9 +1,9 @@
 use v6;
 
-use PDF::DAO;
+use PDF::COS;
 
-class PDF::DAO::TextString
-    does PDF::DAO
+class PDF::COS::TextString
+    does PDF::COS
     is Str {
 
     has $.value;

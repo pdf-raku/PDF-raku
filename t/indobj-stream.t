@@ -2,7 +2,7 @@ use v6;
 use Test;
 plan 20;
 
-use PDF::DAO::Stream;
+use PDF::COS::Stream;
 use PDF::IO::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
 
@@ -14,7 +14,7 @@ my %dict = ( :Filter<ASCIIHexDecode>,
 
 my $decoded = '100 100 Td (Hello, world!) Tj';
 my $encoded = '31303020313030205464202848656c6c6f2c20776f726c64212920546a';
-lives-ok { $stream-obj = PDF::DAO.coerce( :$decoded, :stream{ :%dict } ) }, 'basic stream object construction';
+lives-ok { $stream-obj = PDF::COS.coerce( :$decoded, :stream{ :%dict } ) }, 'basic stream object construction';
 stream_tests( $stream-obj, 'stream object' );
 %dict<Length> = 59;
 
@@ -41,13 +41,13 @@ $ind-obj.object.uncompress;
 is-deeply $ind-obj.object.encoded, "q $decoded Q", 'stream object compressed, then uncompressed';
 
 sub stream_tests( $stream-obj, $subject) {
-    isa-ok $stream-obj, PDF::DAO::Stream, $subject;
+    isa-ok $stream-obj, PDF::COS::Stream, $subject;
     is-json-equiv $stream-obj, %dict, $subject~' dictionary';
     is $stream-obj.decoded, '100 100 Td (Hello, world!) Tj', $subject~' decoded';
     is $stream-obj.encoded.Str.lc, $encoded~'>', $subject~' encoded';
 }
 
-my $stream2 = PDF::DAO.coerce( :stream{  :dict{ :Foo( :name<Bar> ) } } );
+my $stream2 = PDF::COS.coerce( :stream{  :dict{ :Foo( :name<Bar> ) } } );
 is-json-equiv $stream2.content, (:dict{:Foo(:name<Bar>)}), 'stream without content';
 $stream2.decoded = 'ABC12345678';
 is-json-equiv $stream2.content, (:stream{ :dict{:Foo(:name<Bar>), :Length{ :int(11) } }, :encoded<ABC12345678> }), 'stream with content';

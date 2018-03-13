@@ -2,14 +2,14 @@ use v6;
 use Test;
 plan 8;
 
-use PDF::DAO::Array;
+use PDF::COS::Array;
 
 {
     # basic tests
     my role MyRole {};
     class TestArray
-    is PDF::DAO::Array {
-        use PDF::DAO::Tie;
+    is PDF::COS::Array {
+        use PDF::COS::Tie;
         has Int $.I0 is index(0, :required);
         multi sub coerce($v, MyRole) { $v does MyRole }
         has MyRole $.R1 is index(1, :&coerce);

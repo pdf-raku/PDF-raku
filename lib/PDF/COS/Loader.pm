@@ -1,11 +1,11 @@
 use v6;
 
 
-class PDF::DAO::Loader {
+class PDF::COS::Loader {
 
-    use PDF::DAO::Util :from-ast;
+    use PDF::COS::Util :from-ast;
 
-    method class-paths { <PDF::DAO::Type> }
+    method class-paths { <PDF::COS::Type> }
 
     our %handler;
     method handler {%handler}
@@ -30,7 +30,7 @@ class PDF::DAO::Loader {
 		when X::CompUnit::UnsatisfiedDependency { }
 	    }
             my \class-name = class-path ~ '::' ~ $subclass;
-	    $handler-class = PDF::DAO.required(class-name);
+	    $handler-class = PDF::COS.required(class-name);
             $handler-class = $base-class.^mixin($handler-class)
                 unless $handler-class.isa($base-class);
 	    last;

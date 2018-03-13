@@ -5,10 +5,10 @@ plan 44;
 use PDF::Reader;
 use PDF::Writer;
 use PDF::IO::Serializer;
-use PDF::DAO;
-use PDF::DAO::Array;
+use PDF::COS;
+use PDF::COS::Array;
 
-sub name($name){ PDF::DAO.coerce(:$name) };
+sub name($name){ PDF::COS.coerce(:$name) };
 
 my $reader = PDF::Reader.new();
 isa-ok $reader, PDF::Reader;
@@ -46,7 +46,7 @@ ok !($Pages<Count>.obj-num), 'set .is-indirect = False';
 
 my $Kids = $Pages<Kids>;
 isa-ok $Kids, Array;
-isa-ok $Kids, PDF::DAO::Array;
+isa-ok $Kids, PDF::COS::Array;
 is-deeply $Kids.reader, $reader, 'hash -> array deref - reader stickyness';
 my $kid := $Kids[0];
 is-deeply $kid.reader, $reader, 'array -> hash deref - reader stickyness';
@@ -71,8 +71,8 @@ my UInt $Length = $decoded.codes;
 
 lives-ok {
     my $Resources = $Pages<Kids>[0]<Resources>;
-    my $new-page = PDF::DAO.coerce: { :Type(name 'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
-    my $contents = PDF::DAO.coerce( :stream{ :$decoded, :dict{ :$Length } } );
+    my $new-page = PDF::COS.coerce: { :Type(name 'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
+    my $contents = PDF::COS.coerce( :stream{ :$decoded, :dict{ :$Length } } );
     $new-page<Contents> = $contents;
     $new-page<Parent> = $Pages;
     $Pages<Kids>.push: $new-page;
@@ -86,7 +86,7 @@ ok !$contents.Length.defined, '$stream<Length>:delete propagates to $stream.Leng
 
 $contents = Nil;
 
-my $pdf = PDF::DAO.coerce: { :Root{ :Type(name 'Catalog') } };
+my $pdf = PDF::COS.coerce: { :Root{ :Type(name 'Catalog') } };
 $pdf<Root><Outlines> = $root-obj<Outlines>;
 $pdf<Root><Pages> = $root-obj<Pages>;
 
@@ -97,9 +97,9 @@ my $ast = :pdf{ :header{ :version(1.2) }, :$body };
 my $writer = PDF::Writer.new: :$ast;
 ok 't/hello-and-bye.pdf'.IO.spurt( $writer.Blob), 'output 2 page pdf';
 
-use PDF::DAO::Tie;
-use PDF::DAO::Tie::Hash;
-use PDF::DAO::Tie::Array;
+use PDF::COS::Tie;
+use PDF::COS::Tie::Hash;
+use PDF::COS::Tie::Array;
 
 sub warns-like(&code, $ex-type, $desc = 'warning') {
     my $ex;
@@ -120,45 +120,45 @@ sub warns-like(&code, $ex-type, $desc = 'warning') {
     }
 }
 
-my role HashRole does PDF::DAO::Tie::Hash {
+my role HashRole does PDF::COS::Tie::Hash {
     has $.Foo is entry;
 }
 
-my role ArrayRole does PDF::DAO::Tie::Array {
+my role ArrayRole does PDF::COS::Tie::Array {
     has $.Bar is index[1];
 }
 
 my role GenRole {
 }
 
-my $h1 = PDF::DAO.coerce: {};
-lives-ok { PDF::DAO.coerce($h1, HashRole) }, 'tied hash role application';
+my $h1 = PDF::COS.coerce: {};
+lives-ok { PDF::COS.coerce($h1, HashRole) }, 'tied hash role application';
 does-ok $h1, HashRole, 'Hash/Hash application';
 $h1.Foo = 42;
 is $h1<Foo>, 42, 'tied hash';
 is $h1.Foo, 42, 'tied hash accessor';
 
-my $h2 = PDF::DAO.coerce: {};
-warns-like { PDF::DAO.coerce($h2, ArrayRole) }, ::('X::PDF::Coerce'), 'Hash/Array misapplication';
+my $h2 = PDF::COS.coerce: {};
+warns-like { PDF::COS.coerce($h2, ArrayRole) }, ::('X::PDF::Coerce'), 'Hash/Array misapplication';
 ok !$h2.does(ArrayRole), 'Hash/Array misapplication';
 
-my $a1 = PDF::DAO.coerce: [];
-lives-ok { PDF::DAO.coerce($a1, ArrayRole) }, 'tied array role application';
+my $a1 = PDF::COS.coerce: [];
+lives-ok { PDF::COS.coerce($a1, ArrayRole) }, 'tied array role application';
 does-ok $a1, ArrayRole, 'Hash/Hash application';
 $a1.Bar = 69;
 is $a1[1], 69, 'tied array accessor';
 is $a1.Bar, 69, 'tied array accessor';
 
-my $a2 = PDF::DAO.coerce: [];
-warns-like { PDF::DAO.coerce($a2, HashRole) }, ::('X::PDF::Coerce'), 'Array/Hash misapplication';
+my $a2 = PDF::COS.coerce: [];
+warns-like { PDF::COS.coerce($a2, HashRole) }, ::('X::PDF::Coerce'), 'Array/Hash misapplication';
 ok !$a2.does(HashRole), 'Array/Hash misapplication';
 
-my $h3 = PDF::DAO.coerce: {};
-lives-ok { PDF::DAO.coerce($h3, GenRole) }, 'general hash role application';
+my $h3 = PDF::COS.coerce: {};
+lives-ok { PDF::COS.coerce($h3, GenRole) }, 'general hash role application';
 does-ok $h3, GenRole, 'Hash/Gen application';
 
-my $a3 = PDF::DAO.coerce: [];
-lives-ok { PDF::DAO.coerce($a3, GenRole) }, 'general array role application';
+my $a3 = PDF::COS.coerce: [];
+lives-ok { PDF::COS.coerce($a3, GenRole) }, 'general array role application';
 does-ok $a3, GenRole, 'Array/Gen application';
 
 done-testing;

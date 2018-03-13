@@ -5,12 +5,12 @@ plan 33;
 use PDF;
 use PDF::Reader;
 use PDF::Writer;
-use PDF::DAO;
+use PDF::COS;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 use JSON::Fast;
 
-sub name($name){ PDF::DAO.coerce(:$name) };
+sub name($name){ PDF::COS.coerce(:$name) };
 
 # ensure consistant document ID generation
 srand(123456);
@@ -26,7 +26,7 @@ my $catalog = $pdf<Root>;
     my $Parent = $catalog<Pages>;
     my $Resources = $Parent<Kids>[0]<Resources>;
     my $MediaBox = $Parent<Kids>[0]<MediaBox>;
-    my $Contents = PDF::DAO.coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
+    my $Contents = PDF::COS.coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
     $Parent<Kids>.push: { :Type(name 'Page'), :$MediaBox, :$Resources, :$Parent, :$Contents };
     $Parent<Count>++;
 }
@@ -90,7 +90,7 @@ my $ast2 = $ind-obj2.ast;
 is-deeply $ast1<ind-obj>[2]<dict>.keys.sort, $ast2<ind-obj>[2]<dict>.keys.sort, 'indirect object dict';
 
 is $pdf.Size, $size2, 'document trailer - updated Size';
-isa-ok $pdf<Root><Pages><Kids>[1], PDF::DAO::Dict, 'updated page 2 access';
+isa-ok $pdf<Root><Pages><Kids>[1], PDF::COS::Dict, 'updated page 2 access';
 
 # now re-read the pdf. Will also test our ability to read a PDF
 # with multiple body segments

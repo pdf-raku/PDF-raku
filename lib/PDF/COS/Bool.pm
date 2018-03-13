@@ -1,8 +1,8 @@
 use v6;
-use PDF::DAO;
+use PDF::COS;
 
-role PDF::DAO::Bool {
-    # does PDF::DAO  - current restriction rakudo can't compose this
+role PDF::COS::Bool {
+    # does PDF::COS  - current restriction rakudo can't compose this
     has UInt $.obj-num is rw;
     has UInt $.gen-num is rw;
     has $.reader is rw;

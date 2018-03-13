@@ -17,13 +17,13 @@ my $ind-obj = PDF::IO::IndObj.new( :$input, |%ast );
 is $ind-obj.obj-num, 5, '$.obj-num';
 is $ind-obj.gen-num, 0, '$.gen-num';
 my $object = $ind-obj.object;
-isa-ok $object, ::('PDF::DAO::Stream');
+isa-ok $object, ::('PDF::COS::Stream');
 isa-ok $object, Hash;
 isa-ok $object.Length, Int, '$.Length';
 is $object.Length, 167, '$.Length';
 is $object.Type, 'ObjStm', '$.Type';
 
-my $num-obj = PDF::DAO.coerce( :real(4.2) );
+my $num-obj = PDF::COS.coerce( :real(4.2) );
 is-deeply $num-obj.content, (:real(4.2)), 'composed object $.content';
 is +$num-obj, 4.2, 'composed object Num coercement';
 is-deeply ~$num-obj, '4.2', 'composed object Str coercement';

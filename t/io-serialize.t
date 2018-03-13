@@ -3,12 +3,12 @@ use Test;
 plan 17;
 
 use PDF::IO::Serializer;
-use PDF::DAO::Util :to-ast;
+use PDF::COS::Util :to-ast;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::Writer;
-use PDF::DAO;
+use PDF::COS;
 
-sub name($name){ PDF::DAO.coerce(:$name) };
+sub name($name){ PDF::COS.coerce(:$name) };
 
 # construct a nasty cyclic structure
 my $dict1 = { :ID(1) };
@@ -16,7 +16,7 @@ my $dict2 = { :ID(2) };
 # create circular hash ref
 $dict2<SelfRef> := $dict2;
 
-my $pdf = PDF::DAO.coerce: { :Root[ $dict1, $dict2 ] };
+my $pdf = PDF::COS.coerce: { :Root[ $dict1, $dict2 ] };
 # create circular array reference
 $pdf<Root>[2] := $pdf<Root>;
 
@@ -38,7 +38,7 @@ is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => 
 
 is-deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], ID => :int(2)}]), "circular hash ref resolution";
 
-$pdf = PDF::DAO.coerce: { :Root{
+$pdf = PDF::COS.coerce: { :Root{
     :Type(name 'Catalog'),
     :Pages{
             :Type(name 'Pages'),
@@ -51,7 +51,7 @@ $pdf = PDF::DAO.coerce: { :Root{
                                  },
                                  :Procset[ name('PDF'),  name('Text') ],
                      },
-                     :Contents( PDF::DAO.coerce( :stream{ :encoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET") } ) ),
+                     :Contents( PDF::COS.coerce( :stream{ :encoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET") } ) ),
                    },
                 ],
             :Count(1),
@@ -88,7 +88,7 @@ is-json-equiv @objects[3], (:ind-obj[4, 0, :dict{
                                                },
                                    ]), 'page object';
 
-my $obj-with-utf8 = PDF::DAO.coerce: { :Root{ :Name(name "Heydər Əliyev") } };
+my $obj-with-utf8 = PDF::COS.coerce: { :Root{ :Name(name "Heydər Əliyev") } };
 $obj-with-utf8<Root>.is-indirect = True;
 my $writer = PDF::Writer.new;
 
@@ -106,7 +106,7 @@ is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'com
 is $stream<encoded>.codes, 54, 'compressed stream length';
 
 # just to define current behaviour wrt to non-latin chars; blows up during write.
-my $obj-with-bad-byte-string = PDF::DAO.coerce: { :Root{ :Name("Heydər Əliyev") } };
+my $obj-with-bad-byte-string = PDF::COS.coerce: { :Root{ :Name("Heydər Əliyev") } };
 @objects = @(PDF::IO::Serializer.new.body($obj-with-bad-byte-string)<objects>);
 dies-ok {$writer.write( :ind-obj(@objects[0].value) )}, 'out-of-range byte-string dies during write';
 

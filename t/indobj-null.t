@@ -13,7 +13,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my Pair $ast = $/.ast;
 my $ind-obj = PDF::IO::IndObj.new( |$ast, :$input );
-isa-ok $ind-obj.object, ::('PDF::DAO')::('Null');
+isa-ok $ind-obj.object, ::('PDF::COS')::('Null');
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 ok ! $ind-obj.object.defined, '$.object';

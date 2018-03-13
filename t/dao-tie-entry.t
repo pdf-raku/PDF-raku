@@ -2,13 +2,13 @@ use v6;
 use Test;
 plan 39;
 
-use PDF::DAO::Dict;
+use PDF::COS::Dict;
 
 {
     # basic tests
     class TestDict
-    is PDF::DAO::Dict {
-        use PDF::DAO::Tie;
+    is PDF::COS::Dict {
+        use PDF::COS::Tie;
         has Int $.IntReq is entry(:required, :alias<required-int>);
         has Hash $.DictInd is entry(:indirect);
         subset FredDict of Hash where {.<Name> ~~ 'Fred'}
@@ -38,8 +38,8 @@ use PDF::DAO::Dict;
 {
     # container tests
     class TestDict2
-    is PDF::DAO::Dict {
-        use PDF::DAO::Tie;
+    is PDF::COS::Dict {
+        use PDF::COS::Tie;
         has UInt @.I is entry;
         has Str @.S is entry;
         my subset NegInt of Int where * < 0;
@@ -73,8 +73,8 @@ use PDF::DAO::Dict;
     # coercement tests
     my role MyRole {};
     class TestDict3
-        is PDF::DAO::Dict {
-        use PDF::DAO::Tie;
+        is PDF::COS::Dict {
+        use PDF::COS::Tie;
 
         multi sub coerce($v, MyRole) { $v does MyRole }
         has MyRole $.Coerced is entry(:&coerce);
@@ -88,10 +88,10 @@ use PDF::DAO::Dict;
 {
     # inheritance tests
     class Node
-        is PDF::DAO::Dict {
-        use PDF::DAO::Tie;
-        has PDF::DAO::Dict $.Resources is entry(:inherit);
-        has PDF::DAO::Dict $.Parent is entry;
+        is PDF::COS::Dict {
+        use PDF::COS::Tie;
+        has PDF::COS::Dict $.Resources is entry(:inherit);
+        has PDF::COS::Dict $.Parent is entry;
     }
 
     my $Parent = Node.new( :dict{ :Resources{ :got<parent> }  } );
