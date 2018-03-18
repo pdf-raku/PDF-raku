@@ -30,6 +30,10 @@ for @<code> {
 	    ok PDF::Grammar::PDF.subparse($_, :rule<trailer>), 'is valid PDF trailer'
 		or warn "unable to parse as PDF trailer: $_"
 	}
+	when /^ 'xref' / {
+	    ok PDF::Grammar::PDF.subparse($_, :rule<xref>), 'is valid PDF xref'
+		or warn "unable to parse as PDF xref: $_"
+	}
         when /^ ['>' | 'snoopy'] / { } # REPL
 	default {
 	    # assume anything else is code.

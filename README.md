@@ -116,7 +116,7 @@ This module is based on the [PDF PDF 32000-1:2008 1.7](http://www.adobe.com/cont
 
 ## The Basics
 
-PDF files are serialized as numbered indirect objects. The `examples/helloworld.pdf` file that we created above contains:
+The `examples/helloworld.pdf` file that we created above contains:
 ```
 %PDF-1.3
 %...(control characters)
@@ -219,37 +219,51 @@ startxref
 
 The `<<` ... `>>` delimited section is the trailer dictionary and the main entry point into the document. The entry `/Info 1 0 R` is an indirect reference to the first object (object number 1, generation 0) described above.
 
-We can quickly put PDF to work using the Perl 6 REPL, to better explore the document:
+Immediately above this is the cross reference table:
 
 ```
-snoopy: ~/git/perl6-PDF $ perl6 -M PDF
-> my $doc = PDF.open: "examples/helloworld.pdf"
-ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
-> $doc.keys
-(Root Info ID)
+xref
+0 7
+0000000000 65535 f 
+0000000014 00000 n 
+0000000103 00000 n 
+0000000157 00000 n 
+0000000336 00000 n 
+0000000406 00000 n 
+0000000503 00000 n 
 ```
+
+This indexes the indirect objects in the PDF by byte offset (generation number) for random access.
+
+We can quickly put PDF to work using the Perl 6 REPL, to better explore the document:
+
+    snoopy: ~/git/perl6-PDF $ perl6 -M PDF
+    > my $doc = PDF.open: "examples/helloworld.pdf"
+    ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
+    > $doc.keys
+    (Root Info ID)
+
 This is the root of the PDF, loaded from the trailer dictionary
-```
-> $doc<Info>
-{CreationDate => D:20151225000000Z00'00', Producer => Perl 6 PDF}
-```
+
+    > $doc<Info>
+    {CreationDate => D:20151225000000Z00'00', Producer => Perl 6 PDF}
+
 That's the document information entry, commonly used to store basic meta-data about the document.
 
 (PDF::IO has conveniently fetched indirect object 1 from the PDF, when we dereferenced this entry).
-```
-> $doc<Root>
-{Pages => ind-ref => [3 0], Type => Catalog}
-````
+
+    > $doc<Root>
+    {Pages => ind-ref => [3 0], Type => Catalog}
+
 The trailer `Root` entry references the document catalog, which contains the actual PDF content. Exploring further; the catalog potentially contains a number of pages, each with content.
-```
-> $doc<Root><Pages>
-{Count => 1, Kids => [ind-ref => [4 0]], MediaBox => [0 0 420 595], Resources => Font => F1 => ind-ref => [6 0], Type => Pages}
-> $doc<Root><Pages><Kids>[0]
-{Contents => ind-ref => [5 0], Parent => ind-ref => [3 0], Type => Page}
-> $doc<Root><Pages><Kids>[0]<Contents>
-{Length => 44}
-BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET
-```
+
+    > $doc<Root><Pages>
+    {Count => 1, Kids => [ind-ref => [4 0]], MediaBox => [0 0 420 595], Resources => Font => F1 => ind-ref => [6 0], Type => Pages}
+    > $doc<Root><Pages><Kids>[0]
+    {Contents => ind-ref => [5 0], Parent => ind-ref => [3 0], Type => Page}
+    > $doc<Root><Pages><Kids>[0]<Contents>
+    {Length => 44}
+    BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET
 
 The page `/Contents` entry is a PDF stream which contains graphical instructions. In the above example, to output the text `Hello, world!` at coordinates 100, 250.
 
@@ -413,7 +427,6 @@ my $object3 = PDF::COS.coerce({ :Type( :name<Pages> ),
                                 :Count(1),
                                 :Kids[ :ind-ref[4, 0],  ] },
 				:$reader);
-say '#'~$object2.perl;
 
 ```
 
@@ -440,7 +453,7 @@ A table of Object types and coercements follows:
 PDF | PDF::COS::Dict | document entry point - the trailer dictionary
 PDF::COS::Type::Encrypt | PDF::COS::Dict | PDF Encryption/Permissions dictionary
 PDF::COS::Type::Info | PDF::COS::Dict | Document Information Dictionary
-PDF::COS::Type::ObjStm | PDF::COS::Stream | PDF 1.5+ Object stream (holds compressed objects)
+PDF::COS::Type::ObjStm | PDF::COS::Stream | PDF 1.5+ Object stream (packed indirect objects)
 PDF::COS::Type::XRef | PDF::COS::Stream | PDF 1.5+ Cross Reference stream
 
 ## Further Reading
