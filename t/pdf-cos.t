@@ -8,6 +8,7 @@ use Test;
 # - each class may contain
 #   -- Object for compiled object code
 #   -- Source input source file
+#   -- Author and Description 
 
 use PDF;
 
@@ -18,6 +19,7 @@ class COS::JAR
     use PDF::COS::Tie::Hash;
     use PDF::COS::Tie::Array;
     use PDF::COS::Name;
+    use PDF::COS::TextString;
     use PDF::COS::Stream;
 
     role Class does PDF::COS::Tie::Hash {
@@ -25,6 +27,9 @@ class COS::JAR
         has Class @.Subclasses is entry(:indirect);
         has PDF::COS::Stream $.Source is entry;
         has PDF::COS::Stream $.Object is entry;
+        # Unicode strings
+        has PDF::COS::TextString $.Author is entry;
+        has PDF::COS::TextString $.Description is entry;
     }
 
     role Manifest does PDF::COS::Tie::Hash {
@@ -64,16 +69,20 @@ KTHXBYE
 
 my $Source = PDF::COS.coerce: :stream{ :$decoded, :dict{ :Filter<FlateDecode> } };
 
-$jar.Root.Classes.push: { :Name( :name<MAIN> ), :$Source };
+my $Description = "Moon phases: \x1f311\x1f313\x1f315\x1f317";
 
-lives-ok {$jar.save-as: "t/lol.cjar"}, 'save as cos';
-lives-ok {$jar.save-as: "t/lol.cjar.json"}, 'save as json';
+$jar.Root.Classes.push: { :Name( :name<MAIN> ), :$Source, :Author("Heydər Əliyev"), :$Description};
 
-lives-ok {$jar = $jar.open("t/lol.cjar");}, "open";
+lives-ok {$jar.save-as: "t/lolcode.cjar" }, 'save as cos';
+lives-ok {$jar.save-as: "t/lolcode.cjar.json"}, 'save as json';
+
+lives-ok {$jar = $jar.open("t/lolcode.cjar");}, "open";
 
 does-ok $jar, COS::JAR;
 is $jar.type, 'JAR', 'read type';
 is $jar.Root.Language, 'LOLCODE', 'read accessor';
+is $jar.Root.Classes[0].Author, "Heydər Əliyev", 'text string latinish';
+is $jar.Root.Classes[0].Description, $Description, 'text string with utf-8 surrogates';
 
 done-testing;
 
