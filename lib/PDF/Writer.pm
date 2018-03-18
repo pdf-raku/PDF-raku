@@ -207,13 +207,6 @@ class PDF::Writer {
         @expr.join: ' ';
     }
 
-    method write-hex-char( Str $_ ) {
-        die "multi or zero-byte hex character: {.perl}"
-           unless .chars == 1;
-        die "illegal non-latin hex character: U+" ~ .ord.base(16)
-            unless 0 <= .ord <= 0xFF;
-        .ord.fmt: '#%02x';
-    }
 
     method write-hex-string( Str $_ ) {
         [~] flat '<', .encode("latin-1").map({ 
