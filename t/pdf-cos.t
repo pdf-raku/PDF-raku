@@ -6,6 +6,7 @@ use Test;
 # - root contains language versioning, and root classes
 # - simple tree of Subclasses
 # - each class may contain
+#   -- array of Subclassess
 #   -- Object for compiled object code
 #   -- Source input source file
 #   -- Author and Description 
@@ -82,7 +83,7 @@ does-ok $jar, COS::JAR;
 is $jar.type, 'JAR', 'read type';
 is $jar.Root.Language, 'LOLCODE', 'read accessor';
 is $jar.Root.Classes[0].Author, "Heydər Əliyev", 'text string latinish';
-is $jar.Root.Classes[0].Description, $Description, 'text string with utf-8 surrogates';
+is $jar.Root.Classes[0].Description, $Description, 'text string with utf-16 surrogates';
 
 done-testing;
 

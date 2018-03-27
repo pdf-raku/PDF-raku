@@ -11,7 +11,6 @@ module PDF::COS::Util {
         ast-coerce $other
     }
     proto sub ast-coerce(|) is export(:ast-coerce) {*};
-    multi sub ast-coerce(Enumeration $enum!) {ast-coerce($enum.value)}
     multi sub ast-coerce(Int $int!) {:$int}
     multi sub ast-coerce(Numeric $real!) {:$real}
     multi sub ast-coerce(Str $literal!) {:$literal}
@@ -83,10 +82,12 @@ module PDF::COS::Util {
 	:$literal
     }
     multi sub ast-coerce(Bool $bool!) {:$bool}
-    multi sub ast-coerce($other) is default {
-        return (:null(Any))
-            without $other;
-        die "don't know how to to-ast: {$other.perl}";
+    multi sub ast-coerce($_) is default {
+        when !.defined   { :null(Any) }
+        when Enumeration { ast-coerce(.value) }
+        default {
+            die "don't know how to ast-coerce: {.perl}";
+        }
     }
 
     proto sub from-ast(|) is export(:from-ast) {*};
