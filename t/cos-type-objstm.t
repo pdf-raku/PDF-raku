@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 12;
+plan 13;
 
 use PDF::IO::IndObj;
 
@@ -28,6 +28,7 @@ my $expected-objstm = [
 
 is-deeply $objstm, $expected-objstm, 'decoded index as expected';
 my $objstm-recompressed = $ind-obj.object.encode;
+lives-ok {$ind-obj.object.check}, '.check lives';
 
 my %ast2;
 lives-ok { %ast2 = $ind-obj.ast }, '$.ast - lives';
@@ -46,4 +47,3 @@ is $objstm-new.First, 11, '$objstm.new .First auto-setup';
 my $invalid-decoding =  [[10, '<< /Foo wtf!! (bar) >>'], [11, '[ 42 true ]']];
 lives-ok {$objstm-new.encode( $invalid-decoding) }, 'encoding invalid data without :check - lives';
 dies-ok {$objstm-new.encode( $invalid-decoding, :check) }, 'encoding invalid data with :check - dies';
-

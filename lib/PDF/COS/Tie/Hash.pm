@@ -5,13 +5,13 @@ use PDF::COS::Tie;
 role PDF::COS::Tie::Hash does PDF::COS::Tie {
 
     #| resolve a heritable property by dereferencing /Parent entries
-    sub inherit($object, Str $key, :$seen is copy) {
+    sub find-prop($object, Str $key, :$seen is copy) {
 	$object.AT-KEY($key, :check)
             // do with $object.AT-KEY('Parent', :check) {
                  $seen //= my %{Hash};
                  die "cyclical inheritance hierarchy"
                      if $seen{$object}++;
-                 inherit($_, $key, :$seen);
+                 find-prop($_, $key, :$seen);
                }
     }
 
@@ -19,7 +19,7 @@ role PDF::COS::Tie::Hash does PDF::COS::Tie {
         Proxy.new(
             FETCH => sub ($) {
                 $att.tied.is-inherited
-	            ?? inherit(self, $key)
+	            ?? find-prop(self, $key)
 	            !! self.AT-KEY($key, :check);
             },
             STORE => sub ($, \v) {
@@ -37,14 +37,20 @@ role PDF::COS::Tie::Hash does PDF::COS::Tie {
        }
     }
 
+    method check {
+        self.AT-KEY($_, :check)
+            for (flat self.keys, self.entries.keys).unique;
+        self
+    }
+
     #| for hash lookups, typically $foo<bar>
     method AT-KEY($key, :$check) is rw {
         my $val := callsame;
-	my Attribute \att = %.entries{$key} // $.of-att;
 
         $val := $.deref(:$key, $val)
 	    if $val ~~ Pair | List | Hash;
 
+	my Attribute \att = %.entries{$key} // $.of-att;
         .tie($val, :$check) with att;
         $val;
     }

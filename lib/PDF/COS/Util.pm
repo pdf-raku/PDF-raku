@@ -38,7 +38,7 @@ module PDF::COS::Util {
         :array[ $a.map({ $tag => $_ }) ]
     }
 
-    multi sub ast-coerce(Array $a where .of ~~ Numeric) {
+    multi sub ast-coerce(List $a where .of ~~ Numeric) {
         my $tag = $a.of ~~ Int ?? 'int' !! 'real';
         :array[ $a.map({ $tag => $_ }) ]
     }

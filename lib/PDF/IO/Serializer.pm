@@ -160,7 +160,7 @@ class PDF::IO::Serializer {
     method is-indirect($_) {
         %!ref-count{$_} > 1            #| multiply referenced; needs to be indirect
             || ? .?obj-num             #| indirect if it has an object number
-            || $_~~ PDF::COS::Stream   #| streams need to indirect
+            || $_~~ PDF::COS::Stream   #| streams need to be indirect
             || ($_ ~~ Hash && (.<Type>:exists)) # typed hash?
    }
 

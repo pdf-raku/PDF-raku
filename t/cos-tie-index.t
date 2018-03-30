@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 8;
+plan 10;
 
 use PDF::COS::Array;
 
@@ -25,7 +25,9 @@ use PDF::COS::Array;
     is $array.R1, 10, 'coercement';
     does-ok $array.R1, MyRole, 'coercement';
     is $array.H2<b>, 30, 'container';
+    lives-ok {$array.check}, ".check valid array";
     $array.pop;
+    lives-ok {$array.check}, ".check invalid array";
     $array.pop;
     lives-ok {$array.H2}, 'non-required field';
     dies-ok {$array.I3},  'required field';

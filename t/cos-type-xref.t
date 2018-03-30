@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 23;
+plan 24;
 
 use PDF::IO::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
@@ -27,6 +27,7 @@ isa-ok $xref.shape[0], Int, 'index is shaped';
 my uint32 @expected-xref[37;3] = ([1, 16, 0], [1, 741, 0], [1, 1030, 0], [1, 1446, 0], [1, 2643, 0], [1, 3442, 0], [1, 4244, 0], [1, 5039, 0], [1, 5656, 0], [1, 6392, 0], [1, 7070, 0], [1, 7747, 0], [1, 8445, 0], [1, 11116, 0], [1, 17708, 0], [1, 19707, 0], [1, 34503, 0], [1, 116, 0], [2, 217, 0], [2, 217, 1], [2, 217, 2], [2, 217, 3], [2, 217, 4], [2, 217, 5], [2, 217, 6], [2, 217, 7], [2, 217, 8], [2, 217, 9], [2, 217, 10], [2, 217, 11], [2, 217, 12], [2, 217, 13], [2, 217, 14], [2, 217, 15], [2, 217, 16], [2, 217, 17], [1, 495, 0]);
 
 is-json-equiv [$xref.list.rotor(3)], [@expected-xref.rotor(3)], 'decoded index as expected';
+lives-ok {$xref-obj.check}, '.check lives';
 my $xref-recompressed = $xref-obj.encode;
 my %ast2;
 lives-ok {%ast2 = $ind-obj.ast }, '$.ast - lives';

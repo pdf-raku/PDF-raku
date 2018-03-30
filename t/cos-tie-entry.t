@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 39;
+plan 42;
 
 use PDF::COS::Dict;
 
@@ -24,7 +24,11 @@ use PDF::COS::Dict;
         dies-ok { $dict.IntReq = 'urrgh' }, 'dict accessor assignment typecheck';
         is $dict.IntReq, 43, 'dict accessor typecheck';
         lives-ok { $dict = TestDict.new( :dict{ :IntReq<oops> } ) }, 'dict typecheck bypass';
+        dies-ok {$dict.check}, ".check on invalid dict";
         dies-ok {$dict.IntReq}, "dict accessor - typecheck";
+        lives-ok {$dict.IntReq = 99}, "post-assigment to required field";
+        lives-ok {$dict.check}, ".check on now valid dict";
+
         dies-ok { TestDict.new( :dict{ } ) }, 'dict without required - dies';
     }
     $dict = TestDict.new( :dict{ :IntReq(42), :DictInd{}, } );
