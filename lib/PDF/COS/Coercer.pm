@@ -63,11 +63,6 @@ class PDF::COS::Coercer {
 	$obj.mixin: $role;
     }
 
-    multi method coerce( $obj, $type where PDF::COS::Tie ) {
-	warn X::PDF::Coerce.new( :$obj, :$type );
-        $obj;
-    }
-
     multi method coerce( $obj, $type) {
 	warn X::PDF::Coerce.new( :$obj, :$type );
         $obj;
