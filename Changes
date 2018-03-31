@@ -2,6 +2,7 @@ Release 0.3.0
 - Renamed PDF::DAO classess to PDF::COS, where COS stands for
   Carousel Object System (see
   https://en.wikipedia.org/wiki/Portable_Document_Format#File_structure)
+- Improvements to PDF::COS.coerce($obj, $type) multi methods.
 Release 0.2.8
 - [PDF::DAO]
   -- better support for lists and list to array coercion

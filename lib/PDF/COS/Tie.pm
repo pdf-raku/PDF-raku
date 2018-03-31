@@ -122,8 +122,8 @@ role PDF::COS::Tie {
 	    $lval;
 	}
 
-	multi method tie($lval is copy) is default {
-	    $.tie($lval);
+	multi method tie($lval is copy, :$check) is default {
+	    $.tie($lval, :$check);
 	}
 
     }

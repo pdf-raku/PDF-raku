@@ -33,14 +33,14 @@ role PDF::COS::Tie::Array does PDF::COS::Tie {
     }
 
     method check {
-        self.AT-POS($_, :check) for 0 ..^ max(@!index, self);
+        self.AT-POS($_, :check)
+            for 0 ..^ max(@!index, self);
         self
     }
 
     #| for array lookups, typically $foo[42]
     method AT-POS($pos, :$check) is rw {
         my $val := callsame;
-
         $val := $.deref(:$pos, $val)
 	    if $val ~~ Pair | List | Hash;
 

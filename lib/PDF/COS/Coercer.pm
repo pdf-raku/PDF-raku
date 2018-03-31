@@ -20,6 +20,7 @@ class PDF::COS::Coercer {
 
     use PDF::COS::Name;
     use PDF::COS::DateString;
+    use PDF::COS::ByteString;
     use PDF::COS::TextString;
 
     multi method coerce( $obj, $role where {$obj ~~ $role}) {
@@ -34,8 +35,12 @@ class PDF::COS::Coercer {
     multi method coerce( DateTime $obj is rw, DateTime $class where PDF::COS, |c) {
 	$obj = $class.new( $obj, |c );
     }
-    multi method coerce( Str $obj is rw, PDF::COS::TextString $class, Str :$type is copy, |c) {
-	$type //= $obj.?type // 'literal';
+    multi method coerce( Str $obj is rw, PDF::COS::ByteString $class, Str :$type = $obj.?type // 'literal', |c) {
+	$obj = $obj but PDF::COS::ByteString;
+        $obj.type = $type;
+        $obj;
+    }
+    multi method coerce( Str $obj is rw, PDF::COS::TextString $class, Str :$type = $obj.?type // 'literal', |c) {
 	$obj = $class.new( :value($obj), :$type, |c );
     }
 
@@ -44,26 +49,23 @@ class PDF::COS::Coercer {
     }
 
     #| handle ro candidates for the above
-    multi method coerce( Str $obj is copy, \r where PDF::COS::DateString|DateTime|PDF::COS::Name) {
+    multi method coerce( Str $obj is copy, \r where PDF::COS::DateString|DateTime|PDF::COS::Name|PDF::COS::ByteString|PDF::COS::TextString) {
 	self.coerce( $obj, r);
     }
 
-    multi method coerce( Array $obj where PDF::COS, $role where PDF::COS::Tie::Array ) {
+    multi method coerce( Array $obj is copy, PDF::COS::Tie::Array  $role) {
+        $obj = PDF::COS.coerce($obj) unless $obj ~~ PDF::COS;
 	$obj.mixin: $role;
     }
 
-    multi method coerce( Hash $obj where PDF::COS, $role where PDF::COS::Tie::Hash ) {
+    multi method coerce( Hash $obj is copy, PDF::COS::Tie::Hash $role) {
+        $obj = PDF::COS.coerce($obj) unless $obj ~~ PDF::COS;
 	$obj.mixin: $role;
     }
 
     multi method coerce( $obj, $type where PDF::COS::Tie ) {
 	warn X::PDF::Coerce.new( :$obj, :$type );
         $obj;
-    }
-
-    my subset Role where { .does($_) && !.isa($_) };
-    multi method coerce( $obj, Role $role)  {
-        $obj.^mixin: $role;
     }
 
     multi method coerce( $obj, $type) {

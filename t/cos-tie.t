@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 44;
+plan 40;
 
 use PDF::Reader;
 use PDF::Writer;
@@ -128,9 +128,6 @@ my role ArrayRole does PDF::COS::Tie::Array {
     has $.Bar is index[1];
 }
 
-my role GenRole {
-}
-
 my $h1 = PDF::COS.coerce: {};
 lives-ok { PDF::COS.coerce($h1, HashRole) }, 'tied hash role application';
 does-ok $h1, HashRole, 'Hash/Hash application';
@@ -152,13 +149,5 @@ is $a1.Bar, 69, 'tied array accessor';
 my $a2 = PDF::COS.coerce: [];
 warns-like { PDF::COS.coerce($a2, HashRole) }, ::('X::PDF::Coerce'), 'Array/Hash misapplication';
 ok !$a2.does(HashRole), 'Array/Hash misapplication';
-
-my $h3 = PDF::COS.coerce: {};
-lives-ok { PDF::COS.coerce($h3, GenRole) }, 'general hash role application';
-does-ok $h3, GenRole, 'Hash/Gen application';
-
-my $a3 = PDF::COS.coerce: [];
-lives-ok { PDF::COS.coerce($a3, GenRole) }, 'general array role application';
-does-ok $a3, GenRole, 'Array/Gen application';
 
 done-testing;

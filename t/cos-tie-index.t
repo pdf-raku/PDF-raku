@@ -1,13 +1,13 @@
 use v6;
 use Test;
-plan 10;
+plan 18;
 
 use PDF::COS::Array;
 
 {
-    # basic tests
+    # basic class tests
     my role MyRole {};
-    class TestArray
+    my class TestArray
     is PDF::COS::Array {
         use PDF::COS::Tie;
         has Int $.I0 is index(0, :required);
@@ -31,6 +31,31 @@ use PDF::COS::Array;
     $array.pop;
     lives-ok {$array.H2}, 'non-required field';
     dies-ok {$array.I3},  'required field';
+}
+
+{
+    # role coercement tests
+    use PDF::COS::Tie::Array;
+    use PDF::COS::Name;
+    my role TestArray
+    does PDF::COS::Tie::Array {
+        use PDF::COS::Tie;
+        has PDF::COS::Name $.name is index(0);
+    }
+    my $array-in = ['Hi'];
+    my $array = PDF::COS.coerce($array-in, TestArray);
+    isa-ok($array, PDF::COS::Array);
+    does-ok($array, TestArray);
+    does-ok($array[0], PDF::COS::Name);
+    is $array.name, 'Hi';
+    is-deeply $array.content, (:array($[:name<Hi>])), '.content';
+    lives-ok {$array.check}, '.check valid';
+    quietly {
+        $array[0] = 42;
+        dies-ok {$array.check}, '.check invalid';
+        $array[0] = {};
+        dies-ok {$array.check}, '.check invalid';
+    }
 }
 
 
