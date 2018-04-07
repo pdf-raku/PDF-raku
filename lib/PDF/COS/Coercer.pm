@@ -53,14 +53,12 @@ class PDF::COS::Coercer {
 	self.coerce( $obj, r);
     }
 
-    multi method coerce( Array $obj is copy, PDF::COS::Tie::Array  $role) {
-        $obj = PDF::COS.coerce($obj) unless $obj ~~ PDF::COS;
-	$obj.mixin: $role;
+    multi method coerce( Array $obj is copy, PDF::COS::Tie::Array  $role where !.isa(PDF::COS::Array)) {
+        PDF::COS.coerce($obj).mixin: $role;
     }
 
-    multi method coerce( Hash $obj is copy, PDF::COS::Tie::Hash $role) {
-        $obj = PDF::COS.coerce($obj) unless $obj ~~ PDF::COS;
-	$obj.mixin: $role;
+    multi method coerce( Hash $obj is copy, PDF::COS::Tie::Hash $role where !.isa(PDF::COS::Dict)) {
+        PDF::COS.coerce($obj).mixin: $role;
     }
 
     multi method coerce( $obj, $type) {
