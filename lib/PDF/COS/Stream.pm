@@ -123,7 +123,12 @@ class PDF::COS::Stream
     }
 
     method gist {
-        callsame() ~ "\n" ~ self.encoded.Str.gist;
+        callsame() ~ do with self {
+            "\n" ~ .encoded.Str.perl;
+        }
+        else {
+            ''
+        }
     }
 
 }
