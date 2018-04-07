@@ -3,6 +3,7 @@ Release 0.3.0
   Carousel Object System (see
   https://en.wikipedia.org/wiki/Portable_Document_Format#File_structure)
 - Improvements to PDF::COS.coerce($obj, $type) multi methods.
+- Fixed class-level PDF::COS::Stream.gist
 Release 0.2.8
 - [PDF::DAO]
   -- better support for lists and list to array coercion
