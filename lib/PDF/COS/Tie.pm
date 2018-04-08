@@ -197,8 +197,10 @@ role PDF::COS::Tie {
     }
 
     method mixin($role) {
-        self.^mixin($role);
-        self.tie-init;
+        with self {
+            .^mixin($role);
+            .tie-init;
+        }
         self;
     }
 
