@@ -73,7 +73,6 @@ class PDF::IO::Crypt {
         my uint8 @user-pass = format-pass($user-pass);
 
 	@!O = self.compute-owner( @owner-pass, @user-pass );
-
         @!U = self.compute-user( @user-pass, :$!key );
         $!is-owner = True;
 
@@ -195,7 +194,7 @@ class PDF::IO::Crypt {
 
 	my Buf $pass .= new: @Padding;
 
-	my \computed = do if $!R >= 3 {
+	my uint8 @computed = do if $!R >= 3 {
 	    # Algorithm 3.5 steps 1 .. 5
 	    $pass.append: @!doc-id;
 	    $pass = md5( $pass );
@@ -206,13 +205,13 @@ class PDF::IO::Crypt {
 	    $.rc4-crypt($key, $pass);
 	}
 
-        computed.list;
+        @computed;
     }
 
     method !auth-user-pass(@pass) {
 	# Algorithm 3.6
         my $key;
-	my uint8 @computed = $.compute-user( @pass, :$key );
+	my uint8 @computed := $.compute-user( @pass, :$key );
 	my uint8 @expected = $!R >= 3
             ?? @!U[0 .. 15]
             !! @!U;
@@ -247,16 +246,16 @@ class PDF::IO::Crypt {
         # Algorithm 3.3
 	my Buf \key = self!compute-owner-key( @owner-pass );    # Steps 1..4
 
-        my Buf $owner .= new: @user-pass;
-        
-	if $!R == 2 {      # 2 (Revision 2 only)
-	    $owner = $.rc4-crypt(key, $owner);
+        my Buf $user .= new: @user-pass;
+
+	my uint8 @owner = do if $!R == 2 {      # 2 (Revision 2 only)
+	    $.rc4-crypt(key, $user);
 	}
 	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
-	    $owner = self!do-iter-crypt(key, $owner);
+	    self!do-iter-crypt(key, $user);
 	}
 
-        $owner.list;
+        @owner;
     }
 
     method !auth-owner-pass(@pass) {
