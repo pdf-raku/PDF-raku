@@ -58,7 +58,7 @@ role PDF::COS::Tie {
 
         multi method tie(IndRef $lval is rw) { $lval } # undereferenced - don't know it's type yet
 	multi method tie($lval is rw, :$check) {
-            if $lval.defined && $lval !~~ $!type {
+            if $lval.defined && !($lval ~~ $!type) {
 
                 my \reader  = $lval.?reader;
 
