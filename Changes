@@ -4,6 +4,7 @@ Release 0.3.0
   https://en.wikipedia.org/wiki/Portable_Document_Format#File_structure)
 - Improvements to PDF::COS.coerce($obj, $type) multi methods.
 - Fixed class-level PDF::COS::Stream.gist
+- Support Hybrid PDFs that contain both cross refence tables and streams
 Release 0.2.8
 - [PDF::DAO]
   -- better support for lists and list to array coercion

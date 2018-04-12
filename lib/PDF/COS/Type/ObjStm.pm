@@ -56,7 +56,6 @@ class PDF::COS::Type::ObjStm
         my UInt \n = $.N;
 
         my Str \object-index-str = bytes.substr(0, first - 1);
-        my Str \objects-str = bytes.substr(first);
 
         my PDF::Grammar::PDF::Actions $actions .= new;
         PDF::Grammar::PDF.parse(object-index-str, :rule<object-stream-index>, :$actions)
@@ -69,14 +68,14 @@ class PDF::COS::Type::ObjStm
 
         [ (0 ..^ n).map: -> \i {
             my UInt \obj-num = object-index[i][0].Int;
-            my UInt \begin = object-index[i][1];
+            my UInt \begin = first + object-index[i][1];
             my UInt \end = object-index[i + 1]:exists
-                ?? object-index[i + 1][1]
-                !! objects-str.codes;
+                ?? first + object-index[i + 1][1]
+                !! bytes.codes;
             my Int \length = end - begin;
-            die "problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\nindex offset {begin} exceeds decoded data length {objects-str.chars}"
-                if begin > objects-str.codes;
-            my Str \object-str = objects-str.substr-rw( begin, length );
+            die "problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\nindex offset {begin} exceeds decoded data length {bytes.codes}"
+                if begin > bytes.codes;
+            my Str \object-str = bytes.substr( begin, length );
             [ obj-num, object-str ]
         } ]
     }

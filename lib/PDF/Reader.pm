@@ -565,6 +565,14 @@ class PDF::Reader {
 
             $offset = do with $dict<Prev> { $_ } else { Nil };
             $.size  = do with $dict<Size> { $_ } else { 1 };
+
+            with $dict<XRefStm> {
+                # hybrid 1.4 / 1.5 with a cross-reference stream
+                my $xref-dict = {};
+                my Str \xref-stm = self!locate-xref(input-bytes, tail-bytes, $tail, $_, my &fallback);
+                @obj-idx.append: self!load-xref-stream(xref-stm, $xref-dict, :&fallback, :offset($_));
+            }
+
         }
 
         enum ( :ObjNum(0), :Type(1),
