@@ -16,19 +16,19 @@ class X::PDF::BadDump is Exception {
 
 class X::PDF::BadHeader is Exception {
     has Str $.preamble is required;
-    method message {"expected file header '%XXX-n.m', got: {synopsis($!preamble)}"}
+    method message {"Expected file header '%XXX-n.m', got: {synopsis($!preamble)}"}
 }
 
 class X::PDF::BadTrailer is Exception {
     has Str $.tail is required;
-    method message {"expected file trailer 'startxref ... \%\%EOF', got: {synopsis($!tail)}"}
+    method message {"Expected file trailer 'startxref ... \%\%EOF', got: {synopsis($!tail)}"}
 }
 
 class X::PDF::BadXRef is Exception {}
 
 class X::PDF::BadXRef::Parse is X::PDF::BadXRef {
     has Str $.xref is required;
-    method message {"unable to parse index: {synopsis($!xref)}"}
+    method message {"Unable to parse index: {synopsis($!xref)}"}
 }
 
 class X::PDF::BadXRef::Entry is X::PDF::BadXRef {
@@ -47,7 +47,7 @@ class X::PDF::BadXRef::Section is X::PDF::BadXRef {
 
 class X::PDF::ParseError is Exception {
     has Str $.input is required;
-    method message {"unable to parse PDF document: {synopsis($!input)}"}
+    method message {"Unable to parse PDF document: {synopsis($!input)}"}
 }
 
 class X::PDF::BadIndirectObject is Exception {

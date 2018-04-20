@@ -9,7 +9,7 @@ sub make-pdf( :$header='%PDF-1.3', :$length=46, :$xref-digit='0', :$eof='%%EOF',
 
     PDF::IO.coerce: q:s:to"END";
 $header
-%xxx
+%xyz
 1 0 obj <<
   /Author (PDF-Tools/t/helloworld.t)
   /CreationDate (D:20151225000000Z00'00')
@@ -89,17 +89,17 @@ sub test-case(Bool :$repair = False, |c) {
 }
 
 lives-ok { test-case( ) }, 'good pdf - lives';
-throws-like  { test-case( :header('') ) }, ::('X::PDF::BadHeader'), 'missing header';
-throws-like  { test-case( :eof('') ) }, ::('X::PDF::BadTrailer'), 'missing %%EOF';
-throws-like  { test-case( :length('99') ) }, ::('X::PDF::BadIndirectObject'), 'stream length too large';
-throws-like  { test-case( :length('10') ) }, ::('X::PDF::BadIndirectObject'), 'stream length too small';
-throws-like  { test-case( :xref-digit('x') ) }, ::('X::PDF::BadXRef'), 'corrupted xref';
-throws-like  { test-case( :endobj('bye!') ) }, ::('X::PDF::BadIndirectObject::Parse'), 'corrupted indirect objects';
+throws-like  { test-case( :header('') ) }, X::PDF::BadHeader, :message("Expected file header '%XXX-n.m', got: \" \\%xyz 1 \""), 'missing header';
+throws-like  { test-case( :eof('') ) }, X::PDF::BadTrailer, :message("Expected file trailer 'startxref ... %%EOF', got: \"\\%PDF-1.3 \\%xyz 1 0 obj <<   /Auth ... 8 >> startxref 693 \""), 'missing %%EOF';
+throws-like  { test-case( :length('99') ) }, X::PDF::BadIndirectObject, :message("Error processing indirect object 6 0 R at byte offset 487:\nstream Length 99 appears too large (> 64)"), 'stream length too large';
+throws-like  { test-case( :length('10') ) }, X::PDF::BadIndirectObject, :message("Error processing indirect object 6 0 R at byte offset 487:\nunable to locate 'endstream' marker after consuming /Length 10 bytes"), 'stream length too small';
+throws-like  { test-case( :xref-digit('x') ) }, X::PDF::BadXRef, :message("Unable to parse index: \"xref 0 8 000000000x 65535 f  000 ... startxref 693 \\%\\%EOF \""), 'corrupted xref';
+throws-like  { test-case( :endobj('bye!') ) }, X::PDF::BadIndirectObject::Parse, :message("Error processing indirect object at byte offset 693:\nunable to parse indirect object: \"00000 65535 f  0000000014 00000  ... startxref 693 \\%\\%EOF \""), 'corrupted indirect objects';
 
 lives-ok { test-case( :repair ) }, 'good pdf :repair- lives';
-throws-like  { test-case( :repair, :endobj('bye!') ) }, ::('X::PDF::ParseError'), ':repair - corrupted pdf';
+throws-like  { test-case( :repair, :endobj('bye!') ) }, X::PDF::ParseError, :message("Unable to parse PDF document: \"\\%PDF-1.3 \\%xyz 1 0 obj <<   /Auth ... startxref 693 \\%\\%EOF \""), ':repair - corrupted pdf';
 
-throws-like { PDF::Reader.new.open("META6.json") }, ::("X::PDF::BadDump");
+throws-like { PDF::Reader.new.open("META6.json") }, X::PDF::BadDump;
 
 done-testing;
  
