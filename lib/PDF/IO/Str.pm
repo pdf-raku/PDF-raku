@@ -26,11 +26,9 @@ class PDF::IO::Str
     multi method seek(UInt $n, SeekFromEnd) {
         $!pos = max(0, $.codes - $n);
     }
-    method slurp-rest {
+    method slurp {
         my \codes = $.codes;
-        my \rest := $!pos == 0
-            ?? self.Str
-            !! $.ords.subbuf($!pos, codes - $!pos).decode: "latin-1";
+        my \rest := $.ords.subbuf($!pos, codes - $!pos);
         $!pos = codes;
         rest;
     }
