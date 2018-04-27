@@ -116,15 +116,10 @@ role PDF::COS {
     }
 
     multi method coerce( Hash :$stream!, |c ) {
-        my %params;
-        for <start end encoded decoded> -> \k {
-            %params{k} = $_
-                with $stream{k};
-        }
         my Hash $dict = $stream<dict> // {};
         state $base-class = $.required('PDF::COS::Stream');
 	my $class = $.load-delegate( :$dict, :$base-class);
-        $class.new( :$dict, |%params, |c );
+        $class.new( |$stream, |c );
     }
 
     multi method coerce(:$null!) {

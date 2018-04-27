@@ -2,32 +2,6 @@
   "pdf": {
     "body": [
       {
-        "trailer": {
-          "dict": {
-            "Prev": {
-              "int": 9999
-            },
-            "ID": {
-              "array": [
-                {
-                  "hex-string": "×C¨üÜø{iÃeH!©A"
-                },
-                {
-                  "hex-string": "0BD³C|N{:g\u0016l^C"
-                }
-              ]
-            },
-            "Root": {
-              "ind-ref": [
-                1,
-                0
-              ]
-            },
-            "Size": {
-              "int": 11
-            }
-          }
-        },
         "objects": [
           {
             "ind-obj": [
@@ -67,6 +41,9 @@
               0,
               {
                 "dict": {
+                  "Type": {
+                    "name": "Page"
+                  },
                   "Resources": {
                     "dict": {
                       "ProcSet": {
@@ -99,9 +76,6 @@
                       0
                     ]
                   },
-                  "Type": {
-                    "name": "Page"
-                  },
                   "MediaBox": {
                     "array": [
                       {
@@ -128,17 +102,43 @@
               0,
               {
                 "stream": {
-                  "encoded": "BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET",
                   "dict": {
                     "Length": {
                       "int": 70
                     }
-                  }
+                  },
+                  "encoded": "BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET"
                 }
               }
             ]
           }
-        ]
+        ],
+        "trailer": {
+          "dict": {
+            "ID": {
+              "array": [
+                {
+                  "hex-string": "×C¨üÜø{iÃeH!©A"
+                },
+                {
+                  "hex-string": "0BD³C|N{:g\u0016l^C"
+                }
+              ]
+            },
+            "Root": {
+              "ind-ref": [
+                1,
+                0
+              ]
+            },
+            "Size": {
+              "int": 11
+            },
+            "Prev": {
+              "int": 9999
+            }
+          }
+        }
       }
     ]
   }

@@ -1,5 +1,9 @@
 {
   "pdf": {
+    "header": {
+      "version": 1.3,
+      "type": "PDF"
+    },
     "body": [
       {
         "trailer": {
@@ -54,18 +58,18 @@
               0,
               {
                 "dict": {
-                  "Pages": {
+                  "Outlines": {
                     "ind-ref": [
-                      4,
+                      3,
                       0
                     ]
                   },
                   "Type": {
                     "name": "Catalog"
                   },
-                  "Outlines": {
+                  "Pages": {
                     "ind-ref": [
-                      3,
+                      4,
                       0
                     ]
                   }
@@ -79,11 +83,11 @@
               0,
               {
                 "dict": {
-                  "Type": {
-                    "name": "Outlines"
-                  },
                   "Count": {
                     "int": 0
+                  },
+                  "Type": {
+                    "name": "Outlines"
                   }
                 }
               }
@@ -95,6 +99,9 @@
               0,
               {
                 "dict": {
+                  "Count": {
+                    "int": 1
+                  },
                   "Type": {
                     "name": "Pages"
                   },
@@ -107,9 +114,6 @@
                         ]
                       }
                     ]
-                  },
-                  "Count": {
-                    "int": 1
                   }
                 }
               }
@@ -145,21 +149,6 @@
                       }
                     }
                   },
-                  "Contents": {
-                    "ind-ref": [
-                      6,
-                      0
-                    ]
-                  },
-                  "Parent": {
-                    "ind-ref": [
-                      4,
-                      0
-                    ]
-                  },
-                  "Type": {
-                    "name": "Page"
-                  },
                   "MediaBox": {
                     "array": [
                       {
@@ -175,6 +164,21 @@
                         "int": 595
                       }
                     ]
+                  },
+                  "Type": {
+                    "name": "Page"
+                  },
+                  "Parent": {
+                    "ind-ref": [
+                      4,
+                      0
+                    ]
+                  },
+                  "Contents": {
+                    "ind-ref": [
+                      6,
+                      0
+                    ]
                   }
                 }
               }
@@ -186,12 +190,12 @@
               0,
               {
                 "stream": {
-                  "encoded": "BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET",
                   "dict": {
                     "Length": {
                       "int": 46
                     }
-                  }
+                  },
+                  "encoded": "BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET"
                 }
               }
             ]
@@ -205,14 +209,14 @@
                   "Encoding": {
                     "name": "MacRomanEncoding"
                   },
-                  "BaseFont": {
-                    "name": "Helvetica"
-                  },
                   "Type": {
                     "name": "Font"
                   },
                   "Subtype": {
                     "name": "Type1"
+                  },
+                  "BaseFont": {
+                    "name": "Helvetica"
                   }
                 }
               }
@@ -220,10 +224,6 @@
           }
         ]
       }
-    ],
-    "header": {
-      "type": "PDF",
-      "version": 1.3
-    }
+    ]
   }
 }

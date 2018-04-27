@@ -2,41 +2,6 @@
   "pdf": {
     "body": [
       {
-        "trailer": {
-          "dict": {
-            "Encrypt": {
-              "ind-ref": [
-                1,
-                0
-              ]
-            },
-            "ID": {
-              "array": [
-                {
-                  "hex-string": "CÜ{ÃHADCN:\u0016C"
-                },
-                {
-                  "hex-string": "0BD³C|N{:g\u0016l^C"
-                }
-              ]
-            },
-            "Info": {
-              "ind-ref": [
-                2,
-                0
-              ]
-            },
-            "Root": {
-              "ind-ref": [
-                3,
-                0
-              ]
-            },
-            "Size": {
-              "int": 9
-            }
-          }
-        },
         "objects": [
           {
             "ind-obj": [
@@ -44,23 +9,23 @@
               0,
               {
                 "dict": {
+                  "R": {
+                    "int": 2
+                  },
+                  "P": {
+                    "int": -64
+                  },
                   "V": {
                     "int": 1
+                  },
+                  "O": {
+                    "hex-string": "\u0006EðÀFOEqà®\u0012bá^2KrÔ·%E[û\u001bG]ðù\u001e\u0005®$"
                   },
                   "Filter": {
                     "name": "Standard"
                   },
                   "U": {
                     "hex-string": "§NØ©à¦\u000f\u001cû$£>1ÓÆ¼\u0006yä%ªÄP0\u001e>~@"
-                  },
-                  "P": {
-                    "int": -64
-                  },
-                  "O": {
-                    "hex-string": "\u0006EðÀFOEqà®\u0012bá^2KrÔ·%E[û\u001bG]ðù\u001e\u0005®$"
-                  },
-                  "R": {
-                    "int": 2
                   }
                 }
               }
@@ -88,18 +53,18 @@
               0,
               {
                 "dict": {
-                  "Pages": {
-                    "ind-ref": [
-                      5,
-                      0
-                    ]
-                  },
                   "Type": {
                     "name": "Catalog"
                   },
                   "Outlines": {
                     "ind-ref": [
                       4,
+                      0
+                    ]
+                  },
+                  "Pages": {
+                    "ind-ref": [
+                      5,
                       0
                     ]
                   }
@@ -155,6 +120,21 @@
               0,
               {
                 "dict": {
+                  "Parent": {
+                    "ind-ref": [
+                      5,
+                      0
+                    ]
+                  },
+                  "Type": {
+                    "name": "Page"
+                  },
+                  "Contents": {
+                    "ind-ref": [
+                      7,
+                      0
+                    ]
+                  },
                   "Resources": {
                     "dict": {
                       "Procset": {
@@ -178,21 +158,6 @@
                         }
                       }
                     }
-                  },
-                  "Contents": {
-                    "ind-ref": [
-                      7,
-                      0
-                    ]
-                  },
-                  "Parent": {
-                    "ind-ref": [
-                      5,
-                      0
-                    ]
-                  },
-                  "Type": {
-                    "name": "Page"
                   },
                   "MediaBox": {
                     "array": [
@@ -220,12 +185,12 @@
               0,
               {
                 "stream": {
-                  "encoded": "íP:~J1Î>©>\u0018ÆÐ\u0010²\u001d¥ ¸¹\u0011ùcx1\n'¿B\u001f«ú´\u0004\"À2k7",
                   "dict": {
                     "Length": {
                       "int": 46
                     }
-                  }
+                  },
+                  "encoded": "íP:~J1Î>©>\u0018ÆÐ\u0010²\u001d¥ ¸¹\u0011ùcx1\n'¿B\u001f«ú´\u0004\"À2k7"
                 }
               }
             ]
@@ -239,11 +204,11 @@
                   "Encoding": {
                     "name": "MacRomanEncoding"
                   },
-                  "BaseFont": {
-                    "name": "Helvetica"
-                  },
                   "Type": {
                     "name": "Font"
+                  },
+                  "BaseFont": {
+                    "name": "Helvetica"
                   },
                   "Subtype": {
                     "name": "Type1"
@@ -252,7 +217,42 @@
               }
             ]
           }
-        ]
+        ],
+        "trailer": {
+          "dict": {
+            "Encrypt": {
+              "ind-ref": [
+                1,
+                0
+              ]
+            },
+            "Size": {
+              "int": 9
+            },
+            "Root": {
+              "ind-ref": [
+                3,
+                0
+              ]
+            },
+            "ID": {
+              "array": [
+                {
+                  "hex-string": "CÜ{ÃHADCN:\u0016C"
+                },
+                {
+                  "hex-string": "0BD³C|N{:g\u0016l^C"
+                }
+              ]
+            },
+            "Info": {
+              "ind-ref": [
+                2,
+                0
+              ]
+            }
+          }
+        }
       }
     ],
     "header": {
