@@ -156,7 +156,7 @@ class PDF::Reader {
     method !set-trailer (
         Hash $dict,
         Array :$keys = [ $dict.keys.grep: {
-	    $_ ne 'Prev'|'Size'                    # Recomputed fields
+	    $_ !~~ 'Prev'|'Size'                    # Recomputed fields
 		|'Type'|'DecodeParms'|'Filter'|'Index'|'W'|'Length'|'XRefStm' # Unwanted, From XRef Streams
 	} ],
         ) {
@@ -752,7 +752,7 @@ class PDF::Reader {
             with ind-obj<stream> {
                 with .<dict><Type> -> \obj-type {
                     # discard existing /Type /XRef and ObjStm objects.
-                    next if obj-type<name> eq 'XRef'|'ObjStm';
+                    next if obj-type<name> ~~ 'XRef'|'ObjStm';
                 }
             }
 

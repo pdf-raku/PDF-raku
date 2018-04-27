@@ -11,14 +11,14 @@ class PDF::IO::Crypt::AES
     use OpenSSL::Digest;
     use PDF::IO::Blob;
     use PDF::IO::Util :pack;
-    
+
     constant KeyLen = 16;
 
     submethod TWEAK(UInt :$Length = 128, |c) {
         die "unsupported AES encryption key length: $Length"
-            unless $Length == 16|128;
+            unless $Length ~~ 16|128;
     }
-    
+
     method !aes-encrypt($key, $msg, :$iv --> Buf) {
         OpenSSL::CryptTools::encrypt( :aes128, $msg, :$key, :$iv);
     }

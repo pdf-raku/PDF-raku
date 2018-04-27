@@ -19,9 +19,9 @@ class PDF::COS::Array
             $obj.tie-init;
             # this may trigger cascading PDF::COS::Tie coercians
             # e.g. native Array to PDF::COS::Array
-            $obj[ .key ] = from-ast(.value) for $array.pairs;
+            $obj[.key] = from-ast(.value) for $array.pairs;
             $obj.?cb-init;
-         }
+        }
         $obj;
     }
 
