@@ -173,10 +173,11 @@ class PDF::Writer {
 
         # prioritize /Type and /Subtype entries. output /Length as last entry
         my @keys = $dict.keys.sort: {
-            when 'Type'          {"0"}
-            when 'Subtype' | 'S' | /Type$/ {"1"}
-            when 'Length'        {"z"}
-            default              {$_}
+            when 'Type'        {"0"}
+            when 'Subtype'|'S' {"1"}
+            when /Type$/       {"1" ~ $_}
+            when 'Length'      {"z"}
+            default            {$_}
         };
 
         join("\n",

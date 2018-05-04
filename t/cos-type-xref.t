@@ -47,7 +47,6 @@ my $expected-index-sample = (
    array[uint32].new(250, 1, 495, 0),
     );
 
-todo "bogus is-deeply failure";
 is-deeply $xref-index.tail(3), $expected-index-sample, 'decoded index (sample)';
 
 my $xref-recompressed-from-index = $ind-obj.object.encode-index($xref-index);

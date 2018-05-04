@@ -12,7 +12,7 @@ use PDF::COS::Dict;
         has Int $.IntReq is entry(:required, :alias<required-int>);
         has Hash $.DictInd is entry(:indirect);
         subset FredDict of Hash where {.<Name> ~~ 'Fred'}
-        has FredDict $.SubsetDict is entry; # todo
+        has FredDict $.SubsetDict is entry;
     }
 
     my $dict;
@@ -46,9 +46,8 @@ use PDF::COS::Dict;
         use PDF::COS::Tie;
         has UInt @.I is entry;
         has Str @.S is entry;
-        my subset NegInt of Int where * < 0;
         has UInt @.LenThree is entry(:len(3));
-        has NegInt %.Neg is entry;
+        has Int %.Neg is entry where * < 0;
     }
 
     my $dict;
