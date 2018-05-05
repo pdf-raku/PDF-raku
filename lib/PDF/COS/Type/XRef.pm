@@ -16,8 +16,7 @@ class PDF::COS::Type::XRef
     use PDF::COS::Name;
 
     # See [PDF 1.7 TABLE 17 Additional entries specific to a cross-reference stream dictionary]
-    my subset XRef-Name of PDF::COS::Name where 'XRef';
-    has XRef-Name $.Type is entry(:required);   #| (Required) The type of PDF object that this dictionary describes; shall be XRef for a cross-reference stream.
+    has PDF::COS::Name $.Type is entry(:required) where 'XRef';   #| (Required) The type of PDF object that this dictionary describes; shall be XRef for a cross-reference stream.
 
     has UInt $.Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
     # rakudo 2015.07.1-12-g174049f; Index is a reserved attribute

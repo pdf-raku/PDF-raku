@@ -17,8 +17,7 @@ class PDF::COS::Type::ObjStm
     use PDF::COS::Name;
 
     # see [PDF 1.7 TABLE 16 Additional entries specific to an object stream dictionary]
-    my subset Name-ObjStm of PDF::COS::Name where 'ObjStm';
-    has Name-ObjStm $.Type is entry( :required ); #| (Required) The type of PDF object that this dictionary describes; shall be ObjStm for an object stream.
+    has PDF::COS::Name $.Type is entry( :required ) where 'ObjStm'; #| (Required) The type of PDF object that this dictionary describes; shall be ObjStm for an object stream.
     has UInt $.N is entry(:required);             #| (Required) The number of compressed objects in the stream.
     has UInt $.First is entry(:required);         #| (Required) The byte offset (in the decoded stream) of the first compressed object.
     has PDF::COS::Stream $.Extends is entry;      #| (Optional) A reference to an object stream, of which the current object stream is considered an extension
