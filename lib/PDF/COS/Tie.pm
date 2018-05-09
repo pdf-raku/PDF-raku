@@ -95,7 +95,7 @@ role PDF::COS::Tie {
                             next if $_ ~~ of-type | IndRef;
                             ($att.tied.coerce)($_, of-type);
                             if $check {
-                                die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.gist}"
+                                die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
                                 unless $_ ~~ of-type;
                             }
                             .reader //= reader if reader && .can('reader');
@@ -106,7 +106,7 @@ role PDF::COS::Tie {
                     ($.coerce)($lval, $!type);
                     if $check {
                         with $lval {
-                            die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.gist}"
+                            die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.^name}"
                                 unless $_ ~~ $!type;
                         }
                     }
