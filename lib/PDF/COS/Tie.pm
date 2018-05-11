@@ -81,6 +81,7 @@ role PDF::COS::Tie {
                         $att = Attribute.new( :name('@!' ~ $.accessor-name), :type(of-type), :package<?> );
                         $att does TiedIndex;
                         $att.tied = $.clone;
+                        $att.tied.decont = False;
                         $att.tied.type = of-type;
                         $lval.of-att = $att;
 
@@ -105,11 +106,13 @@ role PDF::COS::Tie {
                 }
                 else {
                     my \of-type = $!decont ?? $!type.of !! $!type;
-                    ($.coerce)($lval, of-type);
-                    if $check {
-                        with $lval {
-                            die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.^name}"
-                                unless $_ ~~ of-type;
+                    unless $lval ~~ of-type {
+                        ($.coerce)($lval, of-type);
+                        if $check {
+                            with $lval {
+                                die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.^name}"
+                                    unless $_ ~~ of-type;
+                            }
                         }
                     }
                     $lval.reader //= $_ with reader;
