@@ -134,7 +134,7 @@ role PDF::COS::Tie {
 
         my constant %Args = %(
             :inherit<is-inherited>, :required<is-required>, :indirect<is-indirect>,
-            :coerce<coerce>, :len<length>, :alias<alias>, :array-or-object<decont>
+            :coerce<coerce>, :len<length>, :alias<alias>, :array-or-item<decont>
         );
         my $tied = $att.tied;
 

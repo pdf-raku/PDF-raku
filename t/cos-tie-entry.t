@@ -45,7 +45,7 @@ use PDF::COS::Dict;
     is PDF::COS::Dict {
         use PDF::COS::Tie;
         has UInt @.I is entry;
-        has Str @.S is entry(:array-or-object);
+        has Str @.S is entry(:array-or-item);
         has UInt @.LenThree is entry(:len(3));
         has Int %.Neg is entry where * < 0;
     }
@@ -65,8 +65,8 @@ use PDF::COS::Dict;
     $dict.S = 'singular';
     my $s;
     lives-ok {$s = $dict.S[0]}, 'fetch of singular value';
-    is $s, 'singular', 'fetch of array-or-object';
-    is $dict.S, 'singular', 'fetch of array-or-object';
+    is $s, 'singular', 'fetch of array-or-item';
+    is $dict.S, 'singular', 'fetch of array-or-item';
 
     is $dict.Neg<n2>,-8, 'hash container deref sanity';
     lives-ok { $dict.Neg<n2> = -5 }, 'hash assignment sanity';

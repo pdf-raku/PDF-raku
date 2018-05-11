@@ -1,5 +1,5 @@
 Release 0.3.1
-- Add Tie :array-or-object trait. For the common case, where a
+- Add Tie :array-or-item trait. For the common case, where a
   single item or array of items is permitted.`
 Release 0.3.0
 - Renamed PDF::DAO classess to PDF::COS, where COS stands for
