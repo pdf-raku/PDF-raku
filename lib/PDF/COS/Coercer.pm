@@ -3,7 +3,7 @@ class X::PDF::Coerce
 	has $.obj is required;
 	has $.type is required;
 	method message {
-	    "unable to coerce object $!obj of type {$!obj.WHAT.gist} to {$!type.WHAT.gist}"
+	    "unable to coerce object $!obj of type {$!obj.WHAT.^name} to {$!type.WHAT.^name}"
 	}
 }
 

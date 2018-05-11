@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 42;
+plan 45;
 
 use PDF::COS::Dict;
 
@@ -45,7 +45,7 @@ use PDF::COS::Dict;
     is PDF::COS::Dict {
         use PDF::COS::Tie;
         has UInt @.I is entry;
-        has Str @.S is entry;
+        has Str @.S is entry(:array-or-object);
         has UInt @.LenThree is entry(:len(3));
         has Int %.Neg is entry where * < 0;
     }
@@ -56,12 +56,17 @@ use PDF::COS::Dict;
     is $dict.S[0], 'xx', 'array container deref sanity';
     lives-ok { $dict.I[1] = 5 }, 'array assignment sanity';
     lives-ok { $dict.S[1] = 'yy' }, 'array assignment sanity';
-    my @s = $dict.S;
-    todo "listy accessor";
+    my @s = $dict.S.List;
     is @s[1], 'yy', "array container assignment";
     todo "typecheck on array elements", 2;
     quietly dies-ok { $dict.I[1] = -5 }, 'array assignment typecheck';
     lives-ok { $dict.I[1] = 42 }, 'array assignment typecheck';
+
+    $dict.S = 'singular';
+    my $s;
+    lives-ok {$s = $dict.S[0]}, 'fetch of singular value';
+    is $s, 'singular', 'fetch of array-or-object';
+    is $dict.S, 'singular', 'fetch of array-or-object';
 
     is $dict.Neg<n2>,-8, 'hash container deref sanity';
     lives-ok { $dict.Neg<n2> = -5 }, 'hash assignment sanity';

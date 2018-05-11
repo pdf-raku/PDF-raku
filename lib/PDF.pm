@@ -4,7 +4,7 @@ use PDF::COS::Dict;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
-class PDF:ver<0.3.0>
+class PDF:ver<0.3.1>
     is PDF::COS::Dict {
 
     use PDF::IO::Serializer;
