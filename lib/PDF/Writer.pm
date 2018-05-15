@@ -255,7 +255,7 @@ class PDF::Writer {
 
     method write-null( $ ) { 'null' }
 
-    method write-pdf(% (:$header!, :$body!, :$comment = q<%¥±ë>) ) {
+    method write-cos(% (:$header!, :$body!, :$comment = q<%¥±ë>) ) {
         my Str \header = $.write-header( $header );
         my Str \comment = $.write-comment($comment);
         $!offset = header.codes + comment.codes + 2;  # since format is byte orientated

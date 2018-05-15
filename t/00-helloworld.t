@@ -40,7 +40,7 @@ ok $pdf.ID, 'doc ID generated';
 my $pdf-id = $pdf.ID[0];
 my $upd-id = $pdf.ID[1];
 is $upd-id, $pdf-id, 'initial document ID';
-lives-ok {$pdf.save-as("t/pdf/samples/helloworld.json")}, 'save-as json';
+lives-ok {$pdf.save-as("tmp/helloworld.json")}, 'save-as json';
 is $pdf.ID[0], $pdf-id, 'document ID[0] - post update';
 isnt $pdf.ID[1], $pdf-id, 'document ID[1] - post update';
 ok PDF::Grammar::PDF.parse( $pdf.Str ), '$pdf.Str serialization';

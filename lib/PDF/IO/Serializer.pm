@@ -259,6 +259,6 @@ class PDF::IO::Serializer {
         my Array $body = self.body($trailer, :$compress );
 	.crypt-ast('body', $body, :mode<encrypt>)
 	    with $crypt;
-        :pdf{ :header{ :$!type, :$version }, :$body };
+        :cos{ :header{ :$!type, :$version }, :$body };
     }
 }

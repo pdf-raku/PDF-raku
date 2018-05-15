@@ -33,15 +33,15 @@ my $catalog = $pdf<Root>;
 
 # firstly, write and analyse just the updates
 lives-ok { $pdf.update(:prev(9999), :diffs("t/pdf/pdf.in-diffs".IO.open(:w)) ) }, 'update to PDF file - lives';
-lives-ok { $pdf.update(:prev(9999), :diffs("t/pdf/pdf.in.json".IO.open(:w)) ) }, 'update to JSON file - lives';
+lives-ok { $pdf.update(:prev(9999), :diffs("tmp/pdf.in.json".IO.open(:w)) ) }, 'update to JSON file - lives';
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 my Str $body-str = "t/pdf/pdf.in-diffs".IO.slurp( :enc<latin-1> );
 ok PDF::Grammar::PDF.subparse( $body-str.trim, :rule<body>, :$actions), "can reparse update-body";
 my $pdf-ast = $/.ast;
-my $json-ast =  from-json("t/pdf/pdf.in.json".IO.slurp);
+my $json-ast =  from-json("tmp/pdf.in.json".IO.slurp);
 
-for $pdf-ast<body>, $json-ast<pdf><body>[0] -> $body {
+for $pdf-ast<body>, $json-ast<cos><body>[0] -> $body {
     is-json-equiv $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
     is-json-equiv $body<trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';
     is-json-equiv $body<trailer><dict><Prev>, (:int(9999)), 'body trailer dict - Prev';
@@ -101,10 +101,10 @@ is $reader.type, 'PDF', 'reader type';
 is +$reader.xrefs, 2, 'reader.xrefs - reread';
 
 my $ast = $reader.ast( :rebuild );
-is $ast<pdf><header><type>, 'PDF', 'pdf ast type';
-is +$ast<pdf><body>, 1, 'single body';
-is +$ast<pdf><body>[0]<objects>, 10, 'read-back has object count';
-is-deeply $ast<pdf><body>[0]<objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Length => :int(70)},
+is $ast<cos><header><type>, 'PDF', 'pdf ast type';
+is +$ast<cos><body>, 1, 'single body';
+is +$ast<cos><body>[0]<objects>, 10, 'read-back has object count';
+is-deeply $ast<cos><body>[0]<objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Length => :int(70)},
                                                                      :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET")},
                               ]), 'inserted content';
 

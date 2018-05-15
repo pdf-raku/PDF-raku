@@ -11,7 +11,7 @@ my sub synopsis($input) {
 
 class X::PDF::BadDump is Exception {
     has Str $.input-file is required;
-    method message {"File doesn't contain a top-level 'pdf' struct: $!input-file"}
+    method message {"File doesn't contain a top-level 'cos' struct: $!input-file"}
 }
 
 class X::PDF::BadHeader is Exception {
@@ -179,12 +179,13 @@ class PDF::Reader {
     #| deserialize a JSON dump
     multi method open(IO::Path $input-path  where .extension.lc eq 'json', |c ) {
         my \ast = from-json( $input-path.IO.slurp );
+        my \root = ast<cos> // ast<pdf> if ast.isa(Hash);
         die X::PDF::BadDump.new( :input-file($input-path.absolute) )
-            unless ast.isa(Hash) && (ast<pdf>:exists);
-        $!type = ast<pdf><header><type> // 'PDF';
-        $!version = ast<pdf><header><version> // 1.2;
+            without root;
+        $!type = root<header><type> // 'PDF';
+        $!version = root<header><version> // 1.2;
 
-        for ast<pdf><body>.list {
+        for root<body>.list {
 
             for .<objects>.list.reverse {
                 with .<ind-obj> -> $ind-obj {
@@ -807,7 +808,7 @@ class PDF::Reader {
         .crypt-ast('body', $body, :mode<encrypt>)
             with self.crypt;
 
-        :pdf{
+        :cos{
             :header{ :$.type, :$.version },
             :$body,
         }

@@ -75,7 +75,7 @@ my $Description = "Moon phases: \x1f311\x1f313\x1f315\x1f317";
 $jar.Root.Classes.push: { :Name( :name<MAIN> ), :$Source, :Author("Heydər Əliyev"), :$Description};
 
 lives-ok {$jar.save-as: "t/lolcode.cjar" }, 'save as cos';
-lives-ok {$jar.save-as: "t/lolcode.cjar.json"}, 'save as json';
+lives-ok {$jar.save-as: "tmp/lolcode.cjar.json"}, 'save as json';
 
 lives-ok {$jar = $jar.open("t/lolcode.cjar");}, "open";
 

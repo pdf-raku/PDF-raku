@@ -67,7 +67,7 @@ class PDF:ver<0.3.1>
 
         if $diffs && $diffs.path ~~ m:i/'.json' $/ {
             # JSON output to a separate diffs file.
-            my %ast = :pdf{ :$body };
+            my %ast = :cos{ :$body };
             $diffs.print: to-json(%ast);
             $diffs.close;
         }

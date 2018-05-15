@@ -22,28 +22,28 @@ isa-ok $pdf-in.ind-obj(5, 0).object, PDF::COS::Stream, 'fetch via index';
 is $pdf-in.ind-obj(5, 0).object.encoded, "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET", 'stream content';
 
 my $ast = $pdf-in.ast( :rebuild );
-is-json-equiv $ast<pdf><header>, {:type<PDF>, :version(1.2)}, '$ast header';
-is +$ast<pdf><body>, 1, 'single body';
-is +$ast<pdf><body>[0]<objects>, 7, '$ast objects';
-is-json-equiv $ast<pdf><body>[0]<objects>[0], (:ind-obj([1, 0, :dict({:Outlines(:ind-ref([2, 0])), :Pages(:ind-ref([3, 0])), :Type(:name("Catalog"))})])), '$ast<body><objects>[0]';
-is-json-equiv $ast<pdf><body>[0]<trailer>, (:dict({:Root(:ind-ref([1, 0])), :Size(:int(8))})), '$ast trailer';
+is-json-equiv $ast<cos><header>, {:type<PDF>, :version(1.2)}, '$ast header';
+is +$ast<cos><body>, 1, 'single body';
+is +$ast<cos><body>[0]<objects>, 7, '$ast objects';
+is-json-equiv $ast<cos><body>[0]<objects>[0], (:ind-obj([1, 0, :dict({:Outlines(:ind-ref([2, 0])), :Pages(:ind-ref([3, 0])), :Type(:name("Catalog"))})])), '$ast<body><objects>[0]';
+is-json-equiv $ast<cos><body>[0]<trailer>, (:dict({:Root(:ind-ref([1, 0])), :Size(:int(8))})), '$ast trailer';
 
 my $pdf-repaired = PDF::Reader.new();
 $pdf-repaired.open( 't/pdf/pdf.in', :repair );
 is-deeply $pdf-repaired.ast( :rebuild ), $ast, '$reader.open( :repair )';
 
-$pdf-in.save-as( 't/pdf/pdf-rewritten.json', :rebuild );
+$pdf-in.save-as( 'tmp/pdf-rewritten.json', :rebuild );
 my $pdf-json = PDF::Reader.new();
-$pdf-json.open( 't/pdf/pdf-rewritten.json' );
+$pdf-json.open( 'tmp/pdf-rewritten.json' );
 my $json-ast = $pdf-json.ast( :rebuild );
-is-json-equiv $json-ast, $ast, '$reader.open( "pdf.json" )';
+is-json-equiv $json-ast, $ast, '$reader.open( "tmp/pdf-rewritten.json" )';
 
 $pdf-json.recompress( :compress );
 $pdf-json.save-as('t/pdf/pdf-compressed.pdf');
 my $pdf-compressed = PDF::Reader.new();
 $pdf-compressed.open( 't/pdf/pdf-compressed.pdf' );
 $ast = $pdf-compressed.ast;
-my $stream = $ast<pdf><body>[0]<objects>.first({ .key eq 'ind-obj' && .value[2].key eq 'stream'});
+my $stream = $ast<cos><body>[0]<objects>.first({ .key eq 'ind-obj' && .value[2].key eq 'stream'});
 ok $stream.defined, 'got stream';
 is-deeply $stream.value[2]<stream><dict><Filter><name>, 'FlateDecode', 'stream is compressed';
 

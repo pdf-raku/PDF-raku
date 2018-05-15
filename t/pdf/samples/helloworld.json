@@ -1,13 +1,22 @@
 {
-  "pdf": {
+  "cos": {
     "header": {
-      "version": 1.3,
-      "type": "PDF"
+      "type": "PDF",
+      "version": 1.3
     },
     "body": [
       {
         "trailer": {
           "dict": {
+            "Root": {
+              "ind-ref": [
+                2,
+                0
+              ]
+            },
+            "Size": {
+              "int": 8
+            },
             "ID": {
               "array": [
                 {
@@ -23,15 +32,6 @@
                 1,
                 0
               ]
-            },
-            "Root": {
-              "ind-ref": [
-                2,
-                0
-              ]
-            },
-            "Size": {
-              "int": 8
             }
           }
         },
@@ -83,11 +83,11 @@
               0,
               {
                 "dict": {
-                  "Count": {
-                    "int": 0
-                  },
                   "Type": {
                     "name": "Outlines"
+                  },
+                  "Count": {
+                    "int": 0
                   }
                 }
               }
@@ -99,12 +99,6 @@
               0,
               {
                 "dict": {
-                  "Count": {
-                    "int": 1
-                  },
-                  "Type": {
-                    "name": "Pages"
-                  },
                   "Kids": {
                     "array": [
                       {
@@ -114,6 +108,12 @@
                         ]
                       }
                     ]
+                  },
+                  "Type": {
+                    "name": "Pages"
+                  },
+                  "Count": {
+                    "int": 1
                   }
                 }
               }
@@ -125,6 +125,12 @@
               0,
               {
                 "dict": {
+                  "Contents": {
+                    "ind-ref": [
+                      6,
+                      0
+                    ]
+                  },
                   "Resources": {
                     "dict": {
                       "Procset": {
@@ -173,12 +179,6 @@
                       4,
                       0
                     ]
-                  },
-                  "Contents": {
-                    "ind-ref": [
-                      6,
-                      0
-                    ]
                   }
                 }
               }
@@ -206,9 +206,6 @@
               0,
               {
                 "dict": {
-                  "Encoding": {
-                    "name": "MacRomanEncoding"
-                  },
                   "Type": {
                     "name": "Font"
                   },
@@ -217,6 +214,9 @@
                   },
                   "BaseFont": {
                     "name": "Helvetica"
+                  },
+                  "Encoding": {
+                    "name": "MacRomanEncoding"
                   }
                 }
               }
