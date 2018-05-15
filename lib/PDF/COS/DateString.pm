@@ -9,7 +9,10 @@ class PDF::COS::DateString
     use PDF::COS::Util :date-time-formatter;
     BEGIN our &formatter = &date-time-formatter;
 
-    multi method new(Str $pdf-date!) {
+    multi method new(Str $pdf-date! is copy) {
+        constant BOM-BE = "\xFE\xFF";
+        $pdf-date = Buf.new($pdf-date.ords).decode('utf-16')
+            if $pdf-date.starts-with(BOM-BE);
 	$pdf-date ~~ /^
                 'D:'?
                 $<year>=\d**4
