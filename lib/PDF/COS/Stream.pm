@@ -14,18 +14,16 @@ class PDF::COS::Stream
 
     has UInt $.Length is entry;                     #| (Required) The number of bytes from the beginning of the line following the keyword stream to the last byte just before the keyword endstream
 
-    my subset StrOrArray where Str|Array;
+    has Str @.Filter is entry(:array-or-item);        #| (Optional) The name of a filter to be applied in processing the stream data found between the keywords stream and endstream, or an array of such names
 
-    has StrOrArray $.Filter is entry;               #| (Optional) The name of a filter to be applied in processing the stream data found between the keywords stream and endstream, or an array of such names
+    has Hash @.DecodeParms is entry(:array-or-item);  #| (Optional) A parameter dictionary or an array of such dictionaries, used by the filters specified by Filter
 
-    my subset DictOrArray where Hash|Array;
-    has DictOrArray $.DecodeParms is entry;         #| (Optional) A parameter dictionary or an array of such dictionaries, used by the filters specified by Filter
+    my subset StrOrDict where Str|Hash;
+    has StrOrDict $.F is entry;                       #| (Optional; PDF 1.2) The file containing the stream data. If this entry is present, the bytes between stream and endstream are ignored
+    has Str @.FFilter is entry(:array-or-item);       #| (Optional; PDF 1.2) The name of a filter to be applied in processing the data found in the stream’s external file, or an array of such names
+    has Hash @.FDecodeParms is entry(:array-or-item); #| (Optional; PDF 1.2) A parameter dictionary, or an array of such dictionaries, used by the filters specified by FFilter.
 
-    has Str $.F is entry;                           #| (Optional; PDF 1.2) The file containing the stream data. If this entry is present, the bytes between stream and endstream are ignored
-    has StrOrArray $.FFilter is entry;              #| (Optional; PDF 1.2) The name of a filter to be applied in processing the data found in the stream’s external file, or an array of such names
-    has DictOrArray $.FDecodeParms is entry;        #| (Optional; PDF 1.2) A parameter dictionary, or an array of such dictionaries, used by the filters specified by FFilter.
-
-    has UInt $.DL is entry;                         #| (Optional; PDF 1.5) A non-negative integer representing the number of bytes in the decoded (defiltered) stream.
+    has UInt $.DL is entry;                           #| (Optional; PDF 1.5) A non-negative integer representing the number of bytes in the decoded (defiltered) stream.
 
     has $.encoded;
     has $.decoded;

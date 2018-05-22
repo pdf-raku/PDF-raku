@@ -1,7 +1,7 @@
 Release 0.3.1
 - Add Tie :array-or-item trait. For the common case, where a
   single item or array of items is permitted.`
-- add tmp/ director for test JSON files, etc
+- add tmp/ directory for test JSON files, etc
 - Adjust for 'pdf' -> 'ast' in PDF::Grammar 0.1.6.
 - Changed the top level node from 'pdf' to 'cos' in JSON
   serializations

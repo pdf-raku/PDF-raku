@@ -52,12 +52,9 @@ role PDF::COS {
     }
     #| work around rakudo performance regressions - issue #15
     method required(Str \mod-name) {
-	if %required{mod-name}:exists {
-            %required{mod-name};
-        }
-        else {
-            %required{mod-name} = (require ::(mod-name));
-	}
+	%required{mod-name}:exists
+            ?? %required{mod-name}
+            !! %required{mod-name} = (require ::(mod-name));
     }
     method !add-role($obj is rw, Str $role-name) {
 	my $role = $.required($role-name);
