@@ -103,56 +103,33 @@ module PDF::COS::Util {
         from-ast( |$h )
     }
 
-    multi sub from-ast( $other!) {
-        $other
-    }
+    multi sub from-ast( $other!)            { $other }
 
-    multi sub from-ast( Array :$array! ) {
-        $array
-    }
+    multi sub from-ast( Array :$array! )    { $array }
 
-    multi sub from-ast( Bool :$bool! ) {
-        $bool;
-    }
+    multi sub from-ast( Bool :$bool! )      { $bool }
 
-    multi sub from-ast( Hash :$dict! ) {
-        $dict;
-    }
+    multi sub from-ast( Hash :$dict! )      { $dict }
 
-    multi sub from-ast( Str :$encoded! ) { $encoded }
+    multi sub from-ast( Str :$encoded! )    { $encoded }
 
-    multi sub from-ast( Str :$hex-string! ) { PDF::COS.coerce( :$hex-string ) }
+    multi sub from-ast( Str :$hex-string! ) { PDF::COS.coerce :$hex-string }
 
-    multi sub from-ast( Array :$ind-ref! ) {
-        :$ind-ref;
-    }
+    multi sub from-ast( Array :$ind-ref! )  { :$ind-ref }
 
-    multi sub from-ast( Array :$ind-obj! ) {
-        my %content = $ind-obj[2].kv;
-        from-ast( |%content )
-    }
+    multi sub from-ast( Array :$ind-obj! )  { from-ast |$ind-obj[2].kv }
 
-    multi sub from-ast( Numeric :$int! ) {
-        PDF::COS.coerce :$int;
-    }
+    multi sub from-ast( Numeric :$int! )    { PDF::COS.coerce :$int; }
 
-    multi sub from-ast( Str :$literal! ) { $literal }
+    multi sub from-ast( Str :$literal! )    { PDF::COS.coerce :$literal }
 
-    multi sub from-ast( Str :$name! ) {
-        PDF::COS.coerce :$name;
-    }
+    multi sub from-ast( Str :$name! )       { PDF::COS.coerce :$name }
 
-    multi sub from-ast( Numeric :$real! ) {
-        PDF::COS.coerce :$real;
-    }
+    multi sub from-ast( Numeric :$real! )   { PDF::COS.coerce :$real }
 
-    multi sub from-ast( Hash :$stream! ) {
-        $stream;
-    }
+    multi sub from-ast( Hash :$stream! )    { $stream }
 
-    multi sub from-ast( :$null! ) {
-        Any;
-    }
+    multi sub from-ast( :$null! )           { Any }
 
     multi sub from-ast( *@args, *%opt ) is default {
         die "unexpected from-ast arguments: {[@args].perl}"
