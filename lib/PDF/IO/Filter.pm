@@ -32,8 +32,9 @@ class PDF::IO::Filter {
 
         for $Filter.keys -> \i {
             my %dict = Filter => $Filter[i];
-            %dict<DecodeParms> = .[i]
-                with $DecodeParms;
+            with $DecodeParms {
+                %dict<DecodeParms> = $_ with .[i]
+            }
 
             $data = self!decode-item( $data, |%dict )
         }

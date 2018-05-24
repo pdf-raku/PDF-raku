@@ -1,3 +1,6 @@
+Release 0.3.2
+- Handle null entries in stream DecodeParms entry (as per spec)
+
 Release 0.3.1
 - Add Tie :array-or-item trait. For the common case, where a
   single item or array of items is permitted.`
@@ -6,6 +9,7 @@ Release 0.3.1
 - Changed the top level node from 'pdf' to 'cos' in JSON
   serializations
 - Handle utf-16 encoding in PDF::COS::DateString
+
 Release 0.3.0
 - Renamed PDF::DAO classess to PDF::COS, where COS stands for
   Carousel Object System (see
@@ -13,6 +17,7 @@ Release 0.3.0
 - Improvements to PDF::COS.coerce($obj, $type) multi methods.
 - Fixed class-level PDF::COS::Stream.gist
 - Support Hybrid PDFs that contain both cross refence tables and streams
+
 Release 0.2.8
 - [PDF::DAO]
   -- better support for lists and list to array coercion
@@ -20,10 +25,12 @@ Release 0.2.8
   -- replaced :$fallback option with :$base-class
 - [PDF::DAO::Tie]
   -- add mixin method
+
 Release 0.2.7
 - [PDF::DAO::Tie]
   -- reintroduce method :entry(:alias<foo>) sub-trait.
   -- remove type-check method
+
 Release 0.2.6
 - [PDF::DAO::Util] setup libpdf at BEGIN time
 - Rename or hide overused load() method in various classes/roles

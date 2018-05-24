@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 20;
+plan 25;
 
 use PDF::COS::Stream;
 use PDF::IO::IndObj;
@@ -46,6 +46,13 @@ sub stream_tests( $stream-obj, $subject) {
     is $stream-obj.decoded, '100 100 Td (Hello, world!) Tj', $subject~' decoded';
     is $stream-obj.encoded.Str.lc, $encoded~'>', $subject~' encoded';
 }
+
+%dict = ( :Filter['ASCIIHexDecode'],
+          :DecodeParms[ Any ],
+         );
+
+lives-ok {$stream-obj = PDF::COS.coerce( :$decoded, :stream{ :%dict } ); }, 'stream object construction, null DecodeParms';
+stream_tests( $stream-obj, 'stream object, null DecodeParms' );
 
 my $stream2 = PDF::COS.coerce( :stream{  :dict{ :Foo( :name<Bar> ) } } );
 is-json-equiv $stream2.content, (:dict{:Foo(:name<Bar>)}), 'stream without content';

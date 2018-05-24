@@ -93,7 +93,8 @@ role PDF::COS::Tie {
                         }
 
                         for v {
-                            next if $_ ~~ of-type | IndRef;
+                            next if $_ ~~ of-type | IndRef
+                                || !.defined;
                             ($att.tied.coerce)($_, of-type);
                             if $check {
                                 die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
