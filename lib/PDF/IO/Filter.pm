@@ -59,17 +59,18 @@ class PDF::IO::Filter {
     }
 
     # object may have an array of filters PDF 1.7 spec Table 3.4 
-    method !encode-list( $data is copy, List :$Filter!, List :$DecodeParams) {
+    method !encode-list( $data is copy, List :$Filter!, List :$DecodeParms) {
 
-        with $DecodeParams {
+        with $DecodeParms {
             die "Filter array {$Filter} does not have a corresponding DecodeParms array"
                 if !.isa(List) || +$Filter != +$_;
         }
 
         for $Filter.keys.reverse -> \i {
             my %dict = Filter => $Filter[i];
-            %dict<DecodeParms> = .[i]
-                with $DecodeParams;
+            with $DecodeParms {
+                %dict<DecodeParms> = $_ with .[i]
+            }
 
             $data = self!encode-item( $data, |%dict )
         }
