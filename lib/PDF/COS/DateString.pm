@@ -17,9 +17,12 @@ class PDF::COS::DateString
                 'D:'?
                 $<year>=\d**4
                 [$<dd>=\d**2]**0..5
-	        [$<tz-sign>=< + - Z > $<tz-hour>=\d**2 \' $<tz-min>=\d**2 \']?
-            /
-	    or die "Date $pdf-date not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
+	        [$<tz-sign>=< + - Z >
+                 $<tz-hour>=\d**2
+                 [\' $<tz-min>=\d**2]? \'?
+                ]?
+            $/
+	    or die "Date /$pdf-date/ not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
 
         my UInt \year  = +$<year>;
         my UInt \month = +( @<dd>[0] // 1 );

@@ -300,7 +300,9 @@ class PDF::Reader {
 
         given $type {
             when External {
-                my UInt $max-end = $end - $offset - 1;
+                my UInt $max-end = $offset >= $end
+                    ?? die "Attempt to fetch object $obj-num $gen-num R at byte offset $offset, past end of PDF ($end bytes)"
+                    !! $end - $offset - 1;
                 my $input = $.input.substr( $offset, $max-end );
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
                     or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
@@ -558,7 +560,7 @@ class PDF::Reader {
             # see if our cross reference table is already contained in the current tail
 	    my Str \xref = self!locate-xref(input-bytes, tail-bytes, $tail, $offset, my &fallback);
 
-	    @obj-idx.append: xref.starts-with('xref')
+	    @obj-idx.append: xref ~~ m:s/^ xref/
 		?? self!load-xref-table( xref, $dict, :&fallback, :$offset)
 		!! self!load-xref-stream(xref, $dict, :&fallback, :$offset);
 
