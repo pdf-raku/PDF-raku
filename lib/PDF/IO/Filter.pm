@@ -6,6 +6,7 @@ class PDF::IO::Filter {
     use PDF::IO::Filter::ASCII85;
     use PDF::IO::Filter::Flate;
     use PDF::IO::Filter::RunLength;
+    use PDF::IO::Filter::LZW;
 
     method decode( $input, Hash :$dict ) is default {
         with $dict<Filter> {
@@ -87,7 +88,7 @@ class PDF::IO::Filter {
             Crypt          => Mu,
             DCTDecode      => Mu,
             FlateDecode    => PDF::IO::Filter::Flate,
-            LZWDecode      => Mu,
+            LZWDecode      => PDF::IO::Filter::LZW,
             JBIG2Decode    => Mu,
             JPXDecode      => Mu,
             RunLengthDecode => PDF::IO::Filter::RunLength,

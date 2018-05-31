@@ -50,6 +50,7 @@
     "PDF::IO::Filter::ASCII85" : "lib/PDF/IO/Filter/ASCII85.pm",
     "PDF::IO::Filter::ASCIIHex" : "lib/PDF/IO/Filter/ASCIIHex.pm",
     "PDF::IO::Filter::Flate" : "lib/PDF/IO/Filter/Flate.pm",
+    "PDF::IO::Filter::LZW" : "lib/PDF/IO/Filter/LZW.pm",
     "PDF::IO::Filter::Predictors" : "lib/PDF/IO/Filter/Predictors.pm",
     "PDF::IO::Filter::RunLength" : "lib/PDF/IO/Filter/RunLength.pm",
     "PDF::IO::Handle" : "lib/PDF/IO/Handle.pm",
