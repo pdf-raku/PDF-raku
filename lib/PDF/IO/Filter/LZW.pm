@@ -1,10 +1,11 @@
 use v6;
-# code adapted from http://rosettacode.org/wiki/LZW_compression#Perl_6
+# code adapted from PDF::API2::Basic::PDF::Filter::LZWEncode
 class PDF::IO::Filter::LZW {
 
 
     # Maintainer's Note: LZW is described in the PDF 1.7 spec
     # in section 3.3.3.
+    use PDF::IO::Util;
     use PDF::IO::Filter::Predictors;
     use PDF::IO::Blob;
 
@@ -16,7 +17,7 @@ class PDF::IO::Filter::LZW {
     }
 
     multi method encode($) {
-	die "LZW encoding is NYI";
+	die "LZW encoding is not implemented.";
     }
 
     multi method decode(Str $input, |c) {
@@ -34,16 +35,14 @@ class PDF::IO::Filter::LZW {
         my uint8 @data = $in.list;
         my uint8 @out;
 
-        my $partial-code;
-        my $partial-bits;
-
-        my \early-change = $EarlyChange // 1;
+        my uint16 $partial-code = 0;
+        my uint16 $partial-bits = 0;
 
         while @data {
             my $code = self!read-dat(@data, $partial-code, $partial-bits, $code-len);
             last unless defined $code;
 
-            unless early-change {
+            unless $EarlyChange {
                 if $next-code == (1 +< $code-len) and $code-len < 12 {
                     $code-len++;
                 }
@@ -67,7 +66,7 @@ class PDF::IO::Filter::LZW {
 
             @out.append: @table[$next-code++];
 
-            if early-change {
+            if $EarlyChange {
                 if $next-code == (1 +< $code-len) and $code-len < 12 {
                     $code-len++;
                 }
@@ -84,9 +83,6 @@ class PDF::IO::Filter::LZW {
     }
 
     method !read-dat(@data, $partial-code is rw, $partial-bits is rw, $code-length) {
-
-        $partial-bits //= 0;
-        $partial-code //= 0;
 
         while $partial-bits < $code-length {
             return Mu unless @data;
