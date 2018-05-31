@@ -44,6 +44,11 @@ class PDF::COS::Coercer {
 	$obj = $class.new( :value($obj), :$type, |c );
     }
 
+    # handle coercement to names or name subsets
+    multi method coerce( PDF::COS::Name $obj, $role where PDF::COS::Name ) {
+	$obj
+    }
+
     multi method coerce( Str $obj is rw, $role where PDF::COS::Name ) {
 	$obj = $obj but PDF::COS::Name
     }

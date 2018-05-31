@@ -12,8 +12,8 @@ role PDF::COS {
 
     method is-indirect is rw returns Bool {
 	Proxy.new(
-	    FETCH => sub (\p) { ? self.obj-num },
-	    STORE => sub (\p, Bool \indirect) {
+	    FETCH => { ? self.obj-num },
+	    STORE => -> \p, Bool \indirect {
 		if indirect {
 		    # Ensure this object is indirect. Serializer will renumber
 		    self.obj-num //= -1;

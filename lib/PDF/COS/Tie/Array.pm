@@ -11,10 +11,10 @@ role PDF::COS::Tie::Array does PDF::COS::Tie {
         my UInt \pos = $att.index;
 
 	Proxy.new(
-	    FETCH => sub ($) {
+	    FETCH => {
 		self.AT-POS(pos, :check);
 	    },
-	    STORE => sub ($, \v) {
+	    STORE => -> $, \v {
 		self.ASSIGN-POS(pos, v, :check);
 	    });
     }

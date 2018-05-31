@@ -10,10 +10,11 @@ role PDF::COS::Tie {
 
     #| generate an indirect reference to ourselves
     method ind-ref returns IndRef {
-	my \obj-num = $.obj-num;
-	obj-num && obj-num > 0
-	    ?? :ind-ref[ obj-num, $.gen-num ]
-	    !! die "not an indirect object";
+	given $.obj-num {
+            $_ && $_ > 0
+                ?? :ind-ref[ $_, $.gen-num ]
+                !! die "not an indirect object";
+        }
     }
 
     #| generate an indirect reference, include the reader, if spanning documents
@@ -59,7 +60,11 @@ role PDF::COS::Tie {
 
         multi method tie(IndRef $lval is rw) { $lval } # undereferenced - don't know it's type yet
 	multi method tie($lval is rw, :$check) {
-            if $lval.defined && !($lval ~~ $!type) {
+            if !$lval.defined {
+                die "missing required field: $.accessor-name"
+                    if $check && $.is-required;
+            }
+            elsif !($lval ~~ $!type) {
                 my \reader  = $lval.?reader;
 
                 if ($!type ~~ Positional[Mu] && $lval ~~ List)
@@ -118,11 +123,10 @@ role PDF::COS::Tie {
                 }
             }
             else {
-                die "missing required field: $.accessor-name"
-                    if $check && !$lval.defined && $.is-required;
                 $lval.obj-num //= -1
                     if $.is-indirect && $lval ~~ PDF::COS;
             }
+
 	    $lval;
 	}
 
@@ -161,23 +165,7 @@ role PDF::COS::Tie {
 	my \type = $att.type;
 	$att does TiedEntry;
 	$att.tied.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
-	my \sigil = ~ $0;
-	given sigil {
-	    when '$' {}
-	    when '@' {
-		# assert that rakudo has interpreted this as Positional[SomeType]
-		die "internal error. expecting Positional role, got {type.gist}"
-		    unless type ~~ Positional;
-	    }
-	    when '%' {
-		# assert that rakudo has interpreted this as Associative[SomeType]
-		die "internal error. expecting Associative role, got {type.gist}"
-		    unless type ~~ Associative;
-	    }
-	    default {
-		warn "ignoring '$_' sigil";
-	    }
-	}
+
 	$att.tied.type = type;
 	process-args($entry, $att);
     }

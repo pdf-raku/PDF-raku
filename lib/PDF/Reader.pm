@@ -101,12 +101,12 @@ class PDF::Reader {
 
     method trailer {
         Proxy.new(
-            FETCH => sub ($) {
+            FETCH => {
                 self!install-trailer
                     without %!ind-obj-idx{"0 0"};
                 self.ind-obj(0, 0).object;
             },
-            STORE => sub ($, \obj) {
+            STORE => -> $, \obj {
                 self!install-trailer(obj);
             },
         );
@@ -686,15 +686,11 @@ class PDF::Reader {
         %ast;
     }
 
-    #| - sift /XRef objects
-    #| - delinearize
+    #| Get a list of indirect objects in the PDF
     #| - preserve input order
-    #| :unpack 1.4- compatible asts:
-    #| -- sift /ObjStm objects,
-    #| -- keep type 2 objects
-    #| :!unpack 1.5+ (/ObjStm aware) compatible asts:
-    #| -- sift type 2 objects
-    method get-objects(
+    #| - delinearize
+    #| - sift /XRef and /ObjStm objects,
+      method get-objects(
         Bool :$incremental = False       #| only return updated objects
         ) {
         my @object-refs;
@@ -780,7 +776,8 @@ class PDF::Reader {
     }
 
     multi method recompress(Bool :$compress = True) {
-        # locate and compress/uncompress stream objects
+        # locate and or compress/uncompress stream objects
+        # replace deprecated LZW compression with Flate
 
         for self.get-objects.list -> \obj {
             next unless obj.key eq 'ind-obj';
@@ -788,11 +785,12 @@ class PDF::Reader {
             my \obj-type = ind-obj.key;
 
             if obj-type eq 'stream' {
-                my \obj-dict = ind-obj.value<dict>;
                 my Int \obj-num = obj.value[0];
                 my Int \gen-num = obj.value[1];
+                my \obj-dict = ind-obj.value<dict>;
                 my Bool \is-compressed = obj-dict<Filter>:exists;
-                next if $compress == is-compressed;
+                next if $compress == is-compressed
+                    && !($compress && is-compressed && obj-dict<Filter><name> ~~ 'LZWDecode');
                 # fully stantiate object and adjust compression
                 my \object = self.ind-obj( obj-num, gen-num).object;
                 $compress ?? .compress !! .uncompress with object;

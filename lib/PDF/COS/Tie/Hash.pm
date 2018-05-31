@@ -17,12 +17,12 @@ role PDF::COS::Tie::Hash does PDF::COS::Tie {
 
     method rw-accessor(Attribute $att, Str :$key!) is rw {
         Proxy.new(
-            FETCH => sub ($) {
+            FETCH => {
                 $att.tied.is-inherited
 	            ?? find-prop(self, $key)
 	            !! self.AT-KEY($key, :check);
             },
-            STORE => sub ($, \v) {
+            STORE => -> $, \v {
                 self.ASSIGN-KEY($key, v, :check);
             }
         );

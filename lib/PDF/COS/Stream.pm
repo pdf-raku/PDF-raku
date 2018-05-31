@@ -34,14 +34,14 @@ class PDF::COS::Stream
 
     method encoded is rw {
 	Proxy.new(
-	    FETCH => sub ($) {
+	    FETCH => {
 		$!encoded //= self.encode( $_ )
 		    with $!decoded;
 		self<Length> //= .codes with $!encoded;
 		$!encoded;
 	    },
 
-	    STORE => sub ($, $stream) {
+	    STORE => -> $, $stream {
 		$!decoded = Any;
 		self<Length> = .codes with $stream;
 		$!encoded = $stream;
@@ -51,12 +51,12 @@ class PDF::COS::Stream
 
     method decoded is rw {
 	Proxy.new(
-	    FETCH => sub ($) {
+	    FETCH => {
 		$!decoded //= self.decode( $_ )
 		    with $!encoded;
 		$!decoded;
 	    },
-	    STORE => sub ($, $stream) {
+	    STORE => -> $, $stream {
 		$!encoded = Any;
 		self<Length>:delete;
 		$!decoded = $stream;
@@ -112,6 +112,10 @@ class PDF::COS::Stream
     }
 
     method compress {
+        # reencode deprecated LZW as Flate
+        self.uncompress
+            if self<Filter> ~~ 'LZWDecode';
+
         self<Filter> //= do {
             $!decoded //= $!encoded;
             $!encoded = Nil;
