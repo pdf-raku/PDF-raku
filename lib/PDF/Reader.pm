@@ -64,7 +64,7 @@ class X::PDF::BadIndirectObject is Exception {
 class X::PDF::BadIndirectObject::Parse is X::PDF::BadIndirectObject {
     has Str $.input is required;
     method message {
-        $.details = "unable to parse indirect object: " ~ synopsis($.input);
+        $.details = "Unable to parse indirect object: " ~ synopsis($.input);
         nextsame;
     }
 }
@@ -256,13 +256,13 @@ class PDF::Reader {
             my UInt \from = $obj-raw.value<start>:delete;
             my UInt \length = $.deref( $obj-raw.value<dict><Length> )
                 // die X::PDF::BadIndirectObject.new(:$obj-num, :$gen-num, :$offset,
-                                                     :details("stream mandatory /Length field is missing")
+                                                     :details("Stream mandatory /Length field is missing")
                                                     );
 
             with $max-end {
                 die X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
-                    :details("stream Length {length} appears too large (> {$max-end - from})"),
+                    :details("Stream Length {length} appears too large (> {$max-end - from})"),
                 ) if length > $_ - from;
             }
 
@@ -271,13 +271,13 @@ class PDF::Reader {
             if tail ~~ m{<PDF::Grammar::PDF::stream-tail>} {
                 warn X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
-                    :details("ignoring {$/.from} bytes before 'endstream' marker")
+                    :details("Ignoring {$/.from} bytes before 'endstream' marker")
                     ) if $/.from;
             }
             else {
                 die X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
-                    :details("unable to locate 'endstream' marker after consuming /Length {length} bytes")
+                    :details("Unable to locate 'endstream' marker after consuming /Length {length} bytes")
                     );
             }
 
