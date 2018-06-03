@@ -9,6 +9,7 @@ class PDF::COS::Loader {
 
     our %handler;
     method handler {%handler}
+    method warn {False}
 
     method install-delegate( Str $subclass, $class-def ) is rw {
         %handler{$subclass} = $class-def;
@@ -16,28 +17,41 @@ class PDF::COS::Loader {
 
     method find-delegate( Str $type!, $subtype?, :$base-class! ) is default {
 
-	my $subclass = $type;
+	my Str $subclass = $type;
 	$subclass ~= '::' ~ $_
-	    with $subtype;
+            with $subtype;
 
-	return %handler{$subclass}
-	    if %handler{$subclass}:exists;
+	return self.handler{$subclass}
+	    if self.handler{$subclass}:exists;
 
-	my $handler-class = $base-class;
+        my $handler-class = $base-class;
+        my Bool $resolved;
 
-	for self.class-paths -> \class-path {
-	    CATCH {
-		when X::CompUnit::UnsatisfiedDependency { }
-	    }
-            my \class-name = class-path ~ '::' ~ $subclass;
-	    $handler-class = PDF::COS.required(class-name);
-            $handler-class = $base-class.^mixin($handler-class)
-                unless $handler-class.isa($base-class);
-	    last;
+	for self.class-paths -> $class-path {
+            my $class-name = $class-path ~ '::' ~ $subclass;
+            $handler-class = PDF::COS.required($class-name);
+            if $handler-class ~~ Failure {
+                warn "failed to load: $class-name: {$handler-class.exception.message}";
+            }
+            else {
+                $handler-class = $base-class.^mixin($handler-class)
+                    unless $handler-class ~~ $base-class;
+                $resolved = True;
+                last;
+            }
+            CATCH {
+                when X::CompUnit::UnsatisfiedDependency {
+		    # try loading just the parent class
+		    $handler-class = $.find-delegate($type, :$base-class)
+			if $subtype;
+		}
+            }
 	}
 
-	self.install-delegate( $subclass, $handler-class );
-        $handler-class;
+	note "No handler class {self.class-paths}::{$subclass}"
+	    if !$resolved && $.warn;
+
+        self.install-delegate( $subclass, $handler-class );
     }
 
     multi method load-delegate( Hash :$dict! where {$dict<Type>:exists}, :$base-class = $dict.WHAT) {
