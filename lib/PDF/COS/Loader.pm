@@ -48,7 +48,7 @@ class PDF::COS::Loader {
             }
 	}
 
-	note "No handler class {self.class-paths}::{$subclass}"
+	note "No handler class {self.class-paths[0]}::{$subclass}"
 	    if !$resolved && $.warn;
 
         self.install-delegate( $subclass, $handler-class );
