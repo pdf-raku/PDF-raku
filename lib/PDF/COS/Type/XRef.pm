@@ -1,15 +1,13 @@
 use v6;
 
-use PDF::COS;
 use PDF::COS::Stream;
-use PDF::COS::Tie::Hash;
 
 # /Type /XRef - cross reference stream, introduced with PDF 1.5
 # see [PDF 1.7 Section 3.4.7 Cross-Reference Streams]
 class PDF::COS::Type::XRef
-    is PDF::COS::Stream
-    does PDF::COS::Tie::Hash {
+    is PDF::COS::Stream {
 
+    use PDF::COS;
     use PDF::IO::Util :pack;
     use PDF::IO::Blob;
     use PDF::COS::Tie;

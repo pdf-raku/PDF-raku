@@ -1,16 +1,14 @@
 use v6;
 
-use PDF::COS;
 use PDF::COS::Stream;
-use PDF::COS::Tie::Hash;
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
 # See [PDF 1.7 Section 3.4.6 Object Streams]
 class PDF::COS::Type::ObjStm
-    is PDF::COS::Stream
-    does PDF::COS::Tie::Hash {
+    is PDF::COS::Stream {
 
+    use PDF::COS;
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
     use PDF::COS::Tie;
