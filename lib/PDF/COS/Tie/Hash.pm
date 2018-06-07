@@ -40,6 +40,7 @@ role PDF::COS::Tie::Hash does PDF::COS::Tie {
     method check {
         self.AT-KEY($_, :check)
             for (flat self.keys, self.entries.keys).unique;
+        self.?cb-check();
         self
     }
 
