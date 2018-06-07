@@ -32,4 +32,7 @@ class PDF::IO {
         $stream<encoded>
     }
 
+    method byte-str(|c) {
+	$.subbuf(|c).decode('latin-1');
+    }
 }

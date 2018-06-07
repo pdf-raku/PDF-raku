@@ -267,7 +267,7 @@ class PDF::Reader {
             }
 
             # ensure stream is followed by an 'endstream' marker
-            my Str \tail = $input.substr( $offset + from + length, 20 );
+            my Str \tail = $input.byte-str( $offset + from + length, 20 );
             if tail ~~ m{<PDF::Grammar::PDF::stream-tail>} {
                 warn X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
@@ -282,7 +282,7 @@ class PDF::Reader {
             }
 
 	    length
-		?? $input.substr( $offset + from, length )
+		?? $input.byte-str( $offset + from, length )
 		!! '';
         };
     }
@@ -303,7 +303,7 @@ class PDF::Reader {
                 my UInt $max-end = $offset >= $end
                     ?? die "Attempt to fetch object $obj-num $gen-num R at byte offset $offset, past end of PDF ($end bytes)"
                     !! $end - $offset - 1;
-                my $input = $.input.substr( $offset, $max-end );
+                my $input = $.input.byte-str( $offset, $max-end );
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
                     or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
 
@@ -407,7 +407,7 @@ class PDF::Reader {
         # file should start with: %PDF-n.m, (where n, m are single
         # digits giving the major and minor version numbers).
 
-        my Str $preamble = $.input.substr(0, 8);
+        my Str $preamble = $.input.byte-str(0, 8);
 
         PDF::Grammar::COS.subparse($preamble, :$.actions, :rule<header>)
             or die X::PDF::BadHeader.new( :$preamble );
@@ -442,16 +442,16 @@ class PDF::Reader {
 	constant SIZE = 4096;       # big enough to usually contain xref
 
 	if $offset >= $input-bytes - $tail-bytes {
-	    $xref = $.input.substr( $offset, $tail-bytes )
+	    $xref = $.input.byte-str( $offset, $tail-bytes )
 	}
 	elsif $input-bytes - $tail-bytes - $offset <= SIZE {
 	    # xref abutts currently read $tail
 	    my UInt $lumbar-bytes = min(SIZE, $input-bytes - $tail-bytes - $offset);
-	    $xref = $.input.substr( $offset, $lumbar-bytes) ~ $tail;
+	    $xref = $.input.byte-str( $offset, $lumbar-bytes) ~ $tail;
 	}
 	else {
 	    my UInt $xref-len = min(SIZE, $input-bytes - $offset);
-	    $xref = $.input.substr( $offset, $xref-len );
+	    $xref = $.input.byte-str( $offset, $xref-len );
 	    $fallback = sub (Numeric $_, Str $xref is rw) {
                 when 1 {
                     # first retry: increase buffer size
@@ -459,12 +459,12 @@ class PDF::Reader {
 		        constant SIZE2 = SIZE * 15;
 		        # xref not contained in SIZE bytes? subparse a much bigger chunk
 		        $xref-len = min( SIZE2, $input-bytes - $offset - SIZE );
-		        $xref ~= $.input.substr( $offset + SIZE, $xref-len );
+		        $xref ~= $.input.byte-str( $offset + SIZE, $xref-len );
 		    }
                 }
                 when 2 {
                     # second retry: read through to the tail
-		    $xref ~= $.input.substr( $offset + SIZE + $xref-len);
+		    $xref ~= $.input.byte-str( $offset + SIZE + $xref-len);
                 }
                 default {
                     fail;
@@ -538,7 +538,7 @@ class PDF::Reader {
     #| via the $.ind-obj() method.
     method !load-index($grammar, $actions, |c) is default {
         my UInt \tail-bytes = min(1024, $.input.codes);
-        my Str $tail = $.input.substr(* - tail-bytes);
+        my Str $tail = $.input.byte-str(* - tail-bytes);
 
         my UInt %offsets-seen;
         @!xrefs = [];

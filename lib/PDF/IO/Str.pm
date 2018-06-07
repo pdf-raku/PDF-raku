@@ -11,9 +11,10 @@ class PDF::IO::Str
         $!ords //= self.encode("latin-1");
     }
 
+    method subbuf(|c) { $.ords.subbuf(|c) }
     method read(UInt $n is copy) {
         my \n = min($n, $.codes - $!pos);
-        my \buf := Buf[uint8].new: $.ords.subbuf($!pos, n);
+        my \buf := Buf[uint8].new: $.subbuf($!pos, n);
         $!pos += n;
         buf;
     }

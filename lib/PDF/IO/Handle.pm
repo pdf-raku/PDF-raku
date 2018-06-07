@@ -16,25 +16,21 @@ class PDF::IO::Handle
     }
 
     multi method Str {
-        $.substr(0, $!codes);
+        $.byte-str(0, $!codes);
     }
 
-    multi method subbuf( WhateverCode $whence!, |c --> Blob) {
+    multi method subbuf(WhateverCode $whence!, |c --> Blob) {
         my UInt $from = $whence( $!codes );
         $.subbuf( $from, |c );
     }
 
     multi method subbuf( UInt $from!, UInt $length = $.codes - $from + 1 --> Blob) {
-        with $!str {
-            .substr-rw( $from, $length )
-        }
-        else {
-            $!value.seek( $from, SeekFromBeginning );
-            $!value.read( $length );
-        }
+        $!value.seek( $from, SeekFromBeginning );
+        $!value.read( $length );
     }
 
     method substr(|c) {
-	$.subbuf(|c).decode('latin-1');
+        warn "substr is deprecated. Please use byte-str";
+        $.byte-str(|c);
     }
 }
