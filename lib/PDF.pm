@@ -43,6 +43,15 @@ class PDF:ver<0.3.2>
         $!crypt = (require PDF::IO::Crypt::PDF).new( :doc(self), :$owner-pass, :$user-pass, |c);
     }
 
+    method !is-indexed {
+        with $.reader {
+            ? (.input && .xrefs && .xrefs[0]);
+        }
+        else {
+            False;
+        }
+    }
+
     #| perform an incremental save back to the opened input file, or write
     #| differences to the specified file
     method update(IO::Handle :$diffs, |c) {
@@ -51,16 +60,13 @@ class PDF:ver<0.3.2>
 	    unless self<Root>:exists;
 	self<Root>.?cb-finish;
 
-        my $reader = $.reader
-            // die "PDF is not associated with an input source";
-
 	die "PDF has not been opened for indexed read."
-	    unless $reader.input && $reader.xrefs && $reader.xrefs[0];
+	    unless self!is-indexed;
 
-	my $type = $reader.type;
+	my $type = $.reader.type;
 	self!generate-id( :$type );
 
-        my PDF::IO::Serializer $serializer .= new( :$reader, :$type );
+        my PDF::IO::Serializer $serializer .= new( :$.reader, :$type );
         my Array $body = $serializer.body( :updates, |c );
 	.crypt-ast('body', $body, :mode<encrypt>)
 	    with $!crypt;
@@ -131,11 +137,11 @@ class PDF:ver<0.3.2>
 	$.save-as($file-name.IO, |c );
     }
 
-    multi method save-as(IO::Path $iop, Bool :$preserve, |c) {
+    multi method save-as(IO::Path $iop, Bool :$preserve = self!is-indexed, |c) {
 	when $iop.extension.lc eq 'json' {
 	    $iop.spurt( to-json( $.ast(|c) ));
 	}
-	when $preserve && $.reader.defined {
+	when $preserve && $.reader && !$!crypt {
 	    $.reader.file-name.IO.copy( $iop );
 	    $.update( :to($iop.open(:a, :bin)), |c);
 	}
@@ -160,13 +166,17 @@ class PDF:ver<0.3.2>
     # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )
     method permitted(UInt $flag --> Bool) {
 
-	return True
-	    if $!crypt.?is-owner;
+        return True
+            if $!crypt.?is-owner;
 
-	my $perms = self.Encrypt.?P
-	    // return True;
+        my $perms = self.Encrypt.?P
+            // return True;
 
-	return $perms.flag-is-set( $flag );
+        return $perms.flag-is-set( $flag );
+    }
+
+    method Blob returns Blob {
+	self.Str.encode: "latin-1";
     }
 
     #| Generate a new document ID.
