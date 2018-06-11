@@ -11,10 +11,8 @@ class PDF::IO::Serializer {
     has Array %!objects-idx{Any};   #| unique objects index
     has UInt %!ref-count{Any};
     has Bool $.renumber is rw = True;
-    has Str $!type;                 #| 'FDF', 'PDF', .. others?
     has $.reader;
-
-    method type { $!type //= $.reader.?type // 'PDF' }
+    has Str $.type = $!reader.?type // 'PDF';
 
     #| Reference count hashes. Could be derivate class of PDF::COS::Dict or PDF::COS::Stream.
     multi method ref-count(Hash $dict) {

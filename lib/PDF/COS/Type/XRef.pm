@@ -40,7 +40,7 @@ class PDF::COS::Type::XRef
         self.Index[1] ||= $.Size;
 
         die 'mandatory /Index[0] entry is missing'
-            unless $.first-obj-num.defined;
+            without $.first-obj-num;
 
         die 'mandatory /Size entry is missing or zero'
             unless $.next-obj-num;
@@ -48,11 +48,8 @@ class PDF::COS::Type::XRef
         my uint32 @width;
         for $xref.pairs {
             my $v = .value;
-            with @width[.key[1]] {
+            given @width[.key[1]] {
                 $_ = $v if $v > $_
-            }
-            else {
-                $_ = $v;
             }
         }
 

@@ -29,8 +29,7 @@ class PDF::IO::Handle
         $!value.read( $length );
     }
 
-    method substr(|c) {
-        warn "substr is deprecated. Please use byte-str";
+    method substr(|c) is DEPRECATED('Please use byte-str') {
         $.byte-str(|c);
     }
 }

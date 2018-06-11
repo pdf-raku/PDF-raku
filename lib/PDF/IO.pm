@@ -25,6 +25,11 @@ class PDF::IO {
         (require ::('PDF::IO::Str')).bless( :$value, |c );
     }
 
+    multi method coerce( Blob $_!, |c) {
+        my $value = .decode: "latin-1";
+        (require ::('PDF::IO::Str')).bless( :$value, |c );
+    }
+
     multi method stream-data( List :$ind-obj! ) {
         $.stream-data( |$ind-obj[2] );
     }

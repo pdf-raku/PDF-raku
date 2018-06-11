@@ -24,7 +24,7 @@ sub MAIN (
         if $compress && $uncompress;
 
     my $reader = PDF::Reader.new;
- 
+
     note "opening {$file-in} ...";
     $reader.open( $file-in, :$repair, :$password );
 

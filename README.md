@@ -336,12 +336,12 @@ CCITTFaxDecode  | CCF | _NYI_
 Crypt           |     | _NYI_
 DCTDecode       | DCT | _NYI_
 FlateDecode     | Fl  | PDF::IO::Filter::Flate
-LZWDecode       | LZW | _NYI_
+LZWDecode       | LZW | PDF::IO::Filter::LZW (`decode` only)
 JBIG2Decode     |     | _NYI_
 JPXDecode       |     | _NYI_
 RunLengthDecode | RL  | PDF::IO::Filter::RunLength
 
-Input to all filters is strings, with characters in the range \x0 ... \0xFF. latin-1 encoding is recommended to enforce this.
+Input to all filters is byte strings, with characters in the range \x0 ... \0xFF. latin-1 encoding is recommended to enforce this.
 
 Each filter has `encode` and `decode` methods, which accept and return latin-1 encoded strings, or binary blobs.
 
