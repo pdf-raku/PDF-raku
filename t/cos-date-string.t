@@ -1,11 +1,14 @@
 use v6;
 use Test;
-plan 20;
+plan 21;
 
 use PDF::COS;
 use PDF::COS::DateString;
 
-my $date = PDF::COS::DateString.new("D:199812231952-08'00'");
+my $date-spec = "D:199812231952-08'00'";
+ok $date-spec ~~ PDF::COS::DateString::DateRegex, 'DateRegex match';
+
+my $date = PDF::COS::DateString.new($date-spec);
 
 is $date.year, 1998, 'Date year';
 is $date.month, 12, 'Date month';

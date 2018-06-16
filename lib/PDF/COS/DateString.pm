@@ -9,11 +9,7 @@ class PDF::COS::DateString
     use PDF::COS::Util :date-time-formatter;
     BEGIN our &formatter = &date-time-formatter;
 
-    multi method new(Str $pdf-date! is copy) {
-        constant BOM-BE = "\xFE\xFF";
-        $pdf-date = Buf.new($pdf-date.ords).decode('utf-16')
-            if $pdf-date.starts-with(BOM-BE);
-	$pdf-date ~~ /^
+    our constant DateRegex = rx/^
                 'D:'?
                 $<year>=\d**4
                 [$<dd>=\d**2]**0..5
@@ -22,7 +18,13 @@ class PDF::COS::DateString
                     [\' $<tz-min>=\d**2]? \'?
                   ]?
                 ]?
-            $/
+            $/;
+
+    multi method new(Str $pdf-date! is copy) {
+        constant BOM-BE = "\xFE\xFF";
+        $pdf-date = Buf.new($pdf-date.ords).decode('utf-16')
+            if $pdf-date.starts-with(BOM-BE);
+	$pdf-date ~~ DateRegex
 	    or die "Date /$pdf-date/ not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
 
         my UInt \year  = +$<year>;
