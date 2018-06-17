@@ -31,7 +31,7 @@ role PDF::COS::Tie {
         #| override standard Attribute method for generating accessors
 	has Tied $.tied is rw handles <tie> = Tied.new;
         method compose(Mu $package) {
-            my $key = self.tied.accessor-name;
+            my $key = self.tied.key;
             my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
             $package.^add_method( $key, &accessor );
             $package.^add_method( self.tied.alias, &accessor)
@@ -58,10 +58,20 @@ role PDF::COS::Tie {
 	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::COS.coerce($lval, $type) };
         has UInt $.length;
 
+        method key is rw {
+            Proxy.new(
+                FETCH => sub ($) { self.accessor-name},
+                STORE => sub ($, $k) {
+                    self.alias = self.accessor-name;
+                    self.accessor-name = $k;
+                },
+            )
+        }
+
         multi method tie(IndRef $lval is rw) { $lval } # undereferenced - don't know it's type yet
 	multi method tie($lval is rw, :$check) {
             if !$lval.defined {
-                die "missing required field: $.accessor-name"
+                die "missing required field: $.key"
                     if $check && $.is-required;
             }
             elsif !($lval ~~ $!type) {
@@ -140,7 +150,8 @@ role PDF::COS::Tie {
 
         my constant %Args = %(
             :inherit<is-inherited>, :required<is-required>, :indirect<is-indirect>,
-            :coerce<coerce>, :len<length>, :alias<alias>, :array-or-item<decont>
+            :coerce<coerce>, :len<length>, :alias<alias>, :array-or-item<decont>,
+            :key<key>,
         );
         my $tied = $att.tied;
 

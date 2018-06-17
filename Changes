@@ -2,6 +2,8 @@ Release 0.3.2
 - Handle null entries in stream DecodeParms entry (as per spec)
 - Rename PDF::IO.substr() method to byte-str()
 - `save-as()` method now saves incrementally.
+- Add constant PDF::COS::DateString::DateRegex
+- Add PDF::COS::Tie entry :key trait option
 
 Release 0.3.1
 - Add Tie :array-or-item trait. For the common case, where a

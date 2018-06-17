@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 45;
+plan 47;
 
 use PDF::COS::Dict;
 
@@ -13,6 +13,7 @@ use PDF::COS::Dict;
         has Hash $.DictInd is entry(:indirect);
         subset FredDict of Hash where {.<Name> ~~ 'Fred'}
         has FredDict $.SubsetDict is entry;
+        has UInt $.three-dd is entry(:key<3DD>);
     }
 
     my $dict;
@@ -28,10 +29,13 @@ use PDF::COS::Dict;
         dies-ok {$dict.IntReq}, "dict accessor - typecheck";
         lives-ok {$dict.IntReq = 99}, "post-assigment to required field";
         lives-ok {$dict.check}, ".check on now valid dict";
-
         dies-ok { TestDict.new( :dict{ } ) }, 'dict without required - dies';
     }
     $dict = TestDict.new( :dict{ :IntReq(42), :DictInd{}, } );
+    $dict.three-dd = 88;
+    is $dict<3DD>, 88, ':key trait option';
+    $dict."3DD"() = 99;
+    is $dict."3DD"(), 99, ':key trait option';
     ok $dict.DictInd.is-indirect, 'indirect entry';
     my $fred = %( :Name<Fred> );
     ok $fred ~~ TestDict::FredDict, 'subset sanity';
