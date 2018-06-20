@@ -32,6 +32,7 @@ class PDF::COS::Loader {
             $handler-class = PDF::COS.required($class-name);
             if $handler-class ~~ Failure {
                 warn "failed to load: $class-name: {$handler-class.exception.message}";
+                $handler-class = $base-class;
             }
             else {
                 $handler-class = $base-class.^mixin($handler-class)
