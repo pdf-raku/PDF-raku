@@ -6,9 +6,9 @@ use PDF::IO;
 
 my $ioh = "t/helloworld.pdf".IO;
 
-my $in-ioh = PDF::IO.coerce( $ioh );
+my PDF::IO $in-ioh .= coerce( $ioh );
 my Str $str = $ioh.slurp( :enc<latin-1> );
-my $in-str = PDF::IO.coerce( $str );
+my PDF::IO $in-str .= coerce( $str );
 
 for :$in-ioh, :$in-str {
     my ($test, $input) = .kv;

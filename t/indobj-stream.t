@@ -6,7 +6,7 @@ use PDF::COS::Stream;
 use PDF::IO::IndObj;
 use PDF::Grammar::Test :is-json-equiv;
 
-my $stream-obj;
+my PDF::COS $stream-obj;
 
 my %dict = ( :Filter<ASCIIHexDecode>,
              :DecodeParms{ :BitsPerComponent(4), :Predictor(10), :Colors(3) },
@@ -14,12 +14,12 @@ my %dict = ( :Filter<ASCIIHexDecode>,
 
 my $decoded = '100 100 Td (Hello, world!) Tj';
 my $encoded = '31303020313030205464202848656c6c6f2c20776f726c64212920546a';
-lives-ok { $stream-obj = PDF::COS.coerce( :$decoded, :stream{ :%dict } ) }, 'basic stream object construction';
+lives-ok { $stream-obj .= coerce( :$decoded, :stream{ :%dict } ) }, 'basic stream object construction';
 stream_tests( $stream-obj, 'stream object' );
 %dict<Length> = 59;
 
-my $ind-obj;
-lives-ok { $ind-obj = PDF::IO::IndObj.new( :ind-obj[123, 1, $stream-obj.content] ); }, 'stream object rebuilt';
+my PDF::IO::IndObj $ind-obj;
+lives-ok { $ind-obj .= new( :ind-obj[123, 1, $stream-obj.content] ); }, 'stream object rebuilt';
 is $ind-obj.obj-num, 123, '$.obj-num';
 is $ind-obj.gen-num, 1, '$.gen-num';
 
@@ -51,10 +51,10 @@ sub stream_tests( $stream-obj, $subject) {
           :DecodeParms[ Any ],
          );
 
-lives-ok {$stream-obj = PDF::COS.coerce( :$decoded, :stream{ :%dict } ); }, 'stream object construction, null DecodeParms';
+lives-ok {$stream-obj .= coerce( :$decoded, :stream{ :%dict } ); }, 'stream object construction, null DecodeParms';
 stream_tests( $stream-obj, 'stream object, null DecodeParms' );
 
-my $stream2 = PDF::COS.coerce( :stream{  :dict{ :Foo( :name<Bar> ) } } );
+my PDF::COS $stream2 .= coerce( :stream{  :dict{ :Foo( :name<Bar> ) } } );
 is-json-equiv $stream2.content, (:dict{:Foo(:name<Bar>)}), 'stream without content';
 $stream2.decoded = 'ABC12345678';
 is-json-equiv $stream2.content, (:stream{ :dict{:Foo(:name<Bar>), :Length{ :int(11) } }, :encoded<ABC12345678> }), 'stream with content';

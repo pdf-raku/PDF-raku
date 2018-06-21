@@ -10,7 +10,7 @@ use PDF::Grammar::Test :is-json-equiv;
 # ensure consistant document ID generation
 srand(123456);
 
-my $pdf-in = PDF::Reader.new();
+my PDF::Reader $pdf-in .= new();
 $pdf-in.open( 't/pdf/pdf.in' );
 
 is $pdf-in.version, 1.2, 'loaded version';
@@ -28,19 +28,19 @@ is +$ast<cos><body>[0]<objects>, 7, '$ast objects';
 is-json-equiv $ast<cos><body>[0]<objects>[0], (:ind-obj([1, 0, :dict({:Outlines(:ind-ref([2, 0])), :Pages(:ind-ref([3, 0])), :Type(:name("Catalog"))})])), '$ast<body><objects>[0]';
 is-json-equiv $ast<cos><body>[0]<trailer>, (:dict({:Root(:ind-ref([1, 0])), :Size(:int(8))})), '$ast trailer';
 
-my $pdf-repaired = PDF::Reader.new();
+my PDF::Reader $pdf-repaired .= new();
 $pdf-repaired.open( 't/pdf/pdf.in', :repair );
 is-deeply $pdf-repaired.ast( :rebuild ), $ast, '$reader.open( :repair )';
 
 $pdf-in.save-as( 'tmp/pdf-rewritten.json', :rebuild );
-my $pdf-json = PDF::Reader.new();
+my PDF::Reader $pdf-json .= new();
 $pdf-json.open( 'tmp/pdf-rewritten.json' );
 my $json-ast = $pdf-json.ast( :rebuild );
 is-json-equiv $json-ast, $ast, '$reader.open( "tmp/pdf-rewritten.json" )';
 
 $pdf-json.recompress( :compress );
 $pdf-json.save-as('t/pdf/pdf-compressed.pdf');
-my $pdf-compressed = PDF::Reader.new();
+my PDF::Reader $pdf-compressed .= new();
 $pdf-compressed.open( 't/pdf/pdf-compressed.pdf' );
 $ast = $pdf-compressed.ast;
 my $stream = $ast<cos><body>[0]<objects>.first({ .key eq 'ind-obj' && .value[2].key eq 'stream'});
@@ -50,8 +50,8 @@ is-deeply $stream.value[2]<stream><dict><Filter><name>, 'FlateDecode', 'stream i
 # load from a String
 use PDF::IO::Str;
 my Str $value = 't/pdf/pdf.in'.IO.open( :enc<latin-1> ).slurp-rest;
-my $input-str = PDF::IO::Str.new( :$value );
-my $pdf-str = PDF::Reader.new;
+my PDF::IO::Str $input-str .= new( :$value );
+my PDF::Reader $pdf-str .= new;
 $pdf-str.open( $input-str );
 is $pdf-str.version, 1.2, 'str - loaded version';
 is $pdf-str.type, 'PDF', 'str - loaded type';

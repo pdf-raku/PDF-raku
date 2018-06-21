@@ -6,7 +6,7 @@ use PDF::Reader;
 use PDF::Writer;
 use PDF::COS;
 
-my $reader = PDF::Reader.new;
+my PDF::Reader $reader .= new;
 
 sub deref($val is rw, *@ops) is rw {
     $reader.deref($val, |@ops);

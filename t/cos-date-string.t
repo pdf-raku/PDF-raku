@@ -8,7 +8,7 @@ use PDF::COS::DateString;
 my $date-spec = "D:199812231952-08'00'";
 ok $date-spec ~~ PDF::COS::DateString::DateRegex, 'DateRegex match';
 
-my $date = PDF::COS::DateString.new($date-spec);
+my PDF::COS::DateString $date .= new($date-spec);
 
 is $date.year, 1998, 'Date year';
 is $date.month, 12, 'Date month';
@@ -17,7 +17,7 @@ is $date.hour, 19, 'Date hour';
 is $date.minute, 52, 'Date minute';
 is $date.offset, -8*60*60, 'Date offset';
 
-$date = PDF::COS::DateString.new("1999");
+$date .= new("1999");
 is $date.year, 1999, 'Date year';
 is $date.month,   1, 'Date month (default)';
 is $date.day,     1, 'Date day (default)';
@@ -31,7 +31,7 @@ class MyInfo is PDF::COS::Dict {
     has PDF::COS::DateString $.CreationDate is entry;
 }
 
-my $info = MyInfo.new( :dict{ :CreationDate( :literal<D:20130629204853+02'00'> ) } );
+my MyInfo $info .= new( :dict{ :CreationDate( :literal<D:20130629204853+02'00'> ) } );
 
 is $info.CreationDate, q<D:20130629204853+02'00'>, 'raw creation date';
 my $creation-date = $info.CreationDate;

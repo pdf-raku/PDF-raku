@@ -12,7 +12,7 @@ my $reader = class {
 }.new;
 
 sub ind-obj-tests( :$ind-obj!, :$class!, :$to-json) {
-    my $dict-obj = PDF::IO::IndObj.new( :$ind-obj, :$reader );
+    my PDF::IO::IndObj $dict-obj .= new( :$ind-obj, :$reader );
     my $object = $dict-obj.object;
     isa-ok $object, $class;
     is $dict-obj.obj-num, $ind-obj[0], '$.obj-num';
@@ -67,7 +67,7 @@ class MyCat
     has Bool $.NeedsRendering is entry;
 }
 
-my $cat = MyCat.new( :dict{ :Pages{ :Kids[ { :Type( :name<Page> ) }, ], :Resources{ :ExtGState{} }, } } );
+my MyCat $cat .= new( :dict{ :Pages{ :Kids[ { :Type( :name<Page> ) }, ], :Resources{ :ExtGState{} }, } } );
 
 isa-ok $cat, MyCat, 'root object';
 does-ok $cat<Pages>, MyPages, '<Pages> role';
@@ -94,8 +94,8 @@ dies-ok {$cat.Pages.Kids[1] = 42}, 'typechecking - array elems';
 use PDF;
 use PDF::IO::Serializer;
 my %dict = :Root($cat);
-my $pdf = PDF.new( :%dict );
-my $serializer = PDF::IO::Serializer.new;
+my PDF $pdf .= new( :%dict );
+my PDF::IO::Serializer $serializer .= new;
 my $body = $serializer.body( $pdf );
 
 is-json-equiv $body[0], {:objects[

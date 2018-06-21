@@ -5,7 +5,7 @@ plan 9;
 use PDF::Reader;
 use PDF::COS::Dict;
 
-my $pdf-in = PDF::Reader.new();
+my PDF::Reader $pdf-in .= new();
 
 $pdf-in.open( 't/pdf/pdf-fdf.in' );
 

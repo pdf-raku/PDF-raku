@@ -18,7 +18,7 @@ my $decoded = "BT /F1 16 Tf  40 250 Td (new page added to an encrypted PDF) Tj E
     my $Parent = $catalog<Pages>;
     my $Resources = $Parent<Kids>[0]<Resources>;
     my $MediaBox = $Parent<Kids>[0]<MediaBox>;
-    my $Contents = PDF::COS.coerce( :stream{ :$decoded } );
+    my PDF::COS $Contents .= coerce( :stream{ :$decoded } );
     $Parent<Kids>.push: { :Type( :name<Page> ), :$MediaBox, :$Resources, :$Parent, :$Contents };
     $Parent<Count>++;
 }

@@ -5,7 +5,7 @@ plan 7;
 use PDF::COS;
 use PDF::COS::TextString;
 
-my $str = PDF::COS::TextString.new(:value<Writer>);
+my PDF::COS::TextString $str .= new(:value<Writer>);
 
 isa-ok $str, PDF::COS::TextString;
 is $str, "Writer", 'simple string value';
@@ -17,7 +17,7 @@ my $literal = [~] "\xFE\xFF", "\x[0]H", "\x[0]e", "\x[0]y", "\x[0]d", "\x[2]Y", 
    "\x[1]\x[8f]", "\x[0]l", "\x[0]i", "\x[0]y", "\x[0]e", "\x[0]v";
 is $encoded, $literal, 'utf16-encode';
 
-$str = PDF::COS::TextString.new(:value($encoded));
+$str .= new(:value($encoded));
 
 isa-ok $str, PDF::COS::TextString;
 is $str, $name, 'simple string value';

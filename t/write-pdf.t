@@ -15,7 +15,7 @@ unless $*PERL.compiler.version >= v2017.04 {
     exit;
 }
 
-my $actions = PDF::Grammar::COS::Actions.new();
+my PDF::Grammar::COS::Actions $actions .= new();
 
 for 't/pdf'.IO.dir.grep(/ [\w|'-']*? '.json'$/).sort -> $json-file {
 
@@ -24,8 +24,8 @@ for 't/pdf'.IO.dir.grep(/ [\w|'-']*? '.json'$/).sort -> $json-file {
     my $pdf-input-file = $json-file.subst( /'.json'$/, '.in' );
     next unless $pdf-input-file.IO.e;
     my $pdf-output-file = $json-file.subst( /'.json'$/, '.out' );
-    my $input = PDF::IO.coerce( $pdf-input-file.IO );
-    my $pdf-output = PDF::Writer.new( :$input, :offset(0), :%ast );
+    my PDF::IO $input .= coerce( $pdf-input-file.IO );
+    my PDF::Writer $pdf-output .= new( :$input, :offset(0), :%ast );
     $pdf-output-file.IO.spurt: $pdf-output.Blob;
 
     my ($rule) = %ast.keys;
@@ -36,7 +36,7 @@ for 't/pdf'.IO.dir.grep(/ [\w|'-']*? '.json'$/).sort -> $json-file {
     PDF::Grammar::Test::parse-tests($class, ~$input, :$rule, :$actions, :suite("[$pdf-input-file]"), :%expected );
 
     my $json-output-file = $pdf-output-file ~ '.json';
-    my $output = PDF::IO.coerce( $pdf-output-file.IO );
+    my PDF::IO $output .= coerce( $pdf-output-file.IO );
     PDF::Grammar::Test::parse-tests($class, ~$output, :$rule, :$actions, :suite("[$pdf-output-file]"), :%expected );
 }
 

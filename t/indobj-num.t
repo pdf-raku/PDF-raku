@@ -8,13 +8,13 @@ use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 
-my $actions = PDF::Grammar::PDF::Actions.new;
+my PDF::Grammar::PDF::Actions $actions .= new;
 
 my $input = '37 5 obj 42 endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
-my $ind-obj = PDF::IO::IndObj.new( |%ast, :$input );
+my PDF::IO::IndObj $ind-obj .= new( |%ast, :$input );
 isa-ok $ind-obj.object, Int;
 does-ok $ind-obj.object, ::('PDF::COS::Int');
 is $ind-obj.obj-num, 37, '$.obj-num';
@@ -30,7 +30,7 @@ $ind-obj.object.flag-is-set(3), False, 'flag 3 is unset';
 
 is-json-equiv $ind-obj.ast, %ast, 'ast regeneration';
 
-my $twos-comp-mask = PDF::COS.coerce( :int(-44) );
+my PDF::COS $twos-comp-mask .= coerce( :int(-44) );
 is $twos-comp-mask.flag-is-set(3), True, 'twos-comp flag 3 is set';
 is $twos-comp-mask.flag-is-set(4), False, 'twos-comp flag 4 is unset';
 is $twos-comp-mask.flag-is-set(5), True, 'twos-comp flag 5 is set';
@@ -39,7 +39,7 @@ $input = '5 6 obj 4.2 endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 %ast = $/.ast;
-$ind-obj = PDF::IO::IndObj.new( |%ast, :$input );
+$ind-obj .= new( |%ast, :$input );
 isa-ok $ind-obj.object, Rat;
 does-ok $ind-obj.object, ::('PDF::COS::Real');
 is $ind-obj.obj-num, 5, '$.obj-num';

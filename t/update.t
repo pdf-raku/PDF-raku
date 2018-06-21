@@ -26,7 +26,7 @@ my $catalog = $pdf<Root>;
     my $Parent = $catalog<Pages>;
     my $Resources = $Parent<Kids>[0]<Resources>;
     my $MediaBox = $Parent<Kids>[0]<MediaBox>;
-    my $Contents = PDF::COS.coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
+    my PDF::COS $Contents .= coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
     $Parent<Kids>.push: { :Type(name 'Page'), :$MediaBox, :$Resources, :$Parent, :$Contents };
     $Parent<Count>++;
 }
@@ -35,7 +35,7 @@ my $catalog = $pdf<Root>;
 lives-ok { $pdf.update(:prev(9999), :diffs("t/pdf/pdf.in-diffs".IO.open(:w)) ) }, 'update to PDF file - lives';
 lives-ok { $pdf.update(:prev(9999), :diffs("tmp/pdf.in.json".IO.open(:w)) ) }, 'update to JSON file - lives';
 
-my $actions = PDF::Grammar::PDF::Actions.new;
+my PDF::Grammar::PDF::Actions $actions .= new;
 my Str $body-str = "t/pdf/pdf.in-diffs".IO.slurp( :enc<latin-1> );
 ok PDF::Grammar::PDF.subparse( $body-str.trim, :rule<body>, :$actions), "can reparse update-body";
 my $pdf-ast = $/.ast;

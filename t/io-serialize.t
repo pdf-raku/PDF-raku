@@ -88,9 +88,9 @@ is-json-equiv @objects[3], (:ind-obj[4, 0, :dict{
                                                },
                                    ]), 'page object';
 
-my $obj-with-utf8 = PDF::COS.coerce: { :Root{ :Name(name "Heydər Əliyev") } };
+my PDF::COS $obj-with-utf8 .= coerce: { :Root{ :Name(name "Heydər Əliyev") } };
 $obj-with-utf8<Root>.is-indirect = True;
-my $writer = PDF::Writer.new;
+my PDF::Writer $writer .= new;
 
 @objects = @(PDF::IO::Serializer.new.body($obj-with-utf8)[0]<objects>);
 is-json-equiv @objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
@@ -106,7 +106,7 @@ is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'com
 is $stream<encoded>.codes, 54, 'compressed stream length';
 
 # just to define current behaviour wrt to non-latin chars; blows up during write.
-my $obj-with-bad-byte-string = PDF::COS.coerce: { :Root{ :Name("Heydər Əliyev") } };
+my PDF::COS $obj-with-bad-byte-string .= coerce: { :Root{ :Name("Heydər Əliyev") } };
 @objects = @(PDF::IO::Serializer.new.body($obj-with-bad-byte-string)<objects>);
 dies-ok {$writer.write( :ind-obj(@objects[0].value) )}, 'out-of-range byte-string dies during write';
 

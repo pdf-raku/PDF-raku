@@ -8,13 +8,13 @@ use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 
-my $actions = PDF::Grammar::PDF::Actions.new;
+my PDF::Grammar::PDF::Actions $actions .= new;
 
 my $input = '42 5 obj [0.9505 1.0000 1.0890 [1 2 (abc)]] endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
-my $ind-obj = PDF::IO::IndObj.new( |%ast, :$input );
+my PDF::IO::IndObj $ind-obj .= new( |%ast, :$input );
 my $object = $ind-obj.object;
 isa-ok $object, Array;
 is-json-equiv $object, [0.9505e0, 1e0, 1.089e0, [1, 2, "abc"]], '$.content';
@@ -44,7 +44,7 @@ class ColorSpaceArray
     has ColorSpaceDict $.Dict is index(1);
 }
 
-my $cs = ColorSpaceArray.new;
+my ColorSpaceArray $cs .= new;
 $cs[0] = 'Lab';
 $cs[1] = { :WhitePoint[1.0, 1.0, 1.0] };
 

@@ -7,7 +7,7 @@ use PDF::COS::Type::Info;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 
-my $actions = PDF::Grammar::PDF::Actions.new;
+my PDF::Grammar::PDF::Actions $actions .= new;
 
 class DummyCatalog
     is PDF::COS::Dict {
@@ -33,7 +33,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<object>)
     // die "parse failed";
 my %dict = $/.ast.value;
 
-my $catalog = DummyCatalog.new( :%dict );
+my DummyCatalog $catalog .= new( :%dict );
 isa-ok $catalog, DummyCatalog, 'catalog sanity';
 isa-ok $catalog.Info, PDF::COS::Dict;
 does-ok $catalog.Info, PDF::COS::Type::Info;

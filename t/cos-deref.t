@@ -24,9 +24,9 @@ class t::DummyReader {
     }
 }
 
-my $reader = t::DummyReader.new;
+my t::DummyReader $reader .= new;
 
-my $obj = PDF::COS.coerce( {
+my PDF::COS $obj .= coerce( {
         :A(10),
         :B(:ind-ref[42,4]),
         :Kids[

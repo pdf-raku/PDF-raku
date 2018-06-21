@@ -8,14 +8,14 @@ use PDF::IO;
 use PDF::IO::Filter;
 use PDF::IO::IndObj;
 
-my $actions = PDF::Grammar::PDF::Actions.new;
+my PDF::Grammar::PDF::Actions $actions .= new;
 
 my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
-my $pdf-input = PDF::IO.coerce( $input );
-my $ind-obj = PDF::IO::IndObj.new( :$input, |%ast );
+my PDF::IO $pdf-input .= coerce( $input );
+my PDF::IO::IndObj $ind-obj .= new( :$input, |%ast );
 my $dict = $ind-obj.object;
 my $raw-content = $pdf-input.stream-data( |%ast )[0];
 my $content;

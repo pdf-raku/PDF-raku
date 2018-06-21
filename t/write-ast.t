@@ -21,7 +21,7 @@ for 't/write-ast.json'.IO.lines {
         next;
     }
 
-    my $pdf-data = PDF::Writer.new( :%ast );
+    my PDF::Writer $pdf-data .= new( :%ast );
     is-json-equiv ~$pdf-data, $expected-pdf, "write {%ast.keys.sort}"
         or diag :%ast.perl;
 }

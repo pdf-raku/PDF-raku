@@ -55,7 +55,7 @@ class COS::JAR
 # ensure consistant document ID generation
 srand(123456);
 
-my $jar = COS::JAR.new;
+my COS::JAR $jar .= new;
 $jar.Root = { :Language<LOLCODE>, :Version("1.2"), :Classes[] };
 does-ok $jar.Root, COS::JAR::Manifest;
 is $jar.Root.Language, 'LOLCODE', 'accessor';
@@ -68,7 +68,7 @@ VISIBLE "HAI WORLD!"
 KTHXBYE
 --ENUFF--
 
-my $Source = PDF::COS.coerce: :stream{ :$decoded, :dict{ :Filter<FlateDecode> } };
+my PDF::COS $Source .= coerce: :stream{ :$decoded, :dict{ :Filter<FlateDecode> } };
 
 my $Description = "Moon phases: \x1f311\x1f313\x1f315\x1f317";
 

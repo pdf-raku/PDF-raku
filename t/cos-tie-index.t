@@ -18,8 +18,8 @@ use PDF::COS::Array;
     }
 
     my $array-in = [42, 10, { :a(20), :b(30) }, 40 ];
-    my $array;
-    lives-ok { $array = TestArray.new: :array($array-in) }, 'construction sanity';
+    my TestArray $array;
+    lives-ok { $array .= new: :array($array-in) }, 'construction sanity';
     isa-ok $array, Array;
     is $array.I0, 42, 'accessor sanity';
     is $array.R1, 10, 'coercement';
@@ -43,7 +43,7 @@ use PDF::COS::Array;
         has PDF::COS::Name $.name is index(0);
     }
     my $array-in = ['Hi'];
-    my $array = PDF::COS.coerce($array-in, TestArray);
+    my PDF::COS $array .= coerce($array-in, TestArray);
     isa-ok($array, PDF::COS::Array);
     does-ok($array, TestArray);
     does-ok($array[0], PDF::COS::Name);

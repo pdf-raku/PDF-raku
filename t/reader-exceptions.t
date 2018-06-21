@@ -83,7 +83,7 @@ END
 }
 
 sub test-case(Bool :$repair = False, |c) {
-    my $r = PDF::Reader.new;
+    my PDF::Reader $r .= new;
     $r.open( make-pdf( |c ), :$repair );
     $r.ind-obj( 6, 0 );
 }

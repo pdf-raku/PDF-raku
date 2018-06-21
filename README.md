@@ -39,7 +39,7 @@ use PDF::COS;
 sub prefix:</>($name){ PDF::COS.coerce(:$name) };
 
 # construct a simple PDF document from scratch
-my $doc = PDF.new;
+my PDF $doc .= new;
 my $root     = $doc.Root       = { :Type(/'Catalog') };
 
 my @MediaBox  = 0, 0, 250, 100;
@@ -303,7 +303,7 @@ The document can be traversed by dereferencing Array and Hash objects. The reade
 use PDF::Reader;
 use PDF::COS;
 
-my $reader = PDF::Reader.new;
+my PDF::Reader $reader .= new;
 $reader.open: 'examples/helloworld.pdf';
 
 # objects can be directly fetched by object-number and generation-number:
@@ -376,7 +376,7 @@ my %dict = :Filter( :name<ASCIIHexDecode> );
 my $obj-num = 123;
 my $gen-num = 4;
 my $decoded = "100 100 Td (Hello, world!) Tj";
-my $stream-obj = PDF::COS::Stream.new( :$obj-num, :$gen-num, :%dict, :$decoded );
+my PDF::COS::Stream $stream-obj .= new( :$obj-num, :$gen-num, :%dict, :$decoded );
 say $stream-obj.encoded;
 ```
 
@@ -389,7 +389,7 @@ use v6;
 use PDF::Grammar::COS;
 use PDF::Grammar::COS::Actions;
 use PDF::COS;
-my $actions = PDF::Grammar::COS::Actions.new;
+my PDF::Grammar::COS::Actions $actions .= new;
 my \p = PDF::Grammar::COS.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :rule<object>, :$actions)
     or die "parse failed";
 my %ast = p.ast;

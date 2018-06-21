@@ -16,22 +16,22 @@ use PDF::COS::Dict;
         has UInt $.three-dd is entry(:key<3DD>);
     }
 
-    my $dict;
-    lives-ok { $dict = TestDict.new( :dict{ :IntReq(42) } ) }, 'dict sanity';
+    my TestDict $dict;
+    lives-ok { $dict .= new( :dict{ :IntReq(42) } ) }, 'dict sanity';
     is $dict.IntReq, 42, "dict accessor sanity";
     is $dict.required-int, 42, "dict alias accessor";
     lives-ok { $dict.IntReq = 43 }, 'dict accessor assignment sanity';
     quietly {
         dies-ok { $dict.IntReq = 'urrgh' }, 'dict accessor assignment typecheck';
         is $dict.IntReq, 43, 'dict accessor typecheck';
-        lives-ok { $dict = TestDict.new( :dict{ :IntReq<oops> } ) }, 'dict typecheck bypass';
+        lives-ok { $dict .= new( :dict{ :IntReq<oops> } ) }, 'dict typecheck bypass';
         dies-ok {$dict.check}, ".check on invalid dict";
         dies-ok {$dict.IntReq}, "dict accessor - typecheck";
         lives-ok {$dict.IntReq = 99}, "post-assigment to required field";
         lives-ok {$dict.check}, ".check on now valid dict";
         dies-ok { TestDict.new( :dict{ } ) }, 'dict without required - dies';
     }
-    $dict = TestDict.new( :dict{ :IntReq(42), :DictInd{}, } );
+    $dict .= new( :dict{ :IntReq(42), :DictInd{}, } );
     $dict.three-dd = 88;
     is $dict<3DD>, 88, ':key trait option';
     $dict."3DD"() = 99;
@@ -54,8 +54,8 @@ use PDF::COS::Dict;
         has Int %.Neg is entry where * < 0;
     }
 
-    my $dict;
-    lives-ok { $dict = TestDict2.new( :dict{ :I[3, 4], :S['xx'], :Neg{ :n1(-7),  :n2(-8) } } ) }, 'container sanity';
+    my TestDict2 $dict;
+    lives-ok { $dict .= new( :dict{ :I[3, 4], :S['xx'], :Neg{ :n1(-7),  :n2(-8) } } ) }, 'container sanity';
     is $dict.I[1], 4, 'array container deref sanity';
     is $dict.S[0], 'xx', 'array container deref sanity';
     lives-ok { $dict.I[1] = 5 }, 'array assignment sanity';
@@ -92,7 +92,7 @@ use PDF::COS::Dict;
         has MyRole $.Coerced is entry(:&coerce);
     }
 
-    my $dict = TestDict3.new( :dict{ :Coerced(42) } );
+    my TestDict3 $dict .= new( :dict{ :Coerced(42) } );
     is $dict.Coerced, 42, 'coercement';
     does-ok $dict.Coerced, MyRole, 'coercement';
 }
@@ -106,12 +106,12 @@ use PDF::COS::Dict;
         has PDF::COS::Dict $.Parent is entry;
     }
 
-    my $Parent = Node.new( :dict{ :Resources{ :got<parent> }  } );
-    my $child-with-entry = Node.new( :dict{ :Resources{ :got<child> }, :$Parent, } );
-    my $child-without-entry = Node.new( :dict{ :$Parent, } );
-    my $orphan = Node.new( :dict{ } );
-    my $two-deep = Node.new( :dict{ :Parent($child-without-entry) } );
-    my $cyclical = Node.new( :dict{ } );
+    my Node $Parent .= new( :dict{ :Resources{ :got<parent> }  } );
+    my Node $child-with-entry .= new( :dict{ :Resources{ :got<child> }, :$Parent, } );
+    my Node $child-without-entry .= new( :dict{ :$Parent, } );
+    my Node $orphan .= new( :dict{ } );
+    my Node $two-deep .= new( :dict{ :Parent($child-without-entry) } );
+    my Node $cyclical .= new( :dict{ } );
     $cyclical<Parent> = $cyclical;
 
     is $Parent.Resources<got>, 'parent', 'parent accessor';

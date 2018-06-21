@@ -6,7 +6,7 @@ use PDF::IO::IndObj;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 
-my $actions = PDF::Grammar::PDF::Actions.new;
+my PDF::Grammar::PDF::Actions $actions .= new;
 
 my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
@@ -23,7 +23,7 @@ isa-ok $object.Length, Int, '$.Length';
 is $object.Length, 167, '$.Length';
 is $object.Type, 'ObjStm', '$.Type';
 
-my $num-obj = PDF::COS.coerce( :real(4.2) );
+my PDF::COS $num-obj .= coerce( :real(4.2) );
 is-deeply $num-obj.content, (:real(4.2)), 'composed object $.content';
 is +$num-obj, 4.2, 'composed object Num coercement';
 is-deeply ~$num-obj, '4.2', 'composed object Str coercement';

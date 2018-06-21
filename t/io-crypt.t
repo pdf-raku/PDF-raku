@@ -84,12 +84,12 @@ my $test-identity = do {
 
 for $test-v1, $test-v2, $test-v4-rc4, $test-identity {
     my $dict = .<dict>;
-    my $doc = PDF.new: :$dict;
+    my PDF $doc .= new: :$dict;
     my $owner-pass  = .<owner-pass>;
     my $user-pass   = .<user-pass>;
     my $cipher-text = .<crypt>;
     my $case = .<case>;
-    my $crypt = PDF::IO::Crypt::PDF.new( :$doc );
+    my PDF::IO::Crypt::PDF $crypt .= new( :$doc );
     dies-ok  { $crypt.authenticate( 'blah' ) }, "$case - bad password" unless $case eq 'Identity';
     lives-ok { $crypt.authenticate( $user-pass ) }, "$case - user password";
     ok ! $crypt.is-owner, "$case - is not owner" unless $case eq 'Identity';

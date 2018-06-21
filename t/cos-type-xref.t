@@ -8,13 +8,13 @@ use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::IO::Util;
 
-my $actions = PDF::Grammar::PDF::Actions.new;
+my PDF::Grammar::PDF::Actions $actions .= new;
 
 my $input = 't/pdf/ind-obj-XRef.in'.IO.slurp( :enc<latin-1> );
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
-my $ind-obj = PDF::IO::IndObj.new( |%ast, :$input );
+my PDF::IO::IndObj $ind-obj .= new( |%ast, :$input );
 my $xref-obj = $ind-obj.object;
 does-ok $xref-obj, ::('PDF::COS::Type')::('XRef');
 is-json-equiv $xref-obj.W, [ 1, 2, 1], '$xref.new .W';
@@ -33,7 +33,7 @@ my %ast2;
 lives-ok {%ast2 = $ind-obj.ast }, '$.ast - lives';
 
 
-my $ind-obj2 = PDF::IO::IndObj.new( |%ast2);
+my PDF::IO::IndObj $ind-obj2 .= new( |%ast2);
 my $xref-roundtrip = $ind-obj2.object.decode( $xref-recompressed );
 
 is-deeply $xref.values, $xref-roundtrip.values, 'encode/decode round-trip';
@@ -61,7 +61,7 @@ is-json-equiv $xref-new.Index, [ 42, 37], '$xref.new .Index';
 is-deeply $xref.values, $xref-roundtrip2.values, '$xref.new round-trip';
 
 my uint32 @decoded[2;3] = ([1, 16, 0], [1, 1 +< 16 , 1 +< 8]);
-my $xref-wide = PDF::COS.coerce( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>) }, :@decoded} );
+my PDF::COS $xref-wide .= coerce( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>) }, :@decoded} );
 dies-ok {$xref-wide.encode}, 'encode incomplete setup';
 $xref-wide.first-obj-num = 42;
 $xref-wide<Size> = 2;
@@ -73,5 +73,5 @@ is $xref-wide<Foo>, 'bar', ':dict constructor option';
 
 my @values = (1, 1,0,  2, 1,1,  3, 0,255);
 my Str $encoded = buf8.new(@values).decode: "latin-1";
-my $xref-narrow = PDF::COS.coerce( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>), :W[0,1,0,2,0], :Size(3) }, :$encoded} );
+my PDF::COS $xref-narrow .= coerce( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>), :W[0,1,0,2,0], :Size(3) }, :$encoded} );
 is [$xref-narrow.decoded.values], [0,1,0,256,0, 0,2,0,257,0, 0,3,0,255,0], 'zero width in /W';

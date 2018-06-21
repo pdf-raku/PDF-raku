@@ -11,12 +11,12 @@ sub name($name){ PDF::COS.coerce(:$name) };
 # ensure consistant document ID generation
 srand(123456);
 
-my $pdf = PDF.new;
+my PDF $pdf .= new;
 my $root     = $pdf.Root       = { :Type(name 'Catalog') };
 my $outlines = $root<Outlines> = { :Type(name 'Outlines'), :Count(0) };
 my $pages    = $root<Pages>    = { :Type(name 'Pages'), :Kids[], :Count(0) };
 
-my $Contents = PDF::COS.coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) });
+my PDF::COS $Contents .= coerce( :stream{ :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) });
 my @MediaBox = 0, 0, 420, 595;
 my %Resources = :Procset[ name('PDF'), name('Text')],
                 :Font{
