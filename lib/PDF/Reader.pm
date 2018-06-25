@@ -247,7 +247,7 @@ class PDF::Reader {
     method !fetch-stream-data(@ind-obj,           #| primary object
                               $input,             #| associated input stream
                               UInt :$offset,      #| offset of the object in the input stream
-                              UInt :$max-end,     #| upper bound for the end of the stream
+                              UInt :$obj-len,     #| upper bound for the end of the stream
         )
     {
         my (UInt $obj-num, UInt $gen-num, $obj-raw) = @ind-obj;
@@ -259,10 +259,10 @@ class PDF::Reader {
                                                      :details("Stream mandatory /Length field is missing")
                                                     );
 
-            with $max-end {
+            with $obj-len {
                 die X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
-                    :details("Stream Length {length} appears too large (> {$max-end - from})"),
+                    :details("Stream Length {length} appears too large (> {$obj-len - from})"),
                 ) if length > $_ - from;
             }
 
@@ -300,10 +300,10 @@ class PDF::Reader {
 
         given $type {
             when External {
-                my UInt $max-end = $offset >= $end
-                    ?? die "Attempt to fetch object $obj-num $gen-num R at byte offset $offset, past end of PDF ($end bytes)"
-                    !! $end - $offset - 1;
-                my $input = $.input.byte-str( $offset, $max-end );
+                my Int $obj-len = $end - $offset - 1;
+                die "Duplicate or overlapping cross-reference entry for $obj-num $gen-num R at byte offset $offset"
+                    if $obj-len < 10;
+                my $input = $.input.byte-str( $offset, $obj-len );
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
                     or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
 
@@ -312,7 +312,7 @@ class PDF::Reader {
                 $actual-obj-num = $ind-obj[0];
                 $actual-gen-num = $ind-obj[1];
 
-                self!fetch-stream-data($ind-obj, $.input, :$offset, :$max-end)
+                self!fetch-stream-data($ind-obj, $.input, :$offset, :$obj-len)
                     if $ind-obj[2].key eq 'stream';
 
                 $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> )
