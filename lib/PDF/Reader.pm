@@ -301,8 +301,13 @@ class PDF::Reader {
         given $type {
             when External {
                 my Int $obj-len = $end - $offset - 1;
-                die "Duplicate or overlapping cross-reference entry for $obj-num $gen-num R at byte offset $offset"
+                die "Duplicate cross-reference entry for $obj-num $gen-num R at byte offset $offset"
+                    if $obj-len == -1;
+                die "Attempt to fetch object $obj-num $gen-num R at byte offset $offset, past end of PDF ($end bytes)"
+                    if $obj-len < 0;
+                die "Overlapping or truncated cross-reference entry for $obj-num $gen-num R at byte offset $offset"
                     if $obj-len < 10;
+
                 my $input = $.input.byte-str( $offset, $obj-len );
                 PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
                     or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
