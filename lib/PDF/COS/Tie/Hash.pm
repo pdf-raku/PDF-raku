@@ -32,8 +32,7 @@ role PDF::COS::Tie::Hash does PDF::COS::Tie {
        my \class = self.WHAT;
        for class.^attributes.grep(*.can('entry')) -> \att {
            my \key = att.tied.accessor-name;
-           next if %.entries{key}:exists;
-           %.entries{key} = att;
+           %.entries{key} //= att;
        }
     }
 

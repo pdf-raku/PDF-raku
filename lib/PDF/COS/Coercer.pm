@@ -22,6 +22,7 @@ class PDF::COS::Coercer {
     use PDF::COS::DateString;
     use PDF::COS::ByteString;
     use PDF::COS::TextString;
+    use PDF::COS::Bool;
 
     multi method coerce( $obj, $role where {$obj ~~ $role}) {
 	# already does it
@@ -43,6 +44,9 @@ class PDF::COS::Coercer {
     multi method coerce( Str $obj is rw, PDF::COS::TextString $class, Str :$type = $obj.?type // 'literal', |c) {
 	$obj = $class.new( :value($obj), :$type, |c );
     }
+    multi method coerce( Bool $bool is rw, PDF::COS::Bool) {
+	PDF::COS.coerce(:$bool);
+    }
 
     # handle coercement to names or name subsets
     multi method coerce( PDF::COS::Name $obj, $role where PDF::COS::Name ) {
@@ -54,7 +58,7 @@ class PDF::COS::Coercer {
     }
 
     #| handle ro candidates for the above
-    multi method coerce( Str $obj is copy, \r where PDF::COS::DateString|DateTime|PDF::COS::Name|PDF::COS::ByteString|PDF::COS::TextString) {
+    multi method coerce( Str $obj is copy, \r where PDF::COS::DateString|DateTime|PDF::COS::Name|PDF::COS::ByteString|PDF::COS::TextString|PDF::COS::Bool) {
 	self.coerce( $obj, r);
     }
 

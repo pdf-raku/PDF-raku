@@ -60,8 +60,8 @@ role PDF::COS::Tie {
 
         method key is rw {
             Proxy.new(
-                FETCH => sub ($) { self.accessor-name},
-                STORE => sub ($, $k) {
+                FETCH => { self.accessor-name},
+                STORE => -> $, $k {
                     self.alias = self.accessor-name;
                     self.accessor-name = $k;
                 },
