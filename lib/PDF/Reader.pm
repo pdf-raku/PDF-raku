@@ -99,7 +99,7 @@ class PDF::Reader {
         state $actions //= PDF::Grammar::PDF::Actions.new
     }
 
-    method trailer {
+    method trailer is rw {
         Proxy.new(
             FETCH => {
                 self!install-trailer

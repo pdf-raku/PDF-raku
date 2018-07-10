@@ -114,7 +114,7 @@ class PDF::COS::Stream
     method compress {
         # reencode deprecated LZW as Flate
         self.uncompress
-            if self<Filter> ~~ 'LZWDecode';
+            if self<Filter>.first: 'LZWDecode';
 
         self<Filter> //= do {
             $!decoded //= $!encoded;
