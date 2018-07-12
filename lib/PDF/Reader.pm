@@ -550,7 +550,7 @@ class PDF::Reader {
             or die X::PDF::BadTrailer.new( :$tail );
 
         $!prev = $/.ast<startxref>;
-        my UInt:_ $offset = $!prev;
+        my UInt $offset = $!prev;
         my UInt \input-bytes = $.input.codes;
 
         my array @obj-idx;
@@ -569,8 +569,8 @@ class PDF::Reader {
 
 	    self!set-trailer: $dict;
 
-            $offset = do with $dict<Prev> { $_ } else { Nil };
-            $.size  = do with $dict<Size> { $_ } else { 1 };
+            $offset = do with $dict<Prev> { $_ } else { Int };
+            $!size  = do with $dict<Size> { $_ } else { 1 };
 
             with $dict<XRefStm> {
                 # hybrid 1.4 / 1.5 with a cross-reference stream
@@ -614,8 +614,8 @@ class PDF::Reader {
         #| don't entirely trust /Size entry in trailer dictionary
         my Str \max-idx = max( %!ind-obj-idx.keys );
         my UInt \actual-size = max-idx.split(' ')[0].Int;
-        $.size = actual-size + 1
-            if $.size <= actual-size;
+        $!size = actual-size + 1
+            if $!size <= actual-size;
     }
 
     #| bypass any indices. directly parse and reconstruct index from objects.

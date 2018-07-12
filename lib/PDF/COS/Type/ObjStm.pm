@@ -52,7 +52,7 @@ class PDF::COS::Type::ObjStm
         my UInt \first = $.First;
         my UInt \n = $.N;
 
-        my Str \object-index-str = bytes.substr(0, first - 1);
+        my Str \object-index-str = bytes.substr(0, first);
 
         my PDF::Grammar::PDF::Actions $actions .= new;
         PDF::Grammar::PDF.parse(object-index-str, :rule<object-stream-index>, :$actions)
