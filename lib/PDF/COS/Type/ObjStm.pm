@@ -70,8 +70,10 @@ class PDF::COS::Type::ObjStm
                 ?? first + object-index[i + 1][1]
                 !! bytes.codes;
             my Int \length = end - begin;
-            die "problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\nindex offset {begin} exceeds decoded data length {bytes.codes}"
+            die "Problem decoding index for /Type /ObjStm object: $.obj-num $.gen-num R\nindex offset {begin} exceeds decoded data length {bytes.codes}"
                 if begin > bytes.codes;
+            die "Problem decoding index for /Type /ObjStm object: $.obj-num $.gen-num R\noffsets are not in ascending order"
+                if length <= 0;
             my Str \object-str = bytes.substr( begin, length );
             [ obj-num, object-str ]
         } ]
