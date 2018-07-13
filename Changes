@@ -4,6 +4,7 @@ Release 0.3.2
 - `save-as()` method now saves incrementally.
 - Add constant PDF::COS::DateString::DateRegex
 - Add PDF::COS::Tie entry :key trait option
+- Fix AES-128 encryption for xpdf
 
 Release 0.3.1
 - Add Tie :array-or-item trait. For the common case, where a

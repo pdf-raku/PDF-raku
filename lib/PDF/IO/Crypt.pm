@@ -46,7 +46,7 @@ class PDF::IO::Crypt {
     method !generate(:$doc!,
                      Str  :$owner-pass!,
                      Str  :$user-pass = '',
-                     UInt :$!R = 3,  #| revision (2 is faster)
+                     UInt :$!R = self.type eq 'AESV2' ?? 4 !! 3,
                      UInt :$V = self.type eq 'AESV2' ?? 4 !! 2,
                      Bool :$!EncryptMetadata = True,
                      UInt :$Length = $V > 1 ?? 128 !! 40,
@@ -77,6 +77,8 @@ class PDF::IO::Crypt {
         @!U = self.compute-user( @user-pass, :$!key );
         $!is-owner = True;
 
+        @!U.append: 0 xx 16
+            if self.type eq 'AESV2';
         my $O = hex-string => [~] @!O.map: *.chr;
         my $U = hex-string => [~] @!U.map: *.chr;
 
