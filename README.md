@@ -318,7 +318,7 @@ $reader.trailer<Info><Creator> = PDF::COS.coerce( :name<t/helloworld.t> );
 ```
 
 ### Utility Scripts
-- `pdf-rewriter.pl [--repair] [--rebuild] [--[un]compress] [--password=Xxx] <pdf-or-json-file-in> [<pdf-or-json-file-out>]`
+- `pdf-rewriter.p6 [--repair] [--rebuild] [--[/]compress] [--password=Xxx] <pdf-or-json-file-in> [<pdf-or-json-file-out>]`
 This script is a thin wrapper for the `PDF` `.open` and `.save-as` methods. It can typically be used to:
   - uncompress a PDF for readability
   - repair a PDF who's cross-reference index or stream lengths have become invalid

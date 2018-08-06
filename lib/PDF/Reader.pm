@@ -122,8 +122,8 @@ class PDF::Reader {
     method !setup-crypt(Str :$password = '') {
 	my Hash $doc = self.trailer;
 	return without $doc<Encrypt>;
-
-	$!crypt = (require ::('PDF::IO::Crypt::PDF')).new( :$doc );
+        require PDF::IO::Crypt::PDF;
+	$!crypt = PDF::IO::Crypt::PDF.new( :$doc );
 	$!crypt.authenticate( $password );
 	my \enc = $doc<Encrypt>;
         my \enc-obj-num = enc.obj-num;
@@ -801,12 +801,12 @@ class PDF::Reader {
         }
     }
 
-    method ast( Bool :$rebuild ) {
-        my \serializer = PDF::IO::Serializer.new( :reader(self) );
+    method ast( Bool :$rebuild, |c ) {
+        my PDF::IO::Serializer $serializer .= new: :reader(self);
 
         my Array $body = $rebuild
-            ?? serializer.body( self.trailer )
-            !! serializer.body( );
+            ?? $serializer.body( self.trailer, |c )
+            !! $serializer.body( |c );
 
         .crypt-ast('body', $body, :mode<encrypt>)
             with self.crypt;
@@ -827,7 +827,8 @@ class PDF::Reader {
     multi method save-as( Str $output-path, |c ) is default {
         my $ast = $.ast(|c);
         my PDF::Writer $writer .= new: :$.input, :$ast;
-	$output-path.IO.spurt: $writer.Blob;
+        $output-path.IO.spurt(:enc<latin-1>, $writer.Str);
+        $writer;
     }
 
 }
