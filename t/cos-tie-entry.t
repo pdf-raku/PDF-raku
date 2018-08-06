@@ -62,7 +62,7 @@ use PDF::COS::Dict;
     lives-ok { $dict.S[1] = 'yy' }, 'array assignment sanity';
     my @s = $dict.S.List;
     is @s[1], 'yy', "array container assignment";
-    todo "typecheck on array elements", 2;
+    todo "typecheck on array elements";
     quietly dies-ok { $dict.I[1] = -5 }, 'array assignment typecheck';
     lives-ok { $dict.I[1] = 42 }, 'array assignment typecheck';
 

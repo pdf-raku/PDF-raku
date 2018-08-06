@@ -1,8 +1,9 @@
 use v6;
 
-use PDF::COS::Tie;
+use PDF::COS::Tie :TiedEntry;
 
-role PDF::COS::Tie::Hash does PDF::COS::Tie {
+role PDF::COS::Tie::Hash
+    does PDF::COS::Tie {
 
     #| resolve a heritable property by dereferencing /Parent entries
     sub find-prop($object, Str $key, :$seen is copy) {
@@ -30,7 +31,7 @@ role PDF::COS::Tie::Hash does PDF::COS::Tie {
 
     method tie-init {
        my \class = self.WHAT;
-       for class.^attributes.grep(*.can('entry')) -> \att {
+       for class.^attributes.grep(TiedEntry) -> \att {
            my \key = att.tied.accessor-name;
            %.entries{key} //= att;
        }

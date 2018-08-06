@@ -1,6 +1,6 @@
 use v6;
 
-use PDF::COS::Tie;
+use PDF::COS::Tie :TiedIndex;
 
 role PDF::COS::Tie::Array does PDF::COS::Tie {
 
@@ -22,7 +22,7 @@ role PDF::COS::Tie::Array does PDF::COS::Tie {
     method tie-init {
        my \class = self.WHAT;
 
-       for class.^attributes.grep(*.can('index')) -> \att {
+       for class.^attributes.grep(TiedIndex) -> \att {
            my \pos = att.index;
            without @!index[pos] {
                $_ = att;

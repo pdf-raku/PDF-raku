@@ -39,11 +39,11 @@ role PDF::COS::Tie {
         }
     }
 
-    my role TiedEntry does TiedAtt {
+    my role TiedEntry does TiedAtt is export(:TiedEntry) {
 	has Bool $.entry = True;
     }
 
-    my role TiedIndex does TiedAtt {
+    my role TiedIndex does TiedAtt is export(:TiedIndex) {
 	has UInt $.index is rw;
     }
 
