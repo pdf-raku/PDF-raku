@@ -827,7 +827,7 @@ class PDF::Reader {
     multi method save-as( Str $output-path, |c ) is default {
         my $ast = $.ast(|c);
         my PDF::Writer $writer .= new: :$.input, :$ast;
-        $output-path.IO.spurt(:enc<latin-1>, $writer.Str);
+        $output-path.IO.spurt: $writer.Blob;
         $writer;
     }
 
