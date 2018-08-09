@@ -386,11 +386,12 @@ class PDF::Writer {
             $fast-writer = (require ::('Lib::PDF::Writer'));
             True
         }
-        $fast-writer."write-{.key}"( .value );
+
+        $fast-writer."write-{.value.defined ?? .key !! 'null'}"( .value );
     }
 
     multi method write( Pair $_!) {
-        self."write-{.key}"( .value );
+        self."write-{.value.defined ?? .key !! 'null'}"( .value );
     }
 
     multi method write( Hash $ast!) {
