@@ -2,11 +2,9 @@ use v6;
 
 role PDF::COS::Tie {
 
-    use PDF::COS;
+    use PDF::COS :IndRef;
     has Attribute $.of-att is rw;      #| default attribute
     has Attribute %.entries;
-
-    my subset IndRef of Pair where {.key eq 'ind-ref'};
 
     #| generate an indirect reference to ourselves
     method ind-ref returns IndRef {

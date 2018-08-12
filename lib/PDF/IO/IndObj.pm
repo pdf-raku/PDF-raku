@@ -2,7 +2,7 @@ use v6;
 
 class PDF::IO::IndObj {
 
-    use PDF::COS;
+    use PDF::COS :IndRef;
     has $.object handles <content obj-num gen-num>;
 
     #| construct by wrapping a pre-existing PDF::COS
@@ -25,7 +25,7 @@ class PDF::IO::IndObj {
     }
 
     #| create ast for an indirect reference to this object
-    method ind-ref returns Pair {
+    method ind-ref returns IndRef {
         :ind-ref[ $.obj-num, $.gen-num ]
     }
 

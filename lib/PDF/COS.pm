@@ -68,7 +68,9 @@ role PDF::COS {
         $.load-delegate( :$array, :$base-class ).new( :$array, |c );
     }
 
-    multi method coerce( List :$ind-ref!) {
+    my subset IndRef of Pair is export(:IndRef) where {.key eq 'ind-ref'};
+
+    multi method coerce( List :$ind-ref! --> IndRef) {
 	:$ind-ref
     }
 

@@ -77,7 +77,7 @@ class PDF::Reader {
     use PDF::IO;
     use PDF::IO::IndObj;
     use PDF::IO::Serializer;
-    use PDF::COS;
+    use PDF::COS :IndRef;
     use PDF::COS::Dict;
     use PDF::COS::Util :from-ast, :to-ast;
     use PDF::Writer;
@@ -262,7 +262,7 @@ class PDF::Reader {
             with $obj-len {
                 die X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
-                    :details("Stream Length {length} appears too large (> {$obj-len - from})"),
+                    :details("Stream dictionary /Length {length} entry greater than actual stream length ({$obj-len - from} bytes)"),
                 ) if length > $_ - from;
             }
 
@@ -389,8 +389,9 @@ class PDF::Reader {
             $val = self!ind-deref($val)
                 if $val.isa(Pair);
             $val = do given op {
-                when Array { $val[ .[0] ] }
                 when Str   { $val{ $_ } }
+                when UInt  { $val[ $_ ] }
+                when Array { $val[ .[0] ] }
                 default    {die "bad \$.deref arg: {.perl}"}
             };
         }
@@ -400,7 +401,7 @@ class PDF::Reader {
     }
 
     method !ind-deref(Pair $_! ) {
-        return .value unless .key eq 'ind-ref';
+        return .value unless $_ ~~ IndRef;
         my UInt \obj-num = .value[0];
         my UInt \gen-num = .value[1];
         $.ind-obj( obj-num, gen-num ).object;
