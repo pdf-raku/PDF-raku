@@ -5,13 +5,12 @@ use PDF::Reader;
 
 #| rewrite a PDF or FDF and/or convert to/from JSON
 sub MAIN (
-    Str $file-in,                     #= input PDF, FDF or JSON file (.json extension)
-    Str $file-out = $file-in,         #= output PDF, FDF or JSON file (.json extension)
-    Str  :$password   = '';           #= password for encrypted documents
+    Str $file-in,                   #= input PDF, FDF or JSON file (.json extension)
+    Str $file-out = $file-in,       #= output PDF, FDF or JSON file (.json extension)
+    Str  :$password   = '';         #= password for encrypted documents
     Bool :$repair     = False,      #= bypass and repair index. recompute stream lengths. Handy when
                                     #= PDF files have been hand-edited.
-    UInt :renumber($size),          #= Starting number for indirect objects (implies --rebuild)
-    Bool :$rebuild    = ?$size,     #= rebuild object tree (renumber, garbage collect and deduplicate objects)
+    Bool :$rebuild    = False,      #= rebuild object tree (renumber, garbage collect and deduplicate objects)
     Bool :$compress,                #= (un)compress streams
     Bool :$class      = False,      #= require PDF::Class
     ) {
@@ -31,9 +30,7 @@ sub MAIN (
     }
 
     note "saving ...";
-    my $writer = $reader.save-as($file-out, :$rebuild, :$size);
-    say "renumbered to: " ~ $writer.size
-        if $size;
+    my $writer = $reader.save-as($file-out, :$rebuild);
     note "done";
 
 }

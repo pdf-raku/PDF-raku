@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 33;
+plan 34;
 
 use PDF;
 use PDF::Reader;
@@ -15,9 +15,7 @@ sub name($name){ PDF::COS.coerce(:$name) };
 # ensure consistant document ID generation
 srand(123456);
 
-'t/pdf/pdf.in'.IO.copy('t/pdf/pdf-updated.out');
-
-my $pdf = PDF.open( 't/pdf/pdf-updated.out' );
+my $pdf = PDF.open( 't/pdf/pdf.in' );
 my $reader = $pdf.reader;
 is +$reader.xrefs, 1, 'reader.xrefs - initial';
 my $catalog = $pdf<Root>;
@@ -74,7 +72,11 @@ my $prev1 = $pdf.reader.prev;
 my $size1 = $pdf.reader.size;
 my $Info = $pdf.Info //= {};
 $Info.ModDate = DateTime.new( :year(2015), :month(12), :day(26) );
-$pdf.update;
+
+# save-as - does an increment save by default
+$pdf.save-as('t/pdf/pdf-updated.out');
+$pdf .= open('t/pdf/pdf-updated.out');
+$reader = $pdf.reader;
 is +$reader.xrefs, 2, 'reader.xrefs - post-update';
 my $prev2 = $pdf.reader.prev;
 ok $prev2 > $prev1, "reader.prev incremented by update"
@@ -89,7 +91,7 @@ ok $ind-obj1 !=== $ind-obj2, 'indirect object has been updated';
 my $ast2 = $ind-obj2.ast;
 is-deeply $ast1<ind-obj>[2]<dict>.keys.sort, $ast2<ind-obj>[2]<dict>.keys.sort, 'indirect object dict';
 
-is $pdf.Size, $size2, 'document trailer - updated Size';
+is $reader.size, $size2, 'document trailer - updated Size';
 isa-ok $pdf<Root><Pages><Kids>[1], PDF::COS::Dict, 'updated page 2 access';
 
 # now re-read the pdf. Will also test our ability to read a PDF
@@ -112,4 +114,7 @@ is-deeply $ast<cos><body>[0]<objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Leng
 # cleansed of old object versions.
 ok $pdf2.save-as('t/pdf/pdf-updated-and-rebuilt.pdf', :rebuild), 'save-as :rebuild';
 
+$pdf = PDF.open( 't/pdf/pdf-updated-and-rebuilt.pdf' );
+$reader = $pdf.reader;
+is +$reader.xrefs, 1, 'reader.xrefs - rebuilt';
 done-testing;

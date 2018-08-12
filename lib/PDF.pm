@@ -137,22 +137,25 @@ class PDF:ver<0.3.2>
 	$.save-as($file-name.IO, |c );
     }
 
-    multi method save-as(IO::Path $iop, Bool :$preserve = self!is-indexed, |c) {
+    multi method save-as(IO::Path $iop,
+                     Bool :$preserve = self!is-indexed,
+                     Bool :$rebuild = False,
+                     |c) {
 	when $iop.extension.lc eq 'json' {
 	    $iop.spurt( to-json( $.ast(|c) ));
 	}
-	when $preserve && $.reader && !$!crypt {
+	when $preserve && !$rebuild && $.reader && !$!crypt {
 	    $.reader.file-name.IO.copy( $iop );
 	    $.update( :diffs($iop.open(:a, :bin)), |c);
 	}
 	default {
 	    my $ioh = $iop.open(:w, :bin);
-	    $.save-as($ioh, |c);
+	    $.save-as($ioh, :$rebuild, |c);
 	}
     }
 
-    multi method save-as(IO::Handle $ioh, |c) is default {
-        my $ast = $.ast(|c);
+    multi method save-as(IO::Handle $ioh, :$rebuild = False, |c) is default {
+        my $ast = $.ast(:$rebuild, |c);
         my PDF::Writer $writer .= new: :$ast;
         $ioh.write: $writer.Blob;
     }

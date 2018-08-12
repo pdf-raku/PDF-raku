@@ -56,7 +56,6 @@ class PDF::IO::Serializer {
 
     #| rebuild document body from root
     multi method body( PDF::COS $trailer!, Bool:_ :$*compress, UInt :$!size = 1) {
-
 	temp $trailer.obj-num = 0;
 	temp $trailer.gen-num = 0;
 
