@@ -143,7 +143,7 @@ class PDF:ver<0.3.2>
 	}
 	when $preserve && $.reader && !$!crypt {
 	    $.reader.file-name.IO.copy( $iop );
-	    $.update( :to($iop.open(:a, :bin)), |c);
+	    $.update( :diffs($iop.open(:a, :bin)), |c);
 	}
 	default {
 	    my $ioh = $iop.open(:w, :bin);
