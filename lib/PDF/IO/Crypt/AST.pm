@@ -22,7 +22,7 @@ role PDF::IO::Crypt::AST {
     }
 
     multi method crypt-ast('dict', Hash $ast, |c) {
-	$.crypt-ast($_, |c) for $ast.values;
+	$.crypt-ast(.value, |c) for $ast.pairs.sort;
     }
 
     multi method crypt-ast('stream', Hash $ast, |c) {
