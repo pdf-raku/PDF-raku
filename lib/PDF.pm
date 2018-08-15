@@ -138,17 +138,21 @@ class PDF:ver<0.3.2>
     }
 
     multi method save-as(IO::Path $iop,
-                     Bool :$preserve = self!is-indexed,
+                     Bool :$preserve = True,
                      Bool :$rebuild = False,
                      |c) {
 	when $iop.extension.lc eq 'json' {
+            # save as JSON
 	    $iop.spurt( to-json( $.ast(|c) ));
 	}
-	when $preserve && !$rebuild && $.reader && !$!crypt {
+        when $preserve && !$rebuild && self!is-indexed && !$!crypt {
+            # copy the input PDF, then incrementally update it. This is faster
+            # and plays better with digitally signed documents.
 	    $.reader.file-name.IO.copy( $iop );
 	    $.update( :diffs($iop.open(:a, :bin)), |c);
 	}
 	default {
+            # full save
 	    my $ioh = $iop.open(:w, :bin);
 	    $.save-as($ioh, :$rebuild, |c);
 	}
@@ -158,6 +162,7 @@ class PDF:ver<0.3.2>
         my $ast = $.ast(:$rebuild, |c);
         my PDF::Writer $writer .= new: :$ast;
         $ioh.write: $writer.Blob;
+        $ioh.close;
     }
 
     #| stringify to the serialized PDF

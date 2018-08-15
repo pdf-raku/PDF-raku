@@ -2,6 +2,7 @@ use v6;
 use PDF;
 use Test;
 
+# COS is the serialization format that underlies PDF.
 # simple COS example that implements a hypothetical JAR archive
 # - root contains language versioning, and root classes
 # - simple tree of Subclasses
