@@ -121,33 +121,32 @@ class PDF::Reader {
 
     method !setup-crypt(Str :$password = '') {
 	my Hash $doc = self.trailer;
-	return without $doc<Encrypt>;
-        require PDF::IO::Crypt::PDF;
-	$!crypt = PDF::IO::Crypt::PDF.new( :$doc );
-	$!crypt.authenticate( $password );
-	my \enc = $doc<Encrypt>;
-        my \enc-obj-num = enc.obj-num;
-        my \enc-gen-num = enc.gen-num;
+	with $doc<Encrypt> -> \enc {
+            $!crypt = (require ::('PDF::IO::Crypt::PDF')).new( :$doc );
+            $!crypt.authenticate( $password );
+            my \enc-obj-num = enc.obj-num;
+            my \enc-gen-num = enc.gen-num;
 
-	for %!ind-obj-idx.pairs {
+            for %!ind-obj-idx.pairs {
 
-            my UInt ($obj-num, $gen-num) = .key.split(' ')>>.Int;
-            next unless $obj-num;
-	    my Hash $idx = .value;
+                my UInt ($obj-num, $gen-num) = .key.split(' ')>>.Int;
+                next unless $obj-num;
+                my Hash $idx = .value;
 
-            # skip the encryption dictionary, if it's an indirect object
-	    if $obj-num == enc-obj-num
-	    && $gen-num == enc-gen-num {
-		$idx<is-enc-dict> = True;
-	    }
-	    else {
-		with $idx<ind-obj> -> $ind-obj {
-		    die "too late to setup encryption: $obj-num $gen-num R"
-		        if $idx<type> != Free | External
-		        || $ind-obj.isa(PDF::IO::IndObj);
+                # skip the encryption dictionary, if it's an indirect object
+                if $obj-num == enc-obj-num
+                    && $gen-num == enc-gen-num {
+                        $idx<is-enc-dict> = True;
+                }
+                else {
+                    with $idx<ind-obj> -> $ind-obj {
+                        die "too late to setup encryption: $obj-num $gen-num R"
+                            if $idx<type> != Free | External
+                            || $ind-obj.isa(PDF::IO::IndObj);
 
-		    $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> );
-		}
+                        $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> );
+                    }
+                }
 	    }
 	}
     }
