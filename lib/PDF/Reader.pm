@@ -618,6 +618,16 @@ class PDF::Reader {
             if $!size <= actual-size;
     }
 
+    #| differentiate update xrefs from hybrid xrefs
+    method revision-xrefs {
+        my UInt @updates;
+        for @!xrefs {
+            @updates.push: $_
+                if !@updates || $_ > @updates.tail;
+        }
+        @updates;
+    }
+
     #| bypass any indices. directly parse and reconstruct index from objects.
     method !full-scan( $grammar, $actions, Bool :$repair, |c) {
         temp $actions.get-offsets = True;
@@ -697,19 +707,9 @@ class PDF::Reader {
         Bool :$incremental = False       #| only return updated objects
         ) {
         my @object-refs;
-        my %objstm-objects;
-
-        for %!ind-obj-idx.values {
-            # implicitly an objstm object, if it contains type2 (embedded) objects
-            %objstm-objects{ .<ref-obj-num> }++
-                if .<type> == 2;
-        }
 
         for %!ind-obj-idx.pairs.sort {
             my UInt ($obj-num, $gen-num) = .key.split(' ')>>.Int;
-
-            # discard objstm objects (/Type /ObjStm)
-            next with %objstm-objects{$obj-num};
 
             my Hash $entry = .value;
             my UInt $seq = 0;
@@ -733,12 +733,23 @@ class PDF::Reader {
                 when Free {
                     next;
                 }
-                default { die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}" }
+                default {
+                    die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}"
+                }
             }
 
 	    my Bool $eager = ! $incremental;
             my \ast = $.ind-obj($obj-num, $gen-num, :get-ast, :$eager)
 	        or next;
+
+            my \ind-obj = ast.value[2];
+
+            # discard existing /Type /XRef and ObjStm objects.
+            with ind-obj<stream> {
+                with .<dict><Type> -> \obj-type {
+                    next if obj-type<name> ~~ 'XRef'|'ObjStm';
+                }
+            }
 
             if $incremental {
 		if $offset && $obj-num {
@@ -749,20 +760,11 @@ class PDF::Reader {
 		}
             }
 
-            my \ind-obj = ast.value[2];
-
-            with ind-obj<stream> {
-                with .<dict><Type> -> \obj-type {
-                    # discard existing /Type /XRef and ObjStm objects.
-                    next if obj-type<name> ~~ 'XRef'|'ObjStm';
-                }
-            }
-
             $offset //= 0;
             @object-refs.push( ($offset + $seq) => ast );
         }
 
-        # preserve input order
+        # preserve file order
         my @objects = @object-refs.list.sort(*.key).map: *.value;
 
         @objects;
@@ -793,6 +795,7 @@ class PDF::Reader {
                 my \obj-dict = ind-obj.value<dict>;
                 my Bool \is-compressed = obj-dict<Filter>:exists;
                 next if $compress == is-compressed
+                    # always recompress LZW (Deprecated)
                     && !($compress && is-compressed && obj-dict<Filter><name> ~~ 'LZWDecode');
                 # fully stantiate object and adjust compression
                 my \object = self.ind-obj( obj-num, gen-num).object;

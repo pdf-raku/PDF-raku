@@ -1,7 +1,14 @@
+Release 0.3.3
+- [PDF::Reader]
+  -- Add revision-xrefs() method [to distinguish  revision
+     sections from hybrid cross referefence sections]
+  -- Tweaked filtering of object and cross reference streams
+     during serialization
+
 Release 0.3.2
 - Handle null entries in stream DecodeParms entry (as per spec)
 - Rename PDF::IO.substr() method to byte-str()
-- `save-as()` method now saves updates incrementally.
+- `save-as()` method now copies an input PDF, then updates it incrementally.
 - Add constant PDF::COS::DateString::DateRegex
 - Add PDF::COS::Tie entry :key trait option
 - Fix AES-128 encryption for xpdf
