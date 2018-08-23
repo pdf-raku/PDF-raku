@@ -17,7 +17,7 @@ role PDF::COS::Type::Encrypt
    has PDF::COS::Name $.SubFilter is entry;             #| Optional; PDF 1.3) A name that completely specifies the format and interpretation of the contents of the encryption dictionary. It is needed to allow security handlers other than the one specified by Filter to decrypt the document. If this entry is absent, other security handlers should not be allowed to decrypt the document.
                                                         #| Note: This entry was introduced in PDF 1.3 to support the use of public-key cryptography in PDF files; however, it was not incorporated into the PDF Reference until the fourth edition (PDF 1.5).
 
-    has UInt $.V is entry(:alias<version>);                              #| (Optional but strongly recommended) A code specifying the algorithm to be used in encrypting and decrypting the document:
+    has UInt $.V is entry(:alias<version>);             #| (Optional but strongly recommended) A code specifying the algorithm to be used in encrypting and decrypting the document:
                                                         #|   0: An algorithm that is undocumented and no longer supported, and whose use is strongly discouraged.
                                                         #|   1: Algorithm 3.1, with an encryption key length of 40 bits; see below.
                                                         #|   2: (PDF 1.4) Algorithm 3.1, but permitting encryption key lengths greater than 40 bits.
@@ -27,7 +27,7 @@ role PDF::COS::Type::Encrypt
 
     has UInt $.Length is entry;                         #| (Optional; PDF 1.4; only if V is 2 or 3) The length of the encryption key, in bits. The value must be a multiple of 8, in the range 40 to 128. Default value: 40.
 
-    has Hash %.CF is entry(:alias<crypt-filters>);                             #| (Optional; meaningful only when the value of V is 4; PDF 1.5) A dictionary whose keys are crypt filter names and whose values are the corresponding crypt filter dictionaries (see Table 3.22). Every crypt filter used in the document must have an entry in this dictionary, except for the standard crypt filter names
+    has Hash %.CF is entry(:alias<crypt-filters>);      #| (Optional; meaningful only when the value of V is 4; PDF 1.5) A dictionary whose keys are crypt filter names and whose values are the corresponding crypt filter dictionaries (see Table 3.22). Every crypt filter used in the document must have an entry in this dictionary, except for the standard crypt filter names
 
     has PDF::COS::Name $.StmF is entry;                 #| (Optional; meaningful only when the value of V is 4; PDF 1.5) The name of the crypt filter that is used by default when decrypting streams. The name must be a key in the CF dictionary or a standard crypt filter name specified in Table 3.23. All streams in the document, except for cross-reference streams (see Section 3.4.7, “Cross-Reference Streams”) or streams that have a Crypt entry in their Filter array (see Table 3.5), are decrypted by the security handler, using this crypt filter.
                                                         #| Default value: Identity.
@@ -40,22 +40,22 @@ role PDF::COS::Type::Encrypt
 
    # See [PDF 1.7 TABLE 3.19 Additional encryption dictionary entries for the standard security handler]
 
-    has UInt $.R is entry;      #| (Required) A number specifying which revision of the standard security handler should be used to interpret this dictionary:
+    has UInt $.R is entry(:required, :alias<revision>); #| (Required) A number specifying which revision of the standard security handler should be used to interpret this dictionary:
                                 #| • 2 if the document is encrypted with a V value less than 2 (see Table 3.18) and does not have any of the access permissions set (by means of the P entry, below) that are designated “Revision 3 or greater” in Table 3.20
                                 #| • 3 if the document is encrypted with a V value of 2 or 3, or has any “Revision 3 or greater” access permissions set
                                 #| • 4 if the document is encrypted with a V value of 4
 
 
-    has Str $.O is entry;       #| (Required) A 32-byte string, based on both the owner and user passwords, that is used in computing the encryption key and in determining whether a valid owner password was entered.
+    has Str $.O is entry(:alias<owner-pass>);          #| (Required) A 32-byte string, based on both the owner and user passwords, that is used in computing the encryption key and in determining whether a valid owner password was entered.
 
-    has Str $.U is entry;       #| (Required) A 32-byte string, based on the user password, that is used in determining whether to prompt the user for a password and, if so, whether a valid user or owner password was entered.
+    has Str $.U is entry(:alias<user-pass>);           #| (Required) A 32-byte string, based on the user password, that is used in determining whether to prompt the user for a password and, if so, whether a valid user or owner password was entered.
 
     my enum PermissionsFlag is export(:PermissionsFlag) « :Print(3) :Modify(4) :Copy(5) :Add(6) :Fill(9)
 							  :Extract(10) :Assemble(11) :Distribute(12) »;
 
-    has Int $.P is entry;      #| (Required) A set of flags specifying which operations are permitted when the document is opened with user access
+    has Int $.P is entry(:alias<permissions>);         #| (Required) A set of flags specifying which operations are permitted when the document is opened with user access
 
-    has Bool $.EncryptMetadata; #| (Optional; meaningful only when the value of V is 4; PDF 1.5) Indicates whether the document-level metadata stream (see Section 10.2.2, “Metadata Streams”) is to be encrypted. Applications should respect this value.
+    has Bool $.EncryptMetadata;                        #| (Optional; meaningful only when the value of V is 4; PDF 1.5) Indicates whether the document-level metadata stream (see Section 10.2.2, “Metadata Streams”) is to be encrypted. Applications should respect this value.
                                 #| Default value: true.
 
 }

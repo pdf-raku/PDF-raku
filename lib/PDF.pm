@@ -4,7 +4,7 @@ use PDF::COS::Dict;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
-class PDF:ver<0.3.2>
+class PDF:ver<0.3.3>
     is PDF::COS::Dict {
 
     use PDF::IO::Serializer;
@@ -40,7 +40,12 @@ class PDF:ver<0.3.2>
     }
 
     method encrypt( Str :$owner-pass!, Str :$user-pass = '', |c ) {
-        $!crypt = (require PDF::IO::Crypt::PDF).new( :doc(self), :$owner-pass, :$user-pass, |c);
+        with $!crypt {
+            die 'document is already encrypted';
+        }
+        else {
+            $_ = (require PDF::IO::Crypt::PDF).new( :doc(self), :$owner-pass, :$user-pass, |c);
+        }
     }
 
     method !is-indexed {
@@ -148,8 +153,9 @@ class PDF:ver<0.3.2>
         when $preserve && !$rebuild && self!is-indexed && !$!crypt {
             # copy the input PDF, then incrementally update it. This is faster
             # and plays better with digitally signed documents.
+            my $diffs = $iop.open(:a, :bin);
 	    $.reader.file-name.IO.copy( $iop );
-	    $.update( :diffs($iop.open(:a, :bin)), |c);
+	    $.update( :$diffs, |c);
 	}
 	default {
             # full save
