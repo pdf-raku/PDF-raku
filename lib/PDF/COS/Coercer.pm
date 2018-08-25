@@ -41,8 +41,8 @@ class PDF::COS::Coercer {
         $obj.type = $type;
         $obj;
     }
-    multi method coerce( Str $obj is rw, PDF::COS::TextString $class, Str :$type = $obj.?type // 'literal', |c) {
-	$obj = $class.new( :value($obj), :$type, |c );
+    multi method coerce( Str $value is rw, PDF::COS::TextString $class, Str :$type = $value.?type // 'literal', |c) {
+	$value = PDF::COS::TextString.new( :$value, :$type, |c );
     }
     multi method coerce( Bool $bool is rw, PDF::COS::Bool) {
 	PDF::COS.coerce(:$bool);
