@@ -1,8 +1,10 @@
 use v6;
 use Test;
-plan 47;
+plan 57;
 
 use PDF::COS::Dict;
+use PDF::COS::Name;
+use PDF::COS::TextString;
 
 {
     # basic tests
@@ -14,6 +16,10 @@ use PDF::COS::Dict;
         subset FredDict of Hash where {.<Name> ~~ 'Fred'}
         has FredDict $.SubsetDict is entry;
         has UInt $.three-dd is entry(:key<3DD>);
+        has PDF::COS::Name $.Fooish is entry(:default<Foo>);
+        has PDF::COS::Name @.Names is entry(:default['a', 'b', 'c']);
+        my subset TextString of PDF::COS::TextString;
+        has TextString $.Txt is entry;
     }
 
     my TestDict $dict;
@@ -41,6 +47,18 @@ use PDF::COS::Dict;
     ok $fred ~~ TestDict::FredDict, 'subset sanity';
     lives-ok {$dict.SubsetDict =  $fred;}, 'subset dict - valid';
     quietly dies-ok {$dict.SubsetDict =  %()}, 'subset dict - invalid';
+    ok !($dict<Fooish>:exists), 'defaulted entry';
+    ok !($dict<Fooish>.defined), 'defaulted raw value';
+    is $dict.Fooish, 'Foo', 'defaulted accessor value';
+    does-ok $dict.Fooish, PDF::COS::Name, 'defaulted type';
+    ok !($dict<Fooish>:exists), 'defaulted entry';
+    $dict.Fooish = 'Bar';
+    is $dict.Fooish, 'Bar', 'default value assignment';
+    ok ($dict<Fooish>:exists), 'default value assignment';
+
+    is $dict.Names[1], 'b', 'defaulted array';
+    does-ok $dict.Names[1], PDF::COS::Name, 'defaulted array';
+    lives-ok { $dict.Txt = 'Hi' }, 'text-string sanity';
 }
 
 {

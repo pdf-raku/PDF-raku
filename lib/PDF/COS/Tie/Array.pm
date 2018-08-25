@@ -44,9 +44,12 @@ role PDF::COS::Tie::Array does PDF::COS::Tie {
         $val := $.deref(:$pos, $val)
 	    if $val ~~ Pair | List | Hash;
 
-	my Attribute \att = $.index[$pos] // $.of-att;
-        .tie($val, :$check) with att;
-	$val;
+	with $.index[$pos] // $.of-att {
+            .tie($val, :$check);
+        }
+        else {
+            $val;
+        }
     }
 
     #| handle array assignments: $foo[42] = 'bar'; $foo[99] := $baz;

@@ -1,4 +1,8 @@
 Release 0.3.3
+- [PDF::COS::Tie]
+  -- added :default trait
+- [PDF::COS::Coercer]
+  -- fixed coercement to a PDF::COS::TextString subset
 - [PDF::Reader]
   -- Add revision-xrefs() method [to distinguish  revision
      sections from hybrid cross referefence sections]

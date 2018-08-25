@@ -55,6 +55,7 @@ role PDF::COS::Tie {
         has Str $.alias;
 	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::COS.coerce($lval, $type) };
         has UInt $.length;
+        has $.default;
 
         method key is rw {
             Proxy.new(
@@ -66,11 +67,14 @@ role PDF::COS::Tie {
             )
         }
 
-        multi method tie(IndRef $lval is rw) { $lval } # undereferenced - don't know it's type yet
-	multi method tie($lval is rw, :$check) {
+        multi method tie(IndRef $lval is rw) is rw { $lval } # undereferenced - don't know it's type yet
+	multi method tie($lval is rw, :$check) is rw {
             if !$lval.defined {
-                die "missing required field: $.key"
-                    if $check && $.is-required;
+                if $check {
+                    return $.tie( PDF::COS.coerce($_)) with $.default;
+                    die "missing required field: $.key"
+                        if $.is-required;
+                }
             }
             elsif !($lval ~~ $!type) {
                 my \reader  = $lval.?reader;
@@ -138,7 +142,7 @@ role PDF::COS::Tie {
 	    $lval;
 	}
 
-	multi method tie($lval is copy, :$check) is default {
+	multi method tie($lval is copy, :$check) is default is rw {
 	    $.tie($lval, :$check);
 	}
 
@@ -149,25 +153,27 @@ role PDF::COS::Tie {
         my constant %Args = %(
             :inherit<is-inherited>, :required<is-required>, :indirect<is-indirect>,
             :coerce<coerce>, :len<length>, :alias<alias>, :array-or-item<decont>,
-            :key<key>,
+            :key<key>, :default<default>
         );
-        my $tied = $att.tied;
 
-	for $entry.list -> \arg {
-            if arg ~~ Pair {
-	        my \val = arg.value;
-                with %Args{arg.key} {
-                    $tied."$_"() = val;
+        given $att.tied -> Tied $tied {
+
+            for $entry.list -> \arg {
+                if arg ~~ Pair {
+                    my \val = arg.value;
+                    with %Args{arg.key} {
+                        $tied."$_"() = val;
+                    }
+                    else {
+                        warn "ignoring entry attribute: {arg.key}";
+                    }
                 }
                 else {
-                    warn "ignoring entry attribute: {arg.key}";
+                    warn "ignoring entry trait attribute: {arg.perl}"
+                        unless arg ~~ Bool;
                 }
             }
-            else {
-		warn "ignoring entry trait attribute: {arg.perl}"
-                    unless arg ~~ Bool;
-            }
-	}
+        }
     }
 
     multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {

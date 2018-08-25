@@ -39,7 +39,7 @@ role PDF::COS::Tie::Hash
 
     method check {
         self.AT-KEY($_, :check)
-            for (flat self.keys, self.entries.keys).unique;
+            for (flat self.keys, self.entries.grep(*.value.tied.is-required).keys).unique.sort;
         self.?cb-check();
         self
     }
@@ -51,9 +51,12 @@ role PDF::COS::Tie::Hash
         $val := $.deref(:$key, $val)
 	    if $val ~~ Pair | List | Hash;
 
-	my Attribute \att = %.entries{$key} // $.of-att;
-        .tie($val, :$check) with att;
-        $val;
+	with %.entries{$key} // $.of-att {
+            .tie($val, :$check);
+        }
+        else {
+            $val;
+        }
     }
 
     #| handle hash assignments: $foo<bar> = 42; $foo{$baz} := $x;
