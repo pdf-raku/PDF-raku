@@ -115,7 +115,7 @@ class PDF::Reader {
     method !install-trailer(PDF::COS::Dict $object = PDF::COS::Dict.new( :reader(self) ) ) {
         %!ind-obj-idx{"0 0"} = do {
             my PDF::IO::IndObj $ind-obj .= new( :$object, :obj-num(0), :gen-num(0) );
-            %( :type(External), :$ind-obj );
+            %( :type(IndexType::External), :$ind-obj );
         }
     }
 
@@ -191,7 +191,7 @@ class PDF::Reader {
                     (my UInt $obj-num, my UInt $gen-num) = $ind-obj.list;
 
                     %!ind-obj-idx{"$obj-num $gen-num"} //= %(
-                        :type(External),
+                        :type(IndexType::External),
                         :$ind-obj,
                     );
                 }
@@ -219,10 +219,10 @@ class PDF::Reader {
             my UInt $type = $entry<type>;
 
 	    given $type {
-	        when Free {
+	        when IndexType::Free {
                     %!ind-obj-idx{"$obj-num $gen-num"}:delete;
 		}
-	        when External {
+	        when IndexType::External {
 		    my $ind-obj = $entry<ind-obj>;
 		    %!ind-obj-idx{"$obj-num $gen-num"} = %(
 		        :$type,
@@ -298,7 +298,7 @@ class PDF::Reader {
         my $actual-gen-num;
 
         given $type {
-            when External {
+            when IndexType::External {
                 my UInt $obj-len = do given $end - $offset {
                     when 0 { die "Duplicate cross-reference destination (byte offset $offset) for $obj-num $gen-num R"}
                     when * < 0 { die "Attempt to fetch object $obj-num $gen-num R at byte offset $offset, past end of PDF ($end bytes)" }
@@ -320,7 +320,7 @@ class PDF::Reader {
                 $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> )
                     if $!crypt && ! $is-enc-dict;
             }
-            when Embedded {
+            when IndexType::Embedded {
                 my subset ObjStm of Hash where { .<Type> ~~ 'ObjStm' }
                 my ObjStm \container-obj = $.ind-obj( $ref-obj-num, 0 ).object;
                 my \embedded-objects = container-obj.decoded;
@@ -504,8 +504,8 @@ class PDF::Reader {
                         my uint64 $gen-num = .[$i;1];
                         my uint64 $type    = .[$i;2];
 
-                        if $offset && $type == External {
-                            my uint64 @xref = $obj-num, $type, $offset, $gen-num;
+                        if $offset && $type == IndexType::External {
+                            my uint64 @xref[4] = $obj-num, $type, $offset, $gen-num;
                             @idx.push: @xref;
                         }
                         $obj-num++;
@@ -608,7 +608,7 @@ class PDF::Reader {
             my UInt $ref-obj-num = .[RefObjNum];
             my UInt $gen-num = 0;
 
-            %!ind-obj-idx{"$obj-num $gen-num"} = %( :type(Embedded), :$index, :$ref-obj-num );
+            %!ind-obj-idx{"$obj-num $gen-num"} = %( :type(IndexType::Embedded), :$index, :$ref-obj-num );
         }
 
         #| don't entirely trust /Size entry in trailer dictionary
@@ -666,7 +666,7 @@ class PDF::Reader {
                 }
 
                 %!ind-obj-idx{"$obj-num $gen-num"} //= %(
-                    :type(External),
+                    :type(IndexType::External),
                     :@ind-obj,
                     :$offset,
                 );
@@ -680,7 +680,7 @@ class PDF::Reader {
                             my UInt $sub-obj-num = .[0];
                             my UInt $ref-obj-num = $obj-num;
                             %!ind-obj-idx{"$sub-obj-num 0"} //= %(
-                                :type(Embedded),
+                                :type(IndexType::Embedded),
                                 :$index,
                                 :$ref-obj-num,
                             );
@@ -703,7 +703,7 @@ class PDF::Reader {
     #| - preserve input order
     #| - delinearize
     #| - sift /XRef and /ObjStm objects,
-      method get-objects(
+    method get-objects(
         Bool :$incremental = False       #| only return updated objects
         ) {
         my @object-refs;
@@ -716,11 +716,11 @@ class PDF::Reader {
             my UInt $offset;
 
             given $entry<type> {
-                when External {
+                when IndexType::External {
                     $offset = $_
                     with $entry<offset>
                 }
-                when Embedded {
+                when IndexType::Embedded {
                     my UInt $parent = $entry<ref-obj-num>;
 		    with %!ind-obj-idx{"$parent 0"} {
                         $offset = .<offset>;
@@ -730,7 +730,7 @@ class PDF::Reader {
                     }
                     $seq = $entry<index>;
                 }
-                when Free {
+                when IndexType::Free {
                     next;
                 }
                 default {
