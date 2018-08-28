@@ -44,18 +44,22 @@ pdf-rewriter.p6 - Rebuild a PDF using the L<PDF> module.
 =head1 SYNOPSIS
 
 pdf-rewriter.p6 [options] file.pdf [out.pdf]
+pdf-rewriter.p6 [options] file.pdf [out.json] # convert to json
+pdf-rewriter.p6 [options] file.json [out.pdf] # convert from json
 
 Options:
    --password   password for an encrypted PDF
    --repair     repair the input PDF
    --rebuild    rebuild object tree (renumber, garbage collect and deduplicate objects)
-   --compress   --/compress compress/uncompress all indirect objects
+   --compress   compress streams
+   --/compress  uncompress streams, where possible
    --class      load L<PDF::Class> module
 
 =head1 DESCRIPTION
 
-Prints to STDOUT various basic details about the specified PDF
-file(s).
+Rewrites the specified PDF document.
+
+Input and output files may be either PDF or JSON.
 
 =head1 SEE ALSO
 
