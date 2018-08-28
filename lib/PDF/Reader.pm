@@ -82,10 +82,12 @@ class PDF::Reader {
     use PDF::COS::Util :from-ast, :to-ast;
     use PDF::Writer;
     use JSON::Fast;
+    subset ObjNumInt of UInt;
+    subset GenNumInt of Int where 0..999;
 
     has $.input is rw;       #= raw PDF image (latin-1 encoding)
     has Str $.file-name;
-    has Hash %!ind-obj-idx;
+    has Hash %!ind-obj-idx{Int};  # keys are: $obj-num*1000 + $gen-num
     has Bool $.auto-deref is rw = True;
     has Rat $.version is rw;
     has Str $.type is rw;    #= 'PDF', 'FDF', etc...
@@ -103,7 +105,7 @@ class PDF::Reader {
         Proxy.new(
             FETCH => {
                 self!install-trailer
-                    without %!ind-obj-idx{"0 0"};
+                    without %!ind-obj-idx{0};
                 self.ind-obj(0, 0).object;
             },
             STORE => -> $, \obj {
@@ -113,7 +115,7 @@ class PDF::Reader {
     }
 
     method !install-trailer(PDF::COS::Dict $object = PDF::COS::Dict.new( :reader(self) ) ) {
-        %!ind-obj-idx{"0 0"} = do {
+        %!ind-obj-idx{0} = do {
             my PDF::IO::IndObj $ind-obj .= new( :$object, :obj-num(0), :gen-num(0) );
             %( :type(IndexType::External), :$ind-obj );
         }
@@ -128,9 +130,9 @@ class PDF::Reader {
             my \enc-gen-num = enc.gen-num;
 
             for %!ind-obj-idx.pairs {
-
-                my UInt ($obj-num, $gen-num) = .key.split(' ')>>.Int;
-                next unless $obj-num;
+                my ObjNumInt $obj-num = .key div 1000
+                    or next;
+                my GenNumInt $gen-num = .key mod 1000;
                 my Hash $idx = .value;
 
                 # skip the encryption dictionary, if it's an indirect object
@@ -188,9 +190,9 @@ class PDF::Reader {
 
             for .<objects>.list.reverse {
                 with .<ind-obj> -> $ind-obj {
-                    (my UInt $obj-num, my UInt $gen-num) = $ind-obj.list;
+                    (my ObjNumInt $obj-num, my GenNumInt $gen-num) = $ind-obj.list;
 
-                    %!ind-obj-idx{"$obj-num $gen-num"} //= %(
+                    %!ind-obj-idx{$obj-num * 1000 + $gen-num} //= %(
                         :type(IndexType::External),
                         :$ind-obj,
                     );
@@ -212,19 +214,20 @@ class PDF::Reader {
         @!xrefs.push: $!prev;
 
         for @entries -> Hash $entry {
-	    my UInt $obj-num = $entry<obj-num>
+	    my ObjNumInt $obj-num = $entry<obj-num>
 	        or next;
 
-            my UInt $gen-num = $entry<gen-num>;
+            my GenNumInt $gen-num = $entry<gen-num>;
             my UInt $type = $entry<type>;
+            my $k := $obj-num * 1000 + $gen-num;
 
 	    given $type {
 	        when IndexType::Free {
-                    %!ind-obj-idx{"$obj-num $gen-num"}:delete;
+                    %!ind-obj-idx{$k}:delete;
 		}
 	        when IndexType::External {
 		    my $ind-obj = $entry<ind-obj>;
-		    %!ind-obj-idx{"$obj-num $gen-num"} = %(
+		    %!ind-obj-idx{$k} = %(
 		        :$type,
 		        :$ind-obj,
                     );
@@ -249,7 +252,7 @@ class PDF::Reader {
                               UInt :$obj-len,     #| upper bound for the end of the stream
         )
     {
-        my (UInt $obj-num, UInt $gen-num, $obj-raw) = @ind-obj;
+        my (ObjNumInt $obj-num, GenNumInt $gen-num, $obj-raw) = @ind-obj;
 
         $obj-raw.value<encoded> //= do {
             my UInt \from = $obj-raw.value<start>:delete;
@@ -294,8 +297,8 @@ class PDF::Reader {
                              :$index, :$ref-obj-num, :$is-enc-dict  # type-2
                             ), :$obj-num, :$gen-num) {
         # stantiate the object
-        my $actual-obj-num;
-        my $actual-gen-num;
+        my ObjNumInt $actual-obj-num;
+        my GenNumInt $actual-gen-num;
 
         given $type {
             when IndexType::External {
@@ -344,12 +347,12 @@ class PDF::Reader {
     }
 
     #| fetch and stantiate indirect objects. cache against the index
-    method ind-obj( UInt $obj-num!, UInt $gen-num!,
+    method ind-obj( ObjNumInt $obj-num!, GenNumInt $gen-num!,
                     Bool :$get-ast = False,  #| get ast data, not formulated objects
                     Bool :$eager = True,     #| fetch object, if not already loaded
         ) {
 
-        my Hash $idx := %!ind-obj-idx{"$obj-num $gen-num"}
+        my Hash $idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
             // die "unable to find object: $obj-num $gen-num R";
 
         my $ind-obj = $idx<ind-obj> //= do {
@@ -401,8 +404,8 @@ class PDF::Reader {
 
     method !ind-deref(Pair $_! ) {
         return .value unless $_ ~~ IndRef;
-        my UInt \obj-num = .value[0];
-        my UInt \gen-num = .value[1];
+        my ObjNumInt \obj-num = .value[0];
+        my GenNumInt \gen-num = .value[1];
         $.ind-obj( obj-num, gen-num ).object;
     }
 
@@ -594,7 +597,7 @@ class PDF::Reader {
         for @type1-obj-entries.kv -> \k, $_ {
             my uint64 $end = k + 1 < +@type1-obj-entries ?? @type1-obj-entries[k + 1][Offset] !! input-bytes;
             my uint64 $offset = .[Offset];
-            %!ind-obj-idx{.[ObjNum] ~ ' ' ~ .[GenNum]} = %( :type(External), :$offset, :$end );
+            %!ind-obj-idx{.[ObjNum] * 1000 + .[GenNum]} = %( :type(External), :$offset, :$end );
         }
 
 	self!setup-crypt(|c);
@@ -603,17 +606,16 @@ class PDF::Reader {
             with %obj-entries-of-type<2>;
 
         for @embedded-obj-entries {
-            my UInt $obj-num = .[ObjNum];
-            my UInt $index = .[Index];
-            my UInt $ref-obj-num = .[RefObjNum];
-            my UInt $gen-num = 0;
+            my ObjNumInt $obj-num = .[ObjNum];
+            my UInt      $index = .[Index];
+            my ObjNumInt $ref-obj-num = .[RefObjNum];
+            my GenNumInt $gen-num = 0;
 
-            %!ind-obj-idx{"$obj-num $gen-num"} = %( :type(IndexType::Embedded), :$index, :$ref-obj-num );
+            %!ind-obj-idx{$obj-num * 1000 + $gen-num} = %( :type(IndexType::Embedded), :$index, :$ref-obj-num );
         }
 
         #| don't entirely trust /Size entry in trailer dictionary
-        my Str \max-idx = max( %!ind-obj-idx.keys );
-        my UInt \actual-size = max-idx.split(' ')[0].Int;
+        my ObjNumInt \actual-size = max( %!ind-obj-idx.keys ) div 1000;
         $!size = actual-size + 1
             if $!size <= actual-size;
     }
@@ -644,7 +646,7 @@ class PDF::Reader {
             for @objects.reverse {
                 next unless .key eq 'ind-obj';
                 my @ind-obj = .value.list;
-                my (UInt $obj-num, UInt $gen-num, $object, UInt $offset) = @ind-obj;
+                my (ObjNumInt $obj-num, GenNumInt $gen-num, $object, UInt $offset) = @ind-obj;
 
                 my $stream-type;
 
@@ -665,7 +667,7 @@ class PDF::Reader {
 		    }
                 }
 
-                %!ind-obj-idx{"$obj-num $gen-num"} //= %(
+                %!ind-obj-idx{$obj-num * 1000 + $gen-num} //= %(
                     :type(IndexType::External),
                     :@ind-obj,
                     :$offset,
@@ -677,9 +679,9 @@ class PDF::Reader {
                         my \container-obj = $.ind-obj( $obj-num, $gen-num ).object;
                         my Array \embedded-objects = container-obj.decoded;
                         for embedded-objects.kv -> $index, $_ {
-                            my UInt $sub-obj-num = .[0];
-                            my UInt $ref-obj-num = $obj-num;
-                            %!ind-obj-idx{"$sub-obj-num 0"} //= %(
+                            my ObjNumInt $sub-obj-num = .[0];
+                            my ObjNumInt $ref-obj-num = $obj-num;
+                            %!ind-obj-idx{$sub-obj-num * 1000} //= %(
                                 :type(IndexType::Embedded),
                                 :$index,
                                 :$ref-obj-num,
@@ -709,7 +711,8 @@ class PDF::Reader {
         my @object-refs;
 
         for %!ind-obj-idx.pairs.sort {
-            my UInt ($obj-num, $gen-num) = .key.split(' ')>>.Int;
+            my ObjNumInt $obj-num = .key div 1000;
+            my GenNumInt $gen-num = .key mod 1000;
 
             my Hash $entry = .value;
             my UInt $seq = 0;
@@ -722,7 +725,7 @@ class PDF::Reader {
                 }
                 when IndexType::Embedded {
                     my UInt $parent = $entry<ref-obj-num>;
-		    with %!ind-obj-idx{"$parent 0"} {
+		    with %!ind-obj-idx{$parent * 1000} {
                         $offset = .<offset>;
                     }
                     else {
@@ -754,7 +757,7 @@ class PDF::Reader {
             if $incremental {
 		if $offset && $obj-num {
 		    # check updated vs original PDF value.
-		    my \original-ast = self!fetch-ind-obj(%!ind-obj-idx{"$obj-num $gen-num"}, :$obj-num, :$gen-num);
+		    my \original-ast = self!fetch-ind-obj(%!ind-obj-idx{$obj-num * 1000 + $gen-num}, :$obj-num, :$gen-num);
 		    # discard, if not updated
 		    next if original-ast eqv ast.value;
 		}
@@ -774,8 +777,8 @@ class PDF::Reader {
     method get-updates() {
         my List \raw-objects = $.get-objects( :incremental );
         raw-objects.list.map({
-            my Int $obj-num = .value[0];
-            my Int $gen-num = .value[1];
+            my ObjNumInt $obj-num = .value[0];
+            my GenNumInt $gen-num = .value[1];
             $.ind-obj($obj-num, $gen-num).object;
         });
     }
@@ -790,8 +793,8 @@ class PDF::Reader {
             my \obj-type = ind-obj.key;
 
             if obj-type eq 'stream' {
-                my Int \obj-num = obj.value[0];
-                my Int \gen-num = obj.value[1];
+                my ObjNumInt \obj-num = obj.value[0];
+                my GenNumInt \gen-num = obj.value[1];
                 my \obj-dict = ind-obj.value<dict>;
                 my Bool \is-compressed = obj-dict<Filter>:exists;
                 next if $compress == is-compressed

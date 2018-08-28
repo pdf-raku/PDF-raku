@@ -32,7 +32,7 @@ role PDF::IO::Crypt::AST {
             with $ast<encoded>;
     }
 
-    multi method crypt-ast(Str $key where 'hex-string' | 'literal' | 'encoded' , $ast is rw, :$obj-num, |c) {
+    multi method crypt-ast(Str $key where 'hex-string'|'literal'|'encoded' , $ast is rw, :$obj-num, |c) {
 	$ast = $.crypt( $ast, :$obj-num, |c )
 	    if $obj-num
     }
