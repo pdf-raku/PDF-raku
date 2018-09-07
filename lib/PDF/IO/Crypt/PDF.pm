@@ -46,7 +46,7 @@ class PDF::IO::Crypt::PDF
         };
         $class.new( :$doc, |$encrypt, |CF, |c );
     }
-        
+
     #| read existing encryption
     submethod !load( Hash :$doc!, |c ) is default {
 	die "document is not encrypted"
@@ -57,7 +57,7 @@ class PDF::IO::Crypt::PDF
 
         my $encrypt = $doc<Encrypt>;
         PDF::COS.coerce($encrypt, PDF::COS::Type::Encrypt);
-        
+
 	given $encrypt.V {
 	    when 1..3 {
                 # stream and string channels are identical

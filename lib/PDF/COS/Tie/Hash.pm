@@ -17,14 +17,24 @@ role PDF::COS::Tie::Hash
     }
 
     method rw-accessor(Attribute $att, Str :$key!) is rw {
+        # Optimise for frequent fetches. See also RT #126520
+        my $val;
+        my int $got = 0;
+
         Proxy.new(
             FETCH => {
-                $att.tied.is-inherited
-	            ?? find-prop(self, $key)
-	            !! self.AT-KEY($key, :check);
+                $got
+                    ?? $val
+                    !! do {
+                        $got = 1;
+                        $val := $att.tied.is-inherited
+                            ?? find-prop(self, $key)
+                            !! self.AT-KEY($key, :check);
+                    }
             },
             STORE => -> $, \v {
-                self.ASSIGN-KEY($key, v, :check);
+                $val := self.ASSIGN-KEY($key, v, :check);
+                $got = 1;
             }
         );
     }
