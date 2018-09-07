@@ -35,12 +35,14 @@ To create a one page PDF that displays 'Hello, World!'.
 use v6;
 use PDF;
 use PDF::COS;
+use PDF::COS::Type::Info;
+use PDF::COS::Stream;
 
 sub prefix:</>($name){ PDF::COS.coerce(:$name) };
 
 # construct a simple PDF document from scratch
-my PDF $doc .= new;
-my $root     = $doc.Root       = { :Type(/'Catalog') };
+my PDF $pdf .= new;
+my $root     = $pdf.Root       = { :Type(/'Catalog') };
 
 my @MediaBox  = 0, 0, 250, 100;
 
@@ -57,19 +59,19 @@ my %Resources = :Procset[ /'PDF', /'Text'],
 
 my $pages    = $root<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0) };
 # add some standard metadata
-my $info = $doc.Info = {};
+my PDF::COS::Type::Info $info = $pdf.Info //= {};
 $info.CreationDate = DateTime.now;
 $info.Producer = "Perl 6 PDF";
 
 # define some basic content
-my $Contents = PDF::COS.coerce: :stream{ :decoded("BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET" ) };
+my PDF::COS::Stream $Contents .= coerce: :stream{ :decoded("BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET" ) };
 
 # create a new page. add it to the page tree
 $pages<Kids>.push: { :Type(/'Page'), :Parent($pages), :$Contents };
 $pages<Count>++;
 
 # save the PDF to a file
-$doc.save-as: 'examples/helloworld.pdf';
+$pdf.save-as: 'examples/helloworld.pdf';
 ```
 
 ![example.pdf](examples/.previews/helloworld-001.png)
@@ -80,10 +82,10 @@ Then to update the PDF, adding another page:
 use v6;
 use PDF;
 
-my $doc = PDF.open: 'examples/helloworld.pdf';
+my PDF $pdf .= open: 'examples/helloworld.pdf';
 
 # locate the document root and page tree
-my $catalog = $doc<Root>;
+my $catalog = $pdf<Root>;
 my $Parent = $catalog<Pages>;
 
 # create additional content, use existing font /F1
@@ -94,11 +96,11 @@ $Parent<Kids>.push: { :Type( :name<Page> ), :$Parent, :$Contents };
 $Parent<Count>++;
 
 # update or create document metadata. set modification date
-my $info = $doc.Info //= {};
+my $info = $pdf.Info //= {};
 $info.ModDate = DateTime.now;
 
 # incrementally update the existing PDF
-$doc.update;
+$pdf.update;
 ```
 
 ![example.pdf](examples/.previews/helloworld-002.png)
@@ -238,30 +240,30 @@ This indexes the indirect objects in the PDF by byte offset (generation number) 
 We can quickly put PDF to work using the Perl 6 REPL, to better explore the document:
 
     snoopy: ~/git/perl6-PDF $ perl6 -M PDF
-    > my $doc = PDF.open: "examples/helloworld.pdf"
+    > my $pdf = PDF.open: "examples/helloworld.pdf"
     ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
-    > $doc.keys
+    > $pdf.keys
     (Root Info ID)
 
 This is the root of the PDF, loaded from the trailer dictionary
 
-    > $doc<Info>
+    > $pdf<Info>
     {CreationDate => D:20151225000000Z00'00', Producer => Perl 6 PDF}
 
 That's the document information entry, commonly used to store basic meta-data about the document.
 
 (PDF::IO has conveniently fetched indirect object 1 from the PDF, when we dereferenced this entry).
 
-    > $doc<Root>
+    > $pdf<Root>
     {Pages => ind-ref => [3 0], Type => Catalog}
 
 The trailer `Root` entry references the document catalog, which contains the actual PDF content. Exploring further; the catalog potentially contains a number of pages, each with content.
 
-    > $doc<Root><Pages>
+    > $pdf<Root><Pages>
     {Count => 1, Kids => [ind-ref => [4 0]], MediaBox => [0 0 420 595], Resources => Font => F1 => ind-ref => [6 0], Type => Pages}
-    > $doc<Root><Pages><Kids>[0]
+    > $pdf<Root><Pages><Kids>[0]
     {Contents => ind-ref => [5 0], Parent => ind-ref => [3 0], Type => Page}
-    > $doc<Root><Pages><Kids>[0]<Contents>
+    > $pdf<Root><Pages><Kids>[0]<Contents>
     {Length => 44}
     BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET
 
@@ -271,16 +273,16 @@ The page `/Contents` entry is a PDF stream which contains graphical instructions
 
 `PDF` is a base class for opening or creating PDF documents.
 
-- `my $doc = PDF.open("mydoc.pdf" :repair)`
+- `my $pdf = PDF.open("mydoc.pdf" :repair)`
  Opens an input `PDF` (or `FDF`) document.
   - `:!repair` causes the read to load only the trailer dictionary and cross reference tables from the tail of the PDF (Cross Reference Table or a PDF 1.5+ Stream). Remaining objects will be lazily loaded on demand.
   - `:repair` causes the reader to perform a full scan, ignoring and recalculating the cross reference stream/index and stream lengths. This can be handy if the PDF document has been hand-edited.
 
-- `$doc.update`
+- `$pdf.update`
 This performs an incremental update to the input pdf, which must be indexed `PDF` (not applicable to PDFs opened with `:repair`, FDF or JSON files). A new section is appended to the PDF that contains only updated and newly created objects. This method can be used as a fast and efficient way to make small updates to a large existing PDF document.
     - `:diffs(IO::Handle $fh)` - saves just the updates to an alternate location. This can be later appended to the base PDF to reproduce the updated PDF.
 
-- `$doc.save-as("mydoc-2.pdf", :compress, :rebuild, :preserve)`
+- `$pdf.save-as("mydoc-2.pdf", :compress, :rebuild, :preserve)`
 Saves a new document, including any updates. Options:
   - `:compress` - compress objects for minimal size
   - `:!compress` - uncompress objects for human readability
@@ -289,7 +291,7 @@ Saves a new document, including any updates. Options:
 
 Note that the `:compress` and `:rebuild` options are a trade-off. The document may take longer to save, however file-sizes and the time needed to reopen the document may improve.
 
-- `$doc.save-as("mydoc.json", :compress, :rebuild); my $doc2 = $doc.open: "mydoc.json"`
+- `$pdf.save-as("mydoc.json", :compress, :rebuild); my $pdf2 = $pdf.open: "mydoc.json"`
 Documents can also be saved and opened from an intermediate `JSON` representation. This can be handy for debugging, analysis and/or ad-hoc patching of PDF files.
 
 ### Reading PDF Files
@@ -310,8 +312,8 @@ $reader.open: 'examples/helloworld.pdf';
 my $page1 = $reader.ind-obj(4, 0).object;
 
 # Hashes and arrays are tied. This is usually more convenient for navigating
-my $doc = $reader.trailer<Root>;
-$page1 = $doc<Pages><Kids>[0];
+my $pdf = $reader.trailer<Root>;
+$page1 = $pdf<Pages><Kids>[0];
 
 # Tied objects can also be updated directly.
 $reader.trailer<Info><Creator> = PDF::COS.coerce( :name<t/helloworld.t> );
@@ -357,7 +359,7 @@ PDF::IO supports RC4 and AES encryption (revisions /R 2 - 4 and versions /V 1 - 
 
 To open an encrypted PDF document, specify either the user or owner password: `PDF.open( "enc.pdf", :password<ssh!>)`
 
-A document can be encrypted using the `encrypt` method: `$doc.encrypt( :owner-pass<ssh1>, :user-pass<abc>, :aes )`
+A document can be encrypted using the `encrypt` method: `$pdf.encrypt( :owner-pass<ssh1>, :user-pass<abc>, :aes )`
    - `:aes` encrypts the document using stronger V4 AES encryption, introduced with PDF 1.6.
 
 Note that it's quite common to leave the user-password blank. This indicates that the document is readable by anyone, but may have restrictions on update, printing or copying of the PDF.
