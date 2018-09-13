@@ -183,10 +183,15 @@ class PDF:ver<0.3.3>
         return True
             if $!crypt.?is-owner;
 
-        my $perms = self.Encrypt.?P
-            // return True;
+        my $perms = do with self.Encrypt {
+            .P
+        }
+        else {
+            return True;
+        }
 
-        return $perms.flag-is-set( $flag );
+        constant AllPermissions = 2;
+        return $perms.flag-is-set( $flag ) || $perms.flag-is-set( AllPermissions);
     }
 
     method Blob returns Blob {

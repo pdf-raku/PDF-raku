@@ -101,4 +101,5 @@ class PDF::IO::Crypt::PDF
         True;
     }
 
+    method type { ($!str-f.type, $!stm-f.type).unique }
 }
