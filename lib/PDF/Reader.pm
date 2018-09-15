@@ -32,11 +32,18 @@ class X::PDF::BadXRef::Parse is X::PDF::BadXRef {
 }
 
 class X::PDF::BadXRef::Entry is X::PDF::BadXRef {
+    has $.details;
+    method message {"Cross reference error: $.details. Please inform the author of the PDF and/or try opening this PDF with :repair"}
+}
+
+class X::PDF::BadXRef::Entry::Number is X::PDF::BadXRef::Entry {
     has UInt $.obj-num;
     has UInt $.gen-num;
     has UInt $.actual-obj-num;
     has UInt $.actual-gen-num;
-    method message {"Cross reference mismatch. Index entry was: $!obj-num $!gen-num R. actual object: $!actual-obj-num $!actual-gen-num R. Please inform the author of the PDF and/or try opening this PDF with :repair"}
+    method details {
+        "Index entry was: $!obj-num $!gen-num R. actual object: $!actual-obj-num $!actual-gen-num R"
+    }
 }
 
 class X::PDF::BadXRef::Section is X::PDF::BadXRef {
@@ -292,10 +299,14 @@ class PDF::Reader {
     #| follow the index. fetch either type-1, or type-2 objects:
     #| type-1: fetch as a top level object from the pdf
     #| type-2: dereference and extract from the containing object
-    method !fetch-ind-obj(% (:$type!, :$ind-obj is copy,
-                             :$offset, :$end,                       # type-1
-                             :$index, :$ref-obj-num, :$is-enc-dict  # type-2
-                            ), :$obj-num, :$gen-num) {
+    method !fetch-ind-obj(
+    % (
+        :$type!, :$ind-obj is copy,
+        :$offset, :$end,                       # type-1
+        :$index, :$ref-obj-num, :$is-enc-dict  # type-2
+    ),
+    :$obj-num,
+    :$gen-num) {
         # stantiate the object
         my ObjNumInt $actual-obj-num;
         my GenNumInt $actual-gen-num;
@@ -303,9 +314,9 @@ class PDF::Reader {
         given $type {
             when IndexType::External {
                 my UInt $obj-len = do given $end - $offset {
-                    when 0 { die "Duplicate cross-reference destination (byte offset $offset) for $obj-num $gen-num R"}
-                    when * < 0 { die "Attempt to fetch object $obj-num $gen-num R at byte offset $offset, past end of PDF ($end bytes)" }
-                    default { $_ - 1 }
+                    when 0     { die X::PDF::BadXRef::Entry.new: :details("Duplicate cross-reference destination (byte offset $offset) for $obj-num $gen-num R")}
+                    when * < 0 { die X::PDF::BadXRef::Entry.new: :details("Attempt to fetch object $obj-num $gen-num R at byte offset $offset, past end of PDF ($end bytes)") }
+                    default    { $_ - 1 }
                 }
 
                 my $input = $.input.byte-str( $offset, $obj-len );
@@ -340,7 +351,7 @@ class PDF::Reader {
             default {die "unhandled index type: $_"};
         }
 
-        die X::PDF::BadXRef::Entry.new( :$obj-num, :$actual-obj-num, :$gen-num, :$actual-gen-num )
+        die X::PDF::BadXRef::Entry::Number.new( :$obj-num, :$actual-obj-num, :$gen-num, :$actual-gen-num )
             unless $obj-num == $actual-obj-num && $gen-num == $actual-gen-num;
 
         $ind-obj;
