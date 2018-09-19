@@ -76,6 +76,15 @@ class X::PDF::BadIndirectObject::Parse is X::PDF::BadIndirectObject {
     }
 }
 
+class X::PDF::ObjStmObject::Parse is Exception {
+    has Str $.input is required;
+    has UInt $.obj-num;
+    has UInt $.ref-obj-num;
+    method message {
+        "Error extracting embedded object $!obj-num 0 R from $!ref-obj-num 0 R; unable to parse object: " ~ synopsis($.input);
+    }
+}
+
 class PDF::Reader {
 
     use PDF::Grammar::COS;
@@ -277,7 +286,7 @@ class PDF::Reader {
 
             # ensure stream is followed by an 'endstream' marker
             my Str \tail = $input.byte-str( $offset + from + length, 20 );
-            if tail ~~ m{<PDF::Grammar::PDF::stream-tail>} {
+            if tail ~~ m{<PDF::Grammar::COS::stream-tail>} {
                 warn X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
                     :details("Ignoring {$/.from} bytes before 'endstream' marker")
@@ -320,7 +329,7 @@ class PDF::Reader {
                 }
 
                 my $input = $.input.byte-str( $offset, $obj-len );
-                PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
+                PDF::Grammar::COS.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
                     or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
 
                 $ind-obj = $/.ast.value;
@@ -344,8 +353,8 @@ class PDF::Reader {
                 $actual-gen-num = 0;
                 my $input = ind-obj-ref[1];
 
-                PDF::Grammar::PDF.subparse( $input, :$.actions, :rule<object> )
-                    or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$input);
+                PDF::Grammar::COS.subparse( trim($input), :$.actions, :rule<object> )
+                    or die X::PDF::ObjStmObject::Parse.new( :$obj-num, :$input, :$ref-obj-num);
                 $ind-obj = [ $actual-obj-num, $actual-gen-num, $/.ast ];
             }
             default {die "unhandled index type: $_"};
@@ -493,10 +502,10 @@ class PDF::Reader {
 
     #| load PDF 1.4- xref table followed by trailer
     method !load-xref-table(Str $xref is copy, $dict is rw, :$offset, :&fallback) {
-	my $parse = PDF::Grammar::PDF.subparse( $xref, :rule<index>, :$.actions );
+	my $parse = PDF::Grammar::COS.subparse( $xref, :rule<index>, :$.actions );
         $parse ||= (
-            PDF::Grammar::PDF.subparse( &fallback(1, $xref), :rule<index>, :$.actions )
-            || PDF::Grammar::PDF.subparse( &fallback(2, $xref), :rule<index>, :$.actions )
+            PDF::Grammar::COS.subparse( &fallback(1, $xref), :rule<index>, :$.actions )
+            || PDF::Grammar::COS.subparse( &fallback(2, $xref), :rule<index>, :$.actions )
         ) if &fallback;
 
 	die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
@@ -535,10 +544,10 @@ class PDF::Reader {
 
     #| load a PDF 1.5+ XRef Stream
     method !load-xref-stream(Str $xref is copy, $dict is rw, UInt :$offset, :&fallback) {
-        my $parse = PDF::Grammar::PDF.subparse($xref, :$.actions, :rule<ind-obj>);
+        my $parse = PDF::Grammar::COS.subparse($xref, :$.actions, :rule<ind-obj>);
         $parse ||= (
-	    PDF::Grammar::PDF.subparse(&fallback(1, $xref), :$.actions, :rule<ind-obj>)
-	    || PDF::Grammar::PDF.subparse(&fallback(2, $xref), :$.actions, :rule<ind-obj>)
+	    PDF::Grammar::COS.subparse(&fallback(1, $xref), :$.actions, :rule<ind-obj>)
+	    || PDF::Grammar::COS.subparse(&fallback(2, $xref), :$.actions, :rule<ind-obj>)
         ) if &fallback;
 
 	die X::PDF::BadIndirectObject::Parse.new( :$offset, :input($xref))
