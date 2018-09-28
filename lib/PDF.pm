@@ -138,11 +138,7 @@ class PDF:ver<0.3.3>
 	$serializer.ast( self, :$type, :$!crypt, |c);
     }
 
-    multi method save-as(Str $file-name, |c) {
-	$.save-as($file-name.IO, |c );
-    }
-
-    multi method save-as(IO::Path $iop,
+    multi method save-as(IO() $iop,
                      Bool :$preserve = True,
                      Bool :$rebuild = False,
                      |c) {
@@ -164,8 +160,8 @@ class PDF:ver<0.3.3>
 	}
     }
 
-    multi method save-as(IO::Handle $ioh, :$rebuild = False, |c) is default {
-        my $ast = $.ast(:$rebuild, |c);
+    multi method save-as(IO::Handle $ioh, |c) is default {
+        my $ast = $.ast(|c);
         my PDF::Writer $writer .= new: :$ast;
         $ioh.write: $writer.Blob;
         $ioh.close;

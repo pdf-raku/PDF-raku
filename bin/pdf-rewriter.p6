@@ -5,14 +5,15 @@ use PDF::Reader;
 
 #| rewrite a PDF or FDF and/or convert to/from JSON
 sub MAIN (
-    Str $file-in,                   #= input PDF, FDF or JSON file (.json extension)
-    Str $file-out = $file-in,       #= output PDF, FDF or JSON file (.json extension)
-    Str  :$password   = '';         #= password for encrypted documents
-    Bool :$repair     = False,      #= bypass and repair index. recompute stream lengths. Handy when
-                                    #= PDF files have been hand-edited.
-    Bool :$rebuild    = False,      #= rebuild object tree (renumber, garbage collect and deduplicate objects)
-    Bool :$compress,                #= (un)compress streams
-    Bool :$class      = False,      #= require PDF::Class
+    Str $file-in,               #= input PDF, FDF or JSON file (.json extension)
+    Str $file-out = $file-in,   #= output PDF, FDF or JSON file (.json extension)
+    Str  :$password  = '';      #= password for encrypted documents
+    Bool :$repair    = False,   #= bypass and repair index. recompute stream lengths. Handy when
+                                #= PDF files have been hand-edited.
+    Bool :$rebuild  is copy,    #= rebuild object tree (renumber, garbage collect and deduplicate objects)
+    Bool :$compress,            #= (un)compress streams
+    Bool :$class     = False,   #= require PDF::Class
+    Bool :$decrypt   = False,   #= decrypt
     ) {
 
     if $class {
@@ -23,10 +24,22 @@ sub MAIN (
 
     note "opening {$file-in} ...";
     $reader.open( $file-in, :$repair, :$password );
+    # ensure we stantiate all objects
 
     with $compress {
         note $_ ?? "compressing ..." !! "uncompressing ...";
         $reader.recompress(:compress($_))
+    }
+    elsif $decrypt {
+        # realise and decrypt all objects
+        note "decrypting ...";
+        $reader.get-objects;
+    }
+
+    if $decrypt {
+        $reader.crypt = Nil;
+        $reader.trailer<Encrypt>:delete;
+        $rebuild //= True; # to expunge encryption dict
     }
 
     note "saving ...";
@@ -54,6 +67,7 @@ Options:
    --compress   compress streams
    --/compress  uncompress streams, where possible
    --class      load L<PDF::Class> module
+   --decrypt    remove encryption
 
 =head1 DESCRIPTION
 
