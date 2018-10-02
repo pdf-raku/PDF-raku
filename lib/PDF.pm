@@ -4,7 +4,7 @@ use PDF::COS::Dict;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
-class PDF:ver<0.3.3>
+class PDF:ver<0.3.4>
     is PDF::COS::Dict {
 
     use PDF::IO::Serializer;
@@ -26,6 +26,7 @@ class PDF:ver<0.3.3>
 
     has Hash $.Root is entry( :indirect );                #| generic document content, as defined by subclassee, e.g.  PDF::Class, PDF::FDF
     has $.crypt is rw;
+    has $!flush = False;
 
     #| open the input file-name or path
     method open($spec, |c) {
@@ -39,13 +40,22 @@ class PDF:ver<0.3.3>
         doc;
     }
 
-    method encrypt( Str :$owner-pass!, Str :$user-pass = '', |c ) {
-        with $!crypt {
-            die 'document is already encrypted';
+    method encrypt( Str :$owner-pass!, Str :$user-pass = '', :$EncryptMetadata = True, |c ) {
+
+        die '.encrypt(:!EncryptMetadata, ...) is not yet supported'
+            unless $EncryptMetadata;
+
+        with $.reader {
+            with .crypt {
+                # the input document is already encrypted
+                die "PDF is already encrypted. Need to be owner to re-encrypt"
+                    unless .is-owner;
+            }
         }
-        else {
-            $_ = (require PDF::IO::Crypt::PDF).new( :doc(self), :$owner-pass, :$user-pass, |c);
-        }
+
+        self<Encrypt>:delete;
+        $!flush = True;
+        $!crypt = (require PDF::IO::Crypt::PDF).new( :doc(self), :$owner-pass, :$user-pass, |c);
     }
 
     method !is-indexed {
@@ -61,12 +71,15 @@ class PDF:ver<0.3.3>
     #| differences to the specified file
     method update(IO::Handle :$diffs, |c) {
 
-	self.?cb-init
-	    unless self<Root>:exists;
-	self<Root>.?cb-finish;
+        die "Newly encrypted PDF must be saved in full"
+            if $!flush;
 
 	die "PDF has not been opened for indexed read."
 	    unless self!is-indexed;
+
+	self.?cb-init
+	    unless self<Root>:exists;
+	self<Root>.?cb-finish;
 
 	my $type = $.reader.type;
 	self!generate-id( :$type );
@@ -93,8 +106,10 @@ class PDF:ver<0.3.3>
 
         constant Preamble = "\n\n";
         my Numeric $offset = $.reader.input.codes + Preamble.codes;
-        my PDF::Writer $writer .= new( :$offset, :$prev );
+        my $size = $.reader.size;
+        my PDF::Writer $writer .= new( :$offset, :$prev, :$size );
         my Str $new-body = $writer.write-body( $body[0], my @entries, :$prev, :$trailer );
+
 	my IO::Handle $fh = do with $diffs {
 	    # saving updates elsewhere
 	    my Str $path = ~ .path;
@@ -146,7 +161,7 @@ class PDF:ver<0.3.3>
             # save as JSON
 	    $iop.spurt( to-json( $.ast(|c) ));
 	}
-        when $preserve && !$rebuild && self!is-indexed && !$!crypt {
+        when $preserve && !$rebuild && !$!flush && self!is-indexed {
             # copy the input PDF, then incrementally update it. This is faster
             # and plays better with digitally signed documents.
             my $diffs = $iop.open(:a, :bin);
@@ -161,7 +176,8 @@ class PDF:ver<0.3.3>
     }
 
     multi method save-as(IO::Handle $ioh, |c) is default {
-        my $ast = $.ast(|c);
+        my $eager := ! $!flush;
+        my $ast = $.ast(:$eager, |c);
         my PDF::Writer $writer .= new: :$ast;
         $ioh.write: $writer.Blob;
         $ioh.close;

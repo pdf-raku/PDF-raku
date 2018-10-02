@@ -32,41 +32,47 @@ class PDF::IO::Serializer {
     multi method ref-count($) is default { }
 
     my subset DictIndObj of Pair where {.key eq 'ind-obj'
-					&& .value[2] ~~ Pair
-					&& .value[2].key eq 'dict'}
+                                        && .value[2] ~~ Pair
+                                        && .value[2].key eq 'dict'}
+
+    my subset LazyObj of Pair where {.key eq 'copy'}
 
     #| remove and return the root object (trailer dictionary)
     method !get-root(@objects) {
-	my DictIndObj \root-ind-obj = @objects.shift; # first object is trailer dict
-	root-ind-obj.value[2]<dict>;
+        my DictIndObj \root-ind-obj = @objects.shift; # first object is trailer dict
+        root-ind-obj.value[2]<dict>;
     }
 
     #| Discard Linearization aka "Fast Web View"
     method !discard-linearization(@objects) {
-    	with @objects[0] {
-            when DictIndObj {
-                my Hash:D $dict = .value[2]<dict>;
-	        @objects.shift
-		    with $dict<Linearized>;
+        with @objects[0] -> $obj is copy {
+            $obj = $.reader.ind-obj($obj.value[0], $obj.value[1], :get-ast)
+                if $obj ~~ LazyObj;
+            given $obj {
+                when DictIndObj {
+                    my Hash:D $dict = .value[2]<dict>;
+                    @objects.shift
+                    with $dict<Linearized>;
+                }
             }
-	}
+        }
     }
 
     proto method body(|c --> Array) {*}
 
     #| rebuild document body from root
     multi method body( PDF::COS $trailer!, Bool:_ :$*compress, UInt :$!size = 1) {
-	temp $trailer.obj-num = 0;
-	temp $trailer.gen-num = 0;
+        temp $trailer.obj-num = 0;
+        temp $trailer.gen-num = 0;
 
         %!ref-count = ();
-	@!objects = ();
+        @!objects = ();
         $.ref-count( $trailer );
         $.freeze( $trailer, :indirect);
-	my %dict = self!get-root(@!objects);
+        my %dict = self!get-root(@!objects);
 
         %dict<Size> = :int($.size)
-	    unless $.type eq 'FDF';
+            unless $.type eq 'FDF';
 
         [ { :@!objects, :trailer{ :%dict } }, ];
     }
@@ -82,23 +88,22 @@ class PDF::IO::Serializer {
         # disable auto-deref to keep all analysis and freeze stages lazy. if it hasn't been
         # loaded, it hasn't been updated
         temp $.reader.auto-deref = False;
-
         # preserve existing object numbers. updated objects need to overwritten
         # using the same object and generation numbers
         temp $.renumber = False;
         %!ref-count = ();
-	@!objects = ();
-	my \trailer = $.reader.trailer;
+        @!objects = ();
+        my \trailer = $.reader.trailer;
 
-	temp trailer.obj-num = 0;
-	temp trailer.gen-num = 0;
+        temp trailer.obj-num = 0;
+        temp trailer.gen-num = 0;
 
         my @updated-objects = $.reader.get-updates.list;
 
         $.ref-count($_) for @updated-objects;
-	$.freeze($_, :indirect ) for @updated-objects;
+        $.freeze($_, :indirect ) for @updated-objects;
 
-	my %dict = self!get-root(@!objects);
+        my %dict = self!get-root(@!objects);
 
         %dict<Prev> = :int($prev);
         %dict<Size> = :int($!size);
@@ -107,11 +112,11 @@ class PDF::IO::Serializer {
     }
 
     #| return objects without renumbering existing objects. requires a PDF reader
-    multi method body( Bool:_ :$*compress ) is default {
-        my @objects = $.reader.get-objects;
+    multi method body( Bool:_ :$*compress, Bool :$eager = True ) is default {
+        my @objects = $.reader.get-objects(:$eager);
 
-	my %dict = self!get-root(@objects);
-	self!discard-linearization(@objects);
+        my %dict = self!get-root(@objects);
+        self!discard-linearization(@objects);
 
         %dict<Prev>:delete;
         %dict<Size> = :int($.reader.size)
@@ -124,10 +129,10 @@ class PDF::IO::Serializer {
     #| to an object-number and generation-number.
     method !index-object( Pair $ind-obj! is rw, :$object!) {
         my Int $obj-num = $object.obj-num 
-	    if $object.can('obj-num')
-	    && (! $.reader || $object.reader === $.reader);
+            if $object.can('obj-num')
+            && (! $.reader || $object.reader === $.reader);
         my UInt $gen-num;
-	constant TrailerObjNum = 0;
+        constant TrailerObjNum = 0;
 
         if $obj-num.defined && (($obj-num > 0 && ! $.renumber) || $obj-num == TrailerObjNum) {
             # keep original object number
@@ -177,19 +182,19 @@ class PDF::IO::Serializer {
         }
         else {
             my $stream;
-	    if $object.isa(PDF::COS::Stream) {
-	        with $*compress {
-		    $_ ?? $object.compress !! $object.uncompress
-	        }
-	        $stream = $object.encoded;
-	    }
+            if $object.isa(PDF::COS::Stream) {
+                with $*compress {
+                    $_ ?? $object.compress !! $object.uncompress
+                }
+                $stream = $object.encoded;
+            }
 
             my $ind-obj;
             my $slot;
-	    my $dict;
+            my $dict;
 
             with $stream {
-	        my $encoded = .Str;
+                my $encoded = .Str;
                 $ind-obj = :stream{
                     :$dict,
                     :$encoded,
@@ -220,7 +225,7 @@ class PDF::IO::Serializer {
             :$ind-ref
         }
         else {
-	    my $array;
+            my $array;
 
             my $ind-obj = :$array;
             my $slot := $ind-obj.value;
@@ -238,24 +243,24 @@ class PDF::IO::Serializer {
 
     #| handles other basic types
     multi method freeze($other) is default {
-	to-ast $other
+        to-ast $other
     }
 
     #| build AST, starting at the trailer.
     method ast(
-	PDF::COS $trailer!,
-	Numeric :$version=1.3,
-	Str     :$!type,     #| e.g. 'PDF', 'FDF;
-	Bool    :$compress,
-	        :$crypt,
+        PDF::COS $trailer!,
+        Numeric :$version=1.3,
+        Str     :$!type,     #| e.g. 'PDF', 'FDF;
+        Bool    :$compress,
+                :$crypt,
         ) {
-	$!type //= ($.reader.?type
-	            // do given $trailer<Root> {
+        $!type //= ($.reader.?type
+                    // do given $trailer<Root> {
                            .defined && .<FDF> ?? 'FDF' !! 'PDF'
                        });
         my Array $body = self.body($trailer, :$compress );
-	.crypt-ast('body', $body, :mode<encrypt>)
-	    with $crypt;
+        .crypt-ast('body', $body, :mode<encrypt>)
+            with $crypt;
         :cos{ :header{ :$!type, :$version }, :$body };
     }
 }

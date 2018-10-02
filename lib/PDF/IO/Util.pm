@@ -9,7 +9,7 @@ module PDF::IO::Util {
                 when X::CompUnit::UnsatisfiedDependency {
                 }
                 default {
-                    warn "error loading Lib::PDF: {.perl}";
+                    warn "error loading Lib::PDF: {.Str}";
                 }
             }
             (require Lib::PDF:ver(v0.0.1 .. *)).so;

@@ -1,3 +1,20 @@
+Release 0.3.4
+- [PDF::Reader][PDF::Writer]
+  -- Allow copying of raw objects from input to output PDFs
+     to reduce memory usage in full-save, and speed up
+     saving of encrypted PDFs.
+  -- Fixed /Prev trailer entry in incremental save
+- [PDF::Reader]
+  -- Respect EncryptMetadata flag in existing PDF files.
+     Disallow for newly created PDF files.
+  -- Fixed handling of encryption dictionarie when they're
+     not an indirect object
+- [PDF]
+  -- Allow reencryption of an already encrypted PDF.
+  -- Disallow update of a newly encrypted or re-encrypted PDF
+- [pdf-rewriter.p6]
+  -- added owner-check and -drm option.
+
 Release 0.3.3
 - [PDF::COS::Tie]
   -- added :default trait

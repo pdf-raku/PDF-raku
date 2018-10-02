@@ -65,19 +65,27 @@ class PDF::Writer {
     }
 
     method !make-objects( @objects, @idx = [] ) {
-        @objects.map: -> \obj {
-            my \bytes = do with obj<ind-obj> -> $ind-obj {
+        @objects.map: -> $obj is rw {
+            my \bytes = do with $obj<ind-obj> -> $ind-obj {
 		my uint $obj-num = $ind-obj[0];
 		my uint $gen-num = $ind-obj[1];
-		@idx.push: { :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj };
+		@idx.push: %( :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj );
 
                 $.write-ind-obj( $ind-obj );
             }
-            elsif my \comment = obj<comment> {
+            elsif my \ref = $obj<copy> {
+		my uint $obj-num = ref[0];
+		my uint $gen-num = ref[1];
+                my $getter = ref[2];
+                my $ind-obj = $getter.get($obj-num, $gen-num);
+		@idx.push: %( :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj );
+                $.write-ind-obj( $ind-obj );
+            }
+            elsif my \comment = $obj<comment> {
                 $.write-comment(comment);
             }
             else {
-                die "don't know how to serialize body component: {obj.perl}"
+                die "don't know how to serialize body component: {$obj.perl}"
             }
 
             $!offset += bytes.codes + 1;
@@ -315,7 +323,10 @@ class PDF::Writer {
     method !idx-to-xref(Array $idx) {
         my uint $total-entries = +$idx;
 	my uint64 @idx[+$total-entries;4] = $idx.sort({ $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> }).map: {[.<type>, .<obj-num>, .<gen-num>, .<offset> ]};
-        $!size = @idx[$total-entries-1;1] + 1;
+        given @idx[$total-entries-1;1] + 1 {
+            $!size = $_
+                if !$!size || $_ > $!size;
+        }
         my Hash @xrefs;
         loop (my uint $i = 0; $i < $total-entries;) {
             my uint $obj-count = self!xref-segment-length(@idx, $i, $total-entries);
@@ -380,12 +391,7 @@ class PDF::Writer {
     constant fast-track = set <hex-string literal name real entries>;
 
     multi method write( Pair $_! where {.key ∈ fast-track && PDF::IO::Util::libpdf-available}) {
-        state $fast-writer;
-        state $ready;
-        $ready //= do {
-            $fast-writer = (require ::('Lib::PDF::Writer'));
-            True
-        }
+        state $fast-writer = (require ::('Lib::PDF::Writer'));
 
         $fast-writer."write-{.value.defined ?? .key !! 'null'}"( .value );
     }

@@ -11,9 +11,10 @@ sub MAIN (
     Bool :$repair    = False,   #= bypass and repair index. recompute stream lengths. Handy when
                                 #= PDF files have been hand-edited.
     Bool :$rebuild  is copy,    #= rebuild object tree (renumber, garbage collect and deduplicate objects)
-    Bool :$compress,            #= (un)compress streams
+    Bool :$compress,            #= compress streams (--/compress to uncompress)
     Bool :$class     = False,   #= require PDF::Class
     Bool :$decrypt   = False,   #= decrypt
+    Bool :$drm       = True,
     ) {
 
     if $class {
@@ -24,15 +25,19 @@ sub MAIN (
 
     note "opening {$file-in} ...";
     $reader.open( $file-in, :$repair, :$password );
-    # ensure we stantiate all objects
+    if $decrypt && $drm {
+        with $reader.crypt {
+            die "only the owner of this PDF can decrypt it"
+                unless .is-owner;
+        }
+    }
 
     with $compress {
         note $_ ?? "compressing ..." !! "uncompressing ...";
-        $reader.recompress(:compress($_))
+        $reader.recompress(:compress($_));
     }
     elsif $decrypt {
-        # realise and decrypt all objects
-        note "decrypting ...";
+        # ensure all objects have been loaded and decrypted
         $reader.get-objects;
     }
 

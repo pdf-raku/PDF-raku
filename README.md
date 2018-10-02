@@ -320,7 +320,7 @@ $reader.trailer<Info><Creator> = PDF::COS.coerce( :name<t/helloworld.t> );
 ```
 
 ### Utility Scripts
-- `pdf-rewriter.p6 [--repair] [--rebuild] [--[/]compress] [--password=Xxx] <pdf-or-json-file-in> [<pdf-or-json-file-out>]`
+- `pdf-rewriter.p6 [--repair] [--rebuild] [--[/]compress] [--password=Xxx] [--decrypt] <pdf-or-json-file-in> [<pdf-or-json-file-out>]`
 This script is a thin wrapper for the `PDF` `.open` and `.save-as` methods. It can typically be used to:
   - uncompress a PDF for readability
   - repair a PDF who's cross-reference index or stream lengths have become invalid
@@ -355,7 +355,7 @@ say $encoded.bytes;
 
 ### Encryption
 
-PDF::IO supports RC4 and AES encryption (revisions /R 2 - 4 and versions /V 1 - 4 of PDF Encryption).
+PDF::IO::Crypt supports RC4 and AES encryption (revisions /R 2 - 4 and versions /V 1 - 4 of PDF Encryption).
 
 To open an encrypted PDF document, specify either the user or owner password: `PDF.open( "enc.pdf", :password<ssh!>)`
 

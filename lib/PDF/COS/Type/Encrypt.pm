@@ -55,7 +55,7 @@ role PDF::COS::Type::Encrypt
 
     has Int $.P is entry(:alias<permissions>, :required); #| (Required) A set of flags specifying which operations are permitted when the document is opened with user access
 
-    has Bool $.EncryptMetadata is entry(:default(True));  #| (Optional; meaningful only when the value of V is 4; PDF 1.5) Indicates whether the document-level metadata stream (see Section 10.2.2, “Metadata Streams”) is to be encrypted. Applications should respect this value.
+    has Bool $.EncryptMetadata is entry(:default(True));  #| (Optional; meaningful only when the value of V is 4; PDF 1.5) Indicates whether the document-level metadata stream is to be encrypted. Applications should respect this value.
                                 #| Default value: true.
 
 }
