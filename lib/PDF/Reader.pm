@@ -393,34 +393,39 @@ class PDF::Reader {
         my Hash $idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
             // die "unable to find object: $obj-num $gen-num R";
 
-        my $ind-obj = $idx<ind-obj> //= do {
-            return unless $eager;
-            my \ind-obj = self!fetch-ind-obj($idx, :$obj-num, :$gen-num);
-            # only fully stantiate object when needed
-            $get-ast ?? ind-obj !! PDF::IO::IndObj.new( :ind-obj(ind-obj), :reader(self) )
-        };
+        with $idx<ind-obj> {
+            # already in cache but could be AST or an object
+            my $ind-obj := $_;
+            my Bool \is-ind-obj = $ind-obj.isa(PDF::IO::IndObj);
 
-        my Bool \is-ind-obj = $ind-obj.isa(PDF::IO::IndObj);
-        my Bool \to-ast = $get-ast && is-ind-obj;
-
-        if to-ast {
-            # regenerate ast from object, if required
-            $ind-obj = $ind-obj.ast
+            if $get-ast {
+                # AST requested
+                is-ind-obj
+                    ?? $ind-obj.ast
+                    !! :$ind-obj
+            }
+            else {
+                # object requested. made need to create from AST
+                is-ind-obj
+                    ?? $ind-obj
+                    !! ($_ = PDF::IO::IndObj.new: :$ind-obj, :reader(self) );
+            }
         }
         else {
-            my Bool \to-obj = ?(!$get-ast && !is-ind-obj);
-            if to-obj {
-                # upgrade storage to object, if object requested
-                $ind-obj = PDF::IO::IndObj.new( :$ind-obj, :reader(self) );
-                $idx<ind-obj> = $ind-obj;
+            # object not yet loaded
+            if $eager {
+                # store in cache as an AST or object, as per requested type
+                given self!fetch-ind-obj($idx, :$obj-num, :$gen-num) -> $ind-obj {
+                    # only fully stantiate object when needed
+                    $_ = $get-ast ?? :$ind-obj !! PDF::IO::IndObj.new( :$ind-obj, :reader(self) );
+                }
             }
-            elsif ! is-ind-obj  {
-                $ind-obj := :$ind-obj;
+            else {
+                Nil;
             }
         }
-
-        $ind-obj;
     }
+
 
     #| raw fetch of an object, without indexing or decryption
     method get(ObjNumInt $obj-num, GenNumInt $gen-num) {
