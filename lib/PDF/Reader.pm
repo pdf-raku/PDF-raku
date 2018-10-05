@@ -602,7 +602,9 @@ class PDF::Reader {
         $grammar.parse($tail, :$actions, :rule<postamble>)
             or try {
                 CATCH { default {die X::PDF::BadTrailer.new( :$tail ); } }
-                return self!full-scan( $grammar, $.actions, |c )
+                # unable to find 'startxref'
+                # see if the PDF can be loaded sequentially
+                return self!full-scan( $grammar, $actions, |c )
         }
 
         $!prev = $/.ast<startxref>;

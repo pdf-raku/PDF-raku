@@ -20,7 +20,7 @@ class PDF::IO::Filter::ASCII85 {
 
 	constant NullChar = 'z'.ord;
 	constant PadChar = '!'.ord;
-	constant EOD = '~>'.ords; 
+	constant EOD = ('~'.ord, '>'.ord); 
 
         my uint8 @a85;
         my int $i = 0;
