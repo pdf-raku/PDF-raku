@@ -600,7 +600,10 @@ class PDF::Reader {
         @!xrefs = [];
 
         $grammar.parse($tail, :$actions, :rule<postamble>)
-            or die X::PDF::BadTrailer.new( :$tail );
+            or try {
+                CATCH { default {die X::PDF::BadTrailer.new( :$tail ); } }
+                return self!full-scan( $grammar, $.actions, |c )
+        }
 
         $!prev = $/.ast<startxref>;
         my UInt $offset = $!prev;
