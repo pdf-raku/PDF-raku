@@ -6,14 +6,14 @@ class PDF::IO::IndObj {
     has $.object handles <content obj-num gen-num>;
 
     #| construct by wrapping a pre-existing PDF::COS
-    multi submethod BUILD( PDF::COS :$!object!, :$obj-num, :$gen-num ) {
+    multi submethod TWEAK( PDF::COS :$!object!, :$obj-num, :$gen-num ) {
 	$!object.obj-num = $_ with $obj-num;
 	$!object.gen-num = $_ with $gen-num;
     }
 
     #| construct an object instance from a PDF::Grammar::PDF ast representation of
     #| an indirect object: [ $obj-num, $gen-num, $type => $content ]
-    multi submethod BUILD( Array :$ind-obj!, |c ) {
+    multi submethod TWEAK( Array :$ind-obj!, |c ) {
         $!object = PDF::COS.coerce( |$ind-obj[2], |c );
         $!object.obj-num = $ind-obj[0];
         $!object.gen-num = $ind-obj[1];

@@ -11,7 +11,7 @@ my $out = q:to"--END--".chomp;
 
 my %dict = :Filter<ASCII85Decode>;
 
-is(PDF::IO::Filter.encode($in, :%dict).Str.subst(/\n/,"", :g),
+is(PDF::IO::Filter.encode($in, :%dict).Str.lines.join,
    $out,
    q{ASCII85 test string is encoded correctly});
 

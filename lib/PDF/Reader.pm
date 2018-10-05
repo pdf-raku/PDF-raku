@@ -426,7 +426,6 @@ class PDF::Reader {
         }
     }
 
-
     #| raw fetch of an object, without indexing or decryption
     method get(ObjNumInt $obj-num, GenNumInt $gen-num) {
         my %idx = %!ind-obj-idx{$obj-num * 1000 + $gen-num}

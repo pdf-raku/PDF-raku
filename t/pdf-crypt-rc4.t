@@ -8,7 +8,7 @@ use PDF::COS::Type::Encrypt :PermissionsFlag;
 # ensure consistant document ID generation
 srand(123456);
 
-my $pdf = PDF.open: "t/pdf/samples/00helloworld.pdf";
+my PDF $pdf .= open: "t/pdf/samples/00helloworld.pdf";
 
 my $user-pass = '';
 my $owner-pass = 'ssh!';
@@ -20,9 +20,9 @@ lives-ok { $pdf.encrypt( :$owner-pass, :$user-pass, :R(2), :V(1), :$P); }, '$pdf
 is $pdf.crypt.is-owner, True, 'newly encrypted pdf - is-owner';
 lives-ok {$pdf.save-as: "t/pdf-crypt-rc4.pdf"}, '$pdf.save-as .pdf - lives';
 lives-ok {$pdf.save-as: "tmp/pdf-crypt-rc4.json"}, '$pdf.save-as .json - lives';
-dies-ok { $pdf = PDF.open: "t/encrypt.pdf", :password<dunno> }, "open encrypted with incorrect password - dies";
+dies-ok { $pdf .= open: "t/encrypt.pdf", :password<dunno> }, "open encrypted with incorrect password - dies";
 
-lives-ok { $pdf = PDF.open("t/pdf-crypt-rc4.pdf", :password($user-pass)) }, 'open with user password - lives';
+lives-ok { $pdf .= open("t/pdf-crypt-rc4.pdf", :password($user-pass)) }, 'open with user password - lives';
 is $pdf.crypt.is-owner, False, 'open with user password - not is-owner';
 is $pdf<Info><Author>, $expected-author, 'open with user password - .Info.Author';
 is $pdf<Root><Pages><Kids>[0]<Contents>.decoded, $expected-contents, 'open with user password - contents';
@@ -30,13 +30,13 @@ is $pdf<Root><Pages><Kids>[0]<Contents>.decoded, $expected-contents, 'open with 
 ok $pdf.permitted(PermissionsFlag::Print), 'user permitted action';
 nok $pdf.permitted(PermissionsFlag::Copy), 'user not permitted action';
 
-lives-ok { $pdf = PDF.open("t/pdf-crypt-rc4.pdf", :password($owner-pass)) }, 'open with owner password - lives';
+lives-ok { $pdf .= open("t/pdf-crypt-rc4.pdf", :password($owner-pass)) }, 'open with owner password - lives';
 is $pdf.crypt.is-owner, True, 'open with owner password - is-owner';
 is $pdf<Info><Author>, $expected-author, 'open with owner password - .Info.Author';
 is $pdf<Root><Pages><Kids>[0]<Contents>.decoded, $expected-contents, 'open with owner password - contents';
 
-dies-ok { $pdf = PDF.open: "tmp/pdf-crypt-rc4.json", :password<dunno> }, "open encrypted json with incorrect password - dies";
+dies-ok { $pdf .= open: "tmp/pdf-crypt-rc4.json", :password<dunno> }, "open encrypted json with incorrect password - dies";
 
-lives-ok { $pdf = PDF.open("tmp/pdf-crypt-rc4.json", :password($user-pass)) }, 'open json user password - lives';
+lives-ok { $pdf .= open("tmp/pdf-crypt-rc4.json", :password($user-pass)) }, 'open json user password - lives';
 
 done-testing;

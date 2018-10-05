@@ -20,18 +20,20 @@ class PDF::IO::Filter::ASCII85 {
 
 	constant NullChar = 'z'.ord;
 	constant PadChar = '!'.ord;
-	constant EOD = '~'.ord, '>'.ord; 
+	constant EOD = '~>'.ords; 
 
         my uint8 @a85;
-        for $buf32.reverse -> int $n is copy {
+        my int $i = 0;
+        for $buf32.list -> uint32 $n is copy {
             if $n {
-                for 0 .. 4 {
-                    @a85.unshift: ($n % 85  +  33);
+                $i += 5;
+                for 1 .. 5 {
+                    @a85[$i - $_] = ($n mod 85  +  33);
                     $n div= 85;
                 }
             }
             else {
-                @a85.unshift: NullChar;
+                @a85[$i++] = NullChar;
            }
         };
 

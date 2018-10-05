@@ -36,16 +36,8 @@ class PDF::IO::Filter::ASCIIHex {
                if $eod
         }
 
-        # "If the filter encounters the EOD marker after reading an odd
-        # number of hexadecimal digits, it shall behave as if a 0 (zero)
-        # followed the last digit."
-
-        $str ~= '0'
-            unless $str.codes %% 2;
-
-        my uint8 @HexDec['F'.ord+1;'F'.ord + 1];
-        state $init;
-        $init //= do {
+        my uint8 @HexDec['F'.ord+1; 'F'.ord+1];
+        state $init //= do {
             for @HexEnc.pairs -> \hi {
                 for @HexEnc.pairs {
                     @HexDec[hi.value;.value] = hi.key +< 4  +  .key;
@@ -53,7 +45,11 @@ class PDF::IO::Filter::ASCIIHex {
             }
         }
 
-        my uint8 @bytes = $str.ords.map: -> \a, \b { @HexDec[a;b] // die "Illegal character(s) found in ASCII hex-encoded stream: {(a,b).perl}" };
+        # "If the filter encounters the EOD marker after reading
+        # an odd number of hexadecimal digits, it shall behave
+        # as if a 0 (zero) followed the last digit."
+
+        my uint8 @bytes = $str.ords.map: -> $a, $b = '0'.ord { @HexDec[$a;$b] // die "Illegal character(s) found in ASCII hex-encoded stream: {($a~$b).perl}" };
 
 	PDF::IO::Blob.new( @bytes );
     }

@@ -1,11 +1,10 @@
 use v6;
 
-
 class PDF::COS::Loader {
 
     use PDF::COS::Util :from-ast;
 
-    method class-paths { <PDF::COS::Type> }
+    method class-paths { 'PDF::COS::Type' }
 
     our %handler;
     method handler {%handler}
@@ -21,8 +20,8 @@ class PDF::COS::Loader {
 	$subclass ~= '::' ~ $_
             with $subtype;
 
-	return self.handler{$subclass}
-	    if self.handler{$subclass}:exists;
+	return %handler{$subclass}
+	    if %handler{$subclass}:exists;
 
         my $handler-class = $base-class;
         my Bool $resolved;

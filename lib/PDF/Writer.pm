@@ -50,8 +50,8 @@ class PDF::Writer {
 
     #| write the body and return the index
     multi method write-body( Hash $body!, @idx = [], Bool :$write-xref = True --> Str ) {
+	@idx.push: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
 	my @out = self!make-objects( $body<objects>, @idx );
-	@idx.unshift: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
 
 	my \trailer-dict = $body<trailer> // {};
 	my \trailer-bytes = $write-xref
@@ -181,11 +181,11 @@ class PDF::Writer {
 
         # prioritize /Type and /Subtype entries. output /Length as last entry
         my @keys = $dict.keys.sort: {
-            when 'Type'        {"0"}
-            when 'Subtype'|'S' {"1"}
-            when /Type$/       {"1" ~ $_}
-            when 'Length'      {"z"}
-            default            {$_}
+            when 'Type'              {"0"}
+            when 'Subtype'|'S'       {"1"}
+            when .ends-with('Type')  {"1" ~ $_}
+            when 'Length'            {"z"}
+            default                  {$_}
         };
 
         join("\n",
