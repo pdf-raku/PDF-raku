@@ -90,7 +90,8 @@ sub test-case(Bool :$repair = False, |c) {
 
 lives-ok { test-case( ) }, 'good pdf - lives';
 throws-like  { test-case( :header('') ) }, X::PDF::BadHeader, :message("Expected file header '%XXX-n.m', got: \" \\%xyz 1 \""), 'missing header';
-throws-like  { test-case( :eof('') ) }, X::PDF::BadTrailer, :message("Expected file trailer 'startxref ... %%EOF', got: \"\\%PDF-1.3 \\%xyz 1 0 obj <<   /Auth ... 8 >> startxref 693 \""), 'missing %%EOF';
+warn make-pdf( :eof('') );
+throws-like  { test-case( :eof<junk> ) }, X::PDF::BadTrailer, :message("Expected file trailer 'startxref ... %%EOF', got: \"\\%PDF-1.3 \\%xyz 1 0 obj <<   /Auth ...  startxref 693 junk \""), 'missing %%EOF';
 throws-like  { test-case( :length('99') ) }, X::PDF::BadIndirectObject, :message("Error processing indirect object 6 0 R at byte offset 487:\nStream dictionary entry /Length 99 is greater than the actual stream length (64 bytes)"), 'stream length too large';
 throws-like  { test-case( :length('10') ) }, X::PDF::BadIndirectObject, :message("Error processing indirect object 6 0 R at byte offset 487:\nUnable to locate 'endstream' marker after consuming /Length 10 bytes"), 'stream length too small';
 throws-like  { test-case( :xref-digit('x') ) }, X::PDF::BadXRef, :message("Unable to parse index: \"xref 0 8 000000000x 65535 f  000 ... startxref 693 \\%\\%EOF \""), 'corrupted xref';
