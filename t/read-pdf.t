@@ -49,7 +49,7 @@ is-deeply $stream.value[2]<stream><dict><Filter><name>, 'FlateDecode', 'stream i
 
 # load from a String
 use PDF::IO::Str;
-my Str $value = 't/pdf/pdf.in'.IO.open( :enc<latin-1> ).slurp-rest;
+my Str $value = 't/pdf/pdf.in'.IO.slurp(:bin).decode('latin-1');
 my PDF::IO::Str $input-str .= new( :$value );
 my PDF::Reader $pdf-str .= new;
 $pdf-str.open( $input-str );

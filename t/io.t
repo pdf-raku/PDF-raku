@@ -7,7 +7,7 @@ use PDF::IO;
 my $ioh = "t/helloworld.pdf".IO;
 
 my PDF::IO $in-ioh .= coerce( $ioh );
-my Str $str = $ioh.slurp( :enc<latin-1> );
+my Str $str = $ioh.slurp(:bin).decode('latin-1');
 my PDF::IO $in-str .= coerce( $str );
 
 for :$in-ioh, :$in-str {

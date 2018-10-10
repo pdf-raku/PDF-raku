@@ -12,7 +12,7 @@ use PDF::IO::IndObj;
 
 my PDF::Grammar::PDF::Actions $actions .= new;
 
-my $input = 't/pdf/ind-obj-LZW.in'.IO.slurp( :enc<latin-1> );
+my $input = 't/pdf/ind-obj-LZW.in'.IO.slurp(:bin).decode: 'latin-1';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;

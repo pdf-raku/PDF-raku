@@ -10,13 +10,13 @@ use PDF::IO::IndObj;
 
 my PDF::Grammar::PDF::Actions $actions .= new;
 
-my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :enc<latin-1> );
+my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp( :bin ).decode: 'latin-1';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed";
 my %ast = $/.ast;
 my PDF::IO $pdf-input .= coerce( $input );
 my PDF::IO::IndObj $ind-obj .= new( :$input, |%ast );
-my $dict = $ind-obj.object;
+my Hash $dict = $ind-obj.object;
 my $raw-content = $pdf-input.stream-data( |%ast )[0];
 my $content;
 

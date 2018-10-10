@@ -34,7 +34,7 @@ lives-ok { $pdf.update(:prev(9999), :diffs("t/pdf/pdf.in-diffs".IO.open(:w)) ) }
 lives-ok { $pdf.update(:prev(9999), :diffs("tmp/pdf.in.json".IO.open(:w)) ) }, 'update to JSON file - lives';
 
 my PDF::Grammar::PDF::Actions $actions .= new;
-my Str $body-str = "t/pdf/pdf.in-diffs".IO.slurp( :enc<latin-1> );
+my Str $body-str = "t/pdf/pdf.in-diffs".IO.slurp(:bin).decode('latin-1');
 ok PDF::Grammar::PDF.subparse( $body-str.trim, :rule<body>, :$actions), "can reparse update-body";
 my $pdf-ast = $/.ast;
 my $json-ast =  from-json("tmp/pdf.in.json".IO.slurp);
