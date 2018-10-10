@@ -2,6 +2,20 @@ use v6;
 
 use PDF::COS::Stream;
 
+class X::PDF::ObjStm is Exception {
+    has Str $.details;
+    has UInt $.obj-num;
+    has UInt $.gen-num;
+}
+
+class X::PDF::ObjStm::Decode is X::PDF::ObjStm {
+    method message { "Problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\n$.details" }
+}
+
+class X::PDF::ObjStm::Encode is X::PDF::ObjStm {
+    method message { "Problem encoding /Type /ObjStm object: $.obj-num $.gen-num R\n$.details" }
+}
+
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
 # See [PDF 1.7 Section 3.4.6 Object Streams]
@@ -34,7 +48,7 @@ class PDF::COS::Type::ObjStm
             my Str \object-str = .[1];
             if $check {
                 PDF::Grammar::PDF.parse( object-str, :rule<object> )
-                    // die "unable to parse type 2 object: {obj-num} 0 R [from type 1 object {$.obj-num // '?'} {$.gen-num // '?'} R]\n{object-str}";
+                    // die X::PDF::ObjStm::Encode.new( :$.obj-num, :$.gen-num, :details("Unable to parse object: {obj-num} 0 R: {object-str}"));
             }
             @idx.push: obj-num;
             @idx.push: $objects-str.codes;
@@ -53,26 +67,24 @@ class PDF::COS::Type::ObjStm
         my UInt \n = $.N;
 
         my Str \object-index-str = bytes.substr(0, first);
-
         my PDF::Grammar::PDF::Actions $actions .= new;
         PDF::Grammar::PDF.parse(object-index-str, :rule<object-stream-index>, :$actions)
-            or die "unable to parse object stream index: {object-index-str}";
+            or die X::PDF::ObjStm::Decode.new( :$.obj-num, :$.gen-num, :details("Unable to parse object stream index: {object-index-str}"));
 
         my Array \object-index = $/.ast;
-        # these should possibly be structured exceptions
-        die "problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\nexpected /N = {n} index entries, got {+object-index}"
+        die X::PDF::ObjStm::Decode.new( :$.obj-num, :$.gen-num, :details("Expected /N = {n} index entries, got {+object-index}"))
             unless +object-index >= n;
 
         [ (0 ..^ n).map: -> \i {
-            my UInt \obj-num = object-index[i][0].Int;
+            my UInt \obj-num = object-index[i][0];
             my UInt \begin = first + object-index[i][1];
-            my UInt \end = object-index[i + 1]:exists
+            my UInt \end = ((i+2) <= +object-index)
                 ?? first + object-index[i + 1][1]
                 !! bytes.codes;
             my Int \length = end - begin;
-            die "Problem decoding index for /Type /ObjStm object: $.obj-num $.gen-num R\nindex offset {begin} exceeds decoded data length {bytes.codes}"
+            die X::PDF::ObjStm::Decode.new( :$.obj-num, :$.gen-num, :details("Index offset {begin} exceeds decoded data length {bytes.codes}"))
                 if begin > bytes.codes;
-            die "Problem decoding index for /Type /ObjStm object: $.obj-num $.gen-num R\noffsets are not in ascending order"
+            die X::PDF::ObjStm::Decode.new( :$.obj-num, :$.gen-num, :details("Offsets are not in ascending order"))
                 if length <= 0;
             my Str \object-str = bytes.substr( begin, length );
             [ obj-num, object-str ]
