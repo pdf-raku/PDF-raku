@@ -493,7 +493,7 @@ class PDF::Reader {
         self!load-index(PDF::Grammar::COS, $.actions, |c );
     }
 
-    method !locate-xref($input-bytes, $tail-bytes, $tail, $offset, $fallback is rw) {
+    method !locate-xref($input-bytes, $tail-bytes, $tail, $offset is copy) {
         my str $xref;
         constant SIZE = 4096;       # big enough to usually contain xref
 
@@ -502,41 +502,25 @@ class PDF::Reader {
         }
         elsif $input-bytes - $tail-bytes - $offset <= SIZE {
             # xref abutts currently read $tail
-            my UInt $lumbar-bytes = min(SIZE, $input-bytes - $tail-bytes - $offset);
-            $xref = $!input.byte-str( $offset, $lumbar-bytes) ~ $tail;
+            my UInt $adjacent-bytes = min(SIZE, $input-bytes - $tail-bytes - $offset);
+            $xref = $!input.byte-str( $offset, $adjacent-bytes) ~ $tail;
         }
         else {
-            my UInt $xref-len = min(SIZE, $input-bytes - $offset);
-            $xref = $!input.byte-str( $offset, $xref-len );
-            $fallback = sub (Numeric $_, Str $xref is rw) {
-                when 1 {
-                    # first retry: increase buffer size
-                    if $input-bytes - $offset > SIZE {
-                        constant SIZE2 = SIZE * 15;
-                        # xref not contained in SIZE bytes? subparse a much bigger chunk
-                        $xref-len = min( SIZE2, $input-bytes - $offset - SIZE );
-                        $xref ~= $!input.byte-str( $offset + SIZE, $xref-len );
-                    }
-                }
-                when 2 {
-                    # second retry: read through to the tail
-                    $xref ~= $!input.byte-str( $offset + SIZE + $xref-len);
-                }
-                default {
-                    fail;
-                }
-            };
+            # scan for '%%EOF' marker at the end of the trailer
+            $xref = '';
+            my $n = 0;
+            repeat {
+                my UInt $len = min(SIZE * ++$n, $input-bytes - $offset);
+                $xref ~= $!input.byte-str( $offset, $len );
+                $offset += $len;
+            } until $xref ~~ /'%%EOF'/ || $offset >= $input-bytes;
         }
         $xref;
     }
 
     #| load PDF 1.4- xref table followed by trailer
-    method !load-xref-table(Str $xref is copy, $dict is rw, :$offset, :&fallback) {
+    method !load-xref-table(Str $xref is copy, $dict is rw, :$offset) {
         my $parse = PDF::Grammar::COS.subparse( $xref, :rule<index>, :$.actions );
-        $parse ||= (
-            PDF::Grammar::COS.subparse( &fallback(1, $xref), :rule<index>, :$.actions )
-            || PDF::Grammar::COS.subparse( &fallback(2, $xref), :rule<index>, :$.actions )
-        ) if &fallback;
 
         die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
             unless $parse;
@@ -573,12 +557,8 @@ class PDF::Reader {
     }
 
     #| load a PDF 1.5+ XRef Stream
-    method !load-xref-stream(Str $xref is copy, $dict is rw, UInt :$offset, :&fallback) {
+    method !load-xref-stream(Str $xref is copy, $dict is rw, UInt :$offset) {
         my $parse = PDF::Grammar::COS.subparse($xref, :$.actions, :rule<ind-obj>);
-        $parse ||= (
-            PDF::Grammar::COS.subparse(&fallback(1, $xref), :$.actions, :rule<ind-obj>)
-            || PDF::Grammar::COS.subparse(&fallback(2, $xref), :$.actions, :rule<ind-obj>)
-        ) if &fallback;
 
         die X::PDF::BadIndirectObject::Parse.new( :$offset, :input($xref))
             unless $parse;
@@ -619,11 +599,11 @@ class PDF::Reader {
             die "xref '/Prev' cycle detected \@$offset"
                 if %offsets-seen{$offset}++;
             # see if our cross reference table is already contained in the current tail
-            my Str \xref = self!locate-xref(input-bytes, tail-bytes, $tail, $offset, my &fallback);
+            my Str \xref = self!locate-xref(input-bytes, tail-bytes, $tail, $offset);
 
             @obj-idx.append: xref ~~ m:s/^ xref/
-                ?? self!load-xref-table( xref, $dict, :&fallback, :$offset)
-                !! self!load-xref-stream(xref, $dict, :&fallback, :$offset);
+                ?? self!load-xref-table( xref, $dict, :$offset)
+                !! self!load-xref-stream(xref, $dict, :$offset);
 
             self!set-trailer: $dict;
 
@@ -633,8 +613,8 @@ class PDF::Reader {
             with $dict<XRefStm> {
                 # hybrid 1.4 / 1.5 with a cross-reference stream
                 my $xref-dict = {};
-                my Str \xref-stm = self!locate-xref(input-bytes, tail-bytes, $tail, $_, my &fallback);
-                @obj-idx.append: self!load-xref-stream(xref-stm, $xref-dict, :&fallback, :offset($_));
+                my Str \xref-stm = self!locate-xref(input-bytes, tail-bytes, $tail, $_);
+                @obj-idx.append: self!load-xref-stream(xref-stm, $xref-dict, :offset($_));
             }
 
         }

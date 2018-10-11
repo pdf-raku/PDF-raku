@@ -7,8 +7,9 @@ Release 0.3.4
 - [PDF::Reader]
   -- Respect EncryptMetadata flag in existing PDF files.
      Disallow for newly created PDF files.
-  -- Fixed handling of encryption dictionarie when they're
+  -- Fixed handling of encryption dictionaries when they're
      not an indirect object
+  -- Improved loading of cross reference index
 - [PDF]
   -- Allow reencryption of an already encrypted PDF.
   -- Disallow update of a newly encrypted or re-encrypted PDF
