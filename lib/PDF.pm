@@ -28,6 +28,8 @@ class PDF:ver<0.3.4>
     has $.crypt is rw;
     has $!flush = False;
 
+    has UInt $.Prev is entry; 
+
     #| open the input file-name or path
     method open($spec, |c) {
         my PDF::Reader $reader .= new;

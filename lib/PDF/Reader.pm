@@ -212,7 +212,7 @@ class PDF::Reader {
     #| deserialize a JSON dump
     multi method open(IO::Path $input-path  where .extension.lc eq 'json', |c ) {
         my \ast = from-json( $input-path.IO.slurp );
-        my \root = ast<cos> // ast<pdf> if ast.isa(Hash);
+        my \root = ast<cos> if ast.isa(Hash);
         die X::PDF::BadDump.new( :input-file($input-path.absolute) )
             without root;
         $!type = root<header><type> // 'PDF';
