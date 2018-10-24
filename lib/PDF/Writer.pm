@@ -390,14 +390,17 @@ class PDF::Writer {
 
     constant fast-track = set <hex-string literal name real entries>;
 
-    multi method write( Pair $_! where {.key ∈ fast-track && PDF::IO::Util::libpdf-available}) {
-        state $fast-writer = (require ::('Lib::PDF::Writer'));
-
-        $fast-writer."write-{.value.defined ?? .key !! 'null'}"( .value );
-    }
-
     multi method write( Pair $_!) {
-        self."write-{.value.defined ?? .key !! 'null'}"( .value );
+        state $fast-writer;
+        state $have-libpdf //= PDF::IO::Util::libpdf-available()
+        ?? do { $fast-writer = (require ::('PDF::Native::Writer')); True }
+        !! False;
+        
+        given ($have-libpdf && .key ∈ fast-track
+               ?? $fast-writer
+               !! self) -> $writer {
+            $writer."write-{.value.defined ?? .key !! 'null'}"( .value );
+        }
     }
 
     multi method write( Hash $ast!) {

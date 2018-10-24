@@ -11,7 +11,7 @@ class PDF::IO::Filter::LZW {
 
     sub predictor-class {
         state $predictor-class = PDF::IO::Util::libpdf-available()
-            ?? (require ::('Lib::PDF::Filter::Predictors'))
+            ?? (require ::('PDF::Native::Filter::Predictors'))
             !! PDF::IO::Filter::Predictors;
         $predictor-class
     }

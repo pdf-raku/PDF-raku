@@ -501,7 +501,7 @@ class PDF::Reader {
             $xref = $!input.byte-str( $offset, $tail-bytes )
         }
         elsif $input-bytes - $tail-bytes - $offset <= SIZE {
-            # xref abutts currently read $tail
+            # xref abuts currently read $tail
             my UInt $adjacent-bytes = min(SIZE, $input-bytes - $tail-bytes - $offset);
             $xref = $!input.byte-str( $offset, $adjacent-bytes) ~ $tail;
         }
@@ -521,7 +521,6 @@ class PDF::Reader {
     #| load PDF 1.4- xref table followed by trailer
     method !load-xref-table(Str $xref is copy, $dict is rw, :$offset) {
         my $parse = PDF::Grammar::COS.subparse( $xref, :rule<index>, :$.actions );
-
         die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
             unless $parse;
 
@@ -553,6 +552,44 @@ class PDF::Reader {
 
         $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
 
+        @idx;
+    }
+
+    #| load PDF 1.4- xref table followed by trailer
+    #| experimental faster native C scanner
+    method !load-xref-table-fast(Str $xref is copy, $dict is rw, :$offset) {
+        state $fast-reader //= (require ::('PDF::Native::Reader')).new;
+
+        # fast load of the xref segments
+        my $buf = $xref.encode("latin-1");
+        my $entries = $fast-reader.read-xref($buf);
+        my $bytes = $fast-reader.xref-bytes;
+
+        # parse and load the trailer
+        my $trailer = $buf.subbuf($bytes).decode("latin-1");
+        my $parse = PDF::Grammar::COS.subparse( $trailer, :rule<trailer>, :$.actions );
+        die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
+            unless $parse;
+        my \index = $parse.ast;
+        $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
+
+        # extract index
+        # todo: optimise this. now the bottleneck.
+        my @idx;
+        my int $j;
+        my int $n = +$entries;
+
+        loop ($j = 0; $j < $n;) {
+            my uint64 $obj-num  = $entries[$j++];
+            my uint64 $offset   = $entries[$j++];
+            my uint64 $gen-num  = $entries[$j++];
+            my uint64 $type     = $entries[$j++];
+
+            if $offset && $type {
+                my uint64 @xref[4] = $obj-num, $type, $offset, $gen-num;
+                @idx.push(@xref);
+            }
+        }
         @idx;
     }
 
@@ -602,7 +639,9 @@ class PDF::Reader {
             my Str \xref = self!locate-xref(input-bytes, tail-bytes, $tail, $offset);
 
             @obj-idx.append: xref ~~ m:s/^ xref/
-                ?? self!load-xref-table( xref, $dict, :$offset)
+                ?? (PDF::IO::Util::libpdf-available()
+                    ?? self!load-xref-table-fast( xref, $dict, :$offset)
+                    !! self!load-xref-table( xref, $dict, :$offset))
                 !! self!load-xref-stream(xref, $dict, :$offset);
 
             self!set-trailer: $dict;

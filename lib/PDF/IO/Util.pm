@@ -3,17 +3,17 @@ use v6;
 module PDF::IO::Util {
 
     our sub libpdf-available {
-        # experimental loading of Lib::PDF (WIP)
-        state Bool $haveit = ? %*ENV<USE_LIB_PDF> && do {
+        # experimental loading of PDF::Native (WIP)
+        state Bool $haveit = ? %*ENV<USE_PDF_NATIVE> && do {
             CATCH {
                 when X::CompUnit::UnsatisfiedDependency {
                 }
                 default {
-                    warn "error loading Lib::PDF: {.Str}";
+                    warn "error loading PDF::Native: {.Str}";
                 }
             }
-            (require Lib::PDF:ver(v0.0.1 .. *)).so;
-            ::('Lib::PDF').lib-version >= v0.0.1; # ping the library
+            (require PDF::Native:ver(v0.0.1 .. *)).so;
+            ::('PDF::Native').lib-version >= v0.0.1; # ping the library
         }
         $haveit;
     }
@@ -27,7 +27,7 @@ module PDF::IO::Util {
     proto sub unpack-pp( $, $ --> Buf) is export(:pack-pp) {*};
     proto sub pack-pp( $, $ --> Buf) is export(:pack-pp) {*};
     proto sub pack-le( $, $ --> Buf) is export(:pack,:pack-pp) {*};
-    my constant Packer = 'Lib::PDF::Buf';
+    my constant Packer = 'PDF::Native::Buf';
     our &pack is export(:pack) = BEGIN libpdf-available() ?? xs(Packer, 'pack') !! &pack-pp;
     our &unpack is export(:pack) = BEGIN libpdf-available() ?? xs(Packer, 'unpack') !! &unpack-pp;
     multi sub unpack-pp( $nums!, 4)  { buf8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }

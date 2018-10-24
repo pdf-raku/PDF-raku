@@ -12,7 +12,7 @@ class PDF::IO::Filter::Flate {
     # See also http://www.libpng.org/pub/png/book/chapter09.html - PNG predictors
     sub predictor-class {
         state $predictor-class = PDF::IO::Util::libpdf-available()
-            ?? (require ::('Lib::PDF::Filter::Predictors'))
+            ?? (require ::('PDF::Native::Filter::Predictors'))
             !! PDF::IO::Filter::Predictors;
         $predictor-class
     }
