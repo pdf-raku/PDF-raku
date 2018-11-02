@@ -393,36 +393,29 @@ class PDF::Reader {
         my Hash $idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
             // die "unable to find object: $obj-num $gen-num R";
 
-        with $idx<ind-obj> {
-            # already in cache but could be AST or an object
-            my $ind-obj := $_;
-            my Bool \is-ind-obj = $ind-obj.isa(PDF::IO::IndObj);
-
-            if $get-ast {
-                # AST requested
-                is-ind-obj
-                    ?? $ind-obj.ast
-                    !! :$ind-obj
-            }
-            else {
-                # object requested. made need to create from AST
-                is-ind-obj
-                    ?? $ind-obj
-                    !! ($_ = PDF::IO::IndObj.new: :$ind-obj, :reader(self) );
-            }
+        my $ind-obj;
+        my Bool $have-ast = True;    
+        with $ind-obj = $idx<ind-obj> {
+            $ind-obj := $_;
+            $have-ast := False
+                if $ind-obj.isa(PDF::IO::IndObj);
         }
         else {
-            # object not yet loaded
-            if $eager {
-                # store in cache as an AST or object, as per requested type
-                given self!fetch-ind-obj($idx, :$obj-num, :$gen-num) -> $ind-obj {
-                    # only fully stantiate object when needed
-                    $_ = $get-ast ?? :$ind-obj !! PDF::IO::IndObj.new( :$ind-obj, :reader(self) );
-                }
-            }
-            else {
-                Nil;
-            }
+            return unless $eager;
+            $ind-obj := self!fetch-ind-obj($idx, :$obj-num, :$gen-num);
+            # only fully stantiate object when needed
+            $_ := $ind-obj;
+        }
+
+        if $get-ast {
+            # AST requested.
+            $have-ast ?? :$ind-obj !! $ind-obj.ast;
+        }
+        else {
+            # Object requested.
+            $have-ast
+                ?? ($idx<ind-obj> = PDF::IO::IndObj.new( :$ind-obj, :reader(self) ))
+                !! $ind-obj;
         }
     }
 
