@@ -395,7 +395,7 @@ class PDF::Reader {
 
         my $ind-obj;
         my Bool $have-ast = True;    
-        with $ind-obj = $idx<ind-obj> {
+        with $idx<ind-obj> {
             $ind-obj := $_;
             $have-ast := False
                 if $ind-obj.isa(PDF::IO::IndObj);
