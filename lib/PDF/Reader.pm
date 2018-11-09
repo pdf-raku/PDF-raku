@@ -549,7 +549,7 @@ class PDF::Reader {
     }
 
     #| load PDF 1.4- xref table followed by trailer
-    #| experimental faster native C scanner
+    #| experimental use of PDF::Native::Reader
     method !load-xref-table-fast(Str $xref is copy, $dict is rw, :$offset) {
         state $fast-reader //= (require ::('PDF::Native::Reader')).new;
 

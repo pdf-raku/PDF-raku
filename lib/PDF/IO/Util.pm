@@ -2,20 +2,23 @@ use v6;
 
 module PDF::IO::Util {
 
-    our sub libpdf-available {
-        # experimental loading of PDF::Native (WIP)
-        state Bool $haveit = ? %*ENV<USE_PDF_NATIVE> && do {
-            CATCH {
-                when X::CompUnit::UnsatisfiedDependency {
-                }
-                default {
-                    warn "error loading PDF::Native: {.Str}";
-                }
+    sub load-lib {
+        CATCH {
+            when X::CompUnit::UnsatisfiedDependency {
             }
-            (require PDF::Native:ver(v0.0.1 .. *)).so;
-            ::('PDF::Native').lib-version >= v0.0.1; # ping the library
+            default {
+                warn "error loading PDF::Native: {.Str}";
+            }
         }
-        $haveit;
+        (require PDF::Native).lib-version; # ping the library
+    }
+
+    our sub libpdf-available(:$min-version = v0.0.1) {
+        # experimental loading of PDF::Native (WIP)
+        state Version $version
+            ||= (%*ENV<USE_PDF_NATIVE> && load-lib())
+            ||  v0.0.0;
+        $version >= $min-version;
     }
 
     #| loads a faster alternative
