@@ -27,6 +27,6 @@ my $Kids = $reader.deref($Pages,<Kids>);
 my $kid := $reader.deref($Kids,[0]);
 is $kid<Type>, 'Page', 'Kids[0]<Type>';
 
-is $reader.deref($Pages,<Kids>,[0],<Parent>).WHERE, $Pages.WHERE, '$Pages<Kids>[0]<Parent>.WHERE == $Pages.WHERE';
+ok $reader.deref($Pages,<Kids>,[0],<Parent>) === $Pages, '$Pages<Kids>[0]<Parent> === $Pages';
 
 done-testing;

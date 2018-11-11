@@ -15,7 +15,7 @@ sub name($name){ PDF::COS.coerce(:$name) };
 # ensure consistant document ID generation
 srand(123456);
 
-my $pdf = PDF.open( 't/pdf/pdf.in' );
+my PDF $pdf .= open( 't/pdf/pdf.in' );
 my $reader = $pdf.reader;
 is +$reader.xrefs, 1, 'reader.xrefs - initial';
 my $catalog = $pdf<Root>;

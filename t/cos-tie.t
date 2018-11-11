@@ -52,7 +52,7 @@ my $kid := $Kids[0];
 is-deeply $kid.reader, $reader, 'array -> hash deref - reader stickyness';
 is $kid<Type>, 'Page', 'Kids[0]<Type>';
 
-is $Pages<Kids>[0]<Parent>.WHERE, $Pages.WHERE, '$Pages<Kids>[0]<Parent>.WHERE == $Pages.WHERE';
+ok $Pages<Kids>[0]<Parent> === $Pages, '$Pages<Kids>[0]<Parent> === $Pages';
 
 my $contents = $kid<Contents>;
 is $contents.Length, 45, 'contents.Length';

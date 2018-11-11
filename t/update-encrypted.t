@@ -9,7 +9,7 @@ srand(123456);
 
 't/pdf/samples/encrypt-40bit.pdf'.IO.copy('t/update-encrypted.pdf');
 
-my $pdf = PDF.open: "t/update-encrypted.pdf", :password<owner>;
+my PDF $pdf .= open: "t/update-encrypted.pdf", :password<owner>;
 
 my $catalog = $pdf<Root>;
 my $decoded = "BT /F1 16 Tf  40 250 Td (new page added to an encrypted PDF) Tj ET";
