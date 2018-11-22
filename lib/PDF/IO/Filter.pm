@@ -24,7 +24,7 @@ class PDF::IO::Filter {
         $.filter-class( $Filter ).decode( $input, |%DecodeParms);
     }
 
-    # object may have an array of filters [PDF 1.7 spec Table 5]
+    # object may have an array of filters [PDF 32000 spec Table 5]
     method !decode-list( $data is copy, List :$Filter, :$DecodeParms) {
         with $DecodeParms {
             die "Filter array {$Filter} does not have a corresponding DecodeParms array"
@@ -59,7 +59,6 @@ class PDF::IO::Filter {
         $.filter-class( $Filter ).encode( $input, |%DecodeParms);
     }
 
-    # object may have an array of filters PDF 1.7 spec Table 3.4 
     method !encode-list( $data is copy, List :$Filter!, List :$DecodeParms) {
 
         with $DecodeParms {

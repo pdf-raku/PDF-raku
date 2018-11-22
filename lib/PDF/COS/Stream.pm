@@ -10,8 +10,9 @@ class PDF::COS::Stream
     use PDF::IO::Filter;
     use PDF::COS::Util :from-ast, :ast-coerce;
 
-    # see [PDF 1.7 TABLE 5 Entries common to all stream dictionaries]
-
+    # see [PDF 32000 TABLE 5 Entries common to all stream dictionaries]
+##    use ISO_32000::Stream_common;
+##    also does ISO_32000::Stream_common;
     has UInt $.Length is entry;                     #| (Required) The number of bytes from the beginning of the line following the keyword stream to the last byte just before the keyword endstream
 
     has Str @.Filter is entry(:array-or-item);        #| (Optional) The name of a filter to be applied in processing the stream data found between the keywords stream and endstream, or an array of such names

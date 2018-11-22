@@ -3,8 +3,8 @@ use v6;
 class PDF::IO::Filter::LZW {
 
 
-    # Maintainer's Note: LZW is described in the PDF 1.7 spec
-    # in section 3.3.3.
+    # Maintainer's Note: LZW is described in the PDF 32000 spec
+    # in section 7.4.4
     use PDF::IO::Util;
     use PDF::IO::Filter::Predictors;
     use PDF::IO::Blob;

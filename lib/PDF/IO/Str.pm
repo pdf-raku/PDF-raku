@@ -9,7 +9,6 @@ class PDF::IO::Str
     has Blob[uint8] $!ords;
     method ords {
         $!ords //= self.encode("latin-1");
-        $!ords;
     }
 
     method subbuf(|c) { $.ords.subbuf(|c) }

@@ -185,7 +185,7 @@ class PDF::Reader {
         }
     }
 
-    #| [PDF 1.7 Table 3.13] Entries in the file trailer dictionary
+    #| [PDF 32000 Table 15] Entries in the file trailer dictionary
     method !set-trailer (
         Hash $dict,
         Array :$keys = [ $dict.keys.grep: {

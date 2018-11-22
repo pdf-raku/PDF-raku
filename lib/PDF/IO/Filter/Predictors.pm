@@ -12,7 +12,7 @@ class PDF::IO::Filter::Predictors {
     subset Predictor of Int where None | TIFF | PNG-Range;
 
     use PDF::IO::Util :pack;
-    # post prediction functions as described in the PDF 1.7 spec, table 3.8
+    # post prediction functions as described in the PDF 32000 spec, Table 9
 
     multi method encode($buf where Blob | Buf,
                         Predictor :$Predictor! where TIFF, #| predictor function
@@ -115,14 +115,12 @@ class PDF::IO::Filter::Predictors {
         buf8.new(@out);
     }
 
-    # prediction filters, see PDF 1.7 spec table 3.8
     multi method encode($buf where Blob | Buf,
 			Predictor :$Predictor where None = None #| predictor function
         ) {
         $buf;
     }
 
-    # prediction filters, see PDF 1.7 spec table 3.8
     multi method decode($buf where Blob | Buf,
                         Predictor :$Predictor! where TIFF, #| predictor function
                         UInt :$Columns = 1,          #| number of samples per row

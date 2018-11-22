@@ -42,9 +42,8 @@ role PDF::IO::Crypt::AST {
     #| for JSON deserialization, e.g. { :int(42) } => :int(42)
     use PDF::Grammar :AST-Types;
     BEGIN my %ast-types = AST-Types.enums;
-    multi method crypt-ast( Hash $h! where { .keys == 1 &&  (%ast-types{.keys[0]}:exists)}, |c) {
-	my \p = $h.pairs[0];
-        $.crypt-ast( p.key, p.value, |c )
+    multi method crypt-ast( Hash $h! where { .keys == 1 && (%ast-types{.keys[0]}:exists)}, |c) {
+        $.crypt-ast( |$h.kv, |c )
     }
 
     multi method crypt-ast(Str $key, $) is default { }

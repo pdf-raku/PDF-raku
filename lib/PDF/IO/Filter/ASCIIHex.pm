@@ -3,7 +3,7 @@ use v6;
 
 class PDF::IO::Filter::ASCIIHex {
 
-    # Maintainer's Note: ASCIIHexDecode is described in the PDF 1.7 spec
+    # Maintainer's Note: ASCIIHexDecode is described in the PDF 32000 spec
     # in section 7.4.2.
     use PDF::IO::Blob;
     use PDF::IO::Util :pack;

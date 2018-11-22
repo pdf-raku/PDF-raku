@@ -13,7 +13,9 @@ class PDF:ver<0.3.4>
     use PDF::COS::Tie;
     use JSON::Fast;
 
-    # See [PDF 1.7 TABLE 15 Entries in the file trailer dictionary]
+    # See [PDF 32000 TABLE 15 Entries in the file trailer dictionary]
+##    use ISO_32000::File_trailer;
+##    also does ISO_32000::File_trailer;
 
     has Int $.Size is entry;                              #| (Required; shall not be an indirect reference) greater than the highest object number defined in the file.
 
@@ -215,7 +217,7 @@ class PDF:ver<0.3.4>
     #| Generate a new document ID.
     method !generate-id(Str :$type = 'PDF') {
 
-	# From [PDF 1.7 Section 14.4 File Identifiers:
+	# From [PDF 32000 Section 14.4 File Identifiers:
 	#   "File identifiers shall be defined by the optional ID entry in a PDF file’s trailer dictionary.
 	# The ID entry is optional but should be used. The value of this entry shall be an array of two
 	# byte strings. The first byte string shall be a permanent identifier based on the contents of the

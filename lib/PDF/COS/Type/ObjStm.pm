@@ -18,7 +18,7 @@ class X::PDF::ObjStm::Encode is X::PDF::ObjStm {
 
 # /Type /ObjStm - a stream of (usually compressed) objects
 # introduced with PDF 1.5 
-# See [PDF 1.7 Section 3.4.6 Object Streams]
+# See [PDF 32000 Section 7.5.6 Object Streams]
 class PDF::COS::Type::ObjStm
     is PDF::COS::Stream {
 
@@ -28,7 +28,10 @@ class PDF::COS::Type::ObjStm
     use PDF::COS::Tie;
     use PDF::COS::Name;
 
-    # see [PDF 1.7 TABLE 16 Additional entries specific to an object stream dictionary]
+    # see [PDF 32000 TABLE 16 Additional entries specific to an object stream dictionary]
+##    use ISO_32000::Object_stream;
+##    also does ISO_32000::Object_stream;
+
     has PDF::COS::Name $.Type is entry( :required ) where 'ObjStm'; #| (Required) The type of PDF object that this dictionary describes; shall be ObjStm for an object stream.
     has UInt $.N is entry(:required);             #| (Required) The number of compressed objects in the stream.
     has UInt $.First is entry(:required);         #| (Required) The byte offset (in the decoded stream) of the first compressed object.

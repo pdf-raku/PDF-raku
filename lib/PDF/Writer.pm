@@ -332,8 +332,8 @@ class PDF::Writer {
             my uint $obj-count = self!xref-segment-length(@idx, $i, $total-entries);
             my uint32 $obj-first-num = @idx[$i;1];
 
-	    # [ PDF 1.7 ] 3.4.3 Cross-Reference Table:
-	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"
+	    # [ PDF 32000 7.5.4 Cross-Reference Table:
+	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"]
             my uint64 @entries[$obj-count;3];
             for 0 ..^ $obj-count {
                 my uint8  $type    = @idx[$i;0];

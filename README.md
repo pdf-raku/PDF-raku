@@ -81,6 +81,7 @@ Then to update the PDF, adding another page:
 ```
 use v6;
 use PDF;
+use PDF::COS::Type::Info;
 
 my PDF $pdf .= open: 'examples/helloworld.pdf';
 
@@ -96,7 +97,7 @@ $Parent<Kids>.push: { :Type( :name<Page> ), :$Parent, :$Contents };
 $Parent<Count>++;
 
 # update or create document metadata. set modification date
-my $info = $pdf.Info //= {};
+my PDF::COS::Type::Info $info = $pdf.Info //= {};
 $info.ModDate = DateTime.now;
 
 # incrementally update the existing PDF
@@ -108,9 +109,9 @@ $pdf.update;
 
 ## Description
 
-A PDF file consists of data structures, including dictionaries (hashes) arrays, numbers and strings, plus streams for holding data such as images, fonts and general content.
+A PDF file consists of data structures, including dictionaries (hashes) arrays, numbers and strings, plus streams for holding graphical data such as images, fonts and general content.
 
-PDF files are also indexed for random access and may also have filters for stream compression and encryption of streams and strings.
+PDF files are also indexed for random access and may also hae internal compression and/or encryption.
 
 They have a reasonably well specified structure. The document starts from the `Root` entry in the trailer dictionary, which is the main entry point into a PDF.
 

@@ -19,7 +19,7 @@ class PDF::IO::Crypt {
     has $.key is rw;      #| encryption key
     has Bool $.is-owner is rw; #| authenticated against, or created by, owner
 
-    # Taken from [PDF 1.7 Algorithm 3.2 - Standard Padding string]
+    # Taken from [PDF 32000 Algorithm 2: Standard Padding string]
      constant @Padding = array[uint8].new(
          0x28, 0xbf, 0x4e, 0x5e,
          0x4e, 0x75, 0x8a, 0x41,

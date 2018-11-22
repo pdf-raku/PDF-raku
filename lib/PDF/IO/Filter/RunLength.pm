@@ -3,7 +3,7 @@ use v6;
 
 class PDF::IO::Filter::RunLength {
 
-    # Maintainer's Note: RunLengthDecode is described in the PDF 1.7 spec
+    # Maintainer's Note: RunLengthDecode is described in the PDF 320000 spec
     # in section 7.4.5.
     use PDF::IO::Blob;
 

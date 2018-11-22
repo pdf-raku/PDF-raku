@@ -3,7 +3,7 @@ use v6;
 use PDF::COS::Stream;
 
 # /Type /XRef - cross reference stream, introduced with PDF 1.5
-# see [PDF 1.7 Section 3.4.7 Cross-Reference Streams]
+# see [PDF 32000 Section 7.5.8 Cross-Reference Streams]
 class PDF::COS::Type::XRef
     is PDF::COS::Stream {
 
@@ -13,7 +13,10 @@ class PDF::COS::Type::XRef
     use PDF::COS::Tie;
     use PDF::COS::Name;
 
-    # See [PDF 1.7 TABLE 17 Additional entries specific to a cross-reference stream dictionary]
+    # See [PDF 32000 TABLE 17 Additional entries specific to a cross-reference stream dictionary]
+##    use ISO_32000::Cross_reference_stream;
+##    also does ISO_32000::Cross_reference_stream;
+
     has PDF::COS::Name $.Type is entry(:required) where 'XRef';   #| (Required) The type of PDF object that this dictionary describes; shall be XRef for a cross-reference stream.
 
     has UInt $.Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.

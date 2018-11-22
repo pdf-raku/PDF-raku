@@ -1,5 +1,4 @@
 use v6;
-# based on Perl 5's PDF::API::Core::PDF::Filter::ASCIIHexDecode
 
 class PDF::IO::Filter::Flate {
 
@@ -8,7 +7,7 @@ class PDF::IO::Filter::Flate {
     use PDF::IO::Blob;
     use PDF::IO::Util;
 
-    # Maintainer's Note: Flate is described in the PDF 1.7 spec in section 3.3.3.
+    # Maintainer's Note: Flate is described in the PDF 32000 spec in section 7.4.4.
     # See also http://www.libpng.org/pub/png/book/chapter09.html - PNG predictors
     sub predictor-class {
         state $predictor-class = PDF::IO::Util::libpdf-available()

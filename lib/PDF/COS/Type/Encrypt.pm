@@ -7,7 +7,9 @@ use PDF::COS::Tie::Hash;
 role PDF::COS::Type::Encrypt
     does PDF::COS::Tie::Hash {
 
-# See [PDF 1.7 TABLE 20 Entries common to all encryption dictionaries]
+    # See [PDF 32000 TABLE 20 Entries common to all encryption dictionaries]
+##    use ISO_32000::Encryption_common;
+##    also does ISO_32000::Encryption_common;
 
     use PDF::COS::Tie;
     use PDF::COS::Name;
@@ -38,7 +40,7 @@ role PDF::COS::Type::Encrypt
     has PDF::COS::Name $.EFF is entry;                    #| (Optional; meaningful only when the value of V is 4; PDF 1.6) The name of the crypt filter that should be used by default when encrypting embedded file streams; it must correspond to a key in the CF dictionary or a standard crypt filter name specified in Table 3.23.
                                                           #| This entry is provided by the security handler. Applications should respect this value when encrypting embedded files, except for embedded file streams that have their own crypt filter specifier. If this entry is not present, and the embedded file stream does not contain a crypt filter specifier, the stream should be encrypted using the default stream crypt filter specified by StmF.
 
-   # See [PDF 1.7 TABLE 3.19 Additional encryption dictionary entries for the standard security handler]
+   # See [PDF 32000 TABLE 21 Additional encryption dictionary entries for the standard security handler]
 
     has UInt $.R is entry(:required, :alias<revision>);   #| (Required) A number specifying which revision of the standard security handler should be used to interpret this dictionary:
                                 #| • 2 if the document is encrypted with a V value less than 2 (see Table 3.18) and does not have any of the access permissions set (by means of the P entry, below) that are designated “Revision 3 or greater” in Table 3.20
