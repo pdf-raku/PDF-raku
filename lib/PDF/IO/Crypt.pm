@@ -9,15 +9,15 @@ class PDF::IO::Crypt {
     use PDF::IO::Util :pack;
     use PDF::COS::Type::Encrypt;
 
-    has UInt $!R;         #| encryption revision
+    has UInt $!revision;         #| encryption revision
     has Bool $!EncryptMetadata;
-    has uint8 @!O;        #| computed owner password
-    has UInt $!key-bytes; #| encryption key length
-    has uint8 @!doc-id;   #| /ID entry in document root
-    has uint8 @!U;        #| computed user password
-    has uint8 @!P;        #| permissions, unpacked as uint8
-    has $.key is rw;      #| encryption key
-    has Bool $.is-owner is rw; #| authenticated against, or created by, owner
+    has uint8 @!owner-pass;      #| computed owner password
+    has UInt $!key-bytes;        #| encryption key length
+    has uint8 @!doc-id;          #| /ID entry in document root
+    has uint8 @user-pass;        #| computed user password
+    has uint8 @!permissions;     #| permissions, unpacked as uint8
+    has $.key is rw;             #| encryption key
+    has Bool $.is-owner is rw;   #| authenticated against, or created by, owner
 
     # Taken from [PDF 32000 Algorithm 2: Standard Padding string]
      constant @Padding = array[uint8].new(
@@ -46,11 +46,11 @@ class PDF::IO::Crypt {
     method !generate(:$doc!,
                      Str  :$owner-pass!,
                      Str  :$user-pass = '',
-                     UInt :$!R = self.type eq 'AESV2' ?? 4 !! 3,
-                     UInt :$V = self.type eq 'AESV2' ?? 4 !! 2,
+                     UInt :R($!revision) = self.type eq 'AESV2' ?? 4 !! 3,
+                     UInt :V($version) = self.type eq 'AESV2' ?? 4 !! 2,
                      Bool :$!EncryptMetadata = True,
-                     UInt :$Length = $V > 1 ?? 128 !! 40,
-                     Int  :$P = -64,  #| permissions mask
+                     UInt :$Length = $version > 1 ?? 128 !! 40,
+                     Int  :P($permissions) = -64,  #| permissions mask
                      --> PDF::COS::Type::Encrypt
         ) {
 
@@ -59,7 +59,7 @@ class PDF::IO::Crypt {
 
 	die "invalid encryption key length: $Length"
             unless 40 <= $Length <= 128
-            && ($V > 1 || $Length == 40)
+            && ($version > 1 || $Length == 40)
 	    && $Length %% 8;
 
 	$!key-bytes = $Length +> 3;
@@ -67,24 +67,24 @@ class PDF::IO::Crypt {
 	    unless $doc<ID>;
 
 	@!doc-id = $doc<ID>[0].ords;
-	my uint8 @p8 = pack-le([ $P ], 32);
-	@!P = @p8;
+	my uint8 @p8 = pack-le([ $permissions ], 32);
+	@!permissions = @p8;
 
         my uint8 @owner-pass = format-pass($owner-pass);
         my uint8 @user-pass = format-pass($user-pass);
 
-	@!O = self.compute-owner( @owner-pass, @user-pass );
-        @!U = self.compute-user( @user-pass, :$!key );
+	@!owner-pass = self.compute-owner( @owner-pass, @user-pass );
+        @user-pass = self.compute-user( @user-pass, :$!key );
         $!is-owner = True;
 
-        @!U.append: 0 xx 16
+        @user-pass.append: 0 xx 16
             if self.type eq 'AESV2';
-        my $O = hex-string => [~] @!O.map: *.chr;
-        my $U = hex-string => [~] @!U.map: *.chr;
+        my $O = hex-string => [~] @!owner-pass.map: *.chr;
+        my $U = hex-string => [~] @user-pass.map: *.chr;
 
-        my %dict = :$O, :$U, :$P, :$!R, :$V, :Filter<Standard>;
+        my %dict = :$O, :$U, :P($permissions), :R($!revision), :V($version), :Filter<Standard>;
 
-        if $V >= 4 {
+        if $version >= 4 {
             %dict<CF> = {
                 :StdCF{
                     :CFM{ :name(self.type) },
@@ -94,9 +94,9 @@ class PDF::IO::Crypt {
             %dict<StrF> = :name<StdCF>;
         }
 
-        %dict<Length> = $Length unless $V == 1;
+        %dict<Length> = $Length unless $version == 1;
         %dict<EncryptMetadata> = False
-            if $!R >= 4 && ! $!EncryptMetadata;
+            if $!revision >= 4 && ! $!EncryptMetadata;
 
         my $enc = $doc.Encrypt = %dict;
 
@@ -106,12 +106,12 @@ class PDF::IO::Crypt {
     }
 
     method !load(PDF::COS::Dict :$doc!,
-                 UInt :$!R!,
+                 UInt :R($!revision)!,
                  Bool :$!EncryptMetadata = True,
-                 UInt :$V!,
-                 Int  :$P!,
-                 Str  :$O!,
-                 Str  :$U!,
+                 UInt :V($version)!,
+                 Int  :P($permissions)!,
+                 Str  :O($owner-pass)!,
+                 Str  :U($user-pass)!,
                  UInt :$Length = 40,
                  Str  :$Filter = 'Standard',
                 ) {
@@ -122,14 +122,14 @@ class PDF::IO::Crypt {
         else {
             die 'This PDF lacks an ID.  The document cannot be decrypted'
         }
-	@!P = pack-le([ $P ], 32);
-	@!O = $O.ords;
-	@!U = $U.ords;
+	@!permissions = pack-le([ $permissions ], 32);
+	@!owner-pass = $owner-pass.ords;
+	@user-pass = $user-pass.ords;
 
 	die "Only the Standard encryption filter is supported"
 	    unless $Filter eq 'Standard';
 
-	my uint $key-bits = $V == 1 ?? 40 !! $Length;
+	my uint $key-bits = $version == 1 ?? 40 !! $Length;
         $key-bits *= 8 if $key-bits <= 16;  # assume bytes
 	die "invalid encryption key length: $key-bits"
 	    unless 40 <= $key-bits <= 128
@@ -171,18 +171,18 @@ class PDF::IO::Crypt {
     method compute-user(@pass-padded, :$key! is rw) {
 	# Algorithm 3.2
 	my uint8 @input = flat @pass-padded,       # 1, 2
-	                       @!O,                # 3
-                               @!P,                # 4
+	                       @!owner-pass,                # 3
+                               @!permissions,                # 4
                                @!doc-id;           # 5
 
 
 	@input.append: 0xff xx 4             # 6
-	    if $!R >= 4 && ! $!EncryptMetadata;
+	    if $!revision >= 4 && ! $!EncryptMetadata;
 
 	my uint $n = 5;
 	my uint $reps = 1;
 
-	if $!R >= 3 {                        # 8
+	if $!revision >= 3 {                        # 8
 	    $n = $!key-bytes;
 	    $reps = 51;
 	}
@@ -197,7 +197,7 @@ class PDF::IO::Crypt {
 
 	my Buf $pass .= new: @Padding;
 
-	my uint8 @computed = do if $!R >= 3 {
+	my uint8 @computed = do if $!revision >= 3 {
 	    # Algorithm 3.5 steps 1 .. 5
 	    $pass.append: @!doc-id;
 	    $pass = md5( $pass );
@@ -215,9 +215,9 @@ class PDF::IO::Crypt {
 	# Algorithm 3.6
         my $key;
 	my uint8 @computed := $.compute-user( @pass, :$key );
-	my uint8 @expected = $!R >= 3
-            ?? @!U[0 .. 15]
-            !! @!U;
+	my uint8 @expected = $!revision >= 3
+            ?? @user-pass[0 .. 15]
+            !! @user-pass;
 
 	@computed eqv @expected
 	    ?? $key
@@ -231,7 +231,7 @@ class PDF::IO::Crypt {
 	my uint $n = 5;
 	my uint $reps = 1;
 
-	if $!R >= 3 {                       # 3
+	if $!revision >= 3 {                       # 3
 	    $n = $!key-bytes;
 	    $reps = 51;
 	}
@@ -251,10 +251,10 @@ class PDF::IO::Crypt {
 
         my Buf $user .= new: @user-pass;
 
-	my uint8 @owner = do if $!R == 2 {      # 2 (Revision 2 only)
+	my uint8 @owner = do if $!revision == 2 {      # 2 (Revision 2 only)
 	    $.rc4-crypt(key, $user);
 	}
-	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
+	elsif $!revision >= 3 {   # 2 (Revision 3 or greater)
 	    self!do-iter-crypt(key, $user);
 	}
 
@@ -264,11 +264,11 @@ class PDF::IO::Crypt {
     method !auth-owner-pass(@pass) {
 	# Algorithm 3.7
 	my Buf \key = self!compute-owner-key( @pass );    # 1
-	my Buf $user-pass .= new: @!O;
-	if $!R == 2 {      # 2 (Revision 2 only)
+	my Buf $user-pass .= new: @!owner-pass;
+	if $!revision == 2 {      # 2 (Revision 2 only)
 	    $user-pass = $.rc4-crypt(key, $user-pass);
 	}
-	elsif $!R >= 3 {   # 2 (Revision 3 or greater)
+	elsif $!revision >= 3 {   # 2 (Revision 3 or greater)
 	    $user-pass = self!do-iter-crypt(key, $user-pass, 19, 0);
 	}
 	$.is-owner = True;

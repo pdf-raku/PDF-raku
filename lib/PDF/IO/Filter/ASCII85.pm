@@ -5,7 +5,7 @@ class PDF::IO::Filter::ASCII85 {
     use PDF::IO::Util :pack;
     use PDF::IO::Blob;
 
-    # Maintainer's Note: ASCII85Decode is described in the PDF 320000 spec
+    # Maintainer's Note: ASCII85Decode is described in the PDF 32000 spec
     # in section 7.4.3
 
     multi method encode(Str $input) {

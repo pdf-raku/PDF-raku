@@ -3,7 +3,7 @@ use v6;
 
 class PDF::IO::Filter::RunLength {
 
-    # Maintainer's Note: RunLengthDecode is described in the PDF 320000 spec
+    # Maintainer's Note: RunLengthDecode is described in the PDF 32000 spec
     # in section 7.4.5.
     use PDF::IO::Blob;
 
@@ -20,7 +20,7 @@ class PDF::IO::Filter::RunLength {
             @out[$j++] = ord;
 
             if $i > n || ord == input[$i] {
-                # run of repeated characters
+                # run of repeated bytes
                 $ind = 256;
                 while $i <= n && input[$i] == ord && $ind > 129 {
                     $i++;
