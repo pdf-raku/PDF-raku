@@ -19,12 +19,14 @@ class PDF::COS::Dict
         without $obj {
             temp %seen{$dict} = $obj = self.bless(|c);
             $obj.tie-init;
+            my %entries := $obj.entries;
+            my %alias = %entries.pairs.map({ .value.tied.alias => .key}).grep(*.key);
             # this may trigger cascading PDF::COS::Tie coercians
             # e.g. native Array to PDF::COS::Array
-            $obj{.key} = from-ast(.value) for $dict.pairs;
+            $obj{%alias{.key} // .key} = from-ast(.value) for $dict.pairs;
             $obj.?cb-init;
 
-	    if my $required = set $obj.entries.pairs.grep(*.value.tied.is-required).map(*.key) {
+	    if my $required = set %entries.pairs.grep(*.value.tied.is-required).map(*.key) {
 		my $missing = $required (-) $obj.keys;
 		die "{self.WHAT.^name}: missing required field(s): $missing"
 		    if $missing;

@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 57;
+plan 62;
 
 use PDF::COS::Dict;
 use PDF::COS::Name;
@@ -23,9 +23,17 @@ use PDF::COS::TextString;
     }
 
     my TestDict $dict;
+
     lives-ok { $dict .= new( :dict{ :IntReq(42) } ) }, 'dict sanity';
+    is $dict.keys, <IntReq>, '.keys';
     is $dict.IntReq, 42, "dict accessor sanity";
     is $dict.required-int, 42, "dict alias accessor";
+
+    lives-ok { $dict .= new( :dict{ :required-int(42) } ) }, 'dict construction from alias';
+    is $dict.keys, <IntReq>, 'from alias .keys';
+    is $dict.IntReq, 42, "from alias accessor";
+    is $dict.required-int, 42, "from alias, alias accessor";
+
     lives-ok { $dict.IntReq = 43 }, 'dict accessor assignment sanity';
     quietly {
         dies-ok { $dict.IntReq = 'urrgh' }, 'dict accessor assignment typecheck';
