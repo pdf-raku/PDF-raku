@@ -34,22 +34,24 @@ role PDF::COS {
 
     multi method coerce(PDF::COS $val!) { $val }
 
-    multi method coerce(Hash $dict!, |c) {
+    my subset AST-Node of Associative where {
 	use PDF::Grammar:ver(v0.1.6+) :AST-Types;
-        BEGIN my %ast-types = AST-Types.enums;
-	+$dict == 1 && (%ast-types{$dict.keys[0]}:exists)
-	    ?? $.coerce( |$dict, |c )    # JSON munged pair
-	    !! $.coerce( :$dict, |c );
+        my constant %AstTypes = AST-Types.enums;
+        # e.g. { :int(42) }
+        .elems == 1 && (%AstTypes{.keys[0]}:exists)
     }
-    multi method coerce(List $array!, |c) {
-        $.coerce( :$array, |c )
+    multi method coerce(%dict!, |c) {
+	%dict ~~ AST-Node
+	    ?? $.coerce( |%dict, |c )
+	    !! $.coerce( :%dict, |c );
+    }
+    multi method coerce(@array!, |c) {
+        $.coerce( :@array, |c )
     }
     multi method coerce(DateTime $dt, |c) {
 	self!coercer.coerce( $dt, DateTime, |c)
     }
-    multi method coerce(Pair %_!, |c) {
-	$.coerce( |%_, |c)
-    }
+
     #| work around rakudo performance regressions - issue #15
     method required(Str \mod-name) {
 	%required{mod-name}:exists
