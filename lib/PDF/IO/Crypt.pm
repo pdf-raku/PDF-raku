@@ -67,7 +67,7 @@ class PDF::IO::Crypt {
 	    unless $doc<ID>;
 
 	@!doc-id = $doc<ID>[0].ords;
-	my uint8 @p8 = pack-le([ $permissions ], 32);
+	my uint8 @p8 = pack-le($permissions, 32);
 	@!permissions = @p8;
 
         my uint8 @owner-pass = format-pass($owner-pass);
@@ -122,7 +122,7 @@ class PDF::IO::Crypt {
         else {
             die 'This PDF lacks an ID.  The document cannot be decrypted'
         }
-	@!permissions = pack-le([ $permissions ], 32);
+	@!permissions = pack-le($permissions, 32);
 	@!owner-pass = $owner-pass.ords;
 	@user-pass = $user-pass.ords;
 

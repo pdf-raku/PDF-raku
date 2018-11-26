@@ -9,7 +9,6 @@ class PDF::IO::Crypt::AES
 
     use OpenSSL::CryptTools;
     use OpenSSL::Digest;
-    use PDF::IO::Blob;
     use PDF::IO::Util :pack;
 
     constant KeyLen = 16;
@@ -33,8 +32,8 @@ class PDF::IO::Crypt::AES
 	die "encryption has not been authenticated"
 	    unless $.key;
 
-	my uint8 @obj-bytes = pack-le([ $obj-num ], 32);
-	my uint8 @gen-bytes = pack-le([ $gen-num ], 32);
+	my uint8 @obj-bytes = pack-le($obj-num, 32);
+	my uint8 @gen-bytes = pack-le($gen-num, 32);
 	my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1], 0x73, 0x41, 0x6C, 0x54; # 'sAIT'
 
 	md5( Buf.new(@obj-key) );
