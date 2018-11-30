@@ -11,11 +11,14 @@ sub MAIN (
     Bool :$repair    = False,   #= bypass and repair index. recompute stream lengths. Handy when
                                 #= PDF files have been hand-edited.
     Bool :$rebuild  is copy,    #= rebuild object tree (renumber, garbage collect and deduplicate objects)
-    Bool :$compress,            #= compress streams (--/compress to uncompress)
+    Bool :$compress is copy,    #= compress streams
+    Bool :$uncompress,          #= uncompress streams
     Bool :$class     = False,   #= require PDF::Class
     Bool :$decrypt   = False,   #= decrypt
     Bool :$drm       = True,
     ) {
+
+    $compress = False if $uncompress;
 
     if $class {
 	require ::('PDF::Class')
@@ -70,7 +73,7 @@ Options:
    --repair     repair the input PDF
    --rebuild    rebuild object tree (renumber, garbage collect and deduplicate objects)
    --compress   compress streams
-   --/compress  uncompress streams, where possible
+   --uncompress uncompress streams, where possible
    --class      load L<PDF::Class> module
    --decrypt    remove encryption
 
