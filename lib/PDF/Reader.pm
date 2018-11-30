@@ -402,9 +402,7 @@ class PDF::Reader {
         }
         else {
             return unless $eager;
-            $ind-obj := self!fetch-ind-obj($idx, :$obj-num, :$gen-num);
-            # only fully stantiate object when needed
-            $_ := $ind-obj;
+            $idx<ind-obj> = $ind-obj := self!fetch-ind-obj($idx, :$obj-num, :$gen-num);
         }
 
         if $get-ast {
@@ -774,7 +772,7 @@ class PDF::Reader {
     #| - sift /XRef and /ObjStm objects,
     method get-objects(
         Bool :$incremental = False,     #| only return updated objects
-        Bool :$eager = ! $incremental,  #| don't fetch uncached objects
+        Bool :$eager = ! $incremental,  #| fetch uncached objects
         ) {
         my @object-refs;
 
@@ -901,10 +899,10 @@ class PDF::Reader {
     }
 
     #| write to PDF/FDF
-    multi method save-as( Str $output-path, |c ) is default {
+    multi method save-as(IO() $output-path, |c ) is default {
         my $ast = $.ast(:!eager, |c);
         my PDF::Writer $writer .= new: :$!input, :$ast;
-        $output-path.IO.spurt: $writer.Blob;
+        $output-path.spurt: $writer.Blob;
         $writer;
     }
 
