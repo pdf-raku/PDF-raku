@@ -4,6 +4,7 @@ Release 0.3.4
      to reduce memory usage in full-save, and speed up
      saving of encrypted PDFs.
   -- Fixed /Prev trailer entry in incremental save
+  -- Fixed pdf-rewriter.p6 --decrypt option
 - [PDF::Reader]
   -- Respect EncryptMetadata flag in existing PDF files.
      Disallow for newly created PDF files.

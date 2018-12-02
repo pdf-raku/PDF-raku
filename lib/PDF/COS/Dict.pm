@@ -23,7 +23,7 @@ class PDF::COS::Dict
             my %alias = %entries.pairs.map({ .value.tied.alias => .key}).grep(*.key);
             # this may trigger cascading PDF::COS::Tie coercians
             # e.g. native Array to PDF::COS::Array
-            $obj{%alias{.key} // .key} = from-ast(.value) for $dict.pairs;
+            $obj{%alias{.key} // .key} = from-ast(.value) for $dict.pairs.sort;
             $obj.?cb-init;
 
 	    if my $required = set %entries.pairs.grep(*.value.tied.is-required).map(*.key) {

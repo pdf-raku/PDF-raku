@@ -1,10 +1,11 @@
 use v6;
 use Test;
-plan 62;
+plan 64;
 
 use PDF::COS::Dict;
 use PDF::COS::Name;
 use PDF::COS::TextString;
+use PDF::Grammar::Test :is-json-equiv;
 
 {
     # basic tests
@@ -157,4 +158,46 @@ use PDF::COS::TextString;
     dies-ok {$cyclical.Resources}, 'inheritance cycle detection';
 }
 
+
+{
+    # role mixin tests
+    use PDF::COS::Dict;
+    use PDF::COS::Tie;
+    use PDF::COS::Tie::Array;
+    my enum Fit « :FitXYZoom<XYZ>  :FitWindow<Fit> :FitZoom<Zoom> »;
+    role DestArray
+        does PDF::COS::Tie::Array {
+        has $.page is index(0);
+        has PDF::COS::Name $.fit is index(1);
+    }
+    role DestDict does PDF::COS::Tie::Hash {
+        has DestArray $.D is entry(:required, :alias<destination>);
+    }
+    class Catalog
+        is PDF::COS::Dict {
+        use PDF::COS::Tie;
+
+        my subset Dest where DestDict|DestArray;
+
+        multi sub coerce(Hash $dict, Dest) {
+            PDF::COS.coerce($dict, DestDict);
+        }
+        multi sub coerce(List $array, Dest) {
+            PDF::COS.coerce($array, DestArray);
+        }
+        multi sub coerce($_, Dest) is default {
+            fail "unable to coerce to a destination: {.perl}";
+        }
+        has Dest %.Dests is entry(:&coerce);
+    }
+
+    my %Dests = %( :A[1, 'XYZ'],
+                   :B{ :D[2, FitZoom] },
+                   :C{ :destination[3, 'Fit'] },  # alias
+                 );
+    my Catalog $Catalog .= new: :dict{ :%Dests };
+    is-json-equiv $Catalog, {:Dests{ :A[1, "XYZ"], :B{ :D[2, "Zoom"] }, :C{ :D[3, "Fit"] } }}, 'mixin';
+    does-ok $Catalog.Dests<B>.D.page, 2, 'mixin';
+}
+  
 done-testing;
