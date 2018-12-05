@@ -57,7 +57,7 @@ class PDF::COS::Coercer {
 	$obj
     }
 
-    multi method coerce( Str $obj is rw, $role where PDF::COS::Name ) is default {
+    multi method coerce( Str $obj is rw, $role where PDF::COS::Name ) {
 	$obj = $obj but PDF::COS::Name
     }
 

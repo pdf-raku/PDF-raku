@@ -12,7 +12,7 @@ class PDF::IO::Str
     }
 
     method subbuf(|c) { $.ords.subbuf(|c) }
-    method read(UInt $n is copy) {
+    method read(UInt $n = $.codes - $!pos) {
         my \n = min($n, $.codes - $!pos);
         my \buf := Buf[uint8].new: $.subbuf($!pos, n);
         $!pos += n;
