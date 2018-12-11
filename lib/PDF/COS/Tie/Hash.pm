@@ -44,12 +44,11 @@ role PDF::COS::Tie::Hash
        for class.^attributes.grep(TiedEntry) -> \att {
            given att.tied {
                my \key  = .accessor-name;
+               %.entries{key} //= att;
                with .alias -> \alias {
                    self{key} //= $_
                        with self{alias}:delete;
                }
-
-               %.entries{key} //= att;
            }
        }
     }

@@ -31,7 +31,7 @@ class PDF::COS::Coercer {
 
     # strip enumerations
     multi method coerce( Enumeration $_ is rw, PDF::COS $type) {
-        $.coerce(.value, $type);
+        $_ = $.coerce(.value, $type);
     }
     # adds the DateTime 'object' rw accessor
     multi method coerce( Str $obj is rw, PDF::COS::DateString $class, |c) {

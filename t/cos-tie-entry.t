@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 64;
+plan 68;
 
 use PDF::COS::Dict;
 use PDF::COS::Name;
@@ -17,7 +17,7 @@ use PDF::Grammar::Test :is-json-equiv;
         subset FredDict of Hash where {.<Name> ~~ 'Fred'}
         has FredDict $.SubsetDict is entry;
         has UInt $.three-dd is entry(:key<3DD>);
-        has PDF::COS::Name $.Fooish is entry(:default<Foo>);
+        has PDF::COS::Name $.Name is entry(:default<Foo>);
         has PDF::COS::Name @.Names is entry(:default['a', 'b', 'c']);
         my subset TextString of PDF::COS::TextString;
         has TextString $.Txt is entry;
@@ -56,14 +56,20 @@ use PDF::Grammar::Test :is-json-equiv;
     ok $fred ~~ TestDict::FredDict, 'subset sanity';
     lives-ok {$dict.SubsetDict =  $fred;}, 'subset dict - valid';
     quietly dies-ok {$dict.SubsetDict =  %()}, 'subset dict - invalid';
-    ok !($dict<Fooish>:exists), 'defaulted entry';
-    ok !($dict<Fooish>.defined), 'defaulted raw value';
-    is $dict.Fooish, 'Foo', 'defaulted accessor value';
-    does-ok $dict.Fooish, PDF::COS::Name, 'defaulted type';
-    ok !($dict<Fooish>:exists), 'defaulted entry';
-    $dict.Fooish = 'Bar';
-    is $dict.Fooish, 'Bar', 'default value assignment';
-    ok ($dict<Fooish>:exists), 'default value assignment';
+    ok !($dict<Name>:exists), 'defaulted entry';
+    ok !($dict<Name>.defined), 'defaulted raw value';
+    is $dict.Name, 'Foo', 'defaulted accessor value';
+    does-ok $dict.Name, PDF::COS::Name, 'defaulted type';
+    ok !($dict<Name>:exists), 'defaulted entry';
+    $dict.Name = 'Bar';
+    ok ($dict<Name>:exists), 'default value assignment';
+    is $dict.Name, 'Bar', 'default value assignment';
+    does-ok $dict.Name, PDF::COS::Name;
+
+    enum « :Baz<baz> »;
+    lives-ok {$dict.Name = Baz}, 'String enum assigment';
+    is $dict.Name, 'baz', 'default value assignment';
+    does-ok $dict.Name, PDF::COS::Name;
 
     is $dict.Names[1], 'b', 'defaulted array';
     does-ok $dict.Names[1], PDF::COS::Name, 'defaulted array';
