@@ -1,7 +1,7 @@
 Release 0.3.4
 - [PDF::Reader][PDF::Writer]
-  -- Allow copying of raw objects from input to output PDFs
-     to reduce memory usage in full-save, and speed up
+  -- Allow copying of raw object ASTs from input to output
+     PDFs. To reduce memory usage in full-save, and speed up
      saving of encrypted PDFs.
   -- Fixed /Prev trailer entry in incremental save
   -- Fixed pdf-rewriter.p6 --decrypt option

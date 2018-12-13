@@ -1,10 +1,10 @@
 use v6;
 use PDF::COS;
 
-role PDF::COS::ByteString
+role PDF::COS::ByteString[Str $type = 'literal']
     does PDF::COS {
-    has Str $.type is rw;
-
-    method content { $!type => self~'' };
+    method content { $type => self~'' };
 }
+
+role PDF::COS::ByteString does PDF::COS::ByteString['literal'] { }
 

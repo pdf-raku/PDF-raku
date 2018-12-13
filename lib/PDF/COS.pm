@@ -58,8 +58,9 @@ role PDF::COS {
             ?? %required{mod-name}
             !! %required{mod-name} = (require ::(mod-name));
     }
-    method !add-role($obj is rw, Str $role-name) {
+    method !add-role($obj is rw, Str $role-name, Str $param?) {
 	my $role = $.required($role-name);
+        $role = $role.^parameterize($_) with $param;
 	$obj.does($role)
             ?? $obj
             !! $obj = $obj but $role
@@ -87,16 +88,12 @@ role PDF::COS {
     multi method coerce( Numeric :$real! is copy) { self.coerce: :$real }
 
     multi method coerce( Str :$hex-string! is rw) {
-        self!add-role($hex-string, 'PDF::COS::ByteString');
-        $hex-string.type = 'hex-string';
-        $hex-string;
+        self!add-role($hex-string, 'PDF::COS::ByteString', 'hex-string');
     }
     multi method coerce( Str :$hex-string! is copy) { self.coerce: :$hex-string }
 
     multi method coerce( Str :$literal! is rw) {
         self!add-role($literal, 'PDF::COS::ByteString');
-        $literal.type = 'literal';
-        $literal;
     }
     multi method coerce( Str :$literal! is copy) { self.coerce: :$literal }
 

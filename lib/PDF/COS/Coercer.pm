@@ -37,13 +37,11 @@ class PDF::COS::Coercer {
     multi method coerce( Str $obj is rw, PDF::COS::DateString $class, |c) {
 	$obj = $class.new( $obj, |c );
     }
-    multi method coerce( DateTime $obj is rw, DateTime $class where PDF::COS, |c) {
+    multi method coerce( DateTime $obj is rw, PDF::COS::DateString $class, |c) {
 	$obj = $class.new( $obj, |c );
     }
-    multi method coerce( Str $obj is rw, PDF::COS::ByteString $class, Str :$type = $obj.?type // 'literal', |c) {
-	$obj = $obj but PDF::COS::ByteString;
-        $obj.type = $type;
-        $obj;
+    multi method coerce( Str $obj is rw, PDF::COS::ByteString $class, |c) {
+	$obj = $obj but PDF::COS::ByteString[$obj.?type // 'literal'];
     }
     multi method coerce( Str $value is rw, PDF::COS::TextString $class, Str :$type = $value.?type // 'literal', |c) {
 	$value = PDF::COS::TextString.new( :$value, :$type, |c );
@@ -62,7 +60,7 @@ class PDF::COS::Coercer {
     }
 
     #| handle ro candidates for the above
-    multi method coerce( Str $obj is copy, \r where PDF::COS::DateString|DateTime|PDF::COS::Name|PDF::COS::ByteString|PDF::COS::TextString|PDF::COS::Bool) {
+    multi method coerce( Str $obj is copy, \r where PDF::COS::DateString|Str|DateTime|PDF::COS::Name|PDF::COS::ByteString|PDF::COS::TextString|PDF::COS::Bool) {
 	self.coerce( $obj, r);
     }
 
