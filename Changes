@@ -1,3 +1,7 @@
+Release 0.3.5
+- [PDF]
+  -- Add top-level .cb-finish() hook. Call just prior to
+     serialization
 Release 0.3.4
 - [PDF::Reader][PDF::Writer]
   -- Allow copying of raw object ASTs from input to output

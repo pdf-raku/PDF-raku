@@ -47,6 +47,6 @@ PDFDocEncoding or UTF-16BE with a leading byte-order marker
 	    ?? utf16-encode(self)
             !! self ~ '';
 
-	$.type => $val;
+	$!type => $val;
     }
 }

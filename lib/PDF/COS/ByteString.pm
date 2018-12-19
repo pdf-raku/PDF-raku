@@ -1,7 +1,9 @@
 use v6;
 use PDF::COS;
 
-role PDF::COS::ByteString[Str $type = 'literal']
+my subset ContentType of Str where 'literal'|'hex-string';
+
+role PDF::COS::ByteString[ContentType $type = 'literal']
     does PDF::COS {
     method content { $type => self~'' };
 }
