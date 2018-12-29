@@ -36,7 +36,7 @@ class PDF::IO::Crypt::PDF
         my Str \CFM = CF<CFM> // 'None';
         my $class = do given CFM {
             when 'V2'    { PDF::IO::Crypt::RC4 }
-            when 'AESV2' { PDF::IO::Crypt::AES }
+            when 'AESV2' { PDF::IO::Crypt::AESV2 }
             when 'None' {
                 die "Security handlers are NYI";
             }
