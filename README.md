@@ -38,11 +38,11 @@ use PDF::COS;
 use PDF::COS::Type::Info;
 use PDF::COS::Stream;
 
-sub prefix:</>($name){ PDF::COS.coerce(:$name) };
+sub prefix:</>($name) { PDF::COS.coerce(:$name) };
 
 # construct a simple PDF document from scratch
 my PDF $pdf .= new;
-my $root     = $pdf.Root       = { :Type(/'Catalog') };
+my $catalog     = $pdf.Root       = { :Type(/'Catalog') };
 
 my @MediaBox  = 0, 0, 250, 100;
 
@@ -57,7 +57,7 @@ my %Resources = :Procset[ /'PDF', /'Text'],
                     },
                 };
 
-my $pages    = $root<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0) };
+my $pages    = $catalog<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0) };
 # add some standard metadata
 my PDF::COS::Type::Info $info = $pdf.Info //= {};
 $info.CreationDate = DateTime.now;

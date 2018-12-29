@@ -3,7 +3,7 @@ use v6;
 use PDF::IO::Crypt;
 use PDF::IO::Crypt::AST;
 
-class PDF::IO::Crypt::AES
+class PDF::IO::Crypt::AESV2
     is PDF::IO::Crypt
     does PDF::IO::Crypt::AST {
 
@@ -18,6 +18,8 @@ class PDF::IO::Crypt::AES
             unless $Length ~~ 16|128;
     }
 
+    method type { 'AESV2' }
+
     method !aes-encrypt($key, $msg, :$iv --> Buf) {
         OpenSSL::CryptTools::encrypt( :aes128, $msg, :$key, :$iv);
     }
@@ -25,8 +27,6 @@ class PDF::IO::Crypt::AES
     method !aes-decrypt($key, $msg, :$iv --> Buf) {
         OpenSSL::CryptTools::decrypt( :aes128, $msg, :$key, :$iv);
     }
-
-    method type { 'AESV2' }
 
     method !object-key(UInt $obj-num, UInt $gen-num ) {
 	die "encryption has not been authenticated"

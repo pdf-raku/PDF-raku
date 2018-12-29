@@ -6,7 +6,7 @@ class PDF::IO::Crypt::PDF
     does PDF::IO::Crypt::AST {
     use PDF::IO::Crypt;
     use PDF::IO::Crypt::RC4;
-    use PDF::IO::Crypt::AES;
+    use PDF::IO::Crypt::AESV2;
 
     has PDF::IO::Crypt $!stm-f; #| stream filter (/StmF)
     has PDF::IO::Crypt $!str-f; #| string filter (/StrF)
@@ -20,7 +20,7 @@ class PDF::IO::Crypt::PDF
     #| generate encryption
     submethod !generate( Hash :$doc!, Bool :$aes, UInt :$V = $aes ?? 4 !! 3, |c ) {
         my $class = $aes
-            ?? PDF::IO::Crypt::AES
+            ?? PDF::IO::Crypt::AESV2
             !! PDF::IO::Crypt::RC4;
         die "/V 4 is required for AES encryption"
             if $aes && $V < 4;

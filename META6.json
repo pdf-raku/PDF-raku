@@ -42,7 +42,7 @@
     "PDF::IO" : "lib/PDF/IO.pm",
     "PDF::IO::Blob" : "lib/PDF/IO/Blob.pm",
     "PDF::IO::Crypt" : "lib/PDF/IO/Crypt.pm",
-    "PDF::IO::Crypt::AES" : "lib/PDF/IO/Crypt/AES.pm",
+    "PDF::IO::Crypt::AESV2" : "lib/PDF/IO/Crypt/AESV2.pm",
     "PDF::IO::Crypt::AST" : "lib/PDF/IO/Crypt/AST.pm",
     "PDF::IO::Crypt::PDF" : "lib/PDF/IO/Crypt/PDF.pm",
     "PDF::IO::Crypt::RC4" : "lib/PDF/IO/Crypt/RC4.pm",
