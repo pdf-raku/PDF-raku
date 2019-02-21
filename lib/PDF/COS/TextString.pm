@@ -24,7 +24,6 @@ PDFDocEncoding or UTF-16BE with a leading byte-order marker
     method new( Str :$value! is copy, :$bom is copy, |c ) {
         if $value.starts-with(BOM-BE) {
 	    my uint8 @be = $value.ords;
-            # Note: consumes BOM, which sets encoding to utf-16be
             $value =  Buf.new(@be).decode('utf-16');
             $bom //= True;
         }
@@ -34,7 +33,12 @@ PDFDocEncoding or UTF-16BE with a leading byte-order marker
     }
 
     our sub utf16-encode(Str $str --> Str) {
-	 my Str \byte-string = $str.encode("utf-16be").map(*.chr).join('');
+	 my Str \byte-string = $str.encode("utf-16").map( -> \ord {
+                   my \lo = ord mod 0x100;
+                   my \hi = ord div 0x100;
+		   hi.chr ~ lo.chr;
+	 }).join('');
+
 	 BOM-BE ~ byte-string;
     }
 
