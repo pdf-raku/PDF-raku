@@ -27,7 +27,7 @@ my $pdf-ast = to-ast($pdf);
 is $pdf-ast<dict><Root><array>[1]<dict><ID><int>, 2, 'ast dereference';
 
 # our serializer should create indirect refs to resolve the above
-my $body = PDF::IO::Serializer.new.body( $pdf )[0];
+my Hash $body = PDF::IO::Serializer.new.body( $pdf )[0];
 is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
 is-deeply $body<trailer><dict><Size>, (:int(3)), 'body trailer dict - Size';
 my $s-objects = $body<objects>;
@@ -107,7 +107,8 @@ is $stream<encoded>.codes, 54, 'compressed stream length';
 
 # just to define current behaviour wrt to non-latin chars; blows up during write.
 my PDF::COS $obj-with-bad-byte-string .= coerce: { :Root{ :Name("Heydər Əliyev") } };
-@objects = @(PDF::IO::Serializer.new.body($obj-with-bad-byte-string)<objects>);
+$body = PDF::IO::Serializer.new.body($obj-with-bad-byte-string)[0];
+@objects = @($body<objects>);
 dies-ok {$writer.write( :ind-obj(@objects[0].value) )}, 'out-of-range byte-string dies during write';
 
 done-testing;
