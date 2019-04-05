@@ -9,7 +9,7 @@ my sub synopsis($input) {
     desc.perl;
 }
 
-class X::PDF::BadDump is Exception {
+class X::PDF::BadJSON is Exception {
     has Str $.input-file is required;
     method message {"File doesn't contain a top-level 'cos' struct: $!input-file"}
 }
@@ -130,7 +130,7 @@ class PDF::Reader {
         );
     }
 
-    method !install-trailer(PDF::COS::Dict $object = PDF::COS::Dict.new( :reader(self) ) ) {
+    method !install-trailer(PDF::COS::Dict $object = PDF::COS::Dict.new: :reader(self) ) {
         %!ind-obj-idx{0} = do {
             my PDF::IO::IndObj $ind-obj .= new( :$object, :obj-num(0), :gen-num(0) );
             %( :type(IndexType::External), :$ind-obj );
@@ -213,7 +213,7 @@ class PDF::Reader {
     multi method open(IO::Path $input-path  where .extension.lc eq 'json', |c ) {
         my \ast = from-json( $input-path.IO.slurp );
         my \root = ast<cos> if ast.isa(Hash);
-        die X::PDF::BadDump.new( :input-file($input-path.absolute) )
+        die X::PDF::BadJSON.new( :input-file($input-path.absolute) )
             without root;
         $!type = root<header><type> // 'PDF';
         $!version = root<header><version> // 1.2;
@@ -458,9 +458,10 @@ class PDF::Reader {
 
         PDF::Grammar::COS.subparse($preamble, :$.actions, :rule<header>)
             or die X::PDF::BadHeader.new( :$preamble );
-
-        $.version = $/.ast<version>;
-        $.type = $/.ast<type>;
+        given $/.ast {
+            $.version = .<version>;
+            $.type = .<type>;
+        }
     }
 
     #| Load input in FDF (Form Data Definition) format.
@@ -868,7 +869,7 @@ class PDF::Reader {
                 my Bool \is-compressed = obj-dict<Filter>:exists;
                 next if $compress == is-compressed
                     # always recompress LZW (Deprecated)
-                    && !($compress && is-compressed && obj-dict<Filter><name> ~~ 'LZWDecode');
+                    && !($compress && obj-dict<Filter><name> ~~ 'LZWDecode');
                 # fully stantiate object and adjust compression
                 my \object = self.ind-obj( obj-num, gen-num).object;
                 $compress ?? .compress !! .uncompress with object;

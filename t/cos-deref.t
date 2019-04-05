@@ -81,7 +81,7 @@ is-deeply $obj<Y>.reader, $reader, 'vivification - reader stickyness';
 $obj<Kids>[4] = $obj<B><SubRef>;
 $obj<Kids>.push: [1,2,3];
 is +$obj<Kids>, 6, '+$obj<Kids>';
-isa-ok $obj<Kids>[*-1], PDF::COS::Array, 'push coercian';
+isa-ok $obj<Kids>.tail, PDF::COS::Array, 'push coercian';
 $obj<Kids>.splice(1,4, {:Foo<bar>});
 is +$obj<Kids>, 3, '+$obj<Kids>';
 isa-ok $obj<Kids>[1], PDF::COS::Dict, 'splice coercian';

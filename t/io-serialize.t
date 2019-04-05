@@ -101,7 +101,7 @@ is-json-equiv @objects-renumbered, [:ind-obj[1000, 0, :dict{ Name => :name("Heyd
 is $writer.write( :ind-obj(@objects-renumbered[0].value)), "1000 0 obj <<\n  /Name /Heyd#c9#99r#20#c6#8fliyev\n>>\nendobj\n", 'renumbered write';
 
 my @objects-compressed = @(PDF::IO::Serializer.new.body($pdf, :compress)[0]<objects>);
-my $stream = @objects-compressed[*-2].value[2]<stream>;
+my $stream = @objects-compressed.tail(2).head.value[2]<stream>;
 is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'compressed dict';
 is $stream<encoded>.codes, 54, 'compressed stream length';
 

@@ -99,7 +99,7 @@ throws-like  { test-case( :endobj('bye!') ) }, X::PDF::BadIndirectObject::Parse,
 lives-ok { test-case( :repair ) }, 'good pdf :repair- lives';
 throws-like  { test-case( :repair, :endobj('bye!') ) }, X::PDF::ParseError, :message("Unable to parse PDF document: \"\\%PDF-1.3 \\%xyz 1 0 obj <<   /Auth ... startxref 693 \\%\\%EOF \""), ':repair - corrupted pdf';
 
-throws-like { PDF::Reader.new.open("META6.json") }, X::PDF::BadDump;
+throws-like { PDF::Reader.new.open("META6.json") }, X::PDF::BadJSON;
 
 done-testing;
  
