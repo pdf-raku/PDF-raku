@@ -88,7 +88,7 @@ class PDF::IO::Serializer {
         # disable auto-deref to keep all analysis and freeze stages lazy. if it hasn't been
         # loaded, it hasn't been updated
         temp $.reader.auto-deref = False;
-        # preserve existing object numbers. updated objects need to overwritten
+        # preserve existing object numbers. updated objects need to be overwritten
         # using the same object and generation numbers
         temp $.renumber = False;
         %!ref-count = ();

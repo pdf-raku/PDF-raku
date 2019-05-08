@@ -102,31 +102,29 @@ class PDF:ver<0.3.5>
             $diffs.print: to-json(%ast);
             $diffs.close;
         }
+        elsif ! +$body[0]<objects> {
+            # no updates that need saving
+        }
         else {
-            self!incremental-save($body, :$diffs);
+            self!incremental-save($body[0], :$diffs);
         }
     }
 
-    method !incremental-save($body, :$diffs) {
-        my Hash $trailer = $body[0]<trailer><dict>;
+    method !incremental-save(Hash $body, :$diffs) {
+        my Hash $trailer = $body<trailer><dict>;
 	my UInt $prev = $trailer<Prev>.value;
 
         constant Preamble = "\n\n";
         my Numeric $offset = $.reader.input.codes + Preamble.codes;
         my $size = $.reader.size;
         my PDF::Writer $writer .= new( :$offset, :$prev, :$size );
-        my Str $new-body = $writer.write-body( $body[0], my @entries, :$prev, :$trailer );
+        my Str $new-body = $writer.write-body( $body, my @entries, :$prev, :$trailer );
 
-	my IO::Handle $fh = do with $diffs {
-	    # saving updates elsewhere
-	    my Str $path = ~ .path;
-
-	    die "to-file and input PDF are the same: $path"
-               if $path eq $.reader.file-name;
-
-	    $_;
+	my IO::Handle $fh;
+        do with $diffs {
+	    $fh = $_ unless .path eq $.reader.file-name;
 	}
-	else {
+	$fh //= do {
 	    # in-place update. merge the updated entries in the index
 	    # todo: we should be able to leave the input file open and append to it
 	    $prev = $writer.prev;
@@ -135,7 +133,7 @@ class PDF:ver<0.3.5>
 	    $.Size = $size;
 	    @entries = [];
             given $.reader.file-name {
-                die "Unable to incrementally update a JSON file"
+                die "Increment update of JSON files is not supported"
                     if  m:i/'.json' $/;
 	        .IO.open(:a, :bin);
             }

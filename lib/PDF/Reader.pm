@@ -101,15 +101,15 @@ class PDF::Reader {
     subset ObjNumInt of UInt;
     subset GenNumInt of Int where 0..999;
 
-    has $.input is rw;         #= raw PDF image (latin-1 encoding)
-    has Str $.file-name;
-    has Hash %!ind-obj-idx{Int};  # keys are: $obj-num*1000 + $gen-num
-    has Bool $.auto-deref is rw = True;
-    has Rat $.version is rw;
-    has Str $.type is rw;      #= 'PDF', 'FDF', etc...
-    has uint $.prev;           #= max object number
-    has uint $.size is rw;     #= /Size entry in trailer dict ~ first free object number
-    has uint64 @.xrefs = (0);  #= xref position for each revision in the file
+    has $.input is rw;             #= raw PDF image (latin-1 encoding)
+    has Str    $.file-name;
+    has Hash   %!ind-obj-idx{Int}; # keys are: $obj-num*1000 + $gen-num
+    has Bool   $.auto-deref is rw = True;
+    has Rat    $.version is rw;
+    has Str    $.type is rw;       #= 'PDF', 'FDF', etc...
+    has uint   $.prev;             #= max object number
+    has uint   $.size is rw;       #= /Size entry in trailer dict ~ first free object number
+    has uint64 @.xrefs = (0);      #= xref position for each revision in the file
     has $.crypt is rw;
     my enum IndexType <Free External Embedded>;
 
