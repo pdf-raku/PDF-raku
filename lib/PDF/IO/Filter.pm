@@ -108,12 +108,12 @@ class PDF::IO::Filter {
         $filter-name = $_
             with %FilterAbbreviations{$filter-name};
 
-        die "unknown filter: $filter-name"
+        die "unknown PDF stream filter: $filter-name"
             unless %Filters{$filter-name}:exists;
 
         my $filter-class = %Filters{$filter-name};
 
-        X::NYI.new(:feature("filter not implemented: '$filter-name'")).throw
+        X::NYI.new(:feature("PDF stream filter not implemented: '$filter-name'")).throw
             unless $filter-class.can('decode');
 
         $filter-class;

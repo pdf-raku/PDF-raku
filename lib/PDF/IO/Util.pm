@@ -13,7 +13,7 @@ module PDF::IO::Util {
         (require PDF::Native).lib-version; # ping the library
     }
 
-    our sub libpdf-available(:$min-version = v0.0.1) {
+    our sub have-pdf-native(:$min-version = v0.0.1) {
         # experimental loading of PDF::Native (WIP)
         state Version $version
             ||= (%*ENV<USE_PDF_NATIVE> && load-lib())
@@ -31,8 +31,8 @@ module PDF::IO::Util {
     proto sub pack-pp( $, $ --> Buf) is export(:pack-pp) {*};
     proto sub pack-le( $, $ --> Buf) is export(:pack,:pack-pp) {*};
     my constant Packer = 'PDF::Native::Buf';
-    our &pack is export(:pack) = BEGIN libpdf-available() ?? xs(Packer, 'pack') !! &pack-pp;
-    our &unpack is export(:pack) = BEGIN libpdf-available() ?? xs(Packer, 'unpack') !! &unpack-pp;
+    our &pack is export(:pack) = BEGIN have-pdf-native() ?? xs(Packer, 'pack') !! &pack-pp;
+    our &unpack is export(:pack) = BEGIN have-pdf-native() ?? xs(Packer, 'unpack') !! &unpack-pp;
     multi sub unpack-pp( $nums!, 4)  { buf8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
     multi sub unpack-pp( $nums!, 16) { buf16.new: flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
     multi sub unpack-pp( $nums!, 32) { buf32.new: flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
@@ -42,20 +42,20 @@ module PDF::IO::Util {
     multi sub pack-pp( $nums!, 32) { buf8.new: flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
     multi sub pack-le( $nums!, 32) { buf8.new: flat $nums.list.map: { ($_, $_ +> 8, $_ +> 16, $_ +> 24) } }
     multi sub pack-pp( $nums!, UInt $n) { resample( $nums, $n, 8); }
-    sub container(UInt $bits) {
+    sub of(UInt $bits) {
         $bits <= 8 ?? uint8 !! ($bits > 16 ?? uint32 !! uint16)
     }
-    multi sub resample( $nums! is copy, UInt $n!, UInt $ where $n) {
+    multi sub resample( $nums! is copy, UInt $bits!, UInt $ where $bits) {
         $nums ~~ Buf
             ?? $nums
-            !! Buf[container($n)].new: $nums
+            !! Buf[ of($bits) ].new: $nums
     }
 
     sub get-bit($num, $bit) { $num +> ($bit) +& 1 }
     sub set-bit($bit) { 1 +< ($bit) }
     multi sub resample( $nums!, UInt $n!, UInt $m!) is default {
         warn "unoptimised $n => $m bit sampling";
-        Buf[container($m)].new: flat gather {
+        Buf[ of($m) ].new: flat gather {
             my int $m0 = 1;
             my int $sample = 0;
 

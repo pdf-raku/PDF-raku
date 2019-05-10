@@ -10,7 +10,7 @@ class PDF::IO::Filter::LZW {
     use PDF::IO::Blob;
 
     sub predictor-class {
-        state $predictor-class = PDF::IO::Util::libpdf-available()
+        state $predictor-class = PDF::IO::Util::have-pdf-native()
             ?? (require ::('PDF::Native::Filter::Predictors'))
             !! PDF::IO::Filter::Predictors;
         $predictor-class
@@ -20,15 +20,15 @@ class PDF::IO::Filter::LZW {
 	die "LZW encoding is not implemented.";
     }
 
-    multi method decode(Str $input, |c) {
-	$.decode($input.encode("latin-1"), |c);
+    multi method decode(Str $_, |c) {
+	$.decode( .encode("latin-1"), |c);
     }
     multi method decode(Blob $in, :$Predictor, :$EarlyChange = 1, |c --> Blob) is default {
 
-        my UInt \initial-code-len = 9;
-        my UInt \clear-table = 256;
-        my UInt \eod-marker = 257;
-        my UInt \dict-size = 256;
+        my constant initial-code-len = 9;
+        my constant clear-table = 256;
+        my constant eod-marker = 257;
+        my constant dict-size = 256;
         my uint16 $next-code = 258;
         my uint16 $code-len = initial-code-len;
         my @table = map {[$_,]}, (0 ..^ dict-size);
@@ -39,8 +39,8 @@ class PDF::IO::Filter::LZW {
         my uint16 $partial-bits = 0;
 
         while @data {
-            my $code = self!read-dat(@data, $partial-code, $partial-bits, $code-len);
-            last unless defined $code;
+            my $code = read-dat(@data, $partial-code, $partial-bits, $code-len)
+                // last;
 
             unless $EarlyChange {
                 if $next-code == (1 +< $code-len) and $code-len < 12 {
@@ -82,7 +82,7 @@ class PDF::IO::Filter::LZW {
        PDF::IO::Blob.new: $out;
     }
 
-    method !read-dat(@data, $partial-code is rw, $partial-bits is rw, $code-length) {
+    sub read-dat(@data, $partial-code is rw, $partial-bits is rw, $code-length) {
 
         while $partial-bits < $code-length {
             return Mu unless @data;
@@ -94,6 +94,6 @@ class PDF::IO::Filter::LZW {
         $partial-code +&= (1 +< ($partial-bits - $code-length)) - 1;
         $partial-bits -= $code-length;
 
-        return $code;
+        $code;
     }
 }

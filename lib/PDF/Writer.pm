@@ -5,13 +5,16 @@ class PDF::Writer {
     use PDF::Grammar:ver(v0.1.1+);
     use PDF::IO;
     use PDF::IO::Util;
+    use PDF::COS::Type::XRef;
+    use PDF::IO::IndObj;
 
     has PDF::IO $!input;
     has $.ast is rw;
     has UInt $.offset;
     has UInt $.prev;
     has UInt $.size;
-    has Str $.indent is rw = '';
+    has Str  $.indent is rw = '';
+    has Version $.compat = v1.4;
 
     submethod TWEAK(:$input) {
         $!input .= coerce( $_ )
@@ -50,7 +53,7 @@ class PDF::Writer {
 
     #| write the body and return the index
     multi method write-body( Hash $body!, @idx = [], Bool :$write-xref = True --> Str ) {
-	@idx.push: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
+	@idx.unshift: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
 	my @out = self!make-objects( $body<objects>, @idx );
 
 	my \trailer-dict = $body<trailer> // {};
@@ -67,6 +70,7 @@ class PDF::Writer {
     method !make-objects( @objects, @idx = [] ) {
         @objects.map: -> $obj is rw {
             my \bytes = do with $obj<ind-obj> -> $ind-obj {
+                # serialization of in-memory object
 		my uint $obj-num = $ind-obj[0];
 		my uint $gen-num = $ind-obj[1];
 		@idx.push: %( :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj );
@@ -74,6 +78,7 @@ class PDF::Writer {
                 $.write-ind-obj( $ind-obj );
             }
             elsif my \ref = $obj<copy> {
+                # direct copy of raw object from input to output
 		my uint $obj-num = ref[0];
 		my uint $gen-num = ref[1];
                 my $getter = ref[2];
@@ -93,8 +98,48 @@ class PDF::Writer {
         }
     }
 
-    method !make-trailer( Hash $trailer, @idx ) {
+    method !make-trailer($dict, @idx) {
+        $!compat >= v1.5
+            ?? self!make-trailer-stream($dict, @idx)
+            !! self!make-trailer-xref($dict, @idx);
+    }
+
+    #| build a PDF 1.5+ Cross Reference Stream
+    method !make-trailer-stream( Hash $trailer, @idx ) {
+        constant xref-entry = array[uint64];
+	my UInt \startxref = $.offset;
+        my %dict = %$trailer<dict>;
+        %dict<Size> = $!size + 1;
+        my PDF::COS::Type::XRef $xref .= new: :%dict;
+        my array @xref-index = @idx.map: -> $i {
+            given $i<type> {
+                when 0 { xref-entry.new($i<obj-num>, $_, $!size+1, $i<gen-num>) }
+                when 1 { xref-entry.new($i<obj-num>, $_, $i<offset>, $i<gen-num>) }
+                when 2 { xref-entry.new($i<obj-num>, $_, $i<ref-obj-num>, $i<index>) }
+            }
+        }
+
+        $xref.encoded = $xref.encode-index: @xref-index;
+        my $xref-obj = PDF::IO::IndObj.new: :object($xref), :obj-num($!size), :gen-num(0);
+
+        my \xref-str = self.write($xref-obj.ast);
+
+	my \trailer = [~] (
+	    xref-str,
+	    $.write-startxref( startxref ),
+	    '%%EOF',
+        );
+
+	$!offset += xref-str.codes;
+	$!prev = startxref;
+
+        trailer;
+    }
+
+    #| Build a PDF 1.4- Cross Reference Table
+    method !make-trailer-xref( Hash $trailer, @idx ) {
         my @xrefs := self!idx-to-xref( @idx );
+
 	my Str \xref-str = self.write-xref(@xrefs);
 	my UInt \startxref = $.offset;
 
@@ -190,9 +235,10 @@ class PDF::Writer {
 
         join("\n",
              '<<',
-             self!indented(@keys,
-	                   -> \k { [~] $.write-name(k), ' ', $.write( $dict{k} ) }
-	                  ),
+             self!indented(
+                 @keys,
+	         -> \k { [~] $.write-name(k), ' ', $.write( $dict{k} ) }
+	     ),
              $!indent ~ '>>'
             );
 
@@ -298,7 +344,8 @@ class PDF::Writer {
         [~] $.write-dict(%dict), " stream\n", $data, "\nendstream";
     }
 
-    method write-trailer(% (:%dict), :$prev) {
+    method write-trailer(% (:%dict), :$prev) is default {
+
         %dict<Prev> = :int($_)
             with $prev;
 
@@ -358,7 +405,7 @@ class PDF::Writer {
         die "xref $obj-count != {$entries.elems}"
             unless $obj-count == +$entries;
          $obj-first-num ~ ' ' ~ $obj-count ~ "\n"
-             ~ self.write('entries' => $entries );
+             ~ self.write-entries($entries );
     }
 
     multi method write-entries($_ where .shape[1] ~~ 3) {
@@ -369,7 +416,7 @@ class PDF::Writer {
             my uint32 $type    = .[$i;2];
             my Str $status = do given $type {
                 when (0) {Free}
-                when (1) {Inuse} # inuse
+                when (1) {Inuse}
                 when (2) { die "unable to write type-2 (embedded) objects in a PDF 1.4 cross reference table"}
                 default  { die "unhandled index type: $_" }
             };
@@ -392,11 +439,11 @@ class PDF::Writer {
 
     multi method write( Pair $_!) {
         state $fast-writer;
-        state $have-libpdf //= PDF::IO::Util::libpdf-available()
+        state $have-pdf-native //= PDF::IO::Util::have-pdf-native()
         ?? do { $fast-writer = (require ::('PDF::Native::Writer')); True }
         !! False;
         
-        given ($have-libpdf && .key ∈ fast-track
+        given ($have-pdf-native && .key ∈ fast-track
                ?? $fast-writer
                !! self) -> $writer {
             $writer."write-{.value.defined ?? .key !! 'null'}"( .value );

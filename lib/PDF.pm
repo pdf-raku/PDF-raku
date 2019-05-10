@@ -4,7 +4,7 @@ use PDF::COS::Dict;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
-class PDF:ver<0.3.5>
+class PDF:ver<0.3.6>
     is PDF::COS::Dict {
 
     use PDF::IO::Serializer;
@@ -117,10 +117,11 @@ class PDF:ver<0.3.5>
         constant Preamble = "\n\n";
         my Numeric $offset = $.reader.input.codes + Preamble.codes;
         my $size = $.reader.size;
-        my PDF::Writer $writer .= new( :$offset, :$prev, :$size );
-        my Str $new-body = $writer.write-body( $body, my @entries, :$prev, :$trailer );
-
+        my $compat = $.reader.compat;
+        my PDF::Writer $writer .= new( :$offset, :$prev, :$size, :$compat  );
 	my IO::Handle $fh;
+        my Str $new-body = Preamble ~ $writer.write-body( $body, my @entries);
+
         do with $diffs {
 	    $fh = $_ unless .path eq $.reader.file-name;
 	}
@@ -133,13 +134,12 @@ class PDF:ver<0.3.5>
 	    $.Size = $size;
 	    @entries = [];
             given $.reader.file-name {
-                die "Increment update of JSON files is not supported"
+                die "Incremental update of JSON files is not supported"
                     if  m:i/'.json' $/;
 	        .IO.open(:a, :bin);
             }
 	}
 
-        $fh.write: Preamble.encode('latin-1');
         $fh.write: $new-body.encode('latin-1');
         $fh.close;
     }

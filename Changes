@@ -1,3 +1,9 @@
+Release 0.3.6
+- [PDF::Writer]
+   -- Fix for issue#22 Incremental updates breaking Adobe
+      Reader. Incremental updates to a 1.5+ PDF that has
+      cross reference streams are written with cross
+      reference streams.
 Release 0.3.5
 - [PDF]
   -- Add top-level .cb-finish() hook. Call just prior to

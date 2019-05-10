@@ -10,26 +10,25 @@ class PDF::IO::Filter::Flate {
     # Maintainer's Note: Flate is described in the PDF 32000 spec in section 7.4.4.
     # See also http://www.libpng.org/pub/png/book/chapter09.html - PNG predictors
     sub predictor-class {
-        state $predictor-class = PDF::IO::Util::libpdf-available()
+        state $predictor-class = PDF::IO::Util::have-pdf-native()
             ?? (require ::('PDF::Native::Filter::Predictors'))
             !! PDF::IO::Filter::Predictors;
         $predictor-class
     }
 
-    multi method encode(Blob $decoded, :$Predictor, |c --> PDF::IO::Blob) is default {
-        PDF::IO::Blob.new: compress($Predictor ?? predictor-class.encode( $_, :$Predictor, |c ) !! $_)
-            with $decoded;
+    multi method encode(Blob $_, :$Predictor, |c --> PDF::IO::Blob) is default {
+        PDF::IO::Blob.new: compress($Predictor ?? predictor-class.encode( $_, :$Predictor, |c ) !! $_);
     }
-    multi method encode(Str $input, |c) {
-	$.encode( $input.encode('latin-1'), |c );
+    multi method encode(Str $_, |c) {
+	$.encode( .encode('latin-1'), |c );
     }
 
-    multi method decode(Blob $encoded, :$Predictor, |c --> PDF::IO::Blob) {
+    multi method decode(Blob $_, :$Predictor, |c --> PDF::IO::Blob) {
         PDF::IO::Blob.new: ($Predictor ?? predictor-class.decode( $_, :$Predictor, |c ) !! $_)
-            with uncompress( $encoded );
+            given uncompress( $_ );
     }
-    multi method decode(Str $encoded, |c) {
-	$.decode( $encoded.encode('latin-1'), |c);
+    multi method decode(Str $_, |c) {
+	$.decode( .encode('latin-1'), |c);
     }
 
 }

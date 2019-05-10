@@ -107,9 +107,10 @@ class PDF::Reader {
     has Bool   $.auto-deref is rw = True;
     has Rat    $.version is rw;
     has Str    $.type is rw;       #= 'PDF', 'FDF', etc...
-    has uint   $.prev;             #= max object number
+    has uint   $.prev;             #= xref offset
     has uint   $.size is rw;       #= /Size entry in trailer dict ~ first free object number
     has uint64 @.xrefs = (0);      #= xref position for each revision in the file
+    has Version $.compat = v1.4;   #= cross reference stream mode
     has $.crypt is rw;
     my enum IndexType <Free External Embedded>;
 
@@ -629,24 +630,32 @@ class PDF::Reader {
                 if %offsets-seen{$offset}++;
             # see if our cross reference table is already contained in the current tail
             my Str \xref = self!locate-xref(input-bytes, tail-bytes, $tail, $offset);
+            if xref ~~ m:s/^ xref/ {
+                # traditional 1.4 cross reference index
+                @obj-idx.append: (
+                PDF::IO::Util::have-pdf-native()
+                ?? self!load-xref-table-fast( xref, $dict, :$offset)
+                !! self!load-xref-table( xref, $dict, :$offset));
 
-            @obj-idx.append: xref ~~ m:s/^ xref/
-                ?? (PDF::IO::Util::libpdf-available()
-                    ?? self!load-xref-table-fast( xref, $dict, :$offset)
-                    !! self!load-xref-table( xref, $dict, :$offset))
-                !! self!load-xref-stream(xref, $dict, :$offset);
+                with $dict<XRefStm> {
+                    # hybrid 1.4 / 1.5 with a cross-reference stream
+                    # that contains additional objects
+                    my $xref-dict = {};
+                    my Str \xref-stm = self!locate-xref(input-bytes, tail-bytes, $tail, $_);
+                    @obj-idx.append: self!load-xref-stream(xref-stm, $xref-dict, :offset($_));
+                }
+
+            }
+            else {
+                # PDF 1.5+ cross reference stream
+                $!compat = v1.5;
+                @obj-idx.append: self!load-xref-stream(xref, $dict, :$offset);
+            }
 
             self!set-trailer: $dict;
 
             $offset = do with $dict<Prev> { $_ } else { Int };
             $!size  = do with $dict<Size> { $_ } else { 1 };
-
-            with $dict<XRefStm> {
-                # hybrid 1.4 / 1.5 with a cross-reference stream
-                my $xref-dict = {};
-                my Str \xref-stm = self!locate-xref(input-bytes, tail-bytes, $tail, $_);
-                @obj-idx.append: self!load-xref-stream(xref-stm, $xref-dict, :offset($_));
-            }
 
         }
 
@@ -769,7 +778,6 @@ class PDF::Reader {
 
     #| Get a list of indirect objects in the PDF
     #| - preserve input order
-    #| - delinearize
     #| - sift /XRef and /ObjStm objects,
     method get-objects(
         Bool :$incremental = False,     #| only return updated objects
@@ -788,7 +796,7 @@ class PDF::Reader {
             given $entry<type> {
                 when IndexType::External {
                     $offset = $_
-                    with $entry<offset>
+                        with $entry<offset>
                 }
                 when IndexType::Embedded {
                     my UInt $parent = $entry<ref-obj-num>;

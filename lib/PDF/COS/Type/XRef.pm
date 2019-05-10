@@ -88,7 +88,8 @@ class PDF::COS::Type::XRef
             $size = $obj-num + 1;
         }
 
-        self<Size> = $size;
+        self<Size> = $size
+           if !self<Size> || self<Size> < $size;
         self<Index> = @index;
 
         my uint32 @shaped-index[+@encoded-index div 3;3] Z= @encoded-index;
