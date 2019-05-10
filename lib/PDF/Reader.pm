@@ -107,11 +107,13 @@ class PDF::Reader {
     has Bool   $.auto-deref is rw = True;
     has Rat    $.version is rw;
     has Str    $.type is rw;       #= 'PDF', 'FDF', etc...
-    has uint   $.prev;             #= xref offset
+    has uint64 $.prev;             #= xref offset
     has uint   $.size is rw;       #= /Size entry in trailer dict ~ first free object number
     has uint64 @.xrefs = (0);      #= xref position for each revision in the file
-    has Version $.compat = v1.4;   #= cross reference stream mode
     has $.crypt is rw;
+    has Version $!compat = v1.4;   #= cross reference stream mode
+    method compat { $!compat }
+
     my enum IndexType <Free External Embedded>;
 
     method actions {
