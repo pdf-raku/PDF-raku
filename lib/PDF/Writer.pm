@@ -113,7 +113,7 @@ class PDF::Writer {
         my PDF::COS::Type::XRef $xref .= new: :%dict;
         my array @xref-index = @idx.map: -> $i {
             given $i<type> {
-                when 0 { xref-entry.new($i<obj-num>, $_, $!size+1, $i<gen-num>) }
+                when 0 { xref-entry.new($i<obj-num>, $_, $!size+1, $i<gen-num>+1) }
                 when 1 { xref-entry.new($i<obj-num>, $_, $i<offset>, $i<gen-num>) }
                 when 2 { xref-entry.new($i<obj-num>, $_, $i<ref-obj-num>, $i<index>) }
             }
@@ -276,7 +276,7 @@ class PDF::Writer {
     }
 
     method write-ind-ref(List $_) {
-        [ .[0], .[1], 'R' ].join: ' ';
+        join(' ', .[0], .[1], 'R');
     }
 
     method write-int(Int $_) {.fmt: '%d'}

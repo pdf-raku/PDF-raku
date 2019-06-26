@@ -853,10 +853,10 @@ class PDF::Reader {
         @objects;
     }
 
-    #| get just updated objects. return as objects
+    #| get just updated objects. return as indirect objects
     method get-updates() {
         my List \raw-objects = $.get-objects( :incremental );
-        raw-objects.list.map({
+        raw-objects.map({
             my ObjNumInt $obj-num = .value[0];
             my GenNumInt $gen-num = .value[1];
             $.ind-obj($obj-num, $gen-num).object;
