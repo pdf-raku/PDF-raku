@@ -59,7 +59,7 @@ class PDF:ver<0.3.6>
 
         self<Encrypt>:delete;
         $!flush = True;
-        $!crypt = (require PDF::IO::Crypt::PDF).new( :doc(self), :$owner-pass, :$user-pass, |c);
+        $!crypt = (require ::('PDF::IO::Crypt::PDF')).new: :doc(self), :$owner-pass, :$user-pass, |c;
     }
 
     method !is-indexed {
