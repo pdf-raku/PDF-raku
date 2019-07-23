@@ -457,7 +457,7 @@ class PDF::Reader {
         # file should start with: %PDF-n.m, (where n, m are single
         # digits giving the major and minor version numbers).
 
-        my Str $preamble = $!input.byte-str(0, 8);
+        my Str $preamble = $!input.byte-str(0, 32);
 
         PDF::Grammar::COS.subparse($preamble, :$.actions, :rule<header>)
             or die X::PDF::BadHeader.new( :$preamble );
