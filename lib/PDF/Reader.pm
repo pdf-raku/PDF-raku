@@ -160,7 +160,7 @@ class PDF::Reader {
                         $idx<encrypted> = False;
                 }
                 else {
-                    # encrypt all objects that have already been loaded
+                    # decrypt all objects that have already been loaded
                     with $idx<ind-obj> -> $ind-obj {
                         die "too late to setup encryption: $obj-num $gen-num R"
                             if $idx<type> != Free | External
@@ -173,8 +173,8 @@ class PDF::Reader {
 
             # handle special case of not encrypting document meta-data
             unless enc<EncryptMetadata> // True {
-                with $doc<Root> -> $catalog {
-                    temp $.auto-deref = False;
+                temp $.auto-deref = False;
+                with $doc.deref($doc<Root>) -> $catalog {
                     with $catalog<Metadata> {
                         when IndRef {
                             my ObjNumInt $obj-num = .value[0];
