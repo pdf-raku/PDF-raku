@@ -1,3 +1,6 @@
+Release 0.3.7
+- [PDF::COS::Type::XRef]
+  -- Fixed a bug in decode-index() method.
 Release 0.3.6
 - [PDF::Writer]
    -- Fix for issue#22 Incremental updates breaking Adobe

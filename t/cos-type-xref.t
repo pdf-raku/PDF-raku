@@ -19,7 +19,7 @@ my $xref-obj = $ind-obj.object;
 does-ok $xref-obj, ::('PDF::COS::Type')::('XRef');
 is-json-equiv $xref-obj.W, [ 1, 2, 1], '$xref.new .W';
 is $xref-obj.Size, 251, '$xref.new .Size';
-is-json-equiv $xref-obj.Index, [ 214, 37], '$xref.new .Index';
+is-json-equiv $xref-obj.Index, [ 214, 35, 1000, 2], '$xref.new .Index';
 
 my $xref;
 lives-ok {$xref = $xref-obj.decode; }, 'basic content decode - lives';
@@ -43,8 +43,8 @@ lives-ok { $xref-index = $ind-obj.object.decode-index; }, 'decode to index - liv
 
 my $expected-index-sample = (
    array[uint32].new(248, 2, 217, 16),
-   array[uint32].new(249, 2, 217, 17),
-   array[uint32].new(250, 1, 495, 0),
+   array[uint32].new(1000, 2, 217, 17),
+   array[uint32].new(1001, 1, 495, 0),
     );
 
 is-deeply $xref-index.tail(3), $expected-index-sample, 'decoded index (sample)';

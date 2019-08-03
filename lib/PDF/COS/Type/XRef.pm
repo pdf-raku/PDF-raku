@@ -122,14 +122,13 @@ class PDF::COS::Type::XRef
         my Array \index = self<Index> // [ 0, $.Size ];
         my array \decoded = $.decode( $encoded );
         my array @decoded-index = [];
-
+        my uint $i = 0;
         for index.list -> $obj-num is rw, \num-entries {
-
-            for 0 ..^ num-entries -> uint $i {
-
+            for 0 ..^ num-entries {
                 my uint32 @xref = $obj-num, decoded[$i;0], decoded[$i;1], decoded[$i;2];
                 @decoded-index.push: @xref;
                 $obj-num++;
+                $i++;
             }
         }
 
