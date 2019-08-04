@@ -623,10 +623,11 @@ class PDF::Reader {
         my UInt $offset = $!prev;
         my UInt \input-bytes = $!input.codes;
 
-        my array @obj-idx;
         my Hash $dict;
+        my @boundarys;
 
         while $offset.defined {
+            my array @obj-idx;
             @!xrefs.unshift: $offset;
             die "xref '/Prev' cycle detected \@$offset"
                 if %offsets-seen{$offset}++;
@@ -636,8 +637,8 @@ class PDF::Reader {
                 # traditional 1.4 cross reference index
                 @obj-idx.append: (
                 PDF::IO::Util::have-pdf-native()
-                ?? self!load-xref-table-fast( xref, $dict, :$offset)
-                !! self!load-xref-table( xref, $dict, :$offset));
+                    ?? self!load-xref-table-fast( xref, $dict, :$offset)
+                    !! self!load-xref-table( xref, $dict, :$offset));
 
                 with $dict<XRefStm> {
                     # hybrid 1.4 / 1.5 with a cross-reference stream
@@ -646,7 +647,6 @@ class PDF::Reader {
                     my Str \xref-stm = self!locate-xref(input-bytes, tail-bytes, $tail, $_);
                     @obj-idx.append: self!load-xref-stream(xref-stm, $xref-dict, :offset($_));
                 }
-
             }
             else {
                 # PDF 1.5+ cross reference stream
@@ -656,40 +656,51 @@ class PDF::Reader {
 
             self!set-trailer: $dict;
 
+            enum ( :ObjNum(0), :Type(1),
+                   :Offset(2), :GenNum(3),     # Type 1 (External) Objects
+                   :RefObjNum(2), :Index(3)    # Type 2 (Embedded) Objects
+                 );
+
+            for @obj-idx {
+                my $type := .[Type];
+
+                if $type == IndexType::Embedded {
+                    my UInt      $index       := .[Index];
+                    my ObjNumInt $ref-obj-num := .[RefObjNum];
+                    %!ind-obj-idx{.[ObjNum] * 1000} //= %( :$type, :$index, :$ref-obj-num );
+                }
+                else {
+                    my $k := .[ObjNum] * 1000 + .[GenNum];
+                    my $offset = .[Offset];
+                    %!ind-obj-idx{$k} //= %( :$type, :$offset );
+                    @boundarys.push: ($k => $offset);
+                }
+            }
+
             $offset = do with $dict<Prev> { $_ } else { Int };
             $!size  = do with $dict<Size> { $_ } else { 1 };
-
         }
 
-        enum ( :ObjNum(0), :Type(1),
-               :Offset(2), :GenNum(3),     # Type 1 (External) Objects
-               :RefObjNum(2), :Index(3)    # Type 2 (Embedded) Objects
-            );
+        # compute end position of objects
+        @boundarys.append: (xref => $_) for @!xrefs;
+        @boundarys .= sort(*.value);
 
-        my %obj-entries-of-type = @obj-idx.classify: *.[Type];
-
-        my @type1-obj-entries = .list.sort({ $^a[Offset] })
-            with %obj-entries-of-type<1>;
-
-        for @type1-obj-entries.kv -> \k, $_ {
-            my uint64 $end = k + 1 < +@type1-obj-entries ?? @type1-obj-entries[k + 1][Offset] !! input-bytes;
-            my uint64 $offset = .[Offset];
-            %!ind-obj-idx{.[ObjNum] * 1000 + .[GenNum]} = %( :type(External), :$offset, :$end );
+        for 0 .. (+@boundarys - 2) -> $i {
+            my $k := @boundarys[$i].key;
+            unless $k ~~ 'xref' {
+                with %!ind-obj-idx{$k} {
+                    if .<type> {
+                        .<end> = @boundarys[$i + 1].value;
+                    }
+                    else {
+                        # cull free object
+                        %!ind-obj-idx{$k}:delete;
+                    }
+                }
+            }
         }
 
         self!setup-crypt(|c);
-
-        my @embedded-obj-entries = .list
-            with %obj-entries-of-type<2>;
-
-        for @embedded-obj-entries {
-            my ObjNumInt $obj-num = .[ObjNum];
-            my UInt      $index = .[Index];
-            my ObjNumInt $ref-obj-num = .[RefObjNum];
-            my GenNumInt $gen-num = 0;
-
-            %!ind-obj-idx{$obj-num * 1000 + $gen-num} = %( :type(IndexType::Embedded), :$index, :$ref-obj-num );
-        }
 
         #| don't entirely trust /Size entry in trailer dictionary
         my ObjNumInt \actual-size = max( %!ind-obj-idx.keys ) div 1000;
