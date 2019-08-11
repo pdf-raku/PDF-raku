@@ -624,7 +624,7 @@ class PDF::Reader {
         my UInt \input-bytes = $!input.codes;
 
         my Hash $dict;
-        my @boundarys;
+        my UInt @divs;
 
         while $offset.defined {
             my array @obj-idx;
@@ -673,7 +673,7 @@ class PDF::Reader {
                     my $k := .[ObjNum] * 1000 + .[GenNum];
                     my $offset = .[Offset];
                     %!ind-obj-idx{$k} //= %( :$type, :$offset );
-                    @boundarys.push: ($k => $offset);
+                    @divs.push: $offset;
                 }
             }
 
@@ -681,31 +681,28 @@ class PDF::Reader {
             $!size  = do with $dict<Size> { $_ } else { 1 };
         }
 
-        # compute end position of objects
-        @boundarys.append: (xref => $_) for @!xrefs;
-        @boundarys .= sort(*.value);
-
-        for 0 .. (+@boundarys - 2) -> $i {
-            my $k := @boundarys[$i].key;
-            unless $k ~~ 'xref' {
-                with %!ind-obj-idx{$k} {
-                    if .<type> {
-                        .<end> = @boundarys[$i + 1].value;
-                    }
-                    else {
-                        # cull free object
-                        %!ind-obj-idx{$k}:delete;
-                    }
-                }
-            }
-        }
-
-        self!setup-crypt(|c);
-
         #| don't entirely trust /Size entry in trailer dictionary
         my ObjNumInt \actual-size = max( %!ind-obj-idx.keys ) div 1000;
         $!size = actual-size + 1
             if $!size <= actual-size;
+
+        # constrain indirect objects to a maximum end position
+        @divs.append: @!xrefs;
+        @divs.push: input-bytes;
+        @divs .= sort;
+
+        # mark end positions of external objects
+        my int $n = 0;
+        for %!ind-obj-idx.values.grep(*<offset>).sort(*<offset>) {
+            repeat {
+                .<end> = @divs[$n++];
+            } until .<end> > .<offset>;
+            # cull, if freed
+            %!ind-obj-idx{.<ob-num>*1000 + .<gen-num>}:delete
+                unless .<type>;
+        }
+
+        self!setup-crypt(|c);
     }
 
     #| differentiate update xrefs from hybrid xrefs
