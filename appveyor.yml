@@ -14,7 +14,7 @@ install:
   - git clone https://github.com/tadzik/rakudobrew %USERPROFILE%\rakudobrew
   - SET PATH=%USERPROFILE%\rakudobrew\bin;%PATH%
   - rakudobrew build moar %TEST_MOAR%
-  - rakudobrew switch %TEST_MOAR%
+  - rakudobrew switch moar-%TEST_MOAR%
   - rakudobrew build zef
   - cd %APPVEYOR_BUILD_FOLDER%
   - set AUTHOR_TESTING=1
