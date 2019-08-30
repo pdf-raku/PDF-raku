@@ -16,7 +16,7 @@ install:
   - rakudobrew build moar %TEST_MOAR%
   - SET P6INST=%USERPROFILE%\rakudobrew\versions\moar-%TEST_MOAR\install
   - SET P6SHARE=%P6INST%\share\perl6
-  - SET PATH=%P6INST%\bin;%P6SHARE%\site\bin;%P6SHARE%\bin;%PATH
+  - SET PATH=%P6INST%\bin;%P6SHARE%\site\bin;%P6SHARE%\bin;%PATH%
   - rakudobrew build zef
   - cd %APPVEYOR_BUILD_FOLDER%
   - set AUTHOR_TESTING=1
