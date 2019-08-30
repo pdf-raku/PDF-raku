@@ -18,8 +18,8 @@ install:
   - cd %APPVEYOR_BUILD_FOLDER%
   - set AUTHOR_TESTING=1
   - SET P6INST=%USERPROFILE%\rakudobrew\versions\moar-%TEST_MOAR\install
-  - SET P6SHARE %P6INST%/share/perl6
-  - SET PATH=%P6INST%/bin;%P6SHARE%/site/bin;%P6SHARE%/bin;%PATH;
+  - SET P6SHARE %P6INST%\share\perl6
+  - SET PATH=%P6INST%\bin;%P6SHARE%\site\bin;%P6SHARE%\bin;%PATH;
   - zef --verbose --depsonly install .
 
 build: off
