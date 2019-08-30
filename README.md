@@ -111,7 +111,7 @@ $pdf.update;
 
 A PDF file consists of data structures, including dictionaries (hashes) arrays, numbers and strings, plus streams for holding graphical data such as images, fonts and general content.
 
-PDF files are also indexed for random access and may also hae internal compression and/or encryption.
+PDF files are also indexed for random access and may also have internal compression and/or encryption.
 
 They have a reasonably well specified structure. The document starts from the `Root` entry in the trailer dictionary, which is the main entry point into a PDF.
 
