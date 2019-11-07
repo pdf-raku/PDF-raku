@@ -299,7 +299,7 @@ class PDF::Reader {
             with $obj-len {
                 die X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
-                    :details("Stream dictionary entry /Length {length} is greater than the actual stream length ({$obj-len - from} bytes)"),
+                    :details("Stream dictionary entry /Length {length} overlaps with neighbouring objects (maximum size here is {$obj-len - from} bytes)"),
                 ) if length > $_ - from;
             }
 
