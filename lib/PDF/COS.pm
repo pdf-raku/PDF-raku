@@ -52,11 +52,12 @@ role PDF::COS {
 	self!coercer.coerce( $dt, DateTime, |c)
     }
 
-    #| work around rakudo performance regressions - issue #15
     method required(Str \mod-name) {
 	%required{mod-name}:exists
             ?? %required{mod-name}
-            !! %required{mod-name} = (require ::(mod-name));
+            !! %required{mod-name} = do given ::(mod-name) {
+                $_ ~~ Failure ?? do {.so; (require ::(mod-name))} !! $_;
+            }
     }
     method !add-role($obj is rw, Str $role-name, Str $param?) {
 	my $role = $.required($role-name);
