@@ -6,7 +6,7 @@ PDF-p6
 
 ## Overview
 
-This is a low-level tool-kit for accessing and manipulating data from PDF documents.
+This is a low-level Raku module for accessing and manipulating data from PDF documents.
 
 It presents a seamless view of the data in PDF or FDF documents; behind the scenes handling indexing, compression, encryption, fetching of indirect objects and unpacking of object streams. It is capable of reading, editing and creation or incremental update of PDF files.
 
@@ -23,7 +23,7 @@ Classes/roles in this module include:
 - `PDF::IO::Serializer` - data marshalling utilities for the preparation of full or incremental updates
 - `PDF::IO::Crypt` - decryption / encryption
 - `PDF::Writer` - for the creation or update of PDF files
-- `PDF::COS` - Perl 6 Bindings to PDF objects [Carousel Object System, see <a href="http://jimpravetz.com/blog/2012/12/in-defense-of-cos/">COS</a>]
+- `PDF::COS` - Raku Bindings to PDF objects [Carousel Object System, see <a href="http://jimpravetz.com/blog/2012/12/in-defense-of-cos/">COS</a>]
 
 ## Example Usage
 
@@ -57,18 +57,18 @@ my %Resources = :Procset[ /'PDF', /'Text'],
                     },
                 };
 
-my $pages    = $catalog<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0) };
+my $page-index    = $catalog<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0) };
 # add some standard metadata
 my PDF::COS::Type::Info $info = $pdf.Info //= {};
 $info.CreationDate = DateTime.now;
-$info.Producer = "Perl 6 PDF";
+$info.Producer = "Raku PDF";
 
 # define some basic content
 my PDF::COS::Stream $Contents .= coerce: :stream{ :decoded("BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET" ) };
 
 # create a new page. add it to the page tree
-$pages<Kids>.push: { :Type(/'Page'), :Parent($pages), :$Contents };
-$pages<Count>++;
+$page-index<Kids>.push: { :Type(/'Page'), :Parent($page-index), :$Contents };
+$page-index<Count>++;
 
 # save the PDF to a file
 $pdf.save-as: 'examples/helloworld.pdf';
@@ -90,7 +90,7 @@ my $catalog = $pdf<Root>;
 my $Parent = $catalog<Pages>;
 
 # create additional content, use existing font /F1
-my $Contents = PDF::COS.coerce( :stream{ :decoded("BT /F1 16 Tf  15 25 Td (Goodbye for now!) Tj ET" ) } );
+my $Contents = PDF::COS.coerce: :stream{ :decoded("BT /F1 16 Tf  15 25 Td (Goodbye for now!) Tj ET" ) };
 
 # create a new page. add it to the page-tree
 $Parent<Kids>.push: { :Type( :name<Page> ), :$Parent, :$Contents };
@@ -125,7 +125,7 @@ The `examples/helloworld.pdf` file that we created above contains:
 %...(control characters)
 1 0 obj <<
   /CreationDate (D:20151225000000Z00'00')
-  /Producer (Perl 6 PDF)
+  /Producer (Raku PDF)
 >>
 endobj
 
@@ -175,11 +175,11 @@ xref
 0 7
 0000000000 65535 f 
 0000000014 00000 n 
-0000000103 00000 n 
-0000000157 00000 n 
-0000000336 00000 n 
-0000000406 00000 n 
-0000000503 00000 n 
+0000000101 00000 n 
+0000000155 00000 n 
+0000000334 00000 n 
+0000000404 00000 n 
+0000000501 00000 n 
 trailer
 <<
   /ID [ <d743a886fcdcf87b69c36548219ea941> <d743a886fcdcf87b69c36548219ea941> ]
@@ -197,13 +197,13 @@ The PDF is composed of a series indirect objects, for example, the first object 
 ```
 1 0 obj <<
   /CreationDate (D:20151225000000Z00'00')
-  /Producer (Perl 6 PDF)
+  /Producer (Raku PDF)
 >> endobj
 ```
 
-It's an indirect object with object number `1` and generation number `0`, with a `<<` ... `>>` delimited dictionary containing the author and the date that the document was created. This PDF dictionary is roughly equivalent to a Perl 6 hash:
+It's an indirect object with object number `1` and generation number `0`, with a `<<` ... `>>` delimited dictionary containing the author and the date that the document was created. This PDF dictionary is roughly equivalent to a Raku hash:
 
-``` { :CreationDate("D:20151225000000Z00'00'"), :Producer("Perl 6 PDF"), } ```
+``` { :CreationDate("D:20151225000000Z00'00'"), :Producer("Raku PDF"), } ```
 
 The bottom of the PDF contains:
 
@@ -229,16 +229,16 @@ xref
 0 7
 0000000000 65535 f 
 0000000014 00000 n 
-0000000103 00000 n 
-0000000157 00000 n 
-0000000336 00000 n 
-0000000406 00000 n 
-0000000503 00000 n 
+0000000101 00000 n 
+0000000155 00000 n 
+0000000334 00000 n 
+0000000404 00000 n 
+0000000501 00000 n 
 ```
 
 This indexes the indirect objects in the PDF by byte offset (generation number) for random access.
 
-We can quickly put PDF to work using the Perl 6 REPL, to better explore the document:
+We can quickly put PDF to work using the Raku REPL, to better explore the document:
 
     snoopy: ~/git/perl6-PDF $ perl6 -M PDF
     > my $pdf = PDF.open: "examples/helloworld.pdf"
@@ -249,7 +249,7 @@ We can quickly put PDF to work using the Perl 6 REPL, to better explore the docu
 This is the root of the PDF, loaded from the trailer dictionary
 
     > $pdf<Info>
-    {CreationDate => D:20151225000000Z00'00', Producer => Perl 6 PDF}
+    {CreationDate => D:20151225000000Z00'00', ModDate => D:20151225000000Z00'00', Producer => Raku PDF}
 
 That's the document information entry, commonly used to store basic meta-data about the document.
 
@@ -266,7 +266,7 @@ The trailer `Root` entry references the document catalog, which contains the act
     {Contents => ind-ref => [5 0], Parent => ind-ref => [3 0], Type => Page}
     > $pdf<Root><Pages><Kids>[0]<Contents>
     {Length => 44}
-    BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET
+    "BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET"
 
 The page `/Contents` entry is a PDF stream which contains graphical instructions. In the above example, to output the text `Hello, world!` at coordinates 100, 250.
 
@@ -435,7 +435,7 @@ my $object3 = PDF::COS.coerce({ :Type( :name<Pages> ),
 
 A table of Object types and coercements follows:
 
-*AST Tag* | Object Role/Class | *Perl 6 Type Coercion | PDF Example | Description |
+*AST Tag* | Object Role/Class | *Raku Type Coercion | PDF Example | Description |
 --- | --- | --- | --- | --- |
  `array` | PDF::COS::Array | Array | `[ 1 (foo) /Bar ]` | array objects
 `bool` | PDF::COS::Bool | Bool | `true`
