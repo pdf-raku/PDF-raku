@@ -38,4 +38,11 @@ class PDF::COS::Dict
     method content {
         ast-coerce self;
     }
+
+    # detach reader and clear object to facilitate GC
+    method done {
+        self.done-reading();
+        self = %()
+    }
+
 }

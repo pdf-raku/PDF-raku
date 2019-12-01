@@ -238,7 +238,7 @@ xref
 
 This indexes the indirect objects in the PDF by byte offset (generation number) for random access.
 
-We can quickly put PDF to work using the Raku REPL, to better explore the document:
+We can quickly put PDF to work using the Rakudo REPL, to better explore the document:
 
     snoopy: ~/git/perl6-PDF $ perl6 -M PDF
     > my $pdf = PDF.open: "examples/helloworld.pdf"

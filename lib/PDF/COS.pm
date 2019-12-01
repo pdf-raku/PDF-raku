@@ -25,6 +25,16 @@ role PDF::COS {
 	    );
     }
 
+    method done-reading {
+        with $!reader {
+            if $!obj-num.defined && $!obj-num > 0 {
+                .detach($!obj-num, $!gen-num);
+            }
+            $_ = Nil;
+        }
+    }
+    method done { self.done-reading() }
+
     multi method coerce(Mu $obj is rw, Mu $type ) {
 	self!coercer.coerce( $obj, $type )
     }
