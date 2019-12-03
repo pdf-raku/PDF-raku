@@ -3,11 +3,8 @@ Release 0.3.7
   -- Fixed a bug in decode-index() method.
 - [PDF::Reader]
   -- Reworked !load-index method
-  -- Added $reader.detach()
-- [PDF::COS][PDF::COS::Dict][PDF::COS::Array]
+- [PDF::COS]
   -- improved required() method.
-  -- Added .done() methods. Calls $reader.detach() and clears
-     array/dict objects to release it, and child objects, for GC.
 Release 0.3.6
 - [PDF::Writer]
    -- Fix for issue#22 Incremental updates breaking Adobe

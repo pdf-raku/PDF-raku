@@ -420,14 +420,6 @@ class PDF::Reader {
         }
     }
 
-    #| remove object from index, to reduce memory /facilitate GC
-    method detach(ObjNumInt $obj-num!, GenNumInt $gen-num!) {
-
-        my Hash $idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
-            // die "unable to find object: $obj-num $gen-num R";
-        $idx<ind-obj>:delete;
-    }
-
     #| raw fetch of an object, without indexing or decryption
     method get(ObjNumInt $obj-num, GenNumInt $gen-num) {
         my %idx = %!ind-obj-idx{$obj-num * 1000 + $gen-num}

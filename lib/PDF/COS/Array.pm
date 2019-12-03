@@ -38,10 +38,4 @@ class PDF::COS::Array
         }
         :$array;
     }
-
-    # detach reader and clear object to facilitate GC
-    method done {
-        self.done-reading();
-        self = [];
-    }
 }

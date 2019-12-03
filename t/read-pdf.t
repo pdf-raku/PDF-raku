@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 29;
+plan 20;
 
 use PDF::Reader;
 use PDF::COS::Dict;
@@ -17,24 +17,9 @@ is $pdf-in.version, 1.2, 'loaded version';
 is $pdf-in.type, 'PDF', 'loaded type';
 is $pdf-in.size, 9, 'loaded size';
 is $pdf-in.trailer<Root>.obj-num, 1, 'root-obj.obj-num';
-my $dict := $pdf-in.ind-obj(3, 0).object;
-isa-ok $dict, PDF::COS::Dict, 'fetch via index';
+isa-ok $pdf-in.ind-obj(3, 0).object, PDF::COS::Dict, 'fetch via index';
 isa-ok $pdf-in.ind-obj(5, 0).object, PDF::COS::Stream, 'fetch via index';
 is $pdf-in.ind-obj(5, 0).object.encoded, "BT\n/F1 24 Tf\n100 100 Td (Hello, world!) Tj\nET", 'stream content';
-
-my $dict-again := $pdf-in.ind-obj(3, 0).object;
-ok $dict === $dict-again, 'dict object is cached';
-ok $dict.keys, 'dict keys';
-ok $dict.reader.defined, 'dict reader';
-
-lives-ok {$dict.done()}, 'dict.done()';
-ok !$dict.keys, 'dict done keys';
-ok !$dict.reader.defined, 'dict done reader';
-
-$dict := $pdf-in.ind-obj(3, 0).object;
-ok $dict !=== $dict-again, 'dict re-done object is cached';
-ok $dict.keys, 'dict re-done keys';
-ok $dict.reader.defined, 'dict re-done reader';
 
 my $ast = $pdf-in.ast( :rebuild );
 is-json-equiv $ast<cos><header>, {:type<PDF>, :version(1.2)}, '$ast header';
