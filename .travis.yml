@@ -4,7 +4,7 @@ os:
   - linux
 perl6:
   - latest
-  - '2017.08'
+  - '2018.08'
 install:
   - rakudobrew build zef
   - zef --depsonly install .
