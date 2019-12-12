@@ -219,7 +219,10 @@ class PDF::Writer {
     }
 
     multi method write-comment(Str $_) {
-        m:s{^ '%'} ?? $_ !! '% ' ~ $_
+        # sanitize non-latin characters
+        given .subst(/<- [ \x0..\xFF ]>/, *.ord.fmt('#%x') , :g) {
+            .starts-with('%') ?? $_ !! '% ' ~ $_
+        }
     }
 
     method write-dict(Hash $dict) {

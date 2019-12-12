@@ -7,7 +7,7 @@
 { "ast" : { "header" : { "version" : 1.2, "type" : "FDF" } }, "pdf" : "%FDF-1.2" }
 { "ast" : { "name" : "Zsófia#" }, "pdf" : "/Zs#c3#b3fia##" }
 { "ast" : { "name" : "Heydər Əliyev" }, "pdf" : "/Heyd#c9#99r#20#c6#8fliyev" }
-{ "ast" : { "comment" : "I hope this works" }, "pdf" : "% I hope this works" }
+{ "ast" : { "comment" : "I hope this works♥" }, "pdf" : "% I hope this works#2665" }
 { "ast" : { "startxref" : 42 }, "pdf" : "startxref\n42\n" }
 { "ast" : { "content" : { "Tj" : [ { "literal" : "Hello, World!" } ] } }, "pdf": "(Hello, World!) Tj" }
 { "ast" : { "content" : { "TJ" : [ { "array" : [ { "literal" : "DOS\u000d\u000aCR1(\u0000" }, { "hex-string" : "DOS\r\nCR2" } ] } ] } }, "pdf": "[ (DOS\\r\\nCR1\\(\u0000) <444f530d0a435232> ] TJ" }
