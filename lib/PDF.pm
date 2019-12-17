@@ -1,11 +1,13 @@
 use v6;
 
 use PDF::COS::Dict;
+use PDF::Interface;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
-class PDF:ver<0.3.7>
-    is PDF::COS::Dict {
+class PDF:ver<0.3.8>
+    is PDF::COS::Dict
+    does PDF::Interface {
 
     use PDF::IO::Serializer;
     use PDF::Reader;

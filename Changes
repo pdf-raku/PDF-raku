@@ -1,3 +1,8 @@
+Release 0.3.8
+- [PDF::Interface] new role defining the methods implemented by PDF. Can be
+  consumed by derived or replacement classes to ensure all methods are implemented.
+- [pdf-rewriter.p6] --class option changed from a Boolean to a string. Any class
+  can now be loaded that performs the PDF::Interface role (PDF::Lite, PDF::Class, PDF::API6).
 Release 0.3.7
 - [PDF::COS::Type::XRef]
   -- Fixed a bug in decode-index() method.
