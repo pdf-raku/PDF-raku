@@ -1,13 +1,11 @@
 use v6;
 
 use PDF::COS::Dict;
-use PDF::Interface;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
 class PDF:ver<0.3.8>
-    is PDF::COS::Dict
-    does PDF::Interface {
+    is PDF::COS::Dict {
 
     use PDF::IO::Serializer;
     use PDF::Reader;
@@ -35,12 +33,16 @@ class PDF:ver<0.3.8>
     has UInt $.Prev is entry; 
 
     #| open the input file-name or path
-    method open($spec, |c) {
+    method open($spec, Str :$type, |c) {
         my PDF::Reader $reader .= new;
         my \doc = self.new: :$reader;
 
         $reader.trailer = doc;
         $reader.open($spec, |c);
+        with $type {
+            die "PDF file has wrong type: " ~ $reader.type
+                unless $reader.type eq $_;
+        }
         doc.crypt = $_
             with $reader.crypt;
         doc;

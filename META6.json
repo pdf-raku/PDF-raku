@@ -59,8 +59,7 @@
     "PDF::IO::Str" : "lib/PDF/IO/Str.pm",
     "PDF::IO::Util" : "lib/PDF/IO/Util.pm",
     "PDF::Reader" : "lib/PDF/Reader.pm",
-    "PDF::Writer" : "lib/PDF/Writer.pm",
-    "PDF::Interface" : "lib/PDF/Interface.pm"
+    "PDF::Writer" : "lib/PDF/Writer.pm"
   },
   "resources" : [ ],
   "source-url" : "git://github.com/p6-pdf/PDF-p6.git",

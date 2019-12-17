@@ -1,6 +1,5 @@
 Release 0.3.8
-- [PDF::Interface] new role defining the methods implemented by PDF. Can be
-  consumed by derived or replacement classes to ensure all methods are implemented.
+- [PDF] Add $.open(:type) option. Asserts that the PDF file is of a given type 'PDF', 'FDF' etc.
 - [pdf-rewriter.p6] --class option changed from a Boolean to a string. Any class
   can now be loaded that performs the PDF::Interface role (PDF::Lite, PDF::Class, PDF::API6).
 Release 0.3.7

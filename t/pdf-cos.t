@@ -43,14 +43,8 @@ class COS::JAR
     has Manifest $.Root is entry(:indirect);
     method type {'JAR'}
 
-    method open(|c) {
-        my $jar = callsame;
-
-	die "JAR file has wrong type: " ~ $jar.reader.type
-	    unless $jar.reader.type eq 'JAR';
-
-        $jar;
-    }
+    # only accept %JAR files
+    method open(|c) { nextwith( :type<JAR>, |c); }
 }
 
 # ensure consistant document ID generation
@@ -62,12 +56,12 @@ does-ok $jar.Root, COS::JAR::Manifest;
 is $jar.Root.Language, 'LOLCODE', 'accessor';
 is $jar.Root.Version, '1.2', 'accessor';
 
-my $decoded = q:to<--ENUFF-->;
+my $decoded = q:to<\_(ツ)_/>;
 HAI 1.2
 CAN HAS STDIO?
 VISIBLE "HAI WORLD!"
 KTHXBYE
---ENUFF--
+\_(ツ)_/
 
 my PDF::COS $Source .= coerce: :stream{ :$decoded, :dict{ :Filter<FlateDecode> } };
 
@@ -76,9 +70,9 @@ my $Description = "Moon phases: \x1f311\x1f313\x1f315\x1f317";
 $jar.Root.Classes.push: { :Name( :name<MAIN> ), :$Source, :Author("Heydər Əliyev"), :$Description};
 
 lives-ok {$jar.save-as: "t/lolcode.cjar" }, 'save as cos';
-lives-ok {$jar.save-as: "tmp/lolcode.cjar.json"}, 'save as json';
-
-lives-ok {$jar = $jar.open("t/lolcode.cjar");}, "open";
+lives-ok {$jar.save-as: "tmp/lolcode.cjar.json" }, 'save as json';
+dies-ok { $jar.open: "t/helloworld.pdf" }, "PDF open as JAR - fails";
+lives-ok {$jar = $jar.open: "t/lolcode.cjar" }, "open";
 
 does-ok $jar, COS::JAR;
 is $jar.type, 'JAR', 'read type';

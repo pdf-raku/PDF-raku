@@ -13,7 +13,7 @@ sub MAIN (
     Bool :$rebuild  is copy,    #= rebuild object tree (renumber, garbage collect and deduplicate objects)
     Bool :$compress is copy,    #= compress streams
     Bool :$uncompress,          #= uncompress streams
-    Str  :$class,               #= load a class (
+    Str  :$class,               #= load a class (PDF::Class, PDF::Lite, PDF::API6)
     Bool :$decrypt   = False,   #= decrypt
     Bool :$drm       = True,
     ) {
@@ -21,8 +21,8 @@ sub MAIN (
     $compress = False if $uncompress;
 
     if $class {
-        need PDF::Interface; # role performed by PDF::Class, PDF::Lite, PDF::API6..
-	my PDF::Interface $ = (require ::($class));
+        need PDF; # Could be PDF, FDF, PDF::Class, PDF::Lite, PDF::API6..
+	my PDF $ = (require ::($class));
     }
 
     my PDF::Reader $reader .= new;
