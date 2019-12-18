@@ -13,9 +13,8 @@ class PDF::COS::Type::XRef
     use PDF::COS::Tie;
     use PDF::COS::Name;
 
-    # See [PDF 32000 TABLE 17 Additional entries specific to a cross-reference stream dictionary]
-##    use ISO_32000::Cross_reference_stream;
-##    also does ISO_32000::Cross_reference_stream;
+##    use ISO_32000::Table_17-Additional_entries_specific_to_a_cross-reference_stream_dictionary;
+##    also does ISO_32000::Table_17-Additional_entries_specific_to_a_cross-reference_stream_dictionary;
 
     has PDF::COS::Name $.Type is entry(:required) where 'XRef';   #| (Required) The type of PDF object that this dictionary describes; shall be XRef for a cross-reference stream.
 

@@ -7,9 +7,8 @@ use PDF::COS::Tie::Hash;
 role PDF::COS::Type::Encrypt
     does PDF::COS::Tie::Hash {
 
-    # See [PDF 32000 TABLE 20 Entries common to all encryption dictionaries]
-##    use ISO_32000::Encryption_common;
-##    also does ISO_32000::Encryption_common;
+    # use ISO_32000::Table_20-Entries_common_to_all_encryption_dictionaries;
+    # also does ISO_32000::Table_20Entries_common_to_all_encryption_dictionaries;
 
     use PDF::COS::Tie;
     use PDF::COS::Name;

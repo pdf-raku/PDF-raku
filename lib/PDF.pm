@@ -13,9 +13,8 @@ class PDF:ver<0.3.8>
     use PDF::COS::Tie;
     use JSON::Fast;
 
-    # See [PDF 32000 TABLE 15 Entries in the file trailer dictionary]
-##    use ISO_32000::File_trailer;
-##    also does ISO_32000::File_trailer;
+    # use ISO_32000::Table_15-Entries_in_the_file_trailer_dictionary;
+    # also does ISO_32000::Table_15-Entries_in_the_file_trailer_dictionary;
 
     has Int $.Size is entry;                              #| (Required; shall not be an indirect reference) greater than the highest object number defined in the file.
 

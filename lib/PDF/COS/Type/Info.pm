@@ -12,9 +12,8 @@ role PDF::COS::Type::Info
     use PDF::COS::DateString;
     use PDF::COS::TextString;
 
-#    See [PDF 32000 TABLE 317 Entries in the document information dictionary]
-##    use ISO_32000::Info;
-##    also does ISO_32000::Info;
+    # use ISO_32000::Table_317-Entries_in_the_document_information_dictionary;
+    # also does ISO_32000::Table_317-Entries_in_the_document_information_dictionary;
 
     has PDF::COS::TextString $.Title is entry;     #| (Optional; PDF 1.1) The document’s title.
     has PDF::COS::TextString $.Author is entry;    #| (Optional) The name of the person who created the document.
