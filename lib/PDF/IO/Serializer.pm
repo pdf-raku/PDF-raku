@@ -50,9 +50,9 @@ class PDF::IO::Serializer {
                 if $obj ~~ LazyObj;
             given $obj {
                 when DictIndObj {
-                    my Hash:D $dict = .value[2]<dict>;
+                    my Hash:D $dict := .value[2]<dict>;
                     @objects.shift
-                    with $dict<Linearized>;
+                        if $dict<Linearized>:exists;
                 }
             }
         }

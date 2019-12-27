@@ -328,13 +328,11 @@ class PDF::Reader {
     #| type-1: fetch as a top level object from the pdf
     #| type-2: dereference and extract from the containing object
     method !fetch-ind-obj(
-    % (
         :$type!, :$ind-obj is copy,
         :$offset, :$end,                       # type-1
         :$index, :$ref-obj-num, :$encrypted = True,  # type-2
-    ),
-    :$obj-num,
-    :$gen-num) {
+        :$obj-num,
+        :$gen-num) {
         # stantiate the object
         my ObjNumInt $actual-obj-num;
         my GenNumInt $actual-gen-num;
@@ -405,7 +403,7 @@ class PDF::Reader {
         }
         else {
             return unless $eager;
-            $idx<ind-obj> = $ind-obj := self!fetch-ind-obj($idx, :$obj-num, :$gen-num);
+            $idx<ind-obj> = $ind-obj := self!fetch-ind-obj(|$idx, :$obj-num, :$gen-num);
         }
 
         if $get-ast {
@@ -422,10 +420,9 @@ class PDF::Reader {
 
     #| raw fetch of an object, without indexing or decryption
     method get(ObjNumInt $obj-num, GenNumInt $gen-num) {
-        my %idx = %!ind-obj-idx{$obj-num * 1000 + $gen-num}
+        my %idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
             // die "unable to find object: $obj-num $gen-num R";
-        %idx<encrypted> = False;  # avoid decryption
-        self!fetch-ind-obj(%idx, :$obj-num, :$gen-num);
+         self!fetch-ind-obj(|%idx, :!encrypted, :$obj-num, :$gen-num);
     }
 
     #| utility method for basic deferencing, e.g.
@@ -698,7 +695,7 @@ class PDF::Reader {
                 .<end> = @divs[$n++];
             } until .<end> > .<offset>;
             # cull, if freed
-            %!ind-obj-idx{.<ob-num>*1000 + .<gen-num>}:delete
+            %!ind-obj-idx{.<obj-num>*1000 + .<gen-num>}:delete
                 unless .<type>;
         }
 
@@ -842,13 +839,11 @@ class PDF::Reader {
                 next if $incremental;
             }
 
-            if $incremental {
-                if $offset && $obj-num {
-                    # check updated vs original PDF value.
-                    my \original-ast = self!fetch-ind-obj(%!ind-obj-idx{$obj-num * 1000 + $gen-num}, :$obj-num, :$gen-num);
-                    # discard, if not updated
-                    next if original-ast eqv ast.value;
-                }
+            if $incremental && $offset && $obj-num {
+                # check updated vs original PDF value.
+                my \original-ast = self!fetch-ind-obj(|%!ind-obj-idx{$obj-num * 1000 + $gen-num}, :$obj-num, :$gen-num);
+                # discard, if not updated
+                next if original-ast eqv ast.value;
             }
 
             $offset //= 0;
@@ -871,27 +866,27 @@ class PDF::Reader {
         });
     }
 
-    multi method recompress(Bool :$compress = True) {
+    method recompress(Bool:D :$compress = True) {
         # locate and or compress/uncompress stream objects
         # replace deprecated LZW compression with Flate
 
-        for self.get-objects.list -> \obj {
-            next unless obj.key eq 'ind-obj';
-            my \ind-obj = obj.value[2];
-            my \obj-type = ind-obj.key;
+        for self.get-objects
+            .grep(*.key eq 'ind-obj')
+            .map(*.value)
+            .grep(*.[2].key eq 'stream') {
 
-            if obj-type eq 'stream' {
-                my ObjNumInt \obj-num = obj.value[0];
-                my GenNumInt \gen-num = obj.value[1];
-                my \obj-dict = ind-obj.value<dict>;
-                my Bool \is-compressed = obj-dict<Filter>:exists;
-                next if $compress == is-compressed
-                    # always recompress LZW (Deprecated)
-                    && !($compress && obj-dict<Filter><name> ~~ 'LZWDecode');
-                # fully stantiate object and adjust compression
-                my \object = self.ind-obj( obj-num, gen-num).object;
-                $compress ?? .compress !! .uncompress with object;
-            }
+            my ObjNumInt \obj-num = .[0];
+            my GenNumInt \gen-num = .[1];
+            my \stream-dict = .[2].value<dict>;
+            my Bool \is-compressed = stream-dict<Filter>:exists;
+
+            next if $compress == is-compressed
+            # always recompress LZW (which is deprecated)
+            && !($compress && stream-dict<Filter><name> ~~ 'LZWDecode');
+
+            # fully stantiate object and adjust compression
+            my \object = self.ind-obj( obj-num, gen-num).object;
+            $compress ?? .compress !! .uncompress with object;
         }
     }
 

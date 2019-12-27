@@ -81,8 +81,8 @@ class PDF::Writer {
                 # direct copy of raw object from input to output
 		my uint $obj-num = ref[0];
 		my uint $gen-num = ref[1];
-                my $getter = ref[2];
-                my $ind-obj = $getter.get($obj-num, $gen-num);
+                my &getter = ref[2];
+                my $ind-obj = &getter.get($obj-num, $gen-num);
 		@idx.push: %( :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj );
                 $.write-ind-obj( $ind-obj );
             }
