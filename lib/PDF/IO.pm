@@ -37,6 +37,8 @@ class PDF::IO {
         $stream<encoded>
     }
 
+    method substr(|c) is DEPRECATED<byte-str> { $.byte-str(|c) }
+
     method byte-str(|c) {
 	$.subbuf(|c).decode('latin-1');
     }

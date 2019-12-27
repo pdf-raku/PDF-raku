@@ -195,7 +195,7 @@ class PDF:ver<0.3.8>
     }
 
     # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )
-    method permitted(UInt $flag --> Bool) {
+    method permitted(UInt $flag --> Bool) is DEPRECATED('please use PDF::Class.permitted') {
 
         return True
             if $!crypt.?is-owner;
