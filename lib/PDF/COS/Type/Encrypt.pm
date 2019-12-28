@@ -59,4 +59,10 @@ role PDF::COS::Type::Encrypt
     has Bool $.EncryptMetadata is entry(:default(True));  #| (Optional; meaningful only when the value of V is 4; PDF 1.5) Indicates whether the document-level metadata stream is to be encrypted. Applications should respect this value.
                                 #| Default value: true.
 
+
+    method permitted(UInt $flag --> Bool) {
+        given self.permissions {
+            .flag-is-set($flag) || .flag-is-set(PermissionsFlag::All);
+        }
+    }
 }

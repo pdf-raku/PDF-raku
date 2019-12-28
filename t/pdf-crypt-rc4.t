@@ -32,15 +32,12 @@ sub permitted($pdf, UInt $flag --> Bool) {
     return True
         if $pdf.crypt.?is-owner;
 
-    my $perms = do with $pdf.Encrypt {
-        .P
+    with $pdf.Encrypt {
+        .permitted($flag)
     }
     else {
-        return True;
+        True;
     }
-
-    constant AllPermissions = 2;
-    return $perms.flag-is-set( $flag ) || $perms.flag-is-set( AllPermissions);
 }
 
 ok permitted($pdf, PermissionsFlag::Print), 'user permitted action';
