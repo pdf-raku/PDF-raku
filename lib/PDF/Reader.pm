@@ -1,10 +1,14 @@
 use v6;
 
+my sub substr($_, |c) {
+    .can('byte-str') ?? .byte-str(|c) !! .substr(|c);
+}
+
 my sub synopsis($input) {
     my \desc = (
         $input.chars < 60
             ?? $input
-            !! [~] $input.substr(0, 32), ' ... ', $input.substr(*-20)
+            !! [~] substr($input, 0, 32), ' ... ', substr($input, *-20)
     ).subst(/\n+/, ' ', :g);
     desc.perl;
 }

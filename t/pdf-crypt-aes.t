@@ -25,6 +25,22 @@ is $pdf.crypt.is-owner, False, 'open with user password - not is-owner';
 is $pdf<Info><Author>, $expected-author, 'open with user password - .Info.Author';
 is $pdf<Root><Pages><Kids>[0]<Contents>.decoded, $expected-contents, 'open with user password - contents';
 
-ok $pdf.permitted(PermissionsFlag::Print), 'user permitted action';
-ok $pdf.permitted(PermissionsFlag::Copy), 'another user permitted action';
+sub permitted($pdf, UInt $flag --> Bool) {
+
+    return True
+        if $pdf.crypt.?is-owner;
+
+    my $perms = do with $pdf.Encrypt {
+        .P
+    }
+    else {
+        return True;
+    }
+
+    constant AllPermissions = 2;
+    return $perms.flag-is-set( $flag ) || $perms.flag-is-set( AllPermissions);
+}
+
+ok permitted($pdf, PermissionsFlag::Print), 'user permitted action';
+ok permitted($pdf, PermissionsFlag::Copy), 'another user permitted action';
 done-testing;
