@@ -110,14 +110,14 @@ role PDF::COS::Tie {
                         }
 
                         for v {
-                            next if $_ ~~ of-type | IndRef
-                                || !.defined;
-                            ($att.tied.coerce)($_, of-type);
-                            if $check {
-                                die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
-                                unless $_ ~~ of-type;
+                            unless $_ ~~ of-type | IndRef | Any:U {
+                                ($att.tied.coerce)($_, of-type);
+                                if $check {
+                                    die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
+                                    unless $_ ~~ of-type;
+                                }
+                                .reader //= reader;
                             }
-                            .reader //= reader;
                         }
                     }
                 }
@@ -246,7 +246,7 @@ role PDF::COS::Tie {
 This is a role used by PDF::COS. It makes the PDF object tree appear as a seamless
 structure comprised of nested hashs (PDF dictionarys) and arrays.
 
-PDF::COS::Tie::Hash and PDF::COS::Tie::Array encapsulate Hash and Array accces.
+PDF::COS::Tie::Hash and PDF::COS::Tie::Array encapsulate Hash and Array access.
 
 - If the object has an associated  `reader` property, indirect references are resolved lazily and transparently
 as elements in the structure are dereferenced.

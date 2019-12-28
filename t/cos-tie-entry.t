@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 68;
+plan 71;
 
 use PDF::COS::Dict;
 use PDF::COS::Name;
@@ -19,7 +19,7 @@ use PDF::Grammar::Test :is-json-equiv;
         has UInt $.three-dd is entry(:key<3DD>);
         has PDF::COS::Name $.Name is entry(:default<Foo>);
         has PDF::COS::Name @.Names is entry(:default['a', 'b', 'c']);
-        my subset TextString of PDF::COS::TextString;
+        our subset TextString of PDF::COS::TextString;
         has TextString $.Txt is entry;
     }
 
@@ -56,6 +56,7 @@ use PDF::Grammar::Test :is-json-equiv;
     ok $fred ~~ TestDict::FredDict, 'subset sanity';
     lives-ok {$dict.SubsetDict =  $fred;}, 'subset dict - valid';
     quietly dies-ok {$dict.SubsetDict =  %()}, 'subset dict - invalid';
+    is-deeply $dict.Txt, TestDict::TextString, 'entry without default';
     ok !($dict<Name>:exists), 'defaulted entry';
     ok !($dict<Name>.defined), 'defaulted raw value';
     is $dict.Name, 'Foo', 'defaulted accessor value';
@@ -112,6 +113,11 @@ use PDF::Grammar::Test :is-json-equiv;
 
     dies-ok { $dict.LenThree = [10, 20] }, 'length check, invalid';
     lives-ok { $dict.LenThree = [10, 20, 30] }, 'length check, valid';
+
+    # defaults on containers
+    $dict .= new: :dict{};
+    does-ok $dict.I, Positional;
+    does-ok $dict.Neg, Associative;
 }
 
 {

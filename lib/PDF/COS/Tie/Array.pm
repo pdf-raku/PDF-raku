@@ -19,7 +19,7 @@ role PDF::COS::Tie::Array does PDF::COS::Tie {
                     ?? $val
                     !! do {
                         $got = 1;
-                        $val := self.AT-POS($pos, :check);
+                        $val := self.AT-POS($pos, :check) // $att.type;
                     }
 	    },
 	    STORE => -> $, \v {

@@ -27,9 +27,11 @@ role PDF::COS::Tie::Hash
                     ?? $val
                     !! do {
                         $got = 1;
-                        $val := $att.tied.is-inherited
-                            ?? find-prop(self, $key)
-                            !! self.AT-KEY($key, :check);
+                        $val := (
+                            $att.tied.is-inherited
+                                ?? find-prop(self, $key)
+                                !! self.AT-KEY($key, :check)
+                        ) // $att.type;
                     }
             },
             STORE => -> $, \v {
