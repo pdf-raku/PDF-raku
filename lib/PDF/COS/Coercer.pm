@@ -34,20 +34,24 @@ class PDF::COS::Coercer {
         $_ = $.coerce(.value, $type);
     }
     # adds the DateTime 'object' rw accessor
-    multi method coerce( Str $obj is rw, PDF::COS::DateString $class, |c) {
+    multi method coerce( Str:D $obj is rw, PDF::COS::DateString $class, |c) {
 	$obj = $class.new( $obj, |c );
     }
-    multi method coerce( DateTime $obj is rw, PDF::COS::DateString $class, |c) {
+    multi method coerce( DateTime:D $obj is rw, PDF::COS::DateString $class, |c) {
 	$obj = $class.new( $obj, |c );
     }
-    multi method coerce( Str $obj is rw, PDF::COS::ByteString $class, |c) {
+    multi method coerce( Str:D $obj is rw, PDF::COS::ByteString $class, |c) {
 	$obj = $obj but PDF::COS::ByteString[$obj.?type // 'literal'];
     }
-    multi method coerce( Str $value is rw, PDF::COS::TextString $class, Str :$type = $value.?type // 'literal', |c) {
+    multi method coerce( Str:D $value is rw, PDF::COS::TextString $class, Str :$type = $value.?type // 'literal', |c) {
 	$value = PDF::COS::TextString.new( :$value, :$type, |c );
     }
-    multi method coerce( Bool $bool is rw, PDF::COS::Bool) {
+    multi method coerce( Bool:D $bool is rw, PDF::COS::Bool) {
 	PDF::COS.coerce(:$bool);
+    }
+
+    multi method coerce( Any:U $null is rw, $) {
+	PDF::COS.coerce(:$null);
     }
 
     # handle coercement to names or name subsets

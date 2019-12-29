@@ -11,13 +11,13 @@ module PDF::COS::Util {
         ast-coerce $other
     }
     proto sub ast-coerce(|) is export(:ast-coerce) {*};
-    multi sub ast-coerce(Int $int!) {:$int}
-    multi sub ast-coerce(Numeric $real!) {:$real}
-    multi sub ast-coerce(Str $literal!) {:$literal}
+    multi sub ast-coerce(Int:D $int!) {:$int}
+    multi sub ast-coerce(Numeric:D $real!) {:$real}
+    multi sub ast-coerce(Str:D $literal!) {:$literal}
 
     my %seen{Any};
 
-    multi sub ast-coerce(Hash $_dict!) {
+    multi sub ast-coerce(Hash:D $_dict!) {
 	my $dict = %seen{$_dict};
 
 	without $dict {
@@ -29,7 +29,7 @@ module PDF::COS::Util {
 	:$dict;
     }
 
-    multi sub ast-coerce(array $a) {
+    multi sub ast-coerce(array:D $a) {
         my $tag = do given $a.of {
                  when num|num64 { 'real' }
                  when str       { 'literal' }
@@ -38,12 +38,12 @@ module PDF::COS::Util {
         :array[ $a.map({ $tag => $_ }) ]
     }
 
-    multi sub ast-coerce(List $a where .of ~~ Numeric) {
+    multi sub ast-coerce(List:D $a where .of ~~ Numeric) {
         my $tag = $a.of ~~ Int ?? 'int' !! 'real';
         :array[ $a.map({ $tag => $_ }) ]
     }
 
-    multi sub ast-coerce(List $_list!) {
+    multi sub ast-coerce(List:D $_list!) {
 	my $array = %seen{$_list};
 
 	without $array {
@@ -77,11 +77,11 @@ module PDF::COS::Util {
        [~] "D:", $date-spec, $time-spec, $tz-spec;
     }
 
-    multi sub ast-coerce(DateTime $date-time!) {
+    multi sub ast-coerce(DateTime:D $date-time!) {
 	my Str $literal = date-time-formatter($date-time);
 	:$literal
     }
-    multi sub ast-coerce(Bool $bool!) {:$bool}
+    multi sub ast-coerce(Bool:D $bool!) {:$bool}
     multi sub ast-coerce($_) is default {
         when !.defined   { :null(Any) }
         when Enumeration { ast-coerce(.value) }

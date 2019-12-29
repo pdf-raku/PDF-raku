@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 71;
+plan 74;
 
 use PDF::COS::Dict;
 use PDF::COS::Name;
@@ -56,6 +56,9 @@ use PDF::Grammar::Test :is-json-equiv;
     ok $fred ~~ TestDict::FredDict, 'subset sanity';
     lives-ok {$dict.SubsetDict =  $fred;}, 'subset dict - valid';
     quietly dies-ok {$dict.SubsetDict =  %()}, 'subset dict - invalid';
+    is-deeply $dict.Txt, TestDict::TextString, 'entry without default';
+    lives-ok {$dict.Txt = TestDict::TextString}, 'assignment to correct type object';
+    quietly dies-ok {$dict.Txt = Hash}, 'assigment to wrong type object';
     is-deeply $dict.Txt, TestDict::TextString, 'entry without default';
     ok !($dict<Name>:exists), 'defaulted entry';
     ok !($dict<Name>.defined), 'defaulted raw value';

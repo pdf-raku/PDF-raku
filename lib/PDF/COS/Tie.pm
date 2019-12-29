@@ -110,13 +110,13 @@ role PDF::COS::Tie {
                         }
 
                         for v {
-                            unless $_ ~~ of-type | IndRef | Any:U {
+                            unless $_ ~~ of-type | IndRef {
                                 ($att.tied.coerce)($_, of-type);
                                 if $check {
                                     die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
                                     unless $_ ~~ of-type;
                                 }
-                                .reader //= reader;
+                                .reader //= reader if .defined;
                             }
                         }
                     }

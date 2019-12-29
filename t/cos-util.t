@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 8;
+plan 9;
 
 use PDF::COS::Util :from-ast, :to-ast, :ast-coerce;
 
@@ -12,7 +12,8 @@ for (
      (my str @ = <x yy>) => (:array[ :literal<x>, :literal<yy> ]),
      (my uint8 @ = [10, 20, 30]) => (:array[ :int(10), :int(20), :int(30) ]),
      %( :a(10), :b[1, 2.1, 'x', ], :c(:name<x>) ) => (:dict{ :a(:int(10)), :b(:array($[:int(1), :real(2.1), :literal("x")])), :c(:name("x")) }),
-      [ True, False, Any, {}, ] => (:array[ :bool, :!bool, :null(Any), :dict{} ]),
+     [ True, False, Any, {}, ] => (:array[ :bool, :!bool, :null(Any), :dict{} ]),
+     [ Hash, Array, Int, Str, Bool, DateTime ] => (:array[ :null(Any) xx 6 ]), 
   ) {
     my $v = .key;
     my $a = .value;

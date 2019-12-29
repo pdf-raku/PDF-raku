@@ -34,7 +34,7 @@ role PDF::COS {
 
     multi method coerce(PDF::COS $val!) { $val }
 
-    my subset AST-Node of Associative where {
+    my subset AST-Node of Associative:D where {
 	use PDF::Grammar:ver(v0.1.6+) :AST-Types;
         my constant %AstTypes = AST-Types.enums;
         # e.g. { :int(42) }
