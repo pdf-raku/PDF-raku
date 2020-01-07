@@ -14,7 +14,7 @@ class PDF::COS::Dict
 
     my %seen{Any} = (); #= to catch circular references
 
-    method new(Hash :$dict = {}, |c) is default {
+    method new(Hash() :$dict = {}, |c) {
         my $obj = %seen{$dict};
         without $obj {
             temp %seen{$dict} = $obj = self.bless(|c);

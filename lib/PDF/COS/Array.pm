@@ -12,7 +12,7 @@ class PDF::COS::Array
 
     my %seen{Any} = (); #= to catch circular references
 
-    method new(List :$array = [], |c) {
+    method new(List() :$array = [], |c) {
         my $obj = %seen{$array};
         without $obj {
             temp %seen{$array} = $obj = self.bless(:$array, |c);
