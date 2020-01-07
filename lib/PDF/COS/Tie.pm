@@ -17,10 +17,11 @@ role PDF::COS::Tie {
 
     #| generate an indirect reference, include the reader, if spanning documents
     method link {
-	my \obj-num = $.obj-num;
-	obj-num && obj-num > 0
-	    ?? :ind-ref[ obj-num, $.gen-num, $.reader ]
-	    !! self;
+	given $.obj-num {
+	    .defined && $_ > 0
+	        ?? :ind-ref[ $_, $.gen-num, $.reader ]
+	        !! self;
+        }
     }
 
     my class Tied {...}
@@ -31,6 +32,7 @@ role PDF::COS::Tie {
         method compose(Mu $package) {
             my $key = self.tied.key;
             my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
+            &accessor.set_name( $key );
             $package.^add_method( $key, &accessor );
             $package.^add_method( self.tied.alias, &accessor)
                 if self.tied.alias;

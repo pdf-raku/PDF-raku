@@ -525,13 +525,15 @@ class PDF::Reader {
 
         with index<xref> {
             for .list {
-                warn X::PDF::BadXRef::Section.new( :obj-count(.<obj-count>), :entry-count(+.<entries>))
-                    unless .<obj-count> == +.<entries>;
+                my uint $obj-num   = .<obj-first-num>;
+                my uint $obj-count = .<obj-count>;
 
-                my uint $obj-num = .<obj-first-num>;
                 with .<entries> {
-                    my uint $n = .elems;
-                    loop (my uint $i = 0; $i < $n; $i++) {
+                    my uint $entry-count = .elems;
+                    warn X::PDF::BadXRef::Section.new( :$obj-count, :$entry-count)
+                        unless $obj-count == $entry-count;
+
+                    loop (my uint $i = 0; $i < $entry-count; $i++) {
                         my uint64 $offset  = .[$i;0];
                         my uint64 $gen-num = .[$i;1];
                         my uint64 $type    = .[$i;2];
@@ -625,7 +627,7 @@ class PDF::Reader {
         my UInt \input-bytes = $!input.codes;
 
         my Hash $dict;
-        my UInt @divs;
+        my UInt @ends;
 
         while $offset.defined {
             my array @obj-idx;
@@ -674,7 +676,7 @@ class PDF::Reader {
                     my $k := .[ObjNum] * 1000 + .[GenNum];
                     my $offset = .[Offset];
                     %!ind-obj-idx{$k} //= %( :$type, :$offset );
-                    @divs.push: $offset;
+                    @ends.push: $offset;
                 }
             }
 
@@ -688,15 +690,17 @@ class PDF::Reader {
             if $!size <= actual-size;
 
         # constrain indirect objects to a maximum end position
-        @divs.append: @!xrefs;
-        @divs.push: input-bytes;
-        @divs .= sort;
+        @ends.append: @!xrefs;
+        @ends.push: input-bytes;
+        @ends .= sort;
 
         # mark end positions of external objects
-        my int $n = 0;
+        my int $i = 0;
+        my int $n = +@ends - 1;
         for %!ind-obj-idx.values.grep(*<offset>).sort(*<offset>) {
             repeat {
-                .<end> = @divs[$n++];
+                .<end> = @ends[$i];
+                $i++ unless $i >= $n;
             } until .<end> > .<offset>;
             # cull, if freed
             %!ind-obj-idx{.<obj-num>*1000 + .<gen-num>}:delete
