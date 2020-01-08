@@ -29,6 +29,7 @@ role PDF::COS::Tie {
     my role COSAttrHOW {
         #| override standard Attribute method for generating accessors
 	has Tied $.cos is rw handles <tie> = Tied.new;
+        method tied is DEPRECATED("Please use .cos()") { $.cos }
 
         method compose(Mu $package) {
             my $key = self.cos.key;
@@ -59,6 +60,17 @@ role PDF::COS::Tie {
 	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::COS.coerce($lval, $type) };
         has UInt $.length;
         has $.default;
+        my class CosOfAttr is Attribute does COSAttrHOW {}
+        has CosOfAttr $!of-att;
+        method of-att {
+            # anonymous attribute for individual items in an array or hash
+            without $!of-att {
+                my $type := $!type.of;
+                $_ = CosOfAttr.new( :name('@!' ~ $.accessor-name), :$type, :package<?> );
+                .cos = $.clone(:!decont, :$type);
+            }
+            $!of-att;
+        }
 
         method key is rw {
             Proxy.new(
@@ -88,23 +100,17 @@ role PDF::COS::Tie {
                     #     has PDF::Catalog @.Kids is entry(:indirect);
                     # or, typed hash declarations, e.g.:
                     #     has PDF::ExtGState %.ExtGState is entry;
-                    my \of-type = $!type.of;
-                    my Attribute $att = $lval.of-att;
-                    if $att {
+                    my Attribute $att := $lval.of-att;
+                    if $att.defined {
                         # already processed elsewhere. check that the type matches
-                        die "conflicting types for {$att.name} {$att.type.gist} {of-type.gist}"
-                            unless of-type ~~ $att.type;
+                        die "conflicting types for {$att.name} {$att.type.gist} {$!type.of.gist}"
+                            unless $!type.of ~~ $att.type;
                     }
                     else {
-                        # init
-                        $att = Attribute.new( :name('@!' ~ $.accessor-name), :type(of-type), :package<?> );
-                        $att does COSArrayAttrHOW;
-                        $att.cos = $.clone;
-                        $att.cos.decont = False;
-                        $att.cos.type = of-type;
-                        $lval.of-att = $att;
-
+                        $att = self.of-att;
+                        my \of-type = $att.type;
                         my \v = $lval.values;
+
                         if $check {
                             with $.length {
                                 die "array not of length: {$_}"
