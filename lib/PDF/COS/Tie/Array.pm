@@ -1,6 +1,6 @@
 use v6;
 
-use PDF::COS::Tie :TiedIndex;
+use PDF::COS::Tie :COSArrayAttrHOW;
 
 role PDF::COS::Tie::Array does PDF::COS::Tie {
 
@@ -31,11 +31,11 @@ role PDF::COS::Tie::Array does PDF::COS::Tie {
     method tie-init {
        my \class = self.WHAT;
 
-       for class.^attributes.grep(TiedIndex) -> \att {
+       for class.^attributes.grep(COSArrayAttrHOW) -> \att {
            my \pos = att.index;
            without @!index[pos] {
                $_ = att;
-               my \key = att.tied.accessor-name;
+               my \key = att.cos.accessor-name;
                %.entries{key} = att;
            }
        }

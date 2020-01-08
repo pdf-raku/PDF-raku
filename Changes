@@ -1,10 +1,13 @@
 Release 0.3.8
 - [PDF::Writer] - Fixed .write-content() method to sanitise any non-latin
   unicode chars in comment strings, which otherwise breaks serialization.
-  Chosing to map them to #Xxx where Xxx is a hexidecimal number
+  Choosing to map them to #Xxx where Xxx is a hexidecimal number
 - [PDF] Add $.open(:type) option. Asserts that the PDF file is of a given type 'PDF', 'FDF' etc.
 - [pdf-rewriter.p6] --class option changed from a Boolean to a string. Any class
   can now be loaded that based on PDF (PDF::Lite, PDF::Class, PDF::API6).
+- [PDF::COS::Tie][PDF::COS::Tie::Array][PDF::COS::Tie::Hash]
+  Some internal renaming of attribute roles and methods. TiedHash -> COSDictAttrHOW,
+  TiedArray -> COSArrayAttrHOW, $attr.tied -> $attr.cos
 Release 0.3.7
 - [PDF::COS::Type::XRef]
   -- Fixed a bug in decode-index() method.

@@ -1,6 +1,6 @@
 use v6;
 
-use PDF::COS::Tie :TiedEntry;
+use PDF::COS::Tie :COSDictAttrHOW;
 
 role PDF::COS::Tie::Hash
     does PDF::COS::Tie {
@@ -28,7 +28,7 @@ role PDF::COS::Tie::Hash
                     !! do {
                         $got = 1;
                         $val := (
-                            $att.tied.is-inherited
+                            $att.cos.is-inherited
                                 ?? find-prop(self, $key)
                                 !! self.AT-KEY($key, :check)
                         ) // $att.type;
@@ -43,8 +43,8 @@ role PDF::COS::Tie::Hash
 
     method tie-init {
        my \class = self.WHAT;
-       for class.^attributes.grep(TiedEntry) -> \att {
-           given att.tied {
+       for class.^attributes.grep(COSDictAttrHOW) -> \att {
+           given att.cos {
                my \key  = .accessor-name;
                %.entries{key} //= att;
                with .alias -> \alias {
@@ -57,7 +57,7 @@ role PDF::COS::Tie::Hash
 
     method check {
         self.AT-KEY($_, :check)
-            for (flat self.keys, self.entries.grep(*.value.tied.is-required).keys).unique.sort;
+            for (flat self.keys, self.entries.grep(*.value.cos.is-required).keys).unique.sort;
         self.?cb-check();
         self
     }

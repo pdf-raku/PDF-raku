@@ -1,12 +1,13 @@
 use v6;
 use Test;
-plan 42;
+plan 44;
 
 use PDF::Reader;
 use PDF::Writer;
 use PDF::IO::Serializer;
 use PDF::COS;
 use PDF::COS::Array;
+use PDF::COS::Dict;
 
 sub name($name){ PDF::COS.coerce(:$name) };
 
@@ -152,5 +153,9 @@ is $a1[0], Any, 'tied array defaulted index';
 my PDF::COS $a2 .= coerce: [];
 warns-like { PDF::COS.coerce($a2, HashRole) }, ::('X::PDF::Coerce'), 'Array/Hash misapplication';
 ok !$a2.does(HashRole), 'Array/Hash misapplication';
+
+my PDF::COS $a3 .= coerce: (1..3).map(* * 10);
+isa-ok $a3, PDF::COS::Array, 'coerce array from Seq';
+is $a3[2], 30, 'coerce from Seq';
 
 done-testing;

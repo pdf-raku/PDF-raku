@@ -26,24 +26,25 @@ role PDF::COS::Tie {
 
     my class Tied {...}
 
-    my role TiedAtt {
+    my role COSAttrHOW {
         #| override standard Attribute method for generating accessors
-	has Tied $.tied is rw handles <tie> = Tied.new;
+	has Tied $.cos is rw handles <tie> = Tied.new;
+
         method compose(Mu $package) {
-            my $key = self.tied.key;
+            my $key = self.cos.key;
             my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
             &accessor.set_name( $key );
             $package.^add_method( $key, &accessor );
-            $package.^add_method( self.tied.alias, &accessor)
-                if self.tied.alias;
+            $package.^add_method( self.cos.alias, &accessor)
+                if self.cos.alias;
         }
     }
 
-    my role TiedEntry does TiedAtt is export(:TiedEntry) {
+    my role COSDictAttrHOW does COSAttrHOW is export(:COSDictAttrHOW) {
 	has Bool $.entry = True;
     }
 
-    my role TiedIndex does TiedAtt is export(:TiedIndex) {
+    my role COSArrayAttrHOW does COSAttrHOW is export(:COSArrayAttrHOW) {
 	has UInt $.index is rw;
     }
 
@@ -53,8 +54,8 @@ role PDF::COS::Tie {
 	has Bool $.is-indirect = False;
 	has Bool $.is-inherited = False;
         has Bool $.decont = False;
-	has Str $.accessor-name;
-        has Str $.alias;
+	has Str  $.accessor-name;
+        has Str  $.alias;
 	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::COS.coerce($lval, $type) };
         has UInt $.length;
         has $.default;
@@ -97,10 +98,10 @@ role PDF::COS::Tie {
                     else {
                         # init
                         $att = Attribute.new( :name('@!' ~ $.accessor-name), :type(of-type), :package<?> );
-                        $att does TiedIndex;
-                        $att.tied = $.clone;
-                        $att.tied.decont = False;
-                        $att.tied.type = of-type;
+                        $att does COSArrayAttrHOW;
+                        $att.cos = $.clone;
+                        $att.cos.decont = False;
+                        $att.cos.type = of-type;
                         $lval.of-att = $att;
 
                         my \v = $lval.values;
@@ -113,7 +114,7 @@ role PDF::COS::Tie {
 
                         for v {
                             unless $_ ~~ of-type | IndRef {
-                                ($att.tied.coerce)($_, of-type);
+                                ($att.cos.coerce)($_, of-type);
                                 if $check {
                                     die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
                                     unless $_ ~~ of-type;
@@ -158,7 +159,7 @@ role PDF::COS::Tie {
             :key<key>, :default<default>
         );
 
-        given $att.tied -> Tied $tied {
+        given $att.cos -> Tied $tied {
 
             for $entry.list -> \arg {
                 if arg ~~ Pair {
@@ -180,22 +181,22 @@ role PDF::COS::Tie {
 
     multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {
 	my \type = $att.type;
-	$att does TiedEntry;
-	$att.tied.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
+	$att does COSDictAttrHOW;
+	$att.cos.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
 
-	$att.tied.type = type;
+	$att.cos.type = type;
 	process-args($entry, $att);
     }
 
     multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
 	my \type = $att.type;
-	$att does TiedIndex;
-	$att.tied.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
+	$att does COSArrayAttrHOW;
+	$att.cos.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
 	my @args = $index.list;
 	die "index trait requires a UInt argument, e.g. 'is index(1)'"
 	    unless @args && @args[0] ~~ UInt;
 	$att.index = @args.shift;
-	$att.tied.type = type;
+	$att.cos.type = type;
 	process-args(@args, $att);
     }
 
@@ -239,7 +240,7 @@ role PDF::COS::Tie {
         self.ASSIGN-POS($pos, $value);
     }
 
-    #| simple native type. no need to coerce
+    #| simple value. no need to coerce
     multi method deref($value) is default { $value }
 }
 
