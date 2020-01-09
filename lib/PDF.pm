@@ -23,9 +23,10 @@ class PDF:ver<0.3.8>
 
     use PDF::COS::Type::Info;
     has PDF::COS::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary
-    has Str @.ID is entry(:len(2));                       #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array of two byte-strings constituting a file identifier
+    has Str @.ID is entry(:len(2));                       #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array
+                                                          #| of two byte-strings constituting a file identifier
 
-    has Hash $.Root is entry( :indirect );                #| generic document content, as defined by subclassee, e.g.  PDF::Class, PDF::FDF
+    has Hash $.Root is entry( :indirect );                #| generic document root, as defined by subclassee, e.g.  PDF::Class, PDF::FDF
     has $.crypt is rw;
     has $!flush = False;
 

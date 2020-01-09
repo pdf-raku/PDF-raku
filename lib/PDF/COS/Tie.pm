@@ -24,20 +24,30 @@ role PDF::COS::Tie {
         }
     }
 
-    my class Tied {...}
+    my class COSAttr {...}
+
+    sub set-method($pkg, $name, &meth) {
+        with $pkg.^find_method($name) {
+            .wrap(&meth);           
+        }
+        else {
+            $pkg.^add_method($name, &meth);
+        }
+    }
 
     my role COSAttrHOW {
         #| override standard Attribute method for generating accessors
-	has Tied $.cos is rw handles <tie> = Tied.new;
+	has COSAttr $.cos is rw handles <tie>;
         method tied is DEPRECATED("Please use .cos()") { $.cos }
 
         method compose(Mu $package) {
-            my $key = self.cos.key;
+            my $key = self.cos.accessor-name;
             my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
             &accessor.set_name( $key );
-            $package.^add_method( $key, &accessor );
-            $package.^add_method( self.cos.alias, &accessor)
-                if self.cos.alias;
+            set-method($package, $key, &accessor);
+            if self.cos.alias {
+                set-method($package, self.cos.alias, &accessor);
+            }
         }
     }
 
@@ -49,7 +59,7 @@ role PDF::COS::Tie {
 	has UInt $.index is rw;
     }
 
-    my class Tied is rw {
+    my class COSAttr {
         has $.type;
 	has Bool $.is-required = False;
 	has Bool $.is-indirect = False;
@@ -70,16 +80,6 @@ role PDF::COS::Tie {
                 .cos = $.clone(:!decont, :$type);
             }
             $!of-att;
-        }
-
-        method key is rw {
-            Proxy.new(
-                FETCH => { self.accessor-name},
-                STORE => -> $, $k {
-                    self.alias = self.accessor-name;
-                    self.accessor-name = $k;
-                },
-            )
         }
 
         multi method tie(IndRef $lval is rw) is rw { $lval } # undereferenced - don't know it's type yet
@@ -157,7 +157,7 @@ role PDF::COS::Tie {
 
     }
 
-    sub process-args($entry, Attribute $att) {
+    sub cos-attr-opts($entry, Attribute $att) {
 
         my constant %Args = %(
             :inherit<is-inherited>, :required<is-required>, :indirect<is-indirect>,
@@ -165,45 +165,43 @@ role PDF::COS::Tie {
             :key<key>, :default<default>
         );
 
-        given $att.cos -> Tied $tied {
+        my %opts = type => $att.type, accessor-name => $att.name.subst(/^(\$|\@|\%)'!'/, '');
 
-            for $entry.list -> \arg {
-                if arg ~~ Pair {
-                    my \val = arg.value;
-                    with %Args{arg.key} {
-                        $tied."$_"() = val;
-                    }
-                    else {
-                        warn "ignoring entry attribute: {arg.key}";
-                    }
+        for $entry.list -> \arg {
+            if arg ~~ Pair {
+                my \val = arg.value;
+                with %Args{arg.key} {
+                    %opts{$_} = val;
                 }
                 else {
-                    warn "ignoring entry trait attribute: {arg.perl}"
-                        unless arg ~~ Bool;
+                    warn "ignoring entry attribute: {arg.key}";
                 }
             }
+            else {
+                warn "ignoring entry trait attribute: {arg.perl}"
+                unless arg ~~ Bool;
+            }
         }
+        with %opts<key>:delete {
+            # swap method name and alias
+            %opts<alias> = %opts<accessor-name>;
+            %opts<accessor-name> = $_;
+        }
+        %opts;
     }
 
     multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {
-	my \type = $att.type;
 	$att does COSDictAttrHOW;
-	$att.cos.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
-
-	$att.cos.type = type;
-	process-args($entry, $att);
+        $att.cos .= new: |cos-attr-opts($entry, $att);
     }
 
     multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
-	my \type = $att.type;
-	$att does COSArrayAttrHOW;
-	$att.cos.accessor-name = $att.name.subst(/^(\$|\@|\%)'!'/, '');
 	my @args = $index.list;
 	die "index trait requires a UInt argument, e.g. 'is index(1)'"
 	    unless @args && @args[0] ~~ UInt;
+	$att does COSArrayAttrHOW;
 	$att.index = @args.shift;
-	$att.cos.type = type;
-	process-args(@args, $att);
+	$att.cos .= new: |cos-attr-opts(@args, $att);
     }
 
     method lvalue($_) is rw {
