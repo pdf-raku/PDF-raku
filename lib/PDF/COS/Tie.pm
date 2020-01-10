@@ -27,12 +27,8 @@ role PDF::COS::Tie {
     my class COSAttr {...}
 
     sub set-method($pkg, $name, &meth) {
-        with $pkg.^find_method($name) {
-            .wrap(&meth);           
-        }
-        else {
-            $pkg.^add_method($name, &meth);
-        }
+        try { $pkg.^add_method($name, &meth); }
+        warn $_ with $!;
     }
 
     my role COSAttrHOW {
