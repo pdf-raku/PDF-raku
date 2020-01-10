@@ -26,23 +26,20 @@ role PDF::COS::Tie {
 
     my class COSAttr {...}
 
-    sub set-method($pkg, $name, &meth) {
-        try { $pkg.^add_method($name, &meth); }
-        warn $_ with $!;
-    }
-
     my role COSAttrHOW {
         #| override standard Attribute method for generating accessors
 	has COSAttr $.cos is rw handles <tie>;
         method tied is DEPRECATED("Please use .cos()") { $.cos }
 
         method compose(Mu $package) {
-            my $key = self.cos.accessor-name;
-            my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
-            &accessor.set_name( $key );
-            set-method($package, $key, &accessor);
-            if self.cos.alias {
-                set-method($package, self.cos.alias, &accessor);
+            unless self.cos.composed++ {
+                my $key = self.cos.accessor-name;
+                my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
+                &accessor.set_name( $key );
+                $package.^add_method($key, &accessor);
+                if self.cos.alias {
+                    $package.^add_method(self.cos.alias, &accessor);
+                }
             }
         }
     }
@@ -68,6 +65,7 @@ role PDF::COS::Tie {
         has $.default;
         my class CosOfAttr is Attribute does COSAttrHOW {}
         has CosOfAttr $!of-att;
+        has Bool $.composed is rw;
         method of-att {
             # anonymous attribute for individual items in an array or hash
             without $!of-att {
