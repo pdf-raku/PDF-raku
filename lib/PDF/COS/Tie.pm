@@ -32,15 +32,12 @@ role PDF::COS::Tie {
         method tied is DEPRECATED("Please use .cos()") { $.cos }
 
         method compose(Mu $package) {
-            unless self.cos.composed {
-                my $key = self.cos.accessor-name;
-                my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
-                &accessor.set_name( $key );
-                $package.^add_method($key, &accessor);
-                if self.cos.alias {
-                    $package.^add_method(self.cos.alias, &accessor);
-                }
-                self.cos.composed = True;
+            my $key = self.cos.accessor-name;
+            my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
+            &accessor.set_name( $key );
+            try $package.^add_method($key, &accessor);
+            if self.cos.alias {
+                try $package.^add_method(self.cos.alias, &accessor);
             }
         }
     }
@@ -66,7 +63,7 @@ role PDF::COS::Tie {
         has $.default;
         my class CosOfAttr is Attribute does COSAttrHOW {}
         has CosOfAttr $!of-att;
-        has Bool $.composed is rw = False;
+
         method of-att {
             # anonymous attribute for individual items in an array or hash
             without $!of-att {
