@@ -28,8 +28,9 @@ role PDF::COS::Tie {
 
     my role COSAttrHOW {
         #| override standard Attribute method for generating accessors
+        method built { False }
 	has COSAttr $.cos is rw handles <tie>;
-        method tied is DEPRECATED("Please use .cos()") { $.cos }
+        method tied is rw is DEPRECATED("Please use .cos()") { $.cos }
 
         method compose(Mu $package) {
             my $key = self.cos.accessor-name;

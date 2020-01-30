@@ -1,3 +1,5 @@
+Release 0.4.0
+- Rename modules *.pm -> *.rakumod and scripts *.p6 -> *.raku
 Release 0.3.8
 - [PDF::Writer] - Fixed .write-content() method to sanitise any non-latin
   unicode chars in comment strings, which otherwise breaks serialization.
@@ -15,8 +17,6 @@ Release 0.3.7
   -- Reworked !load-index method
 - [PDF::COS]
   -- Improved required() method.
-- [PDF::Writer]
-  -- Sanitize non-latin characters in comments; reformat via *.fmt('#%x')
 Release 0.3.6
 - [PDF::Writer]
    -- Fix for issue#22 Incremental updates breaking Adobe
@@ -30,7 +30,7 @@ Release 0.3.5
 Release 0.3.4
 - [PDF::Reader][PDF::Writer]
   -- Allow copying of raw object ASTs from input to output
-     PDFs. To reduce memory usage in full-save, and speed up
+     PDFs. To reduce memory usage in full-save mode. Speeds up
      saving of encrypted PDFs.
   -- Fixed /Prev trailer entry in incremental save
   -- Fixed pdf-rewriter.p6 --decrypt option
@@ -164,7 +164,7 @@ Release 0.0.9
 - withdrew non-standard PDF::DAO::Dict.new( $dict) positionals,
   in favour of PDF::DAO::Dict.new( :$dict ) named arguments.
   Same also for stream and array object constructors.
-- Use of siglless variables, where appropriate.
+- Use of sigel-less variables, where appropriate.
 - Revamped handing of PDF::DAO::Tie :entry and :index traits.
 - Fixes for PDF::Storage::Input::Str (byte-string reader) and
   PDF::Storage::Filter::Predictors
