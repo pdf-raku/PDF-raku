@@ -397,7 +397,7 @@ my \p = PDF::Grammar::COS.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :
     or die "parse failed";
 my %ast = p.ast;
 
-say '#'~%ast.raku;
+say '#'~%ast.perl;
 #:dict({:Count(:int(1)), :Kids(:array([:ind-ref([4, 0])])), :Type(:name("Pages"))})
 
 my $reader = class { has $.auto-deref = False }.new; # dummy reader
@@ -406,7 +406,7 @@ my $object = PDF::COS.coerce( %ast, :$reader );
 say '#'~$object.WHAT.gist;
 #(PDF::COS::Dict)
 
-say '#'~$object.raku;
+say '#'~$object.perl;
 #{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
 
 say '#'~$object<Type>.WHAT.^name;
