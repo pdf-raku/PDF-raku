@@ -240,7 +240,7 @@ This indexes the indirect objects in the PDF by byte offset (generation number) 
 
 We can quickly put PDF to work using the Raku REPL, to better explore the document:
 
-    snoopy: ~/git/perl6-PDF $ perl6 -M PDF
+    snoopy: ~/git/PDF-p6 $ perl6 -M PDF
     > my $pdf = PDF.open: "examples/helloworld.pdf"
     ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
     > $pdf.keys
@@ -321,7 +321,7 @@ $reader.trailer<Info><Creator> = PDF::COS.coerce( :name<t/helloworld.t> );
 ```
 
 ### Utility Scripts
-- `pdf-rewriter.p6 [--repair] [--rebuild] [--[/]compress] [--password=Xxx] [--decrypt] <pdf-or-json-file-in> [<pdf-or-json-file-out>]`
+- `pdf-rewriter.raku [--repair] [--rebuild] [--[/]compress] [--password=Xxx] [--decrypt] <pdf-or-json-file-in> [<pdf-or-json-file-out>]`
 This script is a thin wrapper for the `PDF` `.open` and `.save-as` methods. It can typically be used to:
   - uncompress a PDF for readability
   - repair a PDF who's cross-reference index or stream lengths have become invalid
@@ -397,7 +397,7 @@ my \p = PDF::Grammar::COS.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :
     or die "parse failed";
 my %ast = p.ast;
 
-say '#'~%ast.perl;
+say '#'~%ast.raku;
 #:dict({:Count(:int(1)), :Kids(:array([:ind-ref([4, 0])])), :Type(:name("Pages"))})
 
 my $reader = class { has $.auto-deref = False }.new; # dummy reader
@@ -406,7 +406,7 @@ my $object = PDF::COS.coerce( %ast, :$reader );
 say '#'~$object.WHAT.gist;
 #(PDF::COS::Dict)
 
-say '#'~$object.perl;
+say '#'~$object.raku;
 #{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
 
 say '#'~$object<Type>.WHAT.^name;
@@ -425,7 +425,7 @@ my $object2 = PDF::COS.coerce({ :Type( :name<Pages> ),
                                 :Kids[ :array[ :ind-ref[4, 0] ] ], },
 				:$reader);
 
-# same but with a casting from Perl types
+# same but with a casting from Raku types
 my $object3 = PDF::COS.coerce({ :Type( :name<Pages> ),
                                 :Count(1),
                                 :Kids[ :ind-ref[4, 0],  ] },
