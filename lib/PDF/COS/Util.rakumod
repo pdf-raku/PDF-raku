@@ -74,7 +74,7 @@ module PDF::COS::Util {
 	my $time-spec = '%02d%02d%02d'.sprintf($dt.hour, $dt.minute, $dt.second);
 	my Str $tz-spec = "%s%02d'%02d'".sprintf($tz-sign, $tz-hour, $tz-min);
 
-       [~] "D:", $date-spec, $time-spec, $tz-spec;
+       [~] 'D:', $date-spec, $time-spec, $tz-spec;
     }
 
     multi sub ast-coerce(DateTime:D $date-time!) {
@@ -92,8 +92,10 @@ module PDF::COS::Util {
 
     proto sub from-ast(|) is export(:from-ast) {*};
 
-    multi sub from-ast( Pair $p) {
-        from-ast( |$p );
+    multi sub from-ast( Pair $_) {
+        .value ~~ Enumeration
+            ?? from-ast( |.key => .value.value )
+            !! from-ast( |$_ );
     }
 
     #| for JSON deserialization, e.g. { :int(42) } => :int(42)
