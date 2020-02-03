@@ -1,10 +1,6 @@
 
 
-3 0 obj <<
-  /Type /Pages
-  /Count 2
-  /Kids [ 4 0 R 9 0 R ]
->>
+3 0 obj << /Type /Pages /Count 2 /Kids [ 4 0 R 9 0 R ] >>
 endobj
 
 9 0 obj <<
@@ -12,18 +8,11 @@ endobj
   /Contents 10 0 R
   /MediaBox [ 0 0 420 595 ]
   /Parent 3 0 R
-  /Resources <<
-    /Font <<
-      /F1 7 0 R
-    >>
-    /ProcSet 6 0 R
-  >>
+  /Resources << /Font << /F1 7 0 R >> /ProcSet 6 0 R >>
 >>
 endobj
 
-10 0 obj <<
-  /Length 70
->> stream
+10 0 obj << /Length 70 >> stream
 BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET
 endstream
 endobj
@@ -34,8 +23,8 @@ xref
 3 1
 0000000892 00000 n 
 9 2
-0000000964 00000 n 
-0000001139 00000 n 
+0000000958 00000 n 
+0000001113 00000 n 
 trailer
 <<
   /ID [ <d743a886fcdcf87b69c36548219ea941> <d743a886fcdcf87b69c36548219ea941> ]
@@ -44,5 +33,5 @@ trailer
   /Size 11
 >>
 startxref
-1263
+1235
 %%EOF

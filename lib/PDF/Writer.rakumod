@@ -235,16 +235,17 @@ class PDF::Writer {
             when 'Length'            {"z"}
             default                  {$_}
         };
+        my @entries = @keys.map({ $.write-name($_) ~ ' ' ~ $.write( $dict{$_} ); });
+        my $len = $!indent;
+        for @entries {
+            $len += .chars;
+            last if $len > 64;
+        }
 
-        join("\n",
-             '<<',
-             self!indented(
-                 @keys,
-	         -> \k { [~] $.write-name(k), ' ', $.write( $dict{k} ) }
-	     ),
-             $!indent ~ '>>'
-            );
-
+        my $pad := $!indent ~ '  ';
+        $len > 64
+            ?? join("\n", '<<', @entries.map({$pad ~ $_}), '>>')
+            !! join(' ', '<<', @entries, '>>');
     }
 
     #| invertors for PDF::Grammar::Function expr term
