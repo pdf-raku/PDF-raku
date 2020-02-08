@@ -48,12 +48,10 @@ class PDF::IO::Serializer {
         with @objects[0] -> $obj is copy {
             $obj = $.reader.ind-obj($obj.value[0], $obj.value[1], :get-ast)
                 if $obj ~~ LazyObj;
-            given $obj {
-                when DictIndObj {
-                    my Hash:D $dict := .value[2]<dict>;
-                    @objects.shift
-                        if $dict<Linearized>:exists;
-                }
+            if $obj ~~ DictIndObj {
+                my Hash:D $dict := $obj.value[2]<dict>;
+                @objects.shift
+                    if $dict<Linearized>:exists;
             }
         }
     }

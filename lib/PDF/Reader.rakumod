@@ -461,6 +461,7 @@ class PDF::Reader {
         my Str $preamble = $!input.byte-str(0, 32);
 
         PDF::Grammar::COS.subparse($preamble, :$.actions, :rule<header>)
+            or PDF::Grammar::COS.subparse($preamble ~ $!input.byte-str(32, 1024), :$.actions, :rule<header>)
             or die X::PDF::BadHeader.new( :$preamble );
         given $/.ast {
             $.version = .<version>;
@@ -867,11 +868,11 @@ class PDF::Reader {
     #| get just updated objects. return as indirect objects
     method get-updates() {
         my List \raw-objects = $.get-objects( :incremental );
-        raw-objects.map({
+        raw-objects.map: {
             my ObjNumInt $obj-num = .value[0];
             my GenNumInt $gen-num = .value[1];
             $.ind-obj($obj-num, $gen-num).object;
-        });
+        };
     }
 
     method recompress(Bool:D :$compress = True) {
