@@ -81,8 +81,8 @@ class PDF::Writer {
                 # direct copy of raw object from input to output
 		my uint $obj-num = ref[0];
 		my uint $gen-num = ref[1];
-                my &getter = ref[2];
-                my $ind-obj = &getter.get($obj-num, $gen-num);
+                my $getter = ref[2];
+                my $ind-obj = $getter.get($obj-num, $gen-num);
 		@idx.push: %( :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj );
                 $.write-ind-obj( $ind-obj );
             }
@@ -235,6 +235,8 @@ class PDF::Writer {
             when 'Length'            {"z"}
             default                  {$_}
         };
+        my $pad = $!indent;
+        temp $!indent ~= '  ';  # for indentation of child dictionarys
         my @entries = @keys.map({ $.write-name($_) ~ ' ' ~ $.write( $dict{$_} ); });
         my $len = $!indent;
         for @entries {
@@ -242,9 +244,8 @@ class PDF::Writer {
             last if $len > 64;
         }
 
-        my $pad := $!indent ~ '  ';
         $len > 64
-            ?? join("\n", '<<', @entries.map({$pad ~ $_}), '>>')
+            ?? join("\n", '<<', @entries.map({$!indent ~ $_}), $pad ~ '>>')
             !! join(' ', '<<', @entries, '>>');
     }
 
