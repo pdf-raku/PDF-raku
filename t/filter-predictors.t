@@ -116,5 +116,5 @@ lives-ok {$encoded = PDF::IO::Filter.encode($rand-chrs, :$dict)}, "$dict<Filter>
 my $decoded;
 lives-ok {$decoded = PDF::IO::Filter.decode($encoded, :$dict)}, "$dict<Filter> encode with encode";
 
-is-deeply ~$decoded, $rand-chrs, "$dict<Filter> round-trip with encode";
+is-deeply $decoded.Str, $rand-chrs, "$dict<Filter> round-trip with encode";
 

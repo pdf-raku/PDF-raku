@@ -16,7 +16,7 @@ dies-ok { PDF::IO::Filter.decode($out, :%dict) },
 
 $out ~= "\x[80]";
 
-is-deeply ~PDF::IO::Filter.encode($in, :%dict),
+is-deeply PDF::IO::Filter.encode($in, :%dict).Str,
    $out,
    q{RunLength test string is encoded correctly};
 
@@ -29,8 +29,8 @@ for :empty(''), :single-byte('a'), :min-run('aa'), :min-lit('ab'), :long-run('a'
     my $in = .value;
     my $round-trip;
     lives-ok {
-        my $out = ~PDF::IO::Filter.encode($in, :%dict);
-        $round-trip = ~PDF::IO::Filter.decode($out, :%dict);
+        my $out = PDF::IO::Filter.encode($in, :%dict).Str;
+        $round-trip = PDF::IO::Filter.decode($out, :%dict).Str;
     }, "$test round trip";
     is $round-trip, $in, "RunLength $test round-trip";
 }
