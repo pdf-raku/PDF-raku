@@ -10,9 +10,6 @@ use PDF::Grammar::PDF::Actions;
 
 my $actions = PDF::Grammar::PDF::Actions.new;
 
-diag "*** NOTE installing Lib::PDF will speed up this test ***"
-    unless PDF::IO::Util::have-pdf-native;
-
 for <xt/pdf/png-pred-4bpc.in xt/pdf/png-pred-16bpc.in xt/pdf/png-pred-1bpc.in xt/pdf/png-pred-4bpc-odd-col-count.in> {
     my $input = .IO.slurp( :enc<latin-1> );
     my $p = PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
