@@ -75,7 +75,7 @@ class PDF::IO::Serializer {
         [ { :@!objects, :trailer{ :%dict } }, ];
     }
 
-    #| prepare a set of objects for an incremental update. Only return indirect objects:
+    #| prepare a set of indirect objects for an incremental update. Only return:
     #| - objects that have been fetched and updated, and
     #| - the trailer dictionary (returned as first object)
     multi method body( Bool :$updates! where .so,

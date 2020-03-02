@@ -1,5 +1,6 @@
 Release 0.4.1
-- [PDF::Writer] - Compacted writing of smaller dictionarys
+- [PDF::Writer] Compacted writing of smaller dictionarys
+- [PDF] .save-as() method: don't copy when updating and source and destination are the same
 Release 0.4.0
 - Rename modules *.pm -> *.rakumod and scripts *.p6 -> *.raku
 Release 0.3.8
@@ -8,7 +9,7 @@ Release 0.3.8
   Choosing to map them to #Xxx where Xxx is a hexidecimal number
 - [PDF] Add $.open(:type) option. Asserts that the PDF file is of a given type 'PDF', 'FDF' etc.
 - [pdf-rewriter.p6] --class option changed from a Boolean to a string. Any class
-  can now be loaded that based on PDF (PDF::Lite, PDF::Class, PDF::API6).
+  can now be loaded that is based on PDF (PDF::Lite, PDF::Class, PDF::API6).
 - [PDF::COS::Tie][PDF::COS::Tie::Array][PDF::COS::Tie::Hash]
   Some internal renaming of attribute roles and methods. TiedHash -> COSDictAttrHOW,
   TiedArray -> COSArrayAttrHOW, $attr.tied -> $attr.cos

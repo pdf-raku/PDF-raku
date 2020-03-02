@@ -171,7 +171,10 @@ class PDF:ver<0.4.1>
             # copy the input PDF, then incrementally update it. This is faster
             # and plays better with digitally signed documents.
             my $diffs = $iop.open(:a, :bin);
-	    $.reader.file-name.IO.copy( $iop );
+            given $.reader.file-name {
+	        .IO.copy( $iop )
+                    unless $iop.path eq $_;
+            }
 	    $.update( :$diffs, |c);
 	}
 	default {
