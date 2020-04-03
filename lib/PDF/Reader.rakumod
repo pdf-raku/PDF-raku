@@ -522,36 +522,10 @@ class PDF::Reader {
             unless $parse;
 
         my \index = $parse.ast;
-        my @idx;
-
-        with index<xref> {
-            for .list {
-                my uint $obj-num   = .<obj-first-num>;
-                my uint $obj-count = .<obj-count>;
-
-                with .<entries> {
-                    my uint $entry-count = .elems;
-                    warn X::PDF::BadXRef::Section.new( :$obj-count, :$entry-count)
-                        unless $obj-count == $entry-count;
-
-                    loop (my uint $i = 0; $i < $entry-count; $i++) {
-                        my uint64 $offset  = .[$i;0];
-                        my uint64 $gen-num = .[$i;1];
-                        my uint64 $type    = .[$i;2];
-
-                        if $offset && $type == IndexType::External {
-                            my uint64 @xref[4] = $obj-num, $type, $offset, $gen-num;
-                            @idx.push: @xref;
-                        }
-                        $obj-num++;
-                    }
-                }
-            }
-        }
 
         $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
 
-        @idx;
+        index<xref>.map: *.<entries>;
     }
 
     #| load PDF 1.4- xref table followed by trailer
@@ -572,24 +546,9 @@ class PDF::Reader {
         my \index = $parse.ast;
         $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
 
-        # extract index
-        # todo: optimise this. now the bottleneck.
-        my @idx;
-        my int $j;
-        my int $n = +$entries;
+        my uint64 @seg[+$entries;4] Z= $entries;
 
-        loop ($j = 0; $j < $n;) {
-            my uint64 $obj-num  = $entries[$j++];
-            my uint64 $offset   = $entries[$j++];
-            my uint64 $gen-num  = $entries[$j++];
-            my uint64 $type     = $entries[$j++];
-
-            if $offset && $type {
-                my uint64 @xref[4] = $obj-num, $type, $offset, $gen-num;
-                @idx.push(@xref);
-            }
-        }
-        @idx;
+        [@seg, ];
     }
 
     #| load a PDF 1.5+ XRef Stream
@@ -603,7 +562,7 @@ class PDF::Reader {
         my PDF::IO::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
         my subset XRef of Hash where { .<Type> ~~ 'XRef' }
         $dict = my XRef $ = $ind-obj.object;
-        $dict.decode-index.list;
+        $dict.decode-index;
     }
 
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
@@ -631,7 +590,7 @@ class PDF::Reader {
         my UInt @ends;
 
         while $offset.defined {
-            my array @obj-idx;
+            my array @obj-idx; # array of shaped arrays
             @!xrefs.unshift: $offset;
             die "xref '/Prev' cycle detected \@$offset"
                 if %offsets-seen{$offset}++;
@@ -649,13 +608,13 @@ class PDF::Reader {
                     # that contains additional objects
                     my $xref-dict = {};
                     my Str \xref-stm = self!locate-xref(input-bytes, tail-bytes, $tail, $_);
-                    @obj-idx.append: self!load-xref-stream(xref-stm, $xref-dict, :offset($_));
+                    @obj-idx.push: self!load-xref-stream(xref-stm, $xref-dict, :offset($_));
                 }
             }
             else {
                 # PDF 1.5+ cross reference stream
                 $!compat = v1.5;
-                @obj-idx.append: self!load-xref-stream(xref, $dict, :$offset);
+                @obj-idx.push: self!load-xref-stream(xref, $dict, :$offset);
             }
 
             self!set-trailer: $dict;
@@ -666,18 +625,20 @@ class PDF::Reader {
                  );
 
             for @obj-idx {
-                my $type := .[Type];
+                for 0 ..^ .elems -> $i {
+                    my $type := .[$i;Type];
 
-                if $type == IndexType::Embedded {
-                    my UInt      $index       := .[Index];
-                    my ObjNumInt $ref-obj-num := .[RefObjNum];
-                    %!ind-obj-idx{.[ObjNum] * 1000} //= %( :$type, :$index, :$ref-obj-num );
-                }
-                else {
-                    my $k := .[ObjNum] * 1000 + .[GenNum];
-                    my $offset = .[Offset];
-                    %!ind-obj-idx{$k} //= %( :$type, :$offset );
-                    @ends.push: $offset;
+                    if $type == IndexType::Embedded {
+                        my UInt      $index       := .[$i;Index];
+                        my ObjNumInt $ref-obj-num := .[$i;RefObjNum];
+                        %!ind-obj-idx{.[$i;ObjNum] * 1000} //= %( :$type, :$index, :$ref-obj-num );
+                    }
+                    elsif $type == IndexType::External {
+                        my $k := .[$i;ObjNum] * 1000 + .[$i;GenNum];
+                        my $offset = .[$i;Offset];
+                        %!ind-obj-idx{$k} //= %( :$type, :$offset );
+                        @ends.push: $offset;
+                    }
                 }
             }
 

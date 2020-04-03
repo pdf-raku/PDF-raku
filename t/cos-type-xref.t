@@ -41,17 +41,13 @@ is-deeply $xref.values, $xref-roundtrip.values, 'encode/decode round-trip';
 my $xref-index;
 lives-ok { $xref-index = $ind-obj.object.decode-index; }, 'decode to index - lives';
 
-my $expected-index-sample = (
-   array[uint32].new(248, 2, 217, 16),
-   array[uint32].new(1000, 2, 217, 17),
-   array[uint32].new(1001, 1, 495, 0),
-    );
+my $expected-tail-seg = ((1000, 2, 217, 17), (1001, 1, 495, 0));
 
-is-deeply $xref-index.tail(3), $expected-index-sample, 'decoded index (sample)';
+is-deeply $xref-index.rotor(4).tail(2), $expected-tail-seg, 'decoded index final segment';
 
 my $xref-recompressed-from-index = $ind-obj.object.encode-index($xref-index);
 $xref-roundtrip = $ind-obj2.object.decode-index( $xref-recompressed-from-index );
-is-deeply $xref-index, $xref-roundtrip, 'encode-index/decode-from-stage1 round-trip';
+is-deeply $xref-index.rotor(4), $xref-roundtrip.rotor(4), 'encode-index/decode-from-stage1 round-trip';
 
 my $xref-new = ::('PDF::COS::Type')::('XRef').new(:decoded(@expected-xref), :dict{ :Index[42, 37], :Size(37) } );
 my $xref-roundtrip2 = $xref-new.decode( $xref-new.encode );

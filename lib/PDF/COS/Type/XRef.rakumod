@@ -68,22 +68,22 @@ class PDF::COS::Type::XRef
         nextwith( PDF::IO::Blob.new: buf );
     }
 
-    #= inverse of $.decode-index . handily calculates and sets $.Size and $.Index
-    method encode-index(Array[array] $xref-index) {
+    #= inverse of $.decode-index (exrpimental). calculates and sets $.Size and $.Index
+    method encode-index(array $xref-index) {
         my $size = 1;
+        my $n = +$xref-index;
         my UInt @index;
-        my uint32 @encoded-index = [];
+        my uint32 @xref[$n;3];
 
-        my @entries = $xref-index.list.sort: { $^a[0] <=> $^b[0] };
-
-        for @entries {
-            my @entry = .list;
-            my $obj-num = @entry.shift;
+        for 0 ..^ $n  -> $i {
+            my $obj-num = $xref-index[$i; 0];
             my Bool \contiguous = ?( $obj-num == $size );
             @index.push( $obj-num, 0 )
                 unless contiguous;
             @index.tail++;
-            @encoded-index.append: @entry;
+            @xref[$i; 0] = $xref-index[$i; 1];
+            @xref[$i; 1] = $xref-index[$i; 2];
+            @xref[$i; 2] = $xref-index[$i; 3];
             $size = $obj-num + 1;
         }
 
@@ -91,8 +91,7 @@ class PDF::COS::Type::XRef
            if !self<Size> || self<Size> < $size;
         self<Index> = @index;
 
-        my uint32 @shaped-index[+@encoded-index div 3;3] Z= @encoded-index;
-        $.encode(@shaped-index);
+        $.encode(@xref);
     }
 
     method decode($? --> array) {
@@ -120,18 +119,21 @@ class PDF::COS::Type::XRef
 
         my Array \index = self<Index> // [ 0, $.Size ];
         my array \decoded = $.decode( $encoded );
-        my array @decoded-index = [];
+        my uint32 @index[+decoded;4];
+        my array @decoded-segs;
         my uint $i = 0;
         for index.list -> $obj-num is rw, \num-entries {
             for 0 ..^ num-entries {
-                my uint32 @xref = $obj-num, decoded[$i;0], decoded[$i;1], decoded[$i;2];
-                @decoded-index.push: @xref;
+                @index[$i;0] = $obj-num;
+                @index[$i;1] = decoded[$i;0];
+                @index[$i;2] = decoded[$i;1];
+                @index[$i;3] = decoded[$i;2];
                 $obj-num++;
                 $i++;
             }
         }
 
-        @decoded-index;
+        @index;
     }
 
 }

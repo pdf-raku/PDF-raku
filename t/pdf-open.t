@@ -16,8 +16,9 @@ for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
         next;
     }
 
-    lives-ok {$pdf = PDF.open( pdf-file ); $pdf.Info}, "$desc open - lives"
-        or next;
+    ##    lives-ok {
+    $pdf = PDF.open( pdf-file ); $pdf.Info; #}, "$desc open - lives"
+     ##   or next;
 
     isa-ok $pdf, ::('PDF'), "$desc trailer";
     ok $pdf.reader.defined, "$desc \$pdf.reader defined";

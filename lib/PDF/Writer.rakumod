@@ -138,9 +138,10 @@ class PDF::Writer {
 
     #| Build a PDF 1.4- Cross Reference Table
     method !make-trailer-xref( Hash $trailer, @idx ) {
-        my @xrefs := self!idx-to-xref( @idx );
+        my uint $total-entries = +@idx;
+	my uint64 @idx-sorted[+$total-entries;4] = @idx.sort({ $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> }).map: {[.<type>, .<obj-num>, .<gen-num>, .<offset> ]};
 
-	my Str \xref-str = self.write-xref(@xrefs);
+	my Str \xref-str = self!write-xref-segments: self!xref-segments( @idx-sorted );
 	my UInt \startxref = $.offset;
 
 	my \trailer = [~] (
@@ -372,9 +373,8 @@ class PDF::Writer {
         $j - $i;
     }
 
-    method !idx-to-xref(Array $idx) {
-        my uint $total-entries = +$idx;
-	my uint64 @idx[+$total-entries;4] = $idx.sort({ $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> }).map: {[.<type>, .<obj-num>, .<gen-num>, .<offset> ]};
+    method !xref-segments(@idx) {
+        my $total-entries := +@idx;
         given @idx[$total-entries-1;1] + 1 {
             $!size = $_
                 if !$!size || $_ > $!size;
@@ -401,7 +401,7 @@ class PDF::Writer {
         @xrefs;
     }
 
-    method write-xref(List $_) {
+    method !write-xref-segments(List $_) {
         "xref\n" ~ .map({ self!write-xref-section(|$_) }).join;
     }
 
