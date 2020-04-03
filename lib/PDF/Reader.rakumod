@@ -535,7 +535,7 @@ class PDF::Reader {
 
         # fast load of the xref segments
         my $buf = $xref.encode("latin-1");
-        my $entries = $fast-reader.read-xref($buf);
+        my array $entries = $fast-reader.read-xref($buf);
         my $bytes = $fast-reader.xref-bytes;
 
         # parse and load the trailer
@@ -546,7 +546,7 @@ class PDF::Reader {
         my \index = $parse.ast;
         $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
 
-        my uint64 @seg[+$entries;4] Z= $entries;
+        my uint64 @seg[+$entries div 4;4] Z= @$entries;
 
         [@seg, ];
     }

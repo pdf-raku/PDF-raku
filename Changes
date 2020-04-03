@@ -1,3 +1,5 @@
+Release 0.4.2
+- Streamlined cross-reference loading; adjust to PDF::Grammar 0.2.1
 Release 0.4.1
 - [PDF::Writer] Compacted writing of smaller dictionarys
 - [PDF] .save-as() method: don't copy when updating and source and destination are the same
