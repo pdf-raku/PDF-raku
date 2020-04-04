@@ -54,7 +54,7 @@ sub MAIN (
     }
 
     note "saving ...";
-    my Version $*compat = Version.new($_) with $compat;
+    my Version $*compat = do  with $compat { Version.new($_) } else { $reader.compat }
     my $writer = $reader.save-as($file-out, :$rebuild, :$*compat);
     note "done";
 

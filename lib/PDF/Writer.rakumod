@@ -112,7 +112,7 @@ class PDF::Writer {
         $xref.Filter = 'FlateDecode';
         my $n := +@idx;
         my uint64 @xref-index[$n;4];
-        for @idx.map(*.<obj-num>) {
+        with @idx.tail<obj-num> {
             $!size = $_ + 1
                 if !$!size || $!size <= $_;
         }
@@ -155,7 +155,8 @@ class PDF::Writer {
     #| Build a PDF 1.4- Cross Reference Table
     method !make-trailer-xref( Hash $trailer, @idx ) {
         my uint $total-entries = +@idx;
-	my uint64 @idx-sorted[+$total-entries;4] = @idx.sort({ $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> }).map: {[.<type>, .<obj-num>, .<gen-num>, .<offset> ]};
+	my uint64 @idx-sorted[+$total-entries;4] = @idx.sort({ $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> })
+                                                       .map: {[.<type>, .<obj-num>, .<gen-num>, .<offset> ]};
 
 	my Str \xref-str = self!write-xref-segments: self!xref-segments( @idx-sorted );
 	my UInt \startxref = $.offset;

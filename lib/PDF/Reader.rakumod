@@ -91,6 +91,7 @@ class X::PDF::ObjStmObject::Parse is Exception {
 
 class PDF::Reader {
 
+    use PDF::Grammar:ver<0.2.1+>;
     use PDF::Grammar::COS;
     use PDF::Grammar::PDF;
     use PDF::Grammar::PDF::Actions;
