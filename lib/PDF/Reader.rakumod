@@ -106,17 +106,16 @@ class PDF::Reader {
     subset GenNumInt of Int where 0..999;
 
     has $.input is rw;             #= raw PDF image (latin-1 encoding)
-    has Str    $.file-name;
-    has Hash   %!ind-obj-idx{Int}; # keys are: $obj-num*1000 + $gen-num
-    has Bool   $.auto-deref is rw = True;
-    has Rat    $.version is rw;
-    has Str    $.type is rw;       #= 'PDF', 'FDF', etc...
-    has uint64 $.prev;             #= xref offset
-    has uint   $.size is rw;       #= /Size entry in trailer dict ~ first free object number
-    has uint64 @.xrefs = (0);      #= xref position for each revision in the file
+    has Str      $.file-name;
+    has Hash     %!ind-obj-idx{Int}; # keys are: $obj-num*1000 + $gen-num
+    has Bool     $.auto-deref is rw = True;
+    has Rat      $.version is rw;
+    has Str      $.type is rw;       #= 'PDF', 'FDF', etc...
+    has uint64   $.prev;             #= xref offset
+    has uint     $.size is rw;       #= /Size entry in trailer dict ~ first free object number
+    has uint64    @.xrefs = (0);      #= xref position for each revision in the file
     has $.crypt is rw;
-    has Version $!compat = v1.4;   #= cross reference stream mode
-    method compat { $!compat }
+    has Version:D $.compat is rw = v1.4;   #= cross reference stream mode
 
     my enum IndexType <Free External Embedded>;
 
@@ -552,7 +551,7 @@ class PDF::Reader {
     }
 
     #| load a PDF 1.5+ XRef Stream
-    method !load-xref-stream(Str $xref is copy, $dict is rw, UInt :$offset) {
+    method !load-xref-stream(Str $xref is copy, $dict is rw, UInt :$offset, :@discarded) {
         my $parse = PDF::Grammar::COS.subparse($xref, :$.actions, :rule<ind-obj>);
 
         die X::PDF::BadIndirectObject::Parse.new( :$offset, :input($xref))
@@ -560,8 +559,10 @@ class PDF::Reader {
 
         my %ast = $parse.ast;
         my PDF::IO::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
-        my subset XRef of Hash where { .<Type> ~~ 'XRef' }
-        $dict = my XRef $ = $ind-obj.object;
+        my subset XRefLike of Hash where { .<Type> ~~ 'XRef' }
+        $dict = my XRefLike $ = $ind-obj.object;
+        # we don't want to index these
+        @discarded.push: $ind-obj.obj-num * 1000 + $ind-obj.gen-num;
         $dict.decode-index;
     }
 
@@ -585,6 +586,7 @@ class PDF::Reader {
         $!prev = $/.ast<startxref>;
         my UInt $offset = $!prev;
         my UInt \input-bytes = $!input.codes;
+        my UInt @discarded;
 
         my Hash $dict;
         my UInt @ends;
@@ -608,13 +610,13 @@ class PDF::Reader {
                     # that contains additional objects
                     my $xref-dict = {};
                     my Str \xref-stm = self!locate-xref(input-bytes, tail-bytes, $tail, $_);
-                    @obj-idx.push: self!load-xref-stream(xref-stm, $xref-dict, :offset($_));
+                    @obj-idx.push: self!load-xref-stream(xref-stm, $xref-dict, :offset($_), :@discarded);
                 }
             }
             else {
                 # PDF 1.5+ cross reference stream
                 $!compat = v1.5;
-                @obj-idx.push: self!load-xref-stream(xref, $dict, :$offset);
+                @obj-idx.push: self!load-xref-stream(xref, $dict, :$offset, :@discarded);
             }
 
             self!set-trailer: $dict;
@@ -642,6 +644,7 @@ class PDF::Reader {
                 }
             }
 
+            %!ind-obj-idx{$_}:delete for @discarded;
             $offset = do with $dict<Prev> { $_ } else { Int };
             $!size  = do with $dict<Size> { $_ } else { 1 };
         }
@@ -761,7 +764,6 @@ class PDF::Reader {
         Bool :$eager = ! $incremental,  #| fetch uncached objects
         ) {
         my @object-refs;
-
         for %!ind-obj-idx.pairs.sort {
             my ObjNumInt $obj-num = .key div 1000;
             my GenNumInt $gen-num = .key mod 1000;
@@ -883,9 +885,9 @@ class PDF::Reader {
     }
 
     #| write to PDF/FDF
-    multi method save-as(IO() $output-path, |c ) is default {
+    multi method save-as(IO() $output-path, :$compat = $!compat, |c ) is default {
         my $ast = $.ast(:!eager, |c);
-        my PDF::Writer $writer .= new: :$!input, :$ast;
+        my PDF::Writer $writer .= new: :$!input, :$ast, :$compat;
         $output-path.spurt: $writer.Blob;
         $writer;
     }

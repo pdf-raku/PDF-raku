@@ -14,6 +14,7 @@ sub MAIN (
     Bool :$compress is copy,    #= compress streams
     Bool :$uncompress,          #= uncompress streams
     Str  :$class,               #= load a class (PDF::Class, PDF::Lite, PDF::API6)
+    Rat  :$compat where 1.4|1.5|Rat:U,            #= Cross reference format
     Bool :$decrypt   = False,   #= decrypt
     Bool :$drm       = True,
     ) {
@@ -29,6 +30,7 @@ sub MAIN (
 
     note "opening {$file-in} ...";
     $reader.open( $file-in, :$repair, :$password );
+
     if $decrypt && $drm {
         with $reader.crypt {
             die "only the owner of this PDF can decrypt it"
@@ -52,7 +54,8 @@ sub MAIN (
     }
 
     note "saving ...";
-    my $writer = $reader.save-as($file-out, :$rebuild);
+    my Version $*compat = Version.new($_) with $compat;
+    my $writer = $reader.save-as($file-out, :$rebuild, :$*compat);
     note "done";
 
 }
@@ -70,13 +73,15 @@ pdf-rewriter.p6 [options] file.pdf [out.json] # convert to json
 pdf-rewriter.p6 [options] file.json [out.pdf] # convert from json
 
 Options:
-   --password   password for an encrypted PDF
-   --repair     repair the input PDF
-   --rebuild    rebuild object tree (renumber, garbage collect and deduplicate objects)
-   --compress   compress streams
-   --uncompress uncompress streams, where possible
-   --class      load L<PDF::Class> module
-   --decrypt    remove encryption
+   --password    password for an encrypted PDF
+   --repair      repair the input PDF
+   --rebuild     rebuild object tree (renumber, garbage collect and deduplicate objects)
+   --compress    compress streams
+   --uncompress  uncompress streams, where possible
+   --class=name  load L<PDF::Class> module
+   --decrypt     remove encryption
+   --compat=1.4  write a PDF-1.4- cross reference table
+   --compat=1.5  write a PDF-1.5+ cross reference stream
 
 =head1 DESCRIPTION
 

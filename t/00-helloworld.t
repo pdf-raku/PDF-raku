@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 7;
+plan 8;
 
 use PDF;
 use PDF::COS::Stream;
@@ -44,4 +44,5 @@ lives-ok {$pdf.save-as("tmp/helloworld.json")}, 'save-as json';
 is $pdf.ID[0], $pdf-id, 'document ID[0] - post update';
 isnt $pdf.ID[1], $pdf-id, 'document ID[1] - post update';
 ok PDF::Grammar::PDF.parse( $pdf.Str ), '$pdf.Str serialization';
+ok PDF::Grammar::PDF.parse( $pdf.Str: :compat(v1.5) ), '$pdf.Str v1.5 serialization';
 done-testing;

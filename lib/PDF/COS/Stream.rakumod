@@ -7,6 +7,7 @@ class PDF::COS::Stream
     is PDF::COS::Dict {
 
     use PDF::COS::Tie;
+    use PDF::COS::Name;
     use PDF::IO::Filter;
     use PDF::COS::Util :from-ast, :ast-coerce;
 
@@ -15,7 +16,7 @@ class PDF::COS::Stream
 
     has UInt $.Length is entry;                       #| (Required) The number of bytes from the beginning of the line following the keyword stream to the last byte just before the keyword endstream
 
-    has Str @.Filter is entry(:array-or-item);        #| (Optional) The name of a filter to be applied in processing the stream data found between the keywords stream and endstream, or an array of such names
+    has PDF::COS::Name @.Filter is entry(:array-or-item);  #| (Optional) The name of a filter to be applied in processing the stream data found between the keywords stream and endstream, or an array of such names
 
     has Hash @.DecodeParms is entry(:array-or-item);  #| (Optional) A parameter dictionary or an array of such dictionaries, used by the filters specified by Filter
 

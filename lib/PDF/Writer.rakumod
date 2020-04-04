@@ -2,7 +2,7 @@ use v6;
 
 class PDF::Writer {
 
-    use PDF::Grammar:ver(v0.1.1+);
+    use PDF::Grammar:ver(v0.2.1+);
     use PDF::IO;
     use PDF::IO::Util;
     use PDF::COS::Type::XRef;
@@ -106,16 +106,32 @@ class PDF::Writer {
 
     #| build a PDF 1.5+ Cross Reference Stream
     method !make-trailer-stream( Hash $trailer, @idx ) {
-        constant xref-entry = array[uint64];
 	my UInt \startxref = $.offset;
         my %dict = %$trailer<dict>;
-        %dict<Size> = $!size + 1;
         my PDF::COS::Type::XRef $xref .= new: :%dict;
-        my array @xref-index = @idx.map: -> $i {
-            given $i<type> {
-                when 0 { xref-entry.new($i<obj-num>, $_, $!size+1, $i<gen-num>+1) }
-                when 1 { xref-entry.new($i<obj-num>, $_, $i<offset>, $i<gen-num>) }
-                when 2 { xref-entry.new($i<obj-num>, $_, $i<ref-obj-num>, $i<index>) }
+        $xref.Filter = 'FlateDecode';
+        my $n := +@idx;
+        my uint64 @xref-index[$n;4];
+        for @idx.map(*.<obj-num>) {
+            $!size = $_ + 1
+                if !$!size || $!size <= $_;
+        }
+
+        for 0 ..^ $n -> $i {
+            my $idx := @idx[$i];
+            my UInt $type := $idx<type>;
+            my $obj-num := $idx<obj-num>;
+            @xref-index[$i;0] = $obj-num;
+            @xref-index[$i;1] = $type;
+            @xref-index[$i;2] = do given $type {
+                when 0 { $!size }
+                when 1 { $idx<offset> }
+                when 2 { $idx<ref-obj-num> }
+            }
+            @xref-index[$i;3] = do given $type {
+                when 0 { $idx<gen-num> + 1 }
+                when 1 { $idx<gen-num> }
+                when 2 { $idx<index> }
             }
         }
 
@@ -338,13 +354,12 @@ class PDF::Writer {
     multi method write-real( Numeric $_ ) {
         my Str $num = .fmt('%.5f');
         $num ~~ s/(\.\d*?)0+$/$0/;
-        $num ~~ s/\.$//;
-        $num;
+        $num.ends-with('.') ?? $num.chop !! $num;
     }
 
     method write-stream(% (:%dict!, :$encoded = $.input.stream-data( :stream($_) )) ) {
         my $data = $encoded;
-        $data = $data.decode("latin-1")
+        $data .= decode("latin-1")
             unless $data.isa(Str);
         %dict<Length> //= :int($data.codes);
         [~] $.write-dict(%dict), " stream\n", $data, "\nendstream";
@@ -410,10 +425,10 @@ class PDF::Writer {
         die "xref $obj-count != {$entries.elems}"
             unless $obj-count == +$entries;
          $obj-first-num ~ ' ' ~ $obj-count ~ "\n"
-             ~ self.write-entries($entries );
+             ~ self!write-entries($entries );
     }
 
-    multi method write-entries($_ where .shape[1] ~~ 3) {
+    method !write-entries($_ where .shape[1] ~~ 3) {
         enum Str ( :Free<f>, :Inuse<n> );
         ((0 ..^ .elems).map: -> int $i {
             my uint64 $offset  = .[$i;0];
@@ -431,11 +446,6 @@ class PDF::Writer {
                 if $offset > 9_999_999_999;
             "%010d %05d %s \n".sprintf($offset, $gen-num, $status)
         }).join;
-    }
-
-    multi method write-entries($_) is default {
-        my uint64 @shaped[.elems;3] = .List;
-        self.write-entries(@shaped);
     }
 
     proto method write(|c) returns Str {*}

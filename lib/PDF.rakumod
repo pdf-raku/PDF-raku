@@ -193,8 +193,8 @@ class PDF:ver<0.4.1>
     }
 
     #| stringify to the serialized PDF
-    method Str {
-        my PDF::Writer $writer .= new;
+    method Str(|c) {
+        my PDF::Writer $writer .= new: |c;
 	$writer.write( $.ast )
     }
 
@@ -212,8 +212,8 @@ class PDF:ver<0.4.1>
         }
     }
 
-    method Blob returns Blob {
-	self.Str.encode: "latin-1";
+    method Blob(|c) returns Blob {
+	self.Str(|c).encode: "latin-1";
     }
 
     #| Generate a new document ID.
@@ -238,10 +238,10 @@ class PDF:ver<0.4.1>
 	my \new-id = PDF::COS.coerce: :$hex-string;
 
 	with $obj<ID> {
-	    .[1] = new-id
+	    .[1] = new-id; # Update modification ID
 	}
 	else {
-	    $_ = [ new-id, new-id ];
+	    $_ = [ new-id, new-id ]; # Initialize creation and modification IDs
 	}
     }
 }

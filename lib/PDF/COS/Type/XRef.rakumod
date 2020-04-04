@@ -68,7 +68,7 @@ class PDF::COS::Type::XRef
         nextwith( PDF::IO::Blob.new: buf );
     }
 
-    #= inverse of $.decode-index (exrpimental). calculates and sets $.Size and $.Index
+    #= inverse of $.decode-index. calculates and sets $.Size and $.Index
     method encode-index(array $xref-index) {
         my $size = 1;
         my $n = +$xref-index;
