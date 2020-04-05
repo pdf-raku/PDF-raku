@@ -14,7 +14,6 @@ sub MAIN (
     Bool :$compress is copy,    #= compress streams
     Bool :$uncompress,          #= uncompress streams
     Str  :$class,               #= load a class (PDF::Class, PDF::Lite, PDF::API6)
-    Rat  :$compat where 1.4|1.5|Rat:U,            #= Cross reference format
     Bool :$decrypt   = False,   #= decrypt
     Bool :$drm       = True,
     ) {
@@ -54,8 +53,7 @@ sub MAIN (
     }
 
     note "saving ...";
-    my Version $*compat = do  with $compat { Version.new($_) } else { $reader.compat }
-    my $writer = $reader.save-as($file-out, :$rebuild, :$*compat);
+    my $writer = $reader.save-as($file-out, :$rebuild);
     note "done";
 
 }
@@ -80,8 +78,6 @@ Options:
    --uncompress  uncompress streams, where possible
    --class=name  load L<PDF::Class> module
    --decrypt     remove encryption
-   --compat=1.4  write a PDF-1.4- cross reference table
-   --compat=1.5  write a PDF-1.5+ cross reference stream
 
 =head1 DESCRIPTION
 

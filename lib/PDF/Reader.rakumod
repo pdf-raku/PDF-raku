@@ -615,8 +615,6 @@ class PDF::Reader {
                 }
             }
             else {
-                # PDF 1.5+ cross reference stream
-                $!compat = v1.5;
                 @obj-idx.push: self!load-xref-stream(xref, $dict, :$offset, :@discarded);
             }
 
@@ -886,9 +884,9 @@ class PDF::Reader {
     }
 
     #| write to PDF/FDF
-    multi method save-as(IO() $output-path, :$compat = $!compat, |c ) is default {
+    multi method save-as(IO() $output-path, |c ) is default {
         my $ast = $.ast(:!eager, |c);
-        my PDF::Writer $writer .= new: :$!input, :$ast, :$compat;
+        my PDF::Writer $writer .= new: :$!input, :$ast;
         $output-path.spurt: $writer.Blob;
         $writer;
     }
