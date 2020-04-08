@@ -4,7 +4,7 @@ use v6;
 use PDF::Reader;
 
 #| rewrite a PDF or FDF and/or convert to/from JSON
-sub MAIN (
+sub MAIN(
     Str $file-in,               #= input PDF, FDF or JSON file (.json extension)
     Str $file-out = $file-in,   #= output PDF, FDF or JSON file (.json extension)
     Str  :$password  = '';      #= password for encrypted documents
@@ -62,13 +62,13 @@ sub MAIN (
 
 =head1 NAME
 
-pdf-rewriter.p6 - Rebuild a PDF using the L<PDF> module.
+pdf-rewriter.raku - Rebuild a PDF using the L<PDF> module.
 
 =head1 SYNOPSIS
 
-pdf-rewriter.p6 [options] file.pdf [out.pdf]
-pdf-rewriter.p6 [options] file.pdf [out.json] # convert to json
-pdf-rewriter.p6 [options] file.json [out.pdf] # convert from json
+pdf-rewriter.raku [options] file.pdf [out.pdf]
+pdf-rewriter.raku [options] file.pdf [out.json] # convert to json
+pdf-rewriter.raku [options] file.json [out.pdf] # convert from json
 
 Options:
    --password    password for an encrypted PDF
