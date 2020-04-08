@@ -80,7 +80,7 @@ role PDF::COS::Tie {
             if !$lval.defined {
                 if $check {
                     return $.tie( PDF::COS.coerce($_)) with $.default;
-                    die "missing required field: $.key"
+                    die "missing required field: $.accessor-name"
                         if $.is-required;
                 }
             }
