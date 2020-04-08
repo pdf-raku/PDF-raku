@@ -1,11 +1,12 @@
 use v6;
 use Test;
-plan 34;
+plan 37;
 
 use PDF;
 use PDF::Reader;
 use PDF::Writer;
 use PDF::COS;
+use PDF::COS::Type::XRef;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 use JSON::Fast;
@@ -77,6 +78,9 @@ $Info.ModDate = DateTime.new( :year(2015), :month(12), :day(26) );
 $pdf.save-as('t/pdf/pdf-updated.out');
 $pdf .= open('t/pdf/pdf-updated.out');
 $reader = $pdf.reader;
+
+# See that we've updated the in-memory PDF
+
 is +$reader.xrefs, 2, 'reader.xrefs - post-update';
 my $prev2 = $pdf.reader.prev;
 ok $prev2 > $prev1, "reader.prev incremented by update"
@@ -97,10 +101,11 @@ isa-ok $pdf<Root><Pages><Kids>[1], PDF::COS::Dict, 'updated page 2 access';
 # now re-read the pdf. Will also test our ability to read a PDF
 # with multiple body segments
 
-my $pdf2 = PDF.open: 't/pdf/pdf-updated.out';
+my PDF $pdf2 .= open: 't/pdf/pdf-updated.out';
 $reader = $pdf2.reader;
 is $reader.type, 'PDF', 'reader type';
 is +$reader.xrefs, 2, 'reader.xrefs - reread';
+is $reader.compat, v1.4, 'reader compat';
 
 my $ast = $reader.ast( :rebuild );
 is $ast<cos><header><type>, 'PDF', 'pdf ast type';
@@ -114,7 +119,17 @@ is-deeply $ast<cos><body>[0]<objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Leng
 # cleansed of old object versions.
 ok $pdf2.save-as('t/pdf/pdf-updated-and-rebuilt.pdf', :rebuild), 'save-as :rebuild';
 
-$pdf = PDF.open( 't/pdf/pdf-updated-and-rebuilt.pdf' );
+$pdf .= open( 't/pdf/pdf-updated-and-rebuilt.pdf' );
 $reader = $pdf.reader;
 is +$reader.xrefs, 1, 'reader.xrefs - rebuilt';
+
+# issue #22: if a PDF with cross reference streams is updated, we should also
+# write the updates as a cross reference stream
+
+$pdf .= open: "t/pdf/samples/pdf-1.5-obstm_and_xref_streams.pdf";
+$pdf.Info.Subject = 'test update of PDF with XRef streams';
+$pdf.save-as: "tmp/pdf-1.5-updated.pdf";
+lives-ok {$pdf .= open: "tmp/pdf-1.5-updated.pdf"}, "read of updated 1.5+ PDF lives";
+is $pdf.reader.compat, v1.5, 'reader compat';
+
 done-testing;

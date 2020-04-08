@@ -615,6 +615,9 @@ class PDF::Reader {
                 }
             }
             else {
+                # PDF 1.5+ cross reference stream.
+                # need to write index in same format for Adobe reader (issue #22)
+                $!compat = v1.5;
                 @obj-idx.push: self!load-xref-stream(xref, $dict, :$offset, :@discarded);
             }
 
