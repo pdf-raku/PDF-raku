@@ -51,12 +51,14 @@ role PDF::COS::Type::Encrypt
 
     has Str $.U is entry(:alias<user-pass>, :required);   #| (Required) A 32-byte string, based on the user password, that is used in determining whether to prompt the user for a password and, if so, whether a valid user or owner password was entered.
 
-    my enum PermissionsFlag is export(:PermissionsFlag) « :All(2) :Print(3) :Modify(4) :Copy(5) :Add(6) :Fill(9)
-							  :Extract(10) :Assemble(11) :Distribute(12) »;
+    my enum PermissionsFlag is export(:PermissionsFlag) «
+        :All(2) :Print(3) :Modify(4) :Copy(5) :Add(6) :Fill(9)
+	:Extract(10) :Assemble(11) :Distribute(12)
+    »;
 
     has Int $.P is entry(:alias<permissions>, :required); #| (Required) A set of flags specifying which operations are permitted when the document is opened with user access
 
-    has Bool $.EncryptMetadata is entry(:default(True));  #| (Optional; meaningful only when the value of V is 4; PDF 1.5) Indicates whether the document-level metadata stream is to be encrypted. Applications should respect this value.
+    has Bool $.EncryptMetadata is entry(:default);  #| (Optional; meaningful only when the value of V is 4; PDF 1.5) Indicates whether the document-level metadata stream is to be encrypted. Applications should respect this value.
                                 #| Default value: true.
 
 

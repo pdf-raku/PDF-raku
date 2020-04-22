@@ -29,7 +29,7 @@ role PDF::COS::Tie {
     my role COSAttrHOW {
         #| override standard Attribute method for generating accessors
         method built { False }
-	has COSAttr $.cos is rw handles <tie>;
+	has COSAttr $.cos is rw handles<tie raku>;
         method tied is rw is DEPRECATED("Please use .cos()") { $.cos }
 
         method compose(Mu $package) {
@@ -148,6 +148,17 @@ role PDF::COS::Tie {
 	    $.tie($lval, :$check);
 	}
 
+        method raku {
+            my $sigil;
+            my $type;
+            given $!type {
+                when Positional[Mu]  { $type := $!type.of; $sigil := '@' }
+                when Associative[Mu] { $type := $!type.of; $sigil := '%' }
+                default              { $type := $!type;    $sigil := '$' }
+            }
+            my $alias = do with $!alias { ' (' ~ $_ ~ ')' } // '';
+            [~] ($type.raku, ' ', $sigil, '.', $!accessor-name, $alias);
+        }
     }
 
     sub cos-attr-opts($entry, Attribute $att) {

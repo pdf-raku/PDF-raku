@@ -10,7 +10,7 @@ class PDF::IO::Serializer {
     has Pair  @!objects;            #| renumbered objects
     has Array %!objects-idx{Any};   #| unique objects index
     has UInt %!ref-count{Any};
-    has Bool $.renumber is rw = True;
+    has Bool $.renumber = True;
     has $.reader;
     has Str $.type = $!reader.?type // 'PDF';
 
@@ -46,7 +46,7 @@ class PDF::IO::Serializer {
     #| Discard Linearization aka "Fast Web View"
     method !discard-linearization(@objects) {
         with @objects[0] -> $obj is copy {
-            $obj = $.reader.ind-obj($obj.value[0], $obj.value[1], :get-ast)
+            $obj = $!reader.ind-obj($obj.value[0], $obj.value[1], :get-ast)
                 if $obj ~~ LazyObj;
             if $obj ~~ DictIndObj {
                 my Hash:D $dict := $obj.value[2]<dict>;
@@ -80,23 +80,23 @@ class PDF::IO::Serializer {
     #| - the trailer dictionary (returned as first object)
     multi method body( Bool :$updates! where .so,
                        :$*compress,
-                       :$!size = $.reader.size;
-                       :$prev = $.reader.prev;
+                       :$!size = $!reader.size;
+                       :$prev = $!reader.prev;
                      ) {
         # disable auto-deref to keep all analysis and freeze stages lazy. if it hasn't been
         # loaded, it hasn't been updated
-        temp $.reader.auto-deref = False;
+        temp $!reader.auto-deref = False;
         # preserve existing object numbers. updated objects need to be overwritten
         # using the same object and generation numbers
-        temp $.renumber = False;
+        temp $!renumber = False;
         %!ref-count = ();
         @!objects = ();
-        my \trailer = $.reader.trailer;
+        my \trailer = $!reader.trailer;
 
         temp trailer.obj-num = 0;
         temp trailer.gen-num = 0;
 
-        my @updated-objects = $.reader.get-updates.list;
+        my @updated-objects = $!reader.get-updates.list;
 
         $.ref-count($_) for @updated-objects;
         $.freeze($_, :indirect ) for @updated-objects;
@@ -111,13 +111,13 @@ class PDF::IO::Serializer {
 
     #| return objects without renumbering existing objects. requires a PDF reader
     multi method body( Bool:_ :$*compress, Bool :$eager = True ) is default {
-        my @objects = $.reader.get-objects(:$eager);
+        my @objects = $!reader.get-objects(:$eager);
 
         my %dict = self!get-root(@objects);
         self!discard-linearization(@objects);
 
         %dict<Prev>:delete;
-        %dict<Size> = :int($.reader.size)
+        %dict<Size> = :int($!reader.size)
             unless $.type eq 'FDF';
 
         [ { :@objects, :trailer{ :%dict } }, ]
@@ -128,7 +128,7 @@ class PDF::IO::Serializer {
     method !index-object( Pair $ind-obj! is rw, :$object!) {
         my Int $obj-num = $object.obj-num 
             if $object.can('obj-num')
-            && (! $.reader || $object.reader === $.reader);
+            && (! $!reader || $object.reader === $!reader);
         my UInt $gen-num;
         constant TrailerObjNum = 0;
 
@@ -252,7 +252,7 @@ class PDF::IO::Serializer {
         Bool    :$compress,
                 :$crypt,
         ) {
-        $!type //= ($.reader.?type
+        $!type //= ($!reader.?type
                     // do given $trailer<Root> {
                            .defined && .<FDF> ?? 'FDF' !! 'PDF'
                        });
