@@ -5,7 +5,6 @@ our %required;
 
 #| Perl 6 bindings to the Carousel Object System (http://jimpravetz.com/blog/2012/12/in-defense-of-cos/)
 role PDF::COS {
-
     has $.reader is rw;
     has Int $.obj-num is rw;
     has UInt $.gen-num is rw;
@@ -49,7 +48,7 @@ role PDF::COS {
         $.coerce( :@array, |c )
     }
     multi method coerce(DateTime $dt, |c) {
-	self!coercer.coerce( $dt, DateTime, |c)
+	self!coercer.coerce( $dt, $.required('PDF::COS::DateString'), |c)
     }
 
     method required(Str \mod-name) {

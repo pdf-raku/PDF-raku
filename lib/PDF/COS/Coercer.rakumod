@@ -24,9 +24,10 @@ class PDF::COS::Coercer {
     use PDF::COS::TextString;
     use PDF::COS::Bool;
 
-    multi method coerce( $obj, $role where {$obj ~~ $role}) {
-	# already does it
-	$obj
+    multi method coerce( PDF::COS $obj is rw, PDF::COS $type) {
+	warn X::PDF::Coerce.new( :$obj, :$type )
+            unless $obj ~~ $type;
+        $obj;
     }
 
     # strip enumerations
@@ -39,6 +40,9 @@ class PDF::COS::Coercer {
     }
     multi method coerce( DateTime:D $obj is rw, PDF::COS::DateString $class, |c) {
 	$obj = $class.new( $obj, |c );
+    }
+    multi method coerce( DateTime:D $obj, PDF::COS::DateString $class, |c) {
+	$class.new( $obj, |c );
     }
     multi method coerce( Str:D $obj is rw, PDF::COS::ByteString $class, |c) {
 	$obj = $obj but PDF::COS::ByteString[$obj.?type // 'literal'];
