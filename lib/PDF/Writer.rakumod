@@ -349,7 +349,7 @@ class PDF::Writer {
     }
 
     multi method write-real( Int $_ ) {
-        .Str
+        .fmt: '%d';
     }
 
     multi method write-real( Numeric $_ ) {
