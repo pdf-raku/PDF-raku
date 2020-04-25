@@ -64,7 +64,7 @@
   },
   "resources": [
   ],
-  "source-url": "git://github.com/p6-pdf/PDF-p6.git",
+  "source-url": "git://github.com/pdf-raku/PDF-raku.git",
   "tags": [
     "pdf"
   ],
