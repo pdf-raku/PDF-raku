@@ -1,8 +1,8 @@
-PDF-p6
+PDF-raku
 ========
 
- <a href="https://travis-ci.org/p6-pdf/PDF-p6"><img src="https://travis-ci.org/p6-pdf/PDF-p6.svg?branch=master"></a>
- <a href="https://ci.appveyor.com/project/dwarring/PDF-p6/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/p6-pdf/PDF-p6?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
+ <a href="https://travis-ci.org/pdf-raku/PDF-raku"><img src="https://travis-ci.org/pdf-raku/PDF-raku.svg?branch=master"></a>
+ <a href="https://ci.appveyor.com/project/dwarring/PDF-raku/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/pdf-raku/PDF-raku?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
 
 ## Overview
 
