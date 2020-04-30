@@ -1,12 +1,18 @@
 Release 0.4.2
 - Streamlined cross-reference loading; adjust to PDF::Grammar 0.2.1
 - Fix 'missing required field(s)' message on a tied COS attribute.
-- Fix accidental coercement of byte to name strings; fix Date coercements
+- Fix accidental coercement of byte to name strings; also date coercements
+- Fix syntax level PDF/A non-conformance issues, as reported by verapdf:
+  -- follow 'obj' by \n (not space) when serialising indirect objects
+  -- have 4 binary characters (not 3) in header comment
+
 Release 0.4.1
 - [PDF::Writer] Compacted writing of smaller dictionarys
 - [PDF] .save-as() method: don't copy when updating and source and destination are the same
+
 Release 0.4.0
 - Rename modules *.pm -> *.rakumod and scripts *.p6 -> *.raku
+
 Release 0.3.8
 - [PDF::Writer] - Fixed .write-content() method to sanitise any non-latin
   unicode chars in comment strings, which otherwise breaks serialization.
@@ -17,6 +23,7 @@ Release 0.3.8
 - [PDF::COS::Tie][PDF::COS::Tie::Array][PDF::COS::Tie::Hash]
   Some internal renaming of attribute roles and methods. TiedHash -> COSDictAttrHOW,
   TiedArray -> COSArrayAttrHOW, $attr.tied -> $attr.cos
+
 Release 0.3.7
 - [PDF::COS::Type::XRef]
   -- Fixed a bug in decode-index() method.
@@ -24,16 +31,19 @@ Release 0.3.7
   -- Reworked !load-index method
 - [PDF::COS]
   -- Improved required() method.
+
 Release 0.3.6
 - [PDF::Writer]
    -- Fix for issue#22 Incremental updates breaking Adobe
       Reader. Incremental updates to a 1.5+ PDF that has
       cross reference streams are now written with cross
       reference streams.
+
 Release 0.3.5
 - [PDF]
   -- Add top-level .cb-finish() hook. Call just prior to
      serialization
+
 Release 0.3.4
 - [PDF::Reader][PDF::Writer]
   -- Allow copying of raw object ASTs from input to output

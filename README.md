@@ -240,7 +240,7 @@ This indexes the indirect objects in the PDF by byte offset (generation number) 
 
 We can quickly put PDF to work using the Raku REPL, to better explore the document:
 
-    snoopy: ~/git/PDF-p6 $ perl6 -M PDF
+    snoopy: ~/git/PDF-raku $ raku -M PDF
     > my $pdf = PDF.open: "examples/helloworld.pdf"
     ID => [CÜ{ÃHADCN:C CÜ{ÃHADCN:C], Info => ind-ref => [1 0], Root => ind-ref => [2 0]
     > $pdf.keys
@@ -465,6 +465,6 @@ PDF::COS::Type::XRef | PDF::COS::Stream | PDF 1.5+ Cross Reference stream
 - [PDF Reference version 1.7](http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf) Adobe Systems Incorporated - This is the main reference used in the construction of this module.
 
 ## See also
-- [PDF::Lite](https://github.com/p6-pdf/PDF-Lite-p6) - basic graphics; including images, fonts, text and general graphics
-- [PDF::API6](https://github.com/p6-pdf/PDF-API6) - general purpose PDF manipulation (under construction)
+- [PDF::Lite](https://github.com/pdf-raku/PDF-Lite-raku) - basic graphics; including images, fonts, text and general graphics
+- [PDF::API6](https://github.com/pdf-raku/PDF-API6) - general purpose PDF manipulation (under construction)
 

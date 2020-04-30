@@ -79,13 +79,16 @@ startxref
 644
 %%EOF
 
-9 0 obj << /ModDate (D:20151226000000Z00'00') >>
+9 0 obj
+<< /ModDate (D:20151226000000Z00'00') >>
 endobj
 
-3 0 obj << /Type /Pages /Count 2 /Kids [ 4 0 R 10 0 R ] >>
+3 0 obj
+<< /Type /Pages /Count 2 /Kids [ 4 0 R 10 0 R ] >>
 endobj
 
-10 0 obj <<
+10 0 obj
+<<
   /Type /Page
   /Contents 11 0 R
   /MediaBox [ 0 0 420 595 ]
@@ -94,7 +97,8 @@ endobj
 >>
 endobj
 
-11 0 obj << /Length 70 >> stream
+11 0 obj
+<< /Length 70 >> stream
 BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET
 endstream
 endobj

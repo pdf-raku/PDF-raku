@@ -1,15 +1,19 @@
 %PDF-1.2
-%¥±ë
-1 0 obj << /Type /Catalog /Outlines 2 0 R /Pages 3 0 R >>
+%¥±ë¼
+1 0 obj
+<< /Type /Catalog /Outlines 2 0 R /Pages 3 0 R >>
 endobj
 
-2 0 obj << /Type /Outlines /Count 0 >>
+2 0 obj
+<< /Type /Outlines /Count 0 >>
 endobj
 
-3 0 obj << /Type /Pages /Count 2 /Kids [ 4 0 R 9 0 R ] >>
+3 0 obj
+<< /Type /Pages /Count 2 /Kids [ 4 0 R 9 0 R ] >>
 endobj
 
-4 0 obj <<
+4 0 obj
+<<
   /Type /Page
   /Contents 5 0 R
   /MediaBox [ 0 0 420 595 ]
@@ -18,7 +22,8 @@ endobj
 >>
 endobj
 
-5 0 obj << /Length 45 >> stream
+5 0 obj
+<< /Length 45 >> stream
 BT
 /F1 24 Tf
 100 100 Td (Hello, world!) Tj
@@ -26,10 +31,12 @@ ET
 endstream
 endobj
 
-6 0 obj << /Font << /F1 7 0 R >> /ProcSet 8 0 R >>
+6 0 obj
+<< /Font << /F1 7 0 R >> /ProcSet 8 0 R >>
 endobj
 
-7 0 obj <<
+7 0 obj
+<<
   /Type /Font
   /Subtype /Type1
   /BaseFont /Helvetica
@@ -38,10 +45,12 @@ endobj
 >>
 endobj
 
-8 0 obj [ /PDF /Text ]
+8 0 obj
+[ /PDF /Text ]
 endobj
 
-9 0 obj <<
+9 0 obj
+<<
   /Type /Page
   /Contents 10 0 R
   /MediaBox [ 0 0 420 595 ]
@@ -50,7 +59,8 @@ endobj
 >>
 endobj
 
-10 0 obj << /Length 45 >> stream
+10 0 obj
+<< /Length 45 >> stream
 BT /F1 24 Tf  100 250 Td (Bye for now!) Tj ET
 endstream
 endobj
@@ -58,18 +68,18 @@ endobj
 xref
 0 11
 0000000000 65535 f 
-0000000014 00000 n 
-0000000080 00000 n 
-0000000127 00000 n 
-0000000193 00000 n 
-0000000310 00000 n 
-0000000406 00000 n 
-0000000465 00000 n 
-0000000584 00000 n 
-0000000615 00000 n 
-0000000733 00000 n 
+0000000015 00000 n 
+0000000081 00000 n 
+0000000128 00000 n 
+0000000194 00000 n 
+0000000311 00000 n 
+0000000407 00000 n 
+0000000466 00000 n 
+0000000585 00000 n 
+0000000616 00000 n 
+0000000734 00000 n 
 trailer
 << /Root 1 0 R /Size 11 >>
 startxref
-830
+831
 %%EOF

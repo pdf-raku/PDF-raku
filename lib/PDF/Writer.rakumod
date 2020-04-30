@@ -295,7 +295,7 @@ class PDF::Writer {
     method write-ind-obj(@_) {
         my (UInt \obj-num, UInt \gen-num, \object where Pair | Hash) = @_;
 
-        "%d %d obj %s\nendobj\n".sprintf(obj-num, gen-num, $.write( object ));
+        "%d %d obj\n%s\nendobj\n".sprintf(obj-num, gen-num, $.write( object ));
     }
 
     method write-ind-ref(List $_) {
@@ -332,7 +332,7 @@ class PDF::Writer {
 
     method write-null( $ ) { 'null' }
 
-    method write-cos(% (:$header!, :$body!, :$comment = q<%¥±ë>) ) {
+    method write-cos(% (:$header!, :$body!, :$comment = q<%¥±ë¼>) ) {
         my Str \header = $.write-header( $header );
         my Str \comment = $.write-comment($comment);
         $!offset = header.codes + comment.codes + 2;  # since format is byte orientated
