@@ -304,28 +304,21 @@ class PDF::Writer {
 
     method write-int(Int $_) {.fmt: '%d'}
 
-    constant %Escapes = %(
-        "\b" => '\\b', "\f" => '\\f', "\n" => '\\n', "\r" => '\\r',
-        "\t" => '\\t', '(' => '\\(', ')' => '\\)', '\\' => '\\\\' );
-
     method write-literal( Str $_ ) {
-
-        [~] flat '(',
-        .encode("latin-1").map({
-                my \c = .chr;
-                %Escapes{c} // c
-            }),
-           ')';
+        '('
+        ~ .trans(["\b",  "\f",  "\n",  "\r",  "\r\n",   "\t",  '(',   ')',  '\\']
+              => ['\\b', '\\f', '\\n', '\\r', '\\r\\n', '\\t', '\\(', '\\)', '\\\\'])
+        ~ ')';
     }
 
-    constant Name-Reg-Chars = set ('!'..'~').grep({ $_ !~~ /<PDF::Grammar::char-delimiter>/});
+    constant Name-Reg-Chars = set ('!'..'~').grep: { $_ !~~ /<PDF::Grammar::char-delimiter>/};
 
     method write-name( Str $_ ) {
         [~] flat '/', .comb.map( {
             when $_ ∈ Name-Reg-Chars { $_ }
             when '#' { '##' }
             default {
-                .encode.list.map({.fmt('#%02x')}).join('');
+                .encode.list.map(*.fmt('#%02x')).join: '';
             }
         } )
     }
