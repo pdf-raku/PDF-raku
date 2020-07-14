@@ -1,8 +1,11 @@
-PDF-raku
-========
-
+[[Raku PDF Project]](https://pdf-raku.github.io)
+ / [PDF](https://pdf-raku.github.io/PDF-raku)
+<a href="https://travis-ci.org/pdf-raku/PDF-Lite-raku"><img src="https://travis-ci.org/pdf-raku/PDF-Lite-raku.svg?branch=master"></a>
  <a href="https://travis-ci.org/pdf-raku/PDF-raku"><img src="https://travis-ci.org/pdf-raku/PDF-raku.svg?branch=master"></a>
  <a href="https://ci.appveyor.com/project/dwarring/PDF-raku/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/pdf-raku/PDF-raku?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
+
+PDF-raku
+========
 
 ## Overview
 
@@ -465,6 +468,6 @@ PDF::COS::Type::XRef | PDF::COS::Stream | PDF 1.5+ Cross Reference stream
 - [PDF Reference version 1.7](http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/pdf_reference_1-7.pdf) Adobe Systems Incorporated - This is the main reference used in the construction of this module.
 
 ## See also
-- [PDF::Lite](https://github.com/pdf-raku/PDF-Lite-raku) - basic graphics; including images, fonts, text and general graphics
-- [PDF::API6](https://github.com/pdf-raku/PDF-API6) - general purpose PDF manipulation (under construction)
+- [PDF::Lite](https://pdf-raku.github.io/PDF-Lite-raku) - basic graphics; including images, fonts, text and general graphics
+- [PDF::API6](https://pdf-raku.github.io/PDF-API6) - general purpose PDF manipulation (under construction)
 
