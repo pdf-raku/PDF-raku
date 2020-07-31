@@ -106,7 +106,7 @@ class PDF::Reader {
     subset ObjNumInt of UInt;
     subset GenNumInt of Int where 0..999;
 
-    has $.input is rw;             #= raw PDF image (latin-1 encoding)
+    has PDF::IO  $.input is rw;             #= raw PDF image (latin-1 encoding)
     has Str      $.file-name;
     has Hash     %!ind-obj-idx{Int}; # keys are: $obj-num*1000 + $gen-num
     has Bool     $.auto-deref is rw = True;
@@ -279,7 +279,7 @@ class PDF::Reader {
     }
 
     multi method open($input!, |c) {
-        $!input = PDF::IO.coerce( $input );
+        $!input .= coerce( $input );
         $.load-header( );
         $.load-cos( $.type, |c );
     }

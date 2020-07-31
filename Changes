@@ -1,3 +1,7 @@
+Release 0.4.3
+- [pdf-rewriter.raku] added --render option to render and reformat pages.
+  Also requires an upstream module such as PDF::Lite or PDF::Class.
+
 Release 0.4.2
 - Streamlined cross-reference loading; adjust to PDF::Grammar 0.2.1
 - Fix 'missing required field(s)' message on a tied COS attribute.
@@ -7,7 +11,7 @@ Release 0.4.2
   -- have 4 binary characters (not 3) in header comment
 
 Release 0.4.1
-- [PDF::Writer] Compacted writing of smaller dictionarys
+- [PDF::Writer] Compacted writing of smaller dictionaries
 - [PDF] .save-as() method: don't copy when updating and source and destination are the same
 
 Release 0.4.0

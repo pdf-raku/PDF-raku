@@ -1,6 +1,6 @@
 [[Raku PDF Project]](https://pdf-raku.github.io)
  / [PDF](https://pdf-raku.github.io/PDF-raku)
-<a href="https://travis-ci.org/pdf-raku/PDF-Lite-raku"><img src="https://travis-ci.org/pdf-raku/PDF-Lite-raku.svg?branch=master"></a>
+
  <a href="https://travis-ci.org/pdf-raku/PDF-raku"><img src="https://travis-ci.org/pdf-raku/PDF-raku.svg?branch=master"></a>
  <a href="https://ci.appveyor.com/project/dwarring/PDF-raku/branch/master"><img src="https://ci.appveyor.com/api/projects/status/github/pdf-raku/PDF-raku?branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20FAIL&pendingText=Windows%20-%20pending&svg=true"></a>
 

@@ -2,6 +2,7 @@
 # Simple round trip read and rewrite a PDF
 use v6;
 use PDF::Reader;
+use PDF;
 
 #| rewrite a PDF or FDF and/or convert to/from JSON
 sub MAIN(
@@ -13,27 +14,38 @@ sub MAIN(
     Bool :$rebuild  is copy,    #= rebuild object tree (renumber, garbage collect and deduplicate objects)
     Bool :$compress is copy,    #= compress streams
     Bool :$uncompress,          #= uncompress streams
-    Str  :$class,               #= load a class (PDF::Class, PDF::Lite, PDF::API6)
-    Bool :$decrypt   = False,   #= decrypt
-    Bool :$drm       = True,
+    Str  :$class is copy,       #= load a class (PDF::Class, PDF::Lite, PDF::API6)
+    Bool :$render,              #= render and reformat content (needs PDF::Lite or PDF::Class)
+    Bool :$decrypt is copy,     #= decrypt
     ) {
 
-    $compress = False if $uncompress;
+    $compress //= False if $uncompress || $render;
+    $rebuild  //= True  if $decrypt || $render;
+    $class    //= 'PDF::Lite' if $render;
+
+    my PDF $pdf;
+    my PDF::Reader $reader;
 
     if $class {
-        need PDF; # Could be PDF, FDF, PDF::Class, PDF::Lite, PDF::API6..
-	my PDF $ = (require ::($class));
+	$pdf = (require ::($class));
     }
 
-    my PDF::Reader $reader .= new;
-
     note "opening {$file-in} ...";
-    $reader.open( $file-in, :$repair, :$password );
+    if $render {
+        $pdf .= open( $file-in, :$repair, :$password );
+        $reader = $pdf.reader;
+    }
+    else {
+        $reader .= new.open( $file-in, :$repair, :$password );
+    }
 
-    if $decrypt && $drm {
+    if $decrypt {
         with $reader.crypt {
             die "only the owner of this PDF can decrypt it"
                 unless .is-owner;
+        }
+        else {
+            $decrypt = False; # not encrypted
         }
     }
 
@@ -48,12 +60,21 @@ sub MAIN(
 
     if $decrypt {
         $reader.crypt = Nil;
+        .crypt = Nil with $pdf;
         $reader.trailer<Encrypt>:delete;
-        $rebuild //= True; # to expunge encryption dict
+    }
+
+    if $render {
+        my $n = $pdf.page-count;
+        for 1 .. $n {
+            $*ERR.print: "rendering... $_/$n\r";
+            $pdf.page($_).render;
+        }
+        $*ERR.say: '';
     }
 
     note "saving ...";
-    my $writer = $reader.save-as($file-out, :$rebuild);
+    ($pdf // $reader).save-as($file-out, :$rebuild);
     note "done";
 
 }
@@ -62,7 +83,7 @@ sub MAIN(
 
 =head1 NAME
 
-pdf-rewriter.raku - Rebuild a PDF using the L<PDF> module.
+pdf-rewriter.raku - Rebuild a PDF using L<PDF> modules.
 
 =head1 SYNOPSIS
 
@@ -76,7 +97,8 @@ Options:
    --rebuild     rebuild object tree (renumber, garbage collect and deduplicate objects)
    --compress    compress streams
    --uncompress  uncompress streams, where possible
-   --class=name  load L<PDF::Class> module
+   --class=name  load class (PDF::Lite, PDF::Class, PDF::API6)
+   --render      render and reformat content (needs PDF::Class or PDF::Lite)
    --decrypt     remove encryption
 
 =head1 DESCRIPTION

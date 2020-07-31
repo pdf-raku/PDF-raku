@@ -275,7 +275,7 @@ class PDF::IO::Crypt {
 	self!auth-user-pass($user-pass.list);          # 3
     }
 
-    method authenticate(Str $pass, Bool :$owner) {
+    method authenticate(Str $pass, Bool :$owner) is hidden-from-backtrace {
 	$.is-owner = False;
 	my uint8 @pass = format-pass( $pass );
 	self.key = (!$owner && self!auth-user-pass( @pass ))
