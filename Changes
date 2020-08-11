@@ -1,6 +1,7 @@
 Release 0.4.3
 - [pdf-rewriter.raku] added --render option to render and reformat pages.
-  Also requires an upstream module such as PDF::Lite or PDF::Class.
+  This option also requires an upstream module such as PDF::Lite or PDF::Class.
+- [PDF::COS::TextString] Decode as UTF16-BE / PDFDoc when input is a byte-string #26
 
 Release 0.4.2
 - Streamlined cross-reference loading; adjust to PDF::Grammar 0.2.1
