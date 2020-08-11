@@ -86,7 +86,7 @@ PDFDocEncoding or UTF-16BE with a leading byte-order marker
     }
 
     method content {
-        my $val = self.bom || self ~~ /<-[\x0..\xFF]>/
+        my $val = self.bom // self ~~ /<-[\x0..\xFF]>/
 	    ?? utf16-encode(self)
             !! pdfdoc-encode(self);
 
