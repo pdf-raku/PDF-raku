@@ -26,22 +26,25 @@ module PDF::IO::Util {
         (require ::($module-name)).so;
         ::($module-name)::('&'~$sub-name);
     }
-    #= network ordered byte packing and unpacking
-    proto sub unpack-pp( $, $ --> Buf) is export(:pack-pp) {*};
-    proto sub pack-pp( $, $ --> Buf) is export(:pack-pp) {*};
-    proto sub pack-le( $, $ --> Buf) is export(:pack,:pack-pp) {*};
+    #= network (big-endian) ordered byte packing and unpacking
+    proto sub unpack-be( $, $ --> Buf) is export(:pack-be) {*};
+    proto sub pack-be( $, $ --> Buf) is export(:pack-be) {*};
     my constant Packer = 'PDF::Native::Buf';
-    our &pack is export(:pack) = BEGIN have-pdf-native() ?? xs(Packer, 'pack') !! &pack-pp;
-    our &unpack is export(:pack) = BEGIN have-pdf-native() ?? xs(Packer, 'unpack') !! &unpack-pp;
-    multi sub unpack-pp( $nums!, 4)  { buf8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
-    multi sub unpack-pp( $nums!, 16) { buf16.new: flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
-    multi sub unpack-pp( $nums!, 32) { buf32.new: flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
-    multi sub unpack-pp( $nums!, $n) { resample( $nums, 8, $n); }
-    multi sub pack-pp( $nums!, 4)  { buf8.new: flat $nums.list.map: -> \hi, \lo { hi +< 4  +  lo } }
-    multi sub pack-pp( $nums!, 16) { buf8.new: flat $nums.list.map: { ($_ +> 8, $_) } }
-    multi sub pack-pp( $nums!, 32) { buf8.new: flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
+    our &pack is export(:pack) = BEGIN have-pdf-native() ?? xs(Packer, 'pack') !! &pack-be;
+    our &unpack is export(:pack) = BEGIN have-pdf-native() ?? xs(Packer, 'unpack') !! &unpack-be;
+    multi sub unpack-be( $nums!, 4)  { buf8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
+    multi sub unpack-be( $nums!, 16) { buf16.new: flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
+    multi sub unpack-be( $nums!, 32) { buf32.new: flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
+    multi sub unpack-be( $nums!, $n) { resample( $nums, 8, $n); }
+    multi sub pack-be( $nums!, 4)  { buf8.new: flat $nums.list.map: -> \hi, \lo { hi +< 4  +  lo } }
+    multi sub pack-be( $nums!, 16) { buf8.new: flat $nums.list.map: { ($_ +> 8, $_) } }
+    multi sub pack-be( $nums!, 32) { buf8.new: flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
+    multi sub pack-be( $nums!, UInt $n) { resample( $nums, $n, 8); }
+
+    #= little-endian ordered packing
+    proto sub pack-le( $, $ --> Buf) is export(:pack,:pack-be) {*};
     multi sub pack-le( $nums!, 32) { buf8.new: flat $nums.list.map: { ($_, $_ +> 8, $_ +> 16, $_ +> 24) } }
-    multi sub pack-pp( $nums!, UInt $n) { resample( $nums, $n, 8); }
+
     sub of(UInt $bits) {
         $bits <= 8 ?? uint8 !! ($bits > 16 ?? uint32 !! uint16)
     }
@@ -78,7 +81,7 @@ module PDF::IO::Util {
     }
     #| variable resampling, e.g. to decode/encode:
     #|   obj 123 0 << /Type /XRef /W [1, 3, 1] ... >>
-    multi sub unpack-pp( $nums!, Array $W!)  {
+    multi sub unpack-be( $nums!, Array $W!)  {
         my uint $w-len = +$W;
         my $out-len = (+$nums * $w-len) div $W.sum;
         my uint32 @out[$out-len div $w-len; $w-len];
@@ -96,7 +99,7 @@ module PDF::IO::Util {
         @out;
     }
 
-    multi sub pack-pp(array $shaped, Array $W!)  {
+    multi sub pack-be(array $shaped, Array $W!)  {
         my buf8 $out .= allocate($W.sum * +$shaped);
         my buf32 $in .= new: $shaped;
         my uint32 $in-len = +$in;
