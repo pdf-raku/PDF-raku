@@ -23,6 +23,10 @@ sub MAIN(
     $rebuild  //= True  if $decrypt || $render;
     $class    //= 'PDF::Lite' if $render;
 
+    CATCH {
+        when X::PDF { note .message; exit 1; }
+    }
+
     my PDF $pdf;
     my PDF::Reader $reader;
 
