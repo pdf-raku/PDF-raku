@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 9;
+plan 10;
 
 use PDF::COS;
 use PDF::COS::ByteString;
@@ -30,5 +30,8 @@ $encoded = PDF::COS.coerce: literal => "Registrant\x[90]s";
 $str .= new(:value($encoded));
 is $str, "Registrant’s", "pdfdoc encoded value";
 is $str.content.value, $encoded, 'pdfdoc encoded content';
+
+$str.bom = True;
+is-deeply $str.content, (:literal("þÿ\0R\0e\0g\0i\0s\0t\0r\0a\0n\0t \x[19]\0s")), 'utf8 encoded content';
 
 done-testing;

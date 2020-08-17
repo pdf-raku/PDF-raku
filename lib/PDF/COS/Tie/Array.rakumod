@@ -7,25 +7,23 @@ role PDF::COS::Tie::Array does PDF::COS::Tie {
     has Attribute @.index is rw;    #| for typed indices
 
     method rw-accessor(Attribute $att) is rw {
-
         my UInt $pos := $att.index;
-        # optimise for frequent fetches. See also RT #126520
         my $val;
         my int $got = 0;
 
 	Proxy.new(
 	    FETCH => {
-                $got
-                    ?? $val
-                    !! do {
-                        $got = 1;
-                        $val := self.AT-POS($pos, :check) // $att.type;
-                    }
+                $got ||= do {
+                    $val := self.AT-POS($pos, :check) // $att.type;
+                    1;
+                }
+                $val;
 	    },
 	    STORE => -> $, \v {
 		$val := self.ASSIGN-POS($pos, v, :check);
                 $got = 1;
-	    });
+	    }
+        );
     }
 
     method tie-init {

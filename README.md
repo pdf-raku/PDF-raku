@@ -461,6 +461,7 @@ PDF::COS::Type::Encrypt | PDF::COS::Dict | PDF Encryption/Permissions dictionary
 PDF::COS::Type::Info | PDF::COS::Dict | Document Information Dictionary
 PDF::COS::Type::ObjStm | PDF::COS::Stream | PDF 1.5+ Object stream (packed indirect objects)
 PDF::COS::Type::XRef | PDF::COS::Stream | PDF 1.5+ Cross Reference stream
+PDF::COS::TextString | PDF::COS::ByteString | Implements the 'text-string' data-type
 
 ## Further Reading
 
