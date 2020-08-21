@@ -13,7 +13,8 @@ install:
 build: off
 
 test_script:
-  -  prove -ve "perl6 -I."
+  - zef --deps-only install .
+  - prove -ve "perl6 -I."
   - zef install .
 
 shallow_clone: true
