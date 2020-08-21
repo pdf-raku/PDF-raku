@@ -2,11 +2,6 @@ os: Visual Studio 2015
 
 platform: x64
 
-environment:
-        matrix:
-        - test_moar: '2019.11'
-        - test_moar: '' #latest
-
 install:
   # Install rakudostar for faster CI builds.
   - choco install rakudostar
@@ -18,7 +13,7 @@ install:
 build: off
 
 test_script:
-  -  prove -ve "raku -I."
+  -  prove -ve "perl6 -I."
   - zef install .
 
 shallow_clone: true
