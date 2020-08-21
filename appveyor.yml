@@ -4,28 +4,21 @@ platform: x64
 
 environment:
         matrix:
-        - test_moar: '2017.07'
+        - test_moar: '2019.11'
         - test_moar: '' #latest
 
 install:
-  - '"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64'
-  - choco install strawberryperl --allow-empty-checksums
-  - SET PATH=C:\strawberry\c\bin;C:\strawberry\perl\site\bin;C:\strawberry\perl\bin;%PATH%
-  - git clone https://github.com/tadzik/rakudobrew %USERPROFILE%\rakudobrew
-  - SET PATH=%USERPROFILE%\rakudobrew\bin;%PATH%
-  - rakudobrew build moar %TEST_MOAR%
-  - SET P6INST=%USERPROFILE%\rakudobrew\versions\moar-%TEST_MOAR%\install
-  - SET P6SHARE=%P6INST%\share\perl6
-  - SET PATH=%P6INST%\bin;%P6SHARE%\site\bin;%P6SHARE%\bin;%PATH%
-  - rakudobrew build zef
+  # Install rakudostar for faster CI builds.
+  - choco install rakudostar
+  # Change to build folder
   - cd %APPVEYOR_BUILD_FOLDER%
-  - set AUTHOR_TESTING=1
-  - zef --verbose --depsonly install .
+  # Refresh environment variables so zef works
+  - refreshenv
 
 build: off
 
 test_script:
-  -  prove -ve "perl6 -I."
+  -  prove -ve "raku -I."
   - zef install .
 
 shallow_clone: true

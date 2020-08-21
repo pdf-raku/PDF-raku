@@ -1,6 +1,10 @@
 Release 0.4.3
-- [pdf-rewriter.raku] added --render option to render and reformat pages.
-  This option also requires an upstream module such as PDF::Lite or PDF::Class.
+- [PDF::Reader] add abstract base exception class X::PDF apply to existing
+  X::PDF::* exception classes
+- [pdf-rewriter.raku]
+  -- added --render option to render and reformat pages.  This option also requires
+     an upstream module such as PDF::Lite or PDF::Class.
+  -- Hide backtrace for handled errors (type X::PDF)
 - [PDF::COS::TextString] Decode as UTF16-BE / PDFDoc when input is a byte-string #26
 - [PDF::COS::Util] rename  pack-pp() -> pack-be() [big endian]
 

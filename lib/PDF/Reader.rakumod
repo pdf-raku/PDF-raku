@@ -13,22 +13,24 @@ my sub synopsis($input) {
     desc.perl;
 }
 
-class X::PDF::BadJSON is Exception {
+class X::PDF is Exception { }
+
+class X::PDF::BadJSON is X::PDF {
     has Str $.input-file is required;
     method message {"File doesn't contain a top-level 'cos' struct: $!input-file"}
 }
 
-class X::PDF::BadHeader is Exception {
+class X::PDF::BadHeader is X::PDF {
     has Str $.preamble is required;
     method message {"Expected file header '%XXX-n.m', got: {synopsis($!preamble)}"}
 }
 
-class X::PDF::BadTrailer is Exception {
+class X::PDF::BadTrailer is X::PDF {
     has Str $.tail is required;
     method message {"Expected file trailer 'startxref ... \%\%EOF', got: {synopsis($!tail)}"}
 }
 
-class X::PDF::BadXRef is Exception {}
+class X::PDF::BadXRef is X::PDF {}
 
 class X::PDF::BadXRef::Parse is X::PDF::BadXRef {
     has Str $.xref is required;
@@ -56,12 +58,12 @@ class X::PDF::BadXRef::Section is X::PDF::BadXRef {
     method message {"xref section size mismatch. Expected $!obj-count entries, got $!entry-count"}
 }
 
-class X::PDF::ParseError is Exception {
+class X::PDF::ParseError is X::PDF {
     has Str $.input is required;
     method message {"Unable to parse PDF document: {synopsis($!input)}"}
 }
 
-class X::PDF::BadIndirectObject is Exception {
+class X::PDF::BadIndirectObject is X::PDF {
     has UInt $.obj-num;
     has UInt $.gen-num;
     has UInt $.offset  is required;
@@ -80,7 +82,7 @@ class X::PDF::BadIndirectObject::Parse is X::PDF::BadIndirectObject {
     }
 }
 
-class X::PDF::ObjStmObject::Parse is Exception {
+class X::PDF::ObjStmObject::Parse is X::PDF {
     has Str $.input is required;
     has UInt $.obj-num;
     has UInt $.ref-obj-num;
