@@ -5,6 +5,7 @@ use PDF::COS::Tie :COSDictAttrHOW;
 role PDF::COS::Tie::Hash
     does PDF::COS::Tie {
 
+    use PDF::COS;
     #| resolve a heritable property by dereferencing /Parent entries
     sub find-prop($object, Str $key, :$seen is copy) {
 	$object.AT-KEY($key, :check)
@@ -84,4 +85,7 @@ role PDF::COS::Tie::Hash
 	nextwith($key, $lval )
     }
 
+    multi method COERCE(Hash:D $h is raw) {
+        PDF::COS.coerce($h, self.^roles[0]);
+    }
 }

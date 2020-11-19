@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 12;
+plan 13;
 
 use PDF::IO::IndObj;
 use PDF::COS::Name;
@@ -9,13 +9,14 @@ use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 
 my subset MyName of PDF::COS::Name where 'Foo' | 'Bar' | 'Baz';
-lives-ok {PDF::COS.coerce( 'Foo', MyName)}, 'coerce to name subset';
+lives-ok {MyName.COERCE( 'Foo')}, 'coerce to name subset';
 nok 'Foo' ~~ MyName, "role hasn't leaked";
 
 enum « :Baz<Baz> »;
-my $baz = Baz;
-lives-ok {PDF::COS.coerce( $baz, MyName)}, 'coerce to enum lives';
+my MyName $baz;
+lives-ok { $baz .= COERCE(Baz); }, 'coerce to enum lives';
 does-ok $baz, PDF::COS::Name, 'coerce to enum is name';
+is-deeply $baz.content, (:name<Baz>), 'content';
 
 my PDF::Grammar::PDF::Actions $actions .= new;
 my $input = '42 5 obj /HiThere endobj';

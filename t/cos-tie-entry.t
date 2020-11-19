@@ -195,10 +195,10 @@ use PDF::Grammar::Test :is-json-equiv;
         my subset Dest where DestDict|DestArray;
 
         multi sub coerce(Hash $dict, Dest) {
-            PDF::COS.coerce($dict, DestDict);
+            DestDict.COERCE($dict);
         }
         multi sub coerce(List $array, Dest) {
-            PDF::COS.coerce($array, DestArray);
+            DestArray.COERCE($array);
         }
         multi sub coerce($_, Dest) is default {
             fail "unable to coerce to a destination: {.perl}";

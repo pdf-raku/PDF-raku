@@ -38,10 +38,11 @@ To create a one page PDF that displays 'Hello, World!'.
 use v6;
 use PDF;
 use PDF::COS;
+use PDF::COS::Name;
 use PDF::COS::Type::Info;
 use PDF::COS::Stream;
 
-sub prefix:</>($name) { PDF::COS.coerce(:$name) };
+sub prefix:</>($s) { PDF::COS::Name.COERCE($s) };
 
 # construct a simple PDF document from scratch
 my PDF $pdf .= new;
@@ -67,7 +68,7 @@ $info.CreationDate = DateTime.now;
 $info.Producer = "Raku PDF";
 
 # define some basic content
-my PDF::COS::Stream $Contents .= coerce: :stream{ :decoded("BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET" ) };
+my PDF::COS::Stream $Contents .= COERCE: { :decoded("BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET" ) };
 
 # create a new page. add it to the page tree
 $page-index<Kids>.push: { :Type(/'Page'), :Parent($page-index), :$Contents };
@@ -93,7 +94,7 @@ my $catalog = $pdf<Root>;
 my $Parent = $catalog<Pages>;
 
 # create additional content, use existing font /F1
-my $Contents = PDF::COS.coerce: :stream{ :decoded("BT /F1 16 Tf  15 25 Td (Goodbye for now!) Tj ET" ) };
+my PDF::COS::Stream $Contents .= COERCE: { :decoded("BT /F1 16 Tf  15 25 Td (Goodbye for now!) Tj ET" ) };
 
 # create a new page. add it to the page-tree
 $Parent<Kids>.push: { :Type( :name<Page> ), :$Parent, :$Contents };
@@ -320,7 +321,7 @@ my $pdf = $reader.trailer<Root>;
 $page1 = $pdf<Pages><Kids>[0];
 
 # Tied objects can also be updated directly.
-$reader.trailer<Info><Creator> = PDF::COS.coerce( :name<t/helloworld.t> );
+$reader.trailer<Info><Creator> = PDF::COS::Name.COERCE: 't/helloworld.t';
 ```
 
 ### Utility Scripts
@@ -382,58 +383,29 @@ my %dict = :Filter( :name<ASCIIHexDecode> );
 my $obj-num = 123;
 my $gen-num = 4;
 my $decoded = "100 100 Td (Hello, world!) Tj";
-my PDF::COS::Stream $stream-obj .= new( :$obj-num, :$gen-num, :%dict, :$decoded );
+my PDF::COS::Stream $stream-obj .= COERCE: %( :$obj-num, :$gen-num, :%dict, :$decoded );
 say $stream-obj.encoded;
 ```
 
-`PDF::COS.coerce` is a method for the construction of objects.
-
-It is used internally to build objects from parsed AST data, e.g.:
+The various `PDF::COS` objects all have a `COERCE` method for the construction of objects.
 
 ```
-use v6;
-use PDF::Grammar::COS;
-use PDF::Grammar::COS::Actions;
-use PDF::COS;
-my PDF::Grammar::COS::Actions $actions .= new;
-my \p = PDF::Grammar::COS.parse("<< /Type /Pages /Count 1 /Kids [ 4 0 R ] >>", :rule<object>, :$actions)
-    or die "parse failed";
-my %ast = p.ast;
-
-say '#'~%ast.perl;
-#:dict({:Count(:int(1)), :Kids(:array([:ind-ref([4, 0])])), :Type(:name("Pages"))})
-
-my $reader = class { has $.auto-deref = False }.new; # dummy reader
-my $object = PDF::COS.coerce( %ast, :$reader );
-
-say '#'~$object.WHAT.gist;
-#(PDF::COS::Dict)
-
-say '#'~$object.perl;
-#{:Count(1), :Kids([:ind-ref([4, 0])]), :Type("Pages")}
-
-say '#'~$object<Type>.WHAT.^name;
-#(Str+{PDF::COS::Name})
+my PDF::COS::Dict $dict .= COERCE: {
+     :Type( :name<Pages> ),
+     :Count(:int(1)),
+     :Kids[ :array[ :ind-ref[4, 0] ] ],
+};
 ```
-The `PDF::COS.coerce` method is also used to construct new objects from application data.
 
-In many cases, AST tags will coerce if omitted. E.g. we can use `1`, instead of `:int(1)`:
+`COERCE()` acts recursively on container objects (arrays, dictionarys and streams).
+
 ```
-# using explicit AST tags
-use PDF::COS;
-my $reader = class { has $.auto-deref = False }.new; # dummy reader
-
-my $object2 = PDF::COS.coerce({ :Type( :name<Pages> ),
-                                :Count(:int(1)),
-                                :Kids[ :array[ :ind-ref[4, 0] ] ], },
-				:$reader);
-
-# same but with a casting from Raku types
-my $object3 = PDF::COS.coerce({ :Type( :name<Pages> ),
-                                :Count(1),
-                                :Kids[ :ind-ref[4, 0],  ] },
-				:$reader);
-
+# same but with default coercements
+my PDF::COS::Dict $dict2 .= COERCE: {
+    :Type( :name<Pages> ),
+    :Count(1),
+    :Kids[ :ind-ref[4, 0],  ]
+};
 ```
 
 A table of Object types and coercements follows:

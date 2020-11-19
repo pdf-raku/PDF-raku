@@ -11,5 +11,9 @@ role PDF::COS::Int
     }
 
     method content { :int(self+0) };
+
+    multi method COERCE(Int:D() $int) {
+        $int but $?ROLE;
+    }
 }
 

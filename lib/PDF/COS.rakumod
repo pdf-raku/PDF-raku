@@ -24,10 +24,16 @@ role PDF::COS {
 	    );
     }
 
-    multi method coerce(Mu $obj is rw, Mu $type ) {
-	self!coercer.coerce( $obj, $type )
+    multi method COERCE($v is raw) {
+        self.coerce($v, self.WHAT);
     }
-    multi method coerce(Mu $obj, Mu $type ) {
+    proto method coerce(|) {*}
+    proto method coerce-to($,$) {*}
+    multi method coerce($a is raw, $b is raw) { self.coerce-to($a, $b) }
+    multi method coerce-to(Mu $obj is rw, Mu $type ) {
+	self!coercer.coerce-to( $obj, $type )
+    }
+    multi method coerce-to(Mu $obj, Mu $type ) {
 	self!coercer.coerce( $obj, $type )
     }
 
@@ -48,7 +54,7 @@ role PDF::COS {
         $.coerce( :@array, |c )
     }
     multi method coerce(DateTime $dt, |c) {
-	self!coercer.coerce( $dt, $.required('PDF::COS::DateString'), |c)
+	 $.required('PDF::COS::DateString').COERCE($dt);
     }
 
     method required(Str \mod-name) {
@@ -61,6 +67,7 @@ role PDF::COS {
     method !add-role($obj is rw, Str $role-name, Str $param?) {
 	my $role = $.required($role-name);
         $role = $role.^parameterize($_) with $param;
+
 	$obj.does($role)
             ?? $obj
             !! $obj = $obj but $role

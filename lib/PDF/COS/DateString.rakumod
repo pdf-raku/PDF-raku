@@ -56,6 +56,14 @@ class PDF::COS::DateString
 	:$literal;
     }
 
+    multi method COERCE(Str:D $obj, |c) {
+        self.new($obj, |c);
+    }
+
+    multi method COERCE(DateTime:D $obj, |c) {
+        self.new($obj, |c);
+    }
+
 =begin pod
 
 see [PDF 32000 Section 7.9.4 Dates ]

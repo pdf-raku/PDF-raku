@@ -55,8 +55,7 @@ class PDF::IO::Crypt::PDF
         die 'This PDF lacks an ID.  The document cannot be decrypted'
 	    unless $doc<ID>;
 
-        my $encrypt = $doc<Encrypt>;
-        PDF::COS.coerce($encrypt, PDF::COS::Type::Encrypt);
+        my PDF::COS::Type::Encrypt $encrypt .= COERCE: $doc<Encrypt>;
 
 	given $encrypt.V {
 	    when 1..3 {

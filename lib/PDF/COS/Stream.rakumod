@@ -133,4 +133,8 @@ class PDF::COS::Stream
         $rv;
     }
 
+    multi method COERCE(Hash:D $p) {
+        self.new: |$p;
+    }
+
 }

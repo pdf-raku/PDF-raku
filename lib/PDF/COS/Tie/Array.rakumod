@@ -72,4 +72,7 @@ role PDF::COS::Tie::Array does PDF::COS::Tie {
 	self[ +self ] = $val;
     }
 
+    multi method COERCE(List:D $a is raw) {
+        PDF::COS.coerce($a, self.^roles[0]);
+    }
 }

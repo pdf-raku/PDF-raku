@@ -52,7 +52,7 @@ use PDF::COS::Array;
         has PDF::COS::Name $.name is index(0);
     }
     my $array-in = ['Hi'];
-    my PDF::COS $array .= coerce($array-in, TestArray);
+    my TestArray $array .= COERCE($array-in);
     isa-ok($array, PDF::COS::Array);
     does-ok($array, TestArray);
     does-ok($array[0], PDF::COS::Name);

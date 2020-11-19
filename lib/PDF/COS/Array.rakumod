@@ -38,4 +38,8 @@ class PDF::COS::Array
         }
         :$array;
     }
+    multi method COERCE(List:D $array is raw) {
+        self.new: :$array;
+    }
+
 }

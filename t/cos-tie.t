@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 44;
+plan 46;
 
 use PDF::Reader;
 use PDF::Writer;
@@ -102,25 +102,6 @@ use PDF::COS::Tie;
 use PDF::COS::Tie::Hash;
 use PDF::COS::Tie::Array;
 
-sub warns-like(&code, $ex-type, $desc = 'warning') {
-    my $ex;
-    my Bool $w = False;
-    &code();
-    CONTROL {
-	default {
-	    $ex = $_;
-	    $w = True;
-	}
-    }
-    if $w {
-        isa-ok $ex, $ex-type, $desc;
-    }
-    else {
-        flunk $desc;
-        diag "no warnings found";
-    }
-}
-
 my role HashRole does PDF::COS::Tie::Hash {
     has $.Foo is entry;
 }
@@ -131,18 +112,18 @@ my role ArrayRole does PDF::COS::Tie::Array {
 }
 
 my PDF::COS $h1 .= coerce: {};
-lives-ok { PDF::COS.coerce($h1, HashRole) }, 'tied hash role application';
+lives-ok { HashRole.COERCE($h1) }, 'tied hash role application';
 does-ok $h1, HashRole, 'Hash/Hash application';
 $h1.Foo = 42;
 is $h1<Foo>, 42, 'tied hash';
 is $h1.Foo, 42, 'tied hash accessor';
 
 my PDF::COS $h2 .= coerce: {};
-warns-like { PDF::COS.coerce($h2, ArrayRole) }, ::('X::PDF::Coerce'), 'Hash/Array misapplication';
+dies-ok { ArrayRole.COERCE($h2) }, 'Hash/Array misapplication';
 ok !$h2.does(ArrayRole), 'Hash/Array misapplication';
 
 my  PDF::COS $a1 .= coerce: [];
-lives-ok { PDF::COS.coerce($a1, ArrayRole) }, 'tied array role application';
+lives-ok { ArrayRole.COERCE($a1) }, 'tied array role application';
 does-ok $a1, ArrayRole, 'Hash/Hash application';
 $a1.Bar = 69;
 is $a1[1], 69, 'tied array index';
@@ -151,7 +132,7 @@ is $a1.Baz, 99, 'tied array defaulted accessor';
 is $a1[0], Any, 'tied array defaulted index';
 
 my PDF::COS $a2 .= coerce: [];
-warns-like { PDF::COS.coerce($a2, HashRole) }, ::('X::PDF::Coerce'), 'Array/Hash misapplication';
+dies-ok { HashRole.COERCE($a2) }, 'Array/Hash misapplication';
 ok !$a2.does(HashRole), 'Array/Hash misapplication';
 
 my PDF::COS $a3 .= coerce: (1..3).map(* * 10);

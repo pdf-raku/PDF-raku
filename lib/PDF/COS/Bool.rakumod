@@ -7,5 +7,9 @@ role PDF::COS::Bool {
     has UInt $.gen-num is rw;
     has $.reader is rw;
     method content { :bool(?self) };
+    proto method COERCE($) {*}
+    multi method COERCE(Bool:D() $bool) {
+        $bool but $?ROLE;
+    }
 }
 
