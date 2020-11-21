@@ -22,6 +22,7 @@ class PDF::COS::Coercer {
     use PDF::COS::ByteString;
     use PDF::COS::DateString;
     use PDF::COS::Name;
+    use PDF::COS::Null;
     use PDF::COS::TextString;
     use PDF::COS::Real;
 
@@ -62,37 +63,40 @@ class PDF::COS::Coercer {
     }
 
     multi method coerce-to( Any:U $null is rw, $) {
-	$null = PDF::COS.coerce(:$null);
+	$null = PDF::COS::Null.new;
+    }
+    multi method coerce-to( Any:U $null, $) {
+	PDF::COS::Null.new;
     }
 
     # handle coercement to names or name subsets
 
-    multi method coerce-to( Str $obj is rw, $role where PDF::COS::Name ) {
+    multi method coerce-to( Str:D $obj is rw, $role where PDF::COS::Name ) {
 	$obj = PDF::COS::Name.COERCE($obj);
     }
 
     #| handle ro candidates for the above
-    multi method coerce-to( Str $obj is copy, \r where PDF::COS::DateString|Str|DateTime|PDF::COS::Name|PDF::COS::ByteString|PDF::COS::TextString|PDF::COS::Bool) {
+    multi method coerce-to( Str:D $obj is copy, \r where PDF::COS::DateString|Str|DateTime|PDF::COS::Name|PDF::COS::ByteString|PDF::COS::TextString|PDF::COS::Bool) {
 	self.coerce-to( $obj, r);
     }
 
-    multi method coerce-to( Array $obj is copy, PDF::COS::Array $class) {
+    multi method coerce-to( Array:D $obj is copy, PDF::COS::Array $class) {
         $obj = $class.COERCE($obj);
     }
 
-    multi method coerce-to( Array $obj is copy, PDF::COS::Tie::Array $role) {
+    multi method coerce-to( Array:D $obj is copy, PDF::COS::Tie::Array $role) {
         PDF::COS.coerce($obj).mixin: $role;
     }
 
-    multi method coerce-to( Hash $obj is copy, PDF::COS::Dict $class) {
+    multi method coerce-to( Hash:D $obj is copy, PDF::COS::Dict $class) {
         $class.COERCE($obj);
     }
 
-    multi method coerce-to( Hash $obj is copy, PDF::COS::Tie::Hash $role) {
+    multi method coerce-to( Hash:D $obj is copy, PDF::COS::Tie::Hash $role) {
         PDF::COS.coerce($obj).mixin: $role;
     }
 
-    multi method coerce-to( $obj, $type) {
+    multi method coerce-to( Any:D $obj, $type) {
 	warn X::PDF::Coerce.new( :$obj, :$type );
         $obj;
     }

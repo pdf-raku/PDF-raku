@@ -15,9 +15,9 @@ lives-ok {$pdf.encrypt( :owner-pass<re-encrypted>, :aes);}, 'reencrypt';
 
 dies-ok { $pdf.update }, 'update is not permitted';
 
-lives-ok {$pdf.save-as: "t/pdf-reencrypt.pdf"}, 'save-as is permitted';
+lives-ok {$pdf.save-as: "tmp/pdf-reencrypt.pdf"}, 'save-as is permitted';
 
-lives-ok {$pdf .= open: "t/pdf-reencrypt.pdf"}, 'open lives';
+lives-ok {$pdf .= open: "tmp/pdf-reencrypt.pdf"}, 'open lives';
 
 ok ($pdf.crypt.defined && $pdf.Encrypt.defined), 'PDF is encrypted';
 

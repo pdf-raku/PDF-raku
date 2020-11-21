@@ -134,7 +134,7 @@ role PDF::COS {
     }
 
     multi method coerce(:$null!) {
-        $.required('PDF::COS::Null').new;
+        $.required('PDF::COS::Null').COERCE($null);
     }
 
     multi method coerce($val) is default { $val }

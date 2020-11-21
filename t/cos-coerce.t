@@ -1,13 +1,14 @@
 use Test;
-plan 40;
+plan 43;
 
 use PDF::Grammar::Test :&is-json-equiv;
+use PDF::COS::Bool;
 use PDF::COS::Name;
 use PDF::COS::ByteString;
 use PDF::COS::DateString;
 use PDF::COS::TextString;
 use PDF::COS::Int;
-use PDF::COS::Bool;
+use PDF::COS::Null;
 use PDF::COS::Real;
 use PDF::COS::Type::Info;
 use PDF::COS::Dict;
@@ -45,6 +46,11 @@ my PDF::COS::Real $real .= COERCE(4.2);
 is $real, 4.2;
 does-ok $real, PDF::COS::Real;
 is-deeply $real.content, (:real(4.2));
+
+my PDF::COS::Null $null .= COERCE(Any);
+nok $null.defined;
+isa-ok $null, PDF::COS::Null;
+is-deeply $null.content, (:null(Any));
 
 my PDF::COS::Bool $bool .= COERCE(True);
 is-json-equiv $bool, True;
