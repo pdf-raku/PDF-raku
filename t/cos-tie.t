@@ -5,11 +5,12 @@ plan 46;
 use PDF::Reader;
 use PDF::Writer;
 use PDF::IO::Serializer;
-use PDF::COS;
 use PDF::COS::Array;
 use PDF::COS::Dict;
+use PDF::COS::Name;
+use PDF::COS::Stream;
 
-sub name($name){ PDF::COS.coerce(:$name) };
+sub name($name){ PDF::COS::Name.COERCE($name) };
 
 my PDF::Reader $reader .= new();
 isa-ok $reader, PDF::Reader;
@@ -72,8 +73,8 @@ my UInt $Length = $decoded.codes;
 
 lives-ok {
     my $Resources = $Pages<Kids>[0]<Resources>;
-    my PDF::COS $new-page .= coerce: { :Type(name 'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
-    my PDF::COS $contents .= coerce( :stream{ :$decoded, :dict{ :$Length } } );
+    my PDF::COS::Dict $new-page .= COERCE: { :Type(name 'Page'), :MediaBox[0, 0, 420, 595], :$Resources };
+    my PDF::COS::Stream $contents .= COERCE: { :$decoded, :dict{ :$Length } };
     $new-page<Contents> = $contents;
     $new-page<Parent> = $Pages;
     $Pages<Kids>.push: $new-page;
@@ -87,7 +88,7 @@ ok !$contents.Length.defined, '$stream<Length>:delete propagates to $stream.Leng
 
 $contents = Nil;
 
-my PDF::COS $pdf .= coerce: { :Root{ :Type(name 'Catalog') } };
+my PDF::COS::Dict $pdf .= COERCE: { :Root{ :Type(name 'Catalog') } };
 $pdf<Root><Outlines> = $root-obj<Outlines>;
 $pdf<Root><Pages> = $root-obj<Pages>;
 
@@ -111,18 +112,18 @@ my role ArrayRole does PDF::COS::Tie::Array {
     has $.Bar is index[1];
 }
 
-my PDF::COS $h1 .= coerce: {};
+my PDF::COS::Dict $h1 .= COERCE: {};
 lives-ok { HashRole.COERCE($h1) }, 'tied hash role application';
 does-ok $h1, HashRole, 'Hash/Hash application';
 $h1.Foo = 42;
 is $h1<Foo>, 42, 'tied hash';
 is $h1.Foo, 42, 'tied hash accessor';
 
-my PDF::COS $h2 .= coerce: {};
+my PDF::COS::Dict $h2 .= COERCE: {};
 dies-ok { ArrayRole.COERCE($h2) }, 'Hash/Array misapplication';
 ok !$h2.does(ArrayRole), 'Hash/Array misapplication';
 
-my  PDF::COS $a1 .= coerce: [];
+my  PDF::COS::Array $a1 .= COERCE: [];
 lives-ok { ArrayRole.COERCE($a1) }, 'tied array role application';
 does-ok $a1, ArrayRole, 'Hash/Hash application';
 $a1.Bar = 69;
@@ -131,11 +132,11 @@ is $a1.Bar, 69, 'tied array accessor';
 is $a1.Baz, 99, 'tied array defaulted accessor';
 is $a1[0], Any, 'tied array defaulted index';
 
-my PDF::COS $a2 .= coerce: [];
+my PDF::COS::Array $a2 .= COERCE: [];
 dies-ok { HashRole.COERCE($a2) }, 'Array/Hash misapplication';
 ok !$a2.does(HashRole), 'Array/Hash misapplication';
 
-my PDF::COS $a3 .= coerce: (1..3).map(* * 10);
+my PDF::COS::Array $a3 .= COERCE: (1..3).map(* * 10);
 isa-ok $a3, PDF::COS::Array, 'coerce array from Seq';
 is $a3[2], 30, 'coerce from Seq';
 

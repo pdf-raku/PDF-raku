@@ -6,12 +6,14 @@ use PDF;
 use PDF::Reader;
 use PDF::Writer;
 use PDF::COS;
+use PDF::COS::Name;
+use PDF::COS::Stream;
 use PDF::COS::Type::XRef;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 use JSON::Fast;
 
-sub name($name){ PDF::COS.coerce(:$name) };
+sub name($name){ PDF::COS::Name.COERCE($name) };
 
 # ensure consistant document ID generation
 srand(123456);
@@ -25,7 +27,7 @@ my $catalog = $pdf<Root>;
     my $Parent = $catalog<Pages>;
     my $Resources = $Parent<Kids>[0]<Resources>;
     my $MediaBox = $Parent<Kids>[0]<MediaBox>;
-    my PDF::COS $Contents .= coerce( :stream{ :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
+    my PDF::COS::Stream $Contents .= COERCE( { :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
     $Parent<Kids>.push: { :Type(name 'Page'), :$MediaBox, :$Resources, :$Parent, :$Contents };
     $Parent<Count>++;
 }

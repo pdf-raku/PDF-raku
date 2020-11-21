@@ -1,7 +1,9 @@
 use Test;
-plan 34;
+plan 40;
+
 use PDF::Grammar::Test :&is-json-equiv;
 use PDF::COS::Name;
+use PDF::COS::ByteString;
 use PDF::COS::DateString;
 use PDF::COS::TextString;
 use PDF::COS::Int;
@@ -10,6 +12,11 @@ use PDF::COS::Real;
 use PDF::COS::Type::Info;
 use PDF::COS::Dict;
 use PDF::COS::Stream;
+
+my PDF::COS::ByteString $string .= COERCE('Test');
+is $string, 'Test';
+does-ok $string, PDF::COS::ByteString;
+is-deeply $string.content, (:literal<Test>);
 
 my PDF::COS::Name $name .= COERCE('Fred');
 is $name, 'Fred';
@@ -64,11 +71,18 @@ my $Length = $decoded.chars;
 my PDF::COS::Dict $dict .= COERCE: { :$Length};
 is $dict<Length>, $Length;
 
-my PDF::COS::Stream $contents .= COERCE: { :dict{ :$Length }, :$decoded };
+my %stream = %( :dict{ :$Length }, :$decoded );
+
+my PDF::COS::Stream $contents .= COERCE: %stream;
+is $contents.decoded, $decoded;
+is $contents.Length, $Length;
+
+$contents = PDF::COS.coerce: :%stream;
 is $contents.decoded, $decoded;
 is $contents.Length, $Length;
 
 sub coerce-dict-test(PDF::COS::Dict() $dict) {
+    isa-ok($dict, PDF::COS::Dict);
     is $dict<Length>, $Length;
 }
 

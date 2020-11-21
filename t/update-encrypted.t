@@ -3,6 +3,7 @@ use Test;
 plan 5;
 
 use PDF;
+use PDF::COS::Stream;
 
 # ensure consistant document ID generation
 srand(123456);
@@ -18,7 +19,7 @@ my $decoded = "BT /F1 16 Tf  40 250 Td (new page added to an encrypted PDF) Tj E
     my $Parent = $catalog<Pages>;
     my $Resources = $Parent<Kids>[0]<Resources>;
     my $MediaBox = $Parent<Kids>[0]<MediaBox>;
-    my PDF::COS $Contents .= coerce( :stream{ :$decoded } );
+    my PDF::COS::Stream $Contents .= COERCE: { :$decoded };
     $Parent<Kids>.push: { :Type( :name<Page> ), :$MediaBox, :$Resources, :$Parent, :$Contents };
     $Parent<Count>++;
 }

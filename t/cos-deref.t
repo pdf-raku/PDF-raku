@@ -26,7 +26,7 @@ class t::DummyReader {
 
 my t::DummyReader $reader .= new;
 
-my PDF::COS $obj .= coerce( {
+my PDF::COS::Dict $obj .= COERCE: {
         :A(10),
         :B(:ind-ref[42,4]),
         :Kids[
@@ -35,8 +35,7 @@ my PDF::COS $obj .= coerce( {
              :ind-ref[99,0],
             ],
     },
-    :$reader
-    );
+    :$reader;
 
 isa-ok $obj, PDF::COS::Dict;
 is $obj.reader, $reader, 'reader attribute';

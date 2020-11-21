@@ -7,7 +7,7 @@ use PDF::IO;
 
 sub make-pdf( :$header='%PDF-1.3', :$length=46, :$xref-digit='0', :$eof='%%EOF', :$endobj = 'endobj') {
 
-    PDF::IO.coerce: q:s:to"END";
+    PDF::IO.COERCE: q:s:to"END";
 $header
 %xyz
 1 0 obj <<

@@ -122,7 +122,7 @@ class PDF::COS::Stream
             $!decoded //= $!encoded;
             $!encoded = Nil;
             self<Length>:delete;        # recompute this later
-            PDF::COS.coerce( :name<FlateDecode> );
+            PDF::COS::Name.COERCE('FlateDecode' );
         }
     }
 
@@ -133,8 +133,12 @@ class PDF::COS::Stream
         $rv;
     }
 
-    multi method COERCE(Hash:D $p) {
-        self.new: |$p;
+    multi method COERCE(Hash:D $hash, |c) {
+        my $params = <dict encoded decoded>.first({$hash{$_}})
+            ?? $hash
+            !! %( :dict($hash) );
+
+        self.new: |$params, |c;
     }
 
 }

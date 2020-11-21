@@ -73,9 +73,17 @@ role PDF::COS {
             !! $obj = $obj but $role
     }
 
+    method load-array(List $array) {
+        my $base-class = $.required('PDF::COS::Array');
+        $.load-delegate( :$array, :$base-class );
+    }
+
+    method load-dict(Hash $dict, :$base-class = $.required('PDF::COS::Dict')) {
+	$.load-delegate: :$dict, :$base-class;
+    }
+
     multi method coerce( List :$array!, |c ) {
-        state $base-class = $.required('PDF::COS::Array');
-        $.load-delegate( :$array, :$base-class ).new( :$array, |c );
+        $.load-array($array).new: :$array, |c;
     }
 
     my subset IndRef of Pair is export(:IndRef) where {.key eq 'ind-ref'};
@@ -115,27 +123,24 @@ role PDF::COS {
     multi method coerce( Bool :$bool! is copy) { self.coerce: :$bool }
 
     multi method coerce( Hash :$dict!, |c ) {
-	state $base-class = $.required('PDF::COS::Dict');
-	my $class = $.load-delegate( :$dict, :$base-class );
-	$class.new( :$dict, |c );
+	$.load-dict($dict).new: :$dict, |c;
     }
 
     multi method coerce( Hash :$stream!, |c ) {
         my Hash $dict = $stream<dict> // {};
-        state $base-class = $.required('PDF::COS::Stream');
-	my $class = $.load-delegate( :$dict, :$base-class);
-        $class.new( |$stream, |c );
+        my $base-class := $.required('PDF::COS::Stream');
+	my $class = $.load-dict($dict, :$base-class);
+        $class.new: |$stream, |c;
     }
 
     multi method coerce(:$null!) {
-        state $ = $.required('PDF::COS::Null').new;
+        $.required('PDF::COS::Null').new;
     }
 
     multi method coerce($val) is default { $val }
 
     method !coercer {
-        state $coercer = $.required('PDF::COS::Coercer');
-        $coercer;
+        $.required('PDF::COS::Coercer');
     }
 
     method loader is rw {

@@ -7,13 +7,13 @@ role PDF::COS::Tie::Hash
 
     use PDF::COS;
     #| resolve a heritable property by dereferencing /Parent entries
-    sub find-prop($object, Str $key, :$seen is copy) {
+    sub inherit($object, Str $key, :$seen is copy) {
 	$object.AT-KEY($key, :check)
             // do with $object.AT-KEY('Parent', :check) {
                  $seen //= my %{Hash};
                  die "cyclical inheritance hierarchy"
                      if $seen{$object}++;
-                 find-prop($_, $key, :$seen);
+                 inherit($_, $key, :$seen);
                }
     }
 
@@ -26,7 +26,7 @@ role PDF::COS::Tie::Hash
                 $got ||= do {
                     $val := (
                         $att.cos.is-inherited
-                            ?? find-prop(self, $key)
+                            ?? inherit(self, $key)
                             !! self.AT-KEY($key, :check)
                     ) // $att.type;
                     1;
@@ -85,7 +85,12 @@ role PDF::COS::Tie::Hash
 	nextwith($key, $lval )
     }
 
-    multi method COERCE(Hash:D $h is raw) {
-        PDF::COS.coerce($h, self.^roles[0]);
+    multi method COERCE(PDF::COS::Tie::Hash $h) {
+        $h.mixin: self.^roles[0];
+    }
+    multi method COERCE(Hash:D $h is raw, :class($) where !.so, |c) {
+        my $dict = $h<dict> // $h;
+        my Hash:U $class := PDF::COS.load-dict($dict);
+        $class.COERCE($h, :class, |c).mixin: self.^roles[0];
     }
 }

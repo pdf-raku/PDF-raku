@@ -72,7 +72,15 @@ role PDF::COS::Tie::Array does PDF::COS::Tie {
 	self[ +self ] = $val;
     }
 
-    multi method COERCE(List:D $a is raw) {
-        PDF::COS.coerce($a, self.^roles[0]);
+    multi method COERCE(PDF::COS::Tie::Array $array) {
+        $array.mixin: self.^roles[0];
     }
+    multi method COERCE(List:D $array is raw, :class($) where !.so, |c) {
+        my Array:U $class := PDF::COS.load-array($array);
+        $class.COERCE($array, :class, |c).mixin: self.^roles[0];
+    }
+    multi method COERCE(Seq:D $seq is raw, |c) {
+        self.COERCE($seq.Array, |c);
+    }
+
 }

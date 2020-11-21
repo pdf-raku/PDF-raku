@@ -38,7 +38,8 @@ class PDF::COS::Dict
     method content {
         ast-coerce self;
     }
-    multi method COERCE(Hash:D $dict is raw) {
-        self.new: :$dict;
+    multi method COERCE(PDF::COS::Dict $dict) is default { $dict }
+    multi method COERCE(Hash:D $dict, |c) {
+        self.new: :$dict, |c;
     }
 }

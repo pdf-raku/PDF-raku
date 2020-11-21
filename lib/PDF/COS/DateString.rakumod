@@ -56,6 +56,7 @@ class PDF::COS::DateString
 	:$literal;
     }
 
+    multi method COERCE(PDF::COS::DateString $_) { $_ }
     multi method COERCE(Str:D $obj, |c) {
         self.new($obj, |c);
     }
