@@ -87,13 +87,11 @@ $contents = PDF::COS.coerce: :%stream;
 is $contents.decoded, $decoded;
 is $contents.Length, $Length;
 
-sub coerce-dict-test(PDF::COS::Dict() $dict) {
+if $*PERL.compiler.version >= v2020.11 {
+    # try out impicit coercian on more recent Rakudo versions
+    my PDF::COS::Dict() $dict = { :$Length };
     isa-ok($dict, PDF::COS::Dict);
     is $dict<Length>, $Length;
-}
-
-if $*PERL.compiler.version > v2020.10 {
-    coerce-dict-test( { :$Length});
 }
 else {
     skip "Rakudo 2020.11 needed for coercements", 2;

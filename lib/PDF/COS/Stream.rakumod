@@ -137,8 +137,8 @@ class PDF::COS::Stream
         my $params = <dict encoded decoded>.first({$hash{$_}})
             ?? $hash
             !! %( :dict($hash) );
-
-        self.new: |$params, |c;
+        my $class := PDF::COS.load-dict: $params<dict>//{}, :base-class(self.WHAT);
+        $class.new: |$params, |c;
     }
 
 }
