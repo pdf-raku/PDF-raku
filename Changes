@@ -1,3 +1,8 @@
+Release 0.4.4
+- Add COERCE methods to COS roles and classes as per
+  Rakudo 2020.11+ semantics. For example:
+      my PDF::COS::TextString $s .= COERCE: 'Hi';
+
 Release 0.4.3
 - [PDF::Reader] add abstract base exception class X::PDF apply to existing
   X::PDF::* exception classes

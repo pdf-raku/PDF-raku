@@ -79,7 +79,7 @@ role PDF::COS {
     }
 
     method load-dict(Hash $dict, :$base-class = $.required('PDF::COS::Dict')) {
-	$.load-delegate: :$dict, :$base-class;
+	$.load-delegate( :$dict, :$base-class );
     }
 
     multi method coerce( List :$array!, |c ) {

@@ -90,6 +90,6 @@ if $*PERL.compiler.version > v2020.10 {
     coerce-dict-test( { :$Length});
 }
 else {
-    skip "Rakudo 2020.11 needed for coercements";
+    skip "Rakudo 2020.11 needed for coercements", 2;
 }
 
