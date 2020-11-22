@@ -133,7 +133,7 @@ class PDF::COS::Stream
         $rv;
     }
 
-    multi method COERCE(Hash:D $hash, |c) {
+    multi method COERCE(Hash $hash, |c) {
         my $params = <dict encoded decoded>.first({$hash{$_}})
             ?? $hash
             !! %( :dict($hash) );

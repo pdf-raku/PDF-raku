@@ -25,8 +25,15 @@ role PDF::COS {
     }
 
     multi method COERCE($v is raw) {
-        self.coerce($v, self.WHAT);
+        if !$v.defined && self.isa("PDF::COS::Null") {
+            self.new;
+        }
+        else {
+            warn "failed to coerce {.raku} to {self.WHAT.raku}";
+            $v;
+        }
     }
+
     proto method coerce(|) {*}
     proto method coerce-to($,$) {*}
     multi method coerce($a is raw, $b is raw) { self.coerce-to($a, $b) }
@@ -123,18 +130,15 @@ role PDF::COS {
     multi method coerce( Bool :$bool! is copy) { self.coerce: :$bool }
 
     multi method coerce( Hash :$dict!, |c ) {
-	$.load-dict($dict).new: :$dict, |c;
+        $.required('PDF::COS::Dict').COERCE: $dict, |c;
     }
 
     multi method coerce( Hash :$stream!, |c ) {
-        my Hash $dict = $stream<dict> // {};
-        my $base-class := $.required('PDF::COS::Stream');
-	my $class = $.load-dict($dict, :$base-class);
-        $class.new: |$stream, |c;
+        $.required('PDF::COS::Stream').COERCE: $stream, |c;
     }
 
     multi method coerce(:$null!) {
-        $.required('PDF::COS::Null').COERCE($null);
+        $.required('PDF::COS::Null').COERCE: $null;
     }
 
     multi method coerce($val) is default { $val }

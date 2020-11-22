@@ -92,5 +92,7 @@ PDFDocEncoding or UTF-16BE with a leading byte-order marker
 
 	$!type => $val;
     }
-    multi method COERCE($v) is default { self.coerce($v, self.WHAT) }
+    multi method COERCE(Str:D $value, |c) is default {
+        $?CLASS.new: :$value, |c;
+    }
 }
