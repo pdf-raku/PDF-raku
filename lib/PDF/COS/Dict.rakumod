@@ -14,25 +14,28 @@ class PDF::COS::Dict
 
     my %seen{Any} = (); #= to catch circular references
 
-    method new(Hash() :$dict = {}, |c) {
-        my $obj = %seen{$dict};
-        without $obj {
-            temp %seen{$dict} = $obj = self.bless(|c);
-            $obj.tie-init;
-            my %entries := $obj.entries;
-            my %alias = %entries.pairs.map({ .value.cos.alias => .key}).grep(*.key);
-            # this may trigger cascading PDF::COS::Tie coercians
-            # e.g. native Array to PDF::COS::Array
-            $obj{%alias{.key} // .key} = from-ast(.value) for $dict.pairs.sort;
-            $obj.?cb-init;
+    submethod TWEAK(:$dict!) {
+        %seen{$dict} = self;
+        self.tie-init;
+        my %entries := self.entries;
+        my %alias = %entries.pairs.map({ .value.cos.alias => .key}).grep(*.key);
+        # this may trigger cascading PDF::COS::Tie coercians
+        # e.g. native Array to PDF::COS::Array
+        self{%alias{.key} // .key} = from-ast(.value) for $dict.pairs.sort;
+        self.?cb-init;
 
-	    if my $required = set %entries.pairs.grep(*.value.cos.is-required).map(*.key) {
-		my $missing = $required (-) $obj.keys;
-		die "{self.WHAT.^name}: missing required field(s): $missing"
-		    if $missing;
-	    }
+	if my $required = set %entries.pairs.grep(*.value.cos.is-required).map(*.key) {
+	    my $missing = $required (-) self.keys;
+	    die "{self.WHAT.^name}: missing required field(s): $missing"
+	    if $missing;
+	}
+    }
+
+    method new(Hash() :$dict = {}, |c) {
+        %seen{$dict} // do {
+            temp %seen{$dict};
+            self.bless(:$dict, |c);
         }
-        $obj;
     }
 
     method content {

@@ -12,17 +12,21 @@ class PDF::COS::Array
 
     my %seen{Any} = (); #= to catch circular references
 
+    submethod TWEAK(:$array!) {
+        %seen{$array} = self;
+        self.tie-init;
+        # this may trigger cascading PDF::COS::Tie coercians
+        # e.g. native Array to PDF::COS::Array
+        self[.key] = from-ast(.value) for $array.pairs;
+
+        self.?cb-init();
+    }
+
     method new(List() :$array = [], |c) {
-        my $obj = %seen{$array};
-        without $obj {
-            temp %seen{$array} = $obj = self.bless(:$array, |c);
-            $obj.tie-init;
-            # this may trigger cascading PDF::COS::Tie coercians
-            # e.g. native Array to PDF::COS::Array
-            $obj[.key] = from-ast(.value) for $array.pairs;
-            $obj.?cb-init;
+        %seen{$array} // do {
+            temp %seen{$array};
+            self.bless(:$array, |c);
         }
-        $obj;
     }
 
     my %content-cache{Any} = ();
