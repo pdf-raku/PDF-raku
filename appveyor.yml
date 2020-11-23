@@ -4,6 +4,7 @@ platform: x64
 
 install:
   # Install rakudostar for faster CI builds.
+  - choco install git
   - choco install rakudostar
   # Change to build folder
   - cd %APPVEYOR_BUILD_FOLDER%

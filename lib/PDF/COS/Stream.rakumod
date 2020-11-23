@@ -22,7 +22,7 @@ class PDF::COS::Stream
 
     my subset StrOrDict where Str|Hash;
     has StrOrDict $.F is entry;                       #| (Optional; PDF 1.2) The file containing the stream data. If this entry is present, the bytes between stream and endstream are ignored
-    has Str @.FFilter is entry(:array-or-item);       #| (Optional; PDF 1.2) The name of a filter to be applied in processing the data found in the stream’s external file, or an array of such names
+    has PDF::COS::Name @.FFilter is entry(:array-or-item);       #| (Optional; PDF 1.2) The name of a filter to be applied in processing the data found in the stream’s external file, or an array of such names
     has Hash @.FDecodeParms is entry(:array-or-item); #| (Optional; PDF 1.2) A parameter dictionary, or an array of such dictionaries, used by the filters specified by FFilter.
 
     has UInt $.DL is entry;                           #| (Optional; PDF 1.5) A non-negative integer representing the number of bytes in the decoded (defiltered) stream.
@@ -30,8 +30,11 @@ class PDF::COS::Stream
     has $.encoded;
     has $.decoded;
 
-    submethod TWEAK {
-        self<Length> = .codes with $!encoded;
+    submethod TWEAK(:$dict!) {
+        with $!encoded {
+            self<Length> = .codes
+                unless $dict<Length>:exists;
+        }
     }
 
     method encoded is rw {
