@@ -29,7 +29,7 @@ role PDF::COS {
             self.new;
         }
         else {
-            warn "failed to coerce {.raku} to {self.WHAT.raku}";
+            warn "failed to coerce {.perl} to {self.WHAT.perl}";
             $v;
         }
     }
