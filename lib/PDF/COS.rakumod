@@ -24,6 +24,12 @@ role PDF::COS {
 	    );
     }
 
+    # high precedence rule to strip enumerations
+    multi method COERCE(Enumeration $_) is default {
+        $.COERCE(.value);
+    }
+
+    # low precedence fallback
     multi method COERCE($v is raw) {
         if !$v.defined && self.isa("PDF::COS::Null") {
             self.new;

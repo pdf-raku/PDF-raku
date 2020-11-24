@@ -408,6 +408,15 @@ my PDF::COS::Dict $dict2 .= COERCE: {
 };
 ```
 
+In Rakudo 2020.11+, there is usually no need to invoke the COERCE() method explicitly:
+
+    my PDF::COS::Dict() $dict3 = {
+        :Type( :name<Pages> ),
+        :Count(1),
+        :Kids[ :ind-ref[4, 0],  ]
+    };
+
+
 A table of Object types and coercements follows:
 
 *AST Tag* | Object Role/Class | *Raku Type Coercion | PDF Example | Description |
