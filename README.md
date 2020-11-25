@@ -33,20 +33,19 @@ Classes/roles in this module include:
 To create a one page PDF that displays 'Hello, World!'.
 
 ```
-#!/usr/bin/env perl6
+#!/usr/bin/env raku
 # creates examples/helloworld.pdf
-use v6;
 use PDF;
-use PDF::COS;
 use PDF::COS::Name;
-use PDF::COS::Type::Info;
+use PDF::COS::Dict;
 use PDF::COS::Stream;
+use PDF::COS::Type::Info;
 
 sub prefix:</>($s) { PDF::COS::Name.COERCE($s) };
 
 # construct a simple PDF document from scratch
 my PDF $pdf .= new;
-my $catalog     = $pdf.Root       = { :Type(/'Catalog') };
+my PDF::COS::Dict $catalog = $pdf.Root = { :Type(/'Catalog') };
 
 my @MediaBox  = 0, 0, 250, 100;
 
@@ -61,7 +60,7 @@ my %Resources = :Procset[ /'PDF', /'Text'],
                     },
                 };
 
-my $page-index    = $catalog<Pages>    = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0) };
+my PDF::COS::Dict $page-index = $catalog<Pages> = { :Type(/'Pages'), :@MediaBox, :%Resources, :Kids[], :Count(0) };
 # add some standard metadata
 my PDF::COS::Type::Info $info = $pdf.Info //= {};
 $info.CreationDate = DateTime.now;
@@ -83,8 +82,9 @@ $pdf.save-as: 'examples/helloworld.pdf';
 Then to update the PDF, adding another page:
 
 ```
-use v6;
+#!/usr/bin/env raku
 use PDF;
+use PDF::COS::Stream;
 use PDF::COS::Type::Info;
 
 my PDF $pdf .= open: 'examples/helloworld.pdf';
