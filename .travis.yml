@@ -2,8 +2,10 @@ language: perl6
 sudo: false
 os:
   - linux
+  - osx
 perl6:
   - latest
+  - '2020.10'
   - '2019.03'
 install:
   - rakudobrew build zef
