@@ -5,7 +5,7 @@ plan 17;
 use PDF::IO::Serializer;
 use PDF::COS::Util :to-ast;
 use PDF::Grammar::Test :is-json-equiv;
-use PDF::Writer;
+use PDF::IO::Writer;
 use PDF::COS::Dict;
 use PDF::COS::Name;
 use PDF::COS::Stream;
@@ -92,7 +92,7 @@ is-json-equiv @objects[3], (:ind-obj[4, 0, :dict{
 
 my PDF::COS::Dict $obj-with-utf8 .= COERCE: { :Root{ :Name(name "Heydər Əliyev") } };
 $obj-with-utf8<Root>.is-indirect = True;
-my PDF::Writer $writer .= new;
+my PDF::IO::Writer $writer .= new;
 
 @objects = @(PDF::IO::Serializer.new.body($obj-with-utf8)[0]<objects>);
 is-json-equiv @objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';

@@ -2,11 +2,11 @@ use v6;
 use Test;
 plan 4;
 
-use PDF::Reader;
-use PDF::Writer;
+use PDF::IO::Reader;
+use PDF::IO::Writer;
 use PDF::COS;
 
-my PDF::Reader $reader .= new;
+my PDF::IO::Reader $reader .= new;
 
 sub deref($val is rw, *@ops) is rw {
     $reader.deref($val, |@ops);

@@ -8,7 +8,7 @@ my sub synopsis($input) {
     my \desc = (
         $input.chars < 60
             ?? $input
-            !! [~] substr($input, 0, 32), ' ... ', substr($input, *-20)
+            !! [~] $input.&substr(0, 32), ' ... ', $input.&substr(*-20)
     ).subst(/\n+/, ' ', :g);
     desc.perl;
 }
@@ -22,19 +22,19 @@ class X::PDF::BadJSON is X::PDF {
 
 class X::PDF::BadHeader is X::PDF {
     has Str $.preamble is required;
-    method message {"Expected file header '%XXX-n.m', got: {synopsis($!preamble)}"}
+    method message {"Expected file header '%XXX-n.m', got: {$!preamble.&synopsis()}"}
 }
 
 class X::PDF::BadTrailer is X::PDF {
     has Str $.tail is required;
-    method message {"Expected file trailer 'startxref ... \%\%EOF', got: {synopsis($!tail)}"}
+    method message {"Expected file trailer 'startxref ... \%\%EOF', got: {$!tail.&synopsis()}"}
 }
 
 class X::PDF::BadXRef is X::PDF {}
 
 class X::PDF::BadXRef::Parse is X::PDF::BadXRef {
     has Str $.xref is required;
-    method message {"Unable to parse index: {synopsis($!xref)}"}
+    method message {"Unable to parse index: {$!xref.&synopsis()}"}
 }
 
 class X::PDF::BadXRef::Entry is X::PDF::BadXRef {
@@ -60,7 +60,7 @@ class X::PDF::BadXRef::Section is X::PDF::BadXRef {
 
 class X::PDF::ParseError is X::PDF {
     has Str $.input is required;
-    method message {"Unable to parse PDF document: {synopsis($!input)}"}
+    method message {"Unable to parse PDF document: {$!input.&synopsis()}"}
 }
 
 class X::PDF::BadIndirectObject is X::PDF {
@@ -77,7 +77,7 @@ class X::PDF::BadIndirectObject is X::PDF {
 class X::PDF::BadIndirectObject::Parse is X::PDF::BadIndirectObject {
     has Str $.input is required;
     method message {
-        $.details = "Unable to parse indirect object: " ~ synopsis($.input);
+        $.details = "Unable to parse indirect object: " ~ $.input.&synopsis();
         nextsame;
     }
 }
@@ -87,11 +87,11 @@ class X::PDF::ObjStmObject::Parse is X::PDF {
     has UInt $.obj-num;
     has UInt $.ref-obj-num;
     method message {
-        "Error extracting embedded object $!obj-num 0 R from $!ref-obj-num 0 R; unable to parse object: " ~ synopsis($.input);
+        "Error extracting embedded object $!obj-num 0 R from $!ref-obj-num 0 R; unable to parse object: " ~ $.input.&synopsis();
     }
 }
 
-class PDF::Reader {
+class PDF::IO::Reader {
 
     use PDF::Grammar:ver<0.2.1+>;
     use PDF::Grammar::COS;
@@ -103,7 +103,7 @@ class PDF::Reader {
     use PDF::COS :IndRef;
     use PDF::COS::Dict;
     use PDF::COS::Util :from-ast, :to-ast;
-    use PDF::Writer;
+    use PDF::IO::Writer;
     use JSON::Fast;
     subset ObjNumInt of UInt;
     subset GenNumInt of Int where 0..999;
@@ -281,7 +281,7 @@ class PDF::Reader {
     }
 
     multi method open($input!, |c) {
-        $!input .= coerce( $input );
+        $!input .= COERCE( $input );
         $.load-header( );
         $.load-cos( $.type, |c );
     }
@@ -891,7 +891,7 @@ class PDF::Reader {
     #| write to PDF/FDF
     multi method save-as(IO() $output-path, |c ) is default {
         my $ast = $.ast(:!eager, |c);
-        my PDF::Writer $writer .= new: :$!input, :$ast;
+        my PDF::IO::Writer $writer .= new: :$!input, :$ast;
         $output-path.spurt: $writer.Blob;
         $writer;
     }

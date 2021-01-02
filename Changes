@@ -1,3 +1,7 @@
+Release 0.4.5
+- Rename classes PDF::Writer -> PDF::IO::Writer and PDF::Reader
+  -> PDF::IO::Reader. Free up PDF::Reader and PDF::Writer for
+  Raku ecosystem usage.
 Release 0.4.4
 - Add COERCE methods to COS roles and classes. For example:
       my PDF::COS::TextString $s .= COERCE: 'Hi';

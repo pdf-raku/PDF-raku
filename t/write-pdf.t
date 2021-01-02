@@ -7,7 +7,7 @@ use PDF::Grammar::COS;
 use PDF::Grammar::COS::Actions;
 use PDF::Grammar::Test;
 use PDF::IO;
-use PDF::Writer;
+use PDF::IO::Writer;
 
 unless $*PERL.compiler.version >= v2017.04 {
     plan 0;
@@ -25,7 +25,7 @@ for 't/pdf'.IO.dir.grep(/ [\w|'-']*? '.json'$/).sort -> $json-file {
     next unless $pdf-input-file.IO.e;
     my $pdf-output-file = $json-file.subst( /'.json'$/, '.out' );
     my PDF::IO $input .= COERCE( $pdf-input-file.IO );
-    my PDF::Writer $pdf-output .= new( :$input, :offset(0), :%ast );
+    my PDF::IO::Writer $pdf-output .= new( :$input, :offset(0), :%ast );
     $pdf-output-file.IO.spurt: $pdf-output.Blob;
 
     my ($rule) = %ast.keys;

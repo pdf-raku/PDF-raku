@@ -2,7 +2,7 @@ use v6;
 use Test;
 
 use PDF;
-use PDF::Reader;
+use PDF::IO::Reader;
 
 for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
 
@@ -22,7 +22,7 @@ for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
 
     isa-ok $pdf, ::('PDF'), "$desc trailer";
     ok $pdf.reader.defined, "$desc \$pdf.reader defined";
-    isa-ok $pdf.reader, ::('PDF::Reader'), "$desc reader type";
+    isa-ok $pdf.reader, ::('PDF::IO::Reader'), "$desc reader type";
 
     ok $pdf<Root>, "$desc document has a root";
     isa-ok $pdf<Root>, ::('PDF::COS::Dict'), "$desc document root";

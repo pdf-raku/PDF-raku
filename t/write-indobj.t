@@ -3,7 +3,7 @@ use Test;
 plan 1;
 
 use PDF::IO::IndObj;
-use PDF::Writer;
+use PDF::IO::Writer;
 
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
@@ -16,7 +16,7 @@ PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
 my %ast = $/.ast;
 
 my PDF::IO::IndObj $ind-obj .= new( :$input, |%ast );
-my PDF::Writer $pdf-out .= new( :$input );
+my PDF::IO::Writer $pdf-out .= new( :$input );
 
 # round trip
 $input = $pdf-out.write( $ind-obj.ast );

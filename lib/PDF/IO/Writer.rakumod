@@ -1,6 +1,6 @@
 use v6;
 
-class PDF::Writer {
+class PDF::IO::Writer {
 
     use PDF::Grammar:ver(v0.2.1+);
     use PDF::IO;
@@ -17,7 +17,7 @@ class PDF::Writer {
     has Version $.compat = v1.4;
 
     submethod TWEAK(:$input) {
-        $!input .= coerce( $_ )
+        $!input .= COERCE( $_ )
             with $input;
     }
 

@@ -4,12 +4,12 @@ use PDF::COS::Dict;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
-class PDF:ver<0.4.4>
+class PDF:ver<0.4.5>
     is PDF::COS::Dict {
 
     use PDF::IO::Serializer;
-    use PDF::Reader;
-    use PDF::Writer;
+    use PDF::IO::Reader;
+    use PDF::IO::Writer;
     use PDF::COS::Tie;
     use JSON::Fast;
 
@@ -34,7 +34,7 @@ class PDF:ver<0.4.4>
 
     #| open the input file-name or path
     method open($spec, Str :$type, |c) {
-        my PDF::Reader $reader .= new;
+        my PDF::IO::Reader $reader .= new;
         my \doc = self.new: :$reader;
 
         $reader.trailer = doc;
@@ -122,7 +122,7 @@ class PDF:ver<0.4.4>
         my Numeric $offset = $.reader.input.codes + Preamble.codes;
         my $size = $.reader.size;
         my $compat = $.reader.compat;
-        my PDF::Writer $writer .= new( :$offset, :$prev, :$size, :$compat  );
+        my PDF::IO::Writer $writer .= new( :$offset, :$prev, :$size, :$compat  );
 	my IO::Handle $fh;
         my Str $new-body = Preamble ~ $writer.write-body( $body, my @entries);
 
@@ -187,14 +187,14 @@ class PDF:ver<0.4.4>
     multi method save-as(IO::Handle $ioh, |c) is default {
         my $eager := ! $!flush;
         my $ast = $.ast(:$eager, |c);
-        my PDF::Writer $writer .= new: :$ast;
+        my PDF::IO::Writer $writer .= new: :$ast;
         $ioh.write: $writer.Blob;
         $ioh.close;
     }
 
     #| stringify to the serialized PDF
     method Str(|c) {
-        my PDF::Writer $writer .= new: |c;
+        my PDF::IO::Writer $writer .= new: |c;
 	$writer.write( $.ast )
     }
 

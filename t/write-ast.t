@@ -3,9 +3,9 @@
 use Test;
 use JSON::Fast;
 use PDF::Grammar::Test :is-json-equiv;
-use PDF::Writer;
+use PDF::IO::Writer;
 
-is PDF::Writer.new.write(:array[ :real(0.31415926e0), :real(1.3e-17), :real(0.00000000), :real(0e0), :real(1) ]), '[ 0.31416 0 0 0 1 ]';
+is PDF::IO::Writer.new.write(:array[ :real(0.31415926e0), :real(1.3e-17), :real(0.00000000), :real(0e0), :real(1) ]), '[ 0.31416 0 0 0 1 ]';
 
 for 't/write-ast.json'.IO.lines {
 
@@ -21,7 +21,7 @@ for 't/write-ast.json'.IO.lines {
         next;
     }
 
-    my PDF::Writer $pdf-data .= new( :%ast );
+    my PDF::IO::Writer $pdf-data .= new( :%ast );
     is-json-equiv ~$pdf-data, $expected-pdf, "write {%ast.keys.sort}"
         or diag :%ast.perl;
 }

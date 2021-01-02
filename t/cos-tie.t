@@ -2,8 +2,8 @@ use v6;
 use Test;
 plan 46;
 
-use PDF::Reader;
-use PDF::Writer;
+use PDF::IO::Reader;
+use PDF::IO::Writer;
 use PDF::IO::Serializer;
 use PDF::COS::Array;
 use PDF::COS::Dict;
@@ -12,8 +12,8 @@ use PDF::COS::Stream;
 
 sub name($name){ PDF::COS::Name.COERCE($name) };
 
-my PDF::Reader $reader .= new();
-isa-ok $reader, PDF::Reader;
+my PDF::IO::Reader $reader .= new();
+isa-ok $reader, PDF::IO::Reader;
 $reader.open( 't/pdf/pdf.in' );
 is-deeply $reader.trailer.reader, $reader, 'trailer reader';
 my $root-obj = $reader.trailer<Root>;
@@ -96,7 +96,7 @@ my $body = PDF::IO::Serializer.new.body( $pdf );
 
 # write the two page pdf
 my $ast = :cos{ :header{ :version(1.2) }, :$body };
-my PDF::Writer $writer .= new: :$ast;
+my PDF::IO::Writer $writer .= new: :$ast;
 ok 't/hello-and-bye.pdf'.IO.spurt( $writer.Blob), 'output 2 page pdf';
 
 use PDF::COS::Tie;

@@ -20,12 +20,12 @@ It is possible to construct basic documents and perform simple edits by direct m
 Classes/roles in this module include:
 
 - `PDF` - PDF document root (trailer)
-- `PDF::Reader` - for indexed random access to PDF files
+- `PDF::IO::Reader` - for indexed random access to PDF files
 - `PDF::IO::Filter` - a collection of standard PDF decoding and encoding tools for PDF data streams
 - `PDF::IO::IndObj` - base class for indirect objects
 - `PDF::IO::Serializer` - data marshalling utilities for the preparation of full or incremental updates
 - `PDF::IO::Crypt` - decryption / encryption
-- `PDF::Writer` - for the creation or update of PDF files
+- `PDF::IO::Writer` - for the creation or update of PDF files
 - `PDF::COS` - Raku Bindings to PDF objects [Carousel Object System, see <a href="http://jimpravetz.com/blog/2012/12/in-defense-of-cos/">COS</a>]
 
 ## Example Usage
@@ -307,10 +307,10 @@ The `.open` method loads a PDF index (cross reference table and/or stream). The 
 The document can be traversed by dereferencing Array and Hash objects. The reader will load indirect objects via the index, as needed. 
 
 ```
-use PDF::Reader;
-use PDF::COS;
+use PDF::IO::Reader;
+use PDF::COS::Name;
 
-my PDF::Reader $reader .= new;
+my PDF::IO::Reader $reader .= new;
 $reader.open: 'examples/helloworld.pdf';
 
 # objects can be directly fetched by object-number and generation-number:

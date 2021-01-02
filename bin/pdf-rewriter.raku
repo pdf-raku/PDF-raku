@@ -1,7 +1,7 @@
 #!/usr/bin/env perl6
 # Simple round trip read and rewrite a PDF
 use v6;
-use PDF::Reader;
+use PDF::IO::Reader;
 use PDF;
 
 #| rewrite a PDF or FDF and/or convert to/from JSON
@@ -28,7 +28,7 @@ sub MAIN(
     }
 
     my PDF $pdf;
-    my PDF::Reader $reader;
+    my PDF::IO::Reader $reader;
 
     if $class {
 	$pdf = (require ::($class));

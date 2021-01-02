@@ -3,8 +3,8 @@ use Test;
 plan 37;
 
 use PDF;
-use PDF::Reader;
-use PDF::Writer;
+use PDF::IO::Reader;
+use PDF::IO::Writer;
 use PDF::COS;
 use PDF::COS::Name;
 use PDF::COS::Stream;

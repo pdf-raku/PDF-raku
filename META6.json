@@ -57,10 +57,10 @@
     "PDF::IO::Handle": "lib/PDF/IO/Handle.rakumod",
     "PDF::IO::IndObj": "lib/PDF/IO/IndObj.rakumod",
     "PDF::IO::Serializer": "lib/PDF/IO/Serializer.rakumod",
+    "PDF::IO::Reader": "lib/PDF/IO/Reader.rakumod",
+    "PDF::IO::Writer": "lib/PDF/IO/Writer.rakumod",
     "PDF::IO::Str": "lib/PDF/IO/Str.rakumod",
-    "PDF::IO::Util": "lib/PDF/IO/Util.rakumod",
-    "PDF::Reader": "lib/PDF/Reader.rakumod",
-    "PDF::Writer": "lib/PDF/Writer.rakumod"
+    "PDF::IO::Util": "lib/PDF/IO/Util.rakumod"
   },
   "resources": [
   ],
@@ -70,5 +70,5 @@
   ],
   "test-depends": [
   ],
-  "version": "0.4.4"
+  "version": "0.4.5"
 }

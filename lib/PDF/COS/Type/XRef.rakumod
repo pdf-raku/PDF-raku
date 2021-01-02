@@ -31,7 +31,7 @@ class PDF::COS::Type::XRef
     method next-obj-num is rw { self<Size> }
 
     method cb-init {
-	self<Type> = PDF::COS.coerce( :name<XRef> );
+	self<Type> = PDF::COS::Name.COERCE: 'XRef';
         self<W> //= [ 1, 2, 1 ];
         self<Size> //= 0;
     }

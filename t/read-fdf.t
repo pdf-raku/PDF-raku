@@ -2,10 +2,10 @@ use v6;
 use Test;
 plan 9;
 
-use PDF::Reader;
+use PDF::IO::Reader;
 use PDF::COS::Dict;
 
-my PDF::Reader $pdf-in .= new();
+my PDF::IO::Reader $pdf-in .= new();
 
 $pdf-in.open( 't/pdf/pdf-fdf.in' );
 

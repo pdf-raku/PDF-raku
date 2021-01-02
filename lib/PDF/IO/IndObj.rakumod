@@ -19,7 +19,7 @@ class PDF::IO::IndObj {
         $!object.gen-num = $ind-obj[1];
     }
 
-    #| recreate a PDF::Grammar::PDF / PDF::Writer compatible ast from the object
+    #| recreate a PDF::Grammar::PDF / PDF::IO::Writer compatible ast from the object
     method ast returns Pair {
         :ind-obj[ $.obj-num, $.gen-num, $.content ]
     }

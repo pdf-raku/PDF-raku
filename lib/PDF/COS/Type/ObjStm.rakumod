@@ -34,7 +34,7 @@ class PDF::COS::Type::ObjStm
     has PDF::COS::Stream $.Extends is entry;      #| (Optional) A reference to an object stream, of which the current object stream is considered an extension
 
     method cb-init {
-        self<Type> //= PDF::COS.coerce( :name<ObjStm> );
+        self<Type> //= PDF::COS::Name.COERCE: 'ObjStm';
 	self<N> //= 0;
 	self<First> //= 0;
     }
