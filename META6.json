@@ -1,6 +1,6 @@
 {
   "api": "PDF-1.7",
-  "auth": "github:pdf-raku",
+  "auth": "cpan:WARRINGD",
   "authors": [
     "David Warring"
   ],
@@ -56,11 +56,11 @@
     "PDF::IO::Filter::RunLength": "lib/PDF/IO/Filter/RunLength.rakumod",
     "PDF::IO::Handle": "lib/PDF/IO/Handle.rakumod",
     "PDF::IO::IndObj": "lib/PDF/IO/IndObj.rakumod",
-    "PDF::IO::Serializer": "lib/PDF/IO/Serializer.rakumod",
     "PDF::IO::Reader": "lib/PDF/IO/Reader.rakumod",
-    "PDF::IO::Writer": "lib/PDF/IO/Writer.rakumod",
+    "PDF::IO::Serializer": "lib/PDF/IO/Serializer.rakumod",
     "PDF::IO::Str": "lib/PDF/IO/Str.rakumod",
-    "PDF::IO::Util": "lib/PDF/IO/Util.rakumod"
+    "PDF::IO::Util": "lib/PDF/IO/Util.rakumod",
+    "PDF::IO::Writer": "lib/PDF/IO/Writer.rakumod"
   },
   "resources": [
   ],
