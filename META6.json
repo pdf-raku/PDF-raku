@@ -9,6 +9,7 @@
   "depends": [
     "Compress::Zlib",
     "PDF::Grammar:ver<0.2.1+>",
+    "Hash::int",
     "JSON::Fast",
     "OpenSSL"
   ],
@@ -70,5 +71,5 @@
   ],
   "test-depends": [
   ],
-  "version": "0.4.5"
+  "version": "0.4.6"
 }

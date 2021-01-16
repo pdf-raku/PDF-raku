@@ -1,4 +1,6 @@
 {{$NEXT}}
+  - Use Hash::int for PDF::IO::Reader %!ind-obj-idx (indirect
+    object index).
 
 0.4.5  2021-01-12T06:00:31+13:00
   - Rename classes PDF::Writer -> PDF::IO::Writer and PDF::Reader
