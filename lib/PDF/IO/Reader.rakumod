@@ -773,9 +773,10 @@ class PDF::IO::Reader {
         Bool :$eager = ! $incremental,  #| fetch uncached objects
         ) {
         my @object-refs;
-        for %!ind-obj-idx.kv -> $k, Hash:D $entry {
-            my ObjNumInt $obj-num = $k div 1000;
-            my GenNumInt $gen-num = $k mod 1000;
+        for %!ind-obj-idx.keys.sort {
+            my Hash:D $entry = %!ind-obj-idx{$_};
+            my ObjNumInt $obj-num = $_ div 1000;
+            my GenNumInt $gen-num = $_ mod 1000;
 
             my UInt $seq = 0;
             my UInt $offset;
