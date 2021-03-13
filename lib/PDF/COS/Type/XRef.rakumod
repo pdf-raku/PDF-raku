@@ -41,10 +41,10 @@ class PDF::COS::Type::XRef
         self.Index[0] //= 0;
         self.Index[1] ||= $.Size;
 
-        die 'mandatory /Index[0] entry is missing'
+        die '/XRef mandatory /Index[0] entry is missing'
             without $.first-obj-num;
 
-        die 'mandatory /Size entry is missing or zero'
+        die '/XRef mandatory /Size entry is missing or zero'
             unless $.next-obj-num;
 
         my uint32 @width;
@@ -123,6 +123,8 @@ class PDF::COS::Type::XRef
         my array @decoded-segs;
         my uint $i = 0;
         for index.list -> $obj-num is rw, \num-entries {
+            die "/XRef stream content overflow"
+                if $i + num-entries > +decoded;
             for 0 ..^ num-entries {
                 @index[$i;0] = $obj-num;
                 @index[$i;1] = decoded[$i;0];
