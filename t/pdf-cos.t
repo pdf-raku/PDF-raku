@@ -48,7 +48,7 @@ class COS::JAR
 }
 
 # ensure consistant document ID generation
-srand(123456);
+my $id = $*PROGRAM-NAME.fmt('%-16s').substr(0,16);
 
 my COS::JAR $jar .= new;
 $jar.Root = { :Language<LOLCODE>, :Version("1.2"), :Classes[] };
@@ -68,8 +68,9 @@ my PDF::COS::Stream $Source .= COERCE: { :$decoded, :dict{ :Filter<FlateDecode> 
 my $Description = "Moon phases: \x1f311\x1f313\x1f315\x1f317";
 
 $jar.Root.Classes.push: { :Name( :name<MAIN> ), :$Source, :Author("Heydər Əliyev"), :$Description};
-
+$jar.id = $id++;
 lives-ok {$jar.save-as: "t/lolcode.cjar" }, 'save as cos';
+$jar.id = $id++;
 lives-ok {$jar.save-as: "tmp/lolcode.cjar.json" }, 'save as json';
 dies-ok { $jar.open: "t/helloworld.pdf" }, "PDF open as JAR - fails";
 lives-ok {$jar = $jar.open: "t/lolcode.cjar" }, "open";

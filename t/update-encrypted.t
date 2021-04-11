@@ -6,7 +6,7 @@ use PDF;
 use PDF::COS::Stream;
 
 # ensure consistant document ID generation
-srand(123456);
+my $id = $*PROGRAM-NAME.fmt('%-16s').substr(0,16);
 
 't/pdf/samples/encrypt-40bit.pdf'.IO.copy('t/update-encrypted.pdf');
 
@@ -24,6 +24,7 @@ my $decoded = "BT /F1 16 Tf  40 250 Td (new page added to an encrypted PDF) Tj E
     $Parent<Count>++;
 }
 
+$pdf.id = $id++;
 lives-ok { $pdf.update }, 'doc.update lives';
 
 lives-ok {$pdf = PDF.open: "t/update-encrypted.pdf"}, 'doc re-open lives';

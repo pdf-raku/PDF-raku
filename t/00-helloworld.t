@@ -10,7 +10,7 @@ use PDF::Grammar::PDF;
 sub name($name){ PDF::COS::Name.COERCE($name) };
 
 # ensure consistant document ID generation
-srand(123456);
+my $id = $*PROGRAM-NAME.fmt('%-16s').substr(0,16);
 
 my PDF $pdf .= new;
 my $root     = $pdf.Root       = { :Type(name 'Catalog') };
@@ -36,6 +36,7 @@ my $info = $pdf.Info = {};
 $info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
 $info.Author = 'PDF-Tools/t/00-helloworld.t';
 
+$pdf.id = $id++;
 lives-ok {$pdf.save-as("t/helloworld.pdf")}, 'save-as pdf';
 ok $pdf.ID, 'doc ID generated';
 my $pdf-id = $pdf.ID[0];

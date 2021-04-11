@@ -16,9 +16,10 @@ use JSON::Fast;
 sub name($name){ PDF::COS::Name.COERCE($name) };
 
 # ensure consistant document ID generation
-srand(123456);
+my $id = $*PROGRAM-NAME.fmt('%-16s').substr(0,16);
 
 my PDF $pdf .= open( 't/pdf/pdf.in' );
+
 my $reader = $pdf.reader;
 is +$reader.xrefs, 1, 'reader.xrefs - initial';
 my $catalog = $pdf<Root>;
@@ -33,7 +34,9 @@ my $catalog = $pdf<Root>;
 }
 
 # firstly, write and analyse just the updates
+$pdf.id = $id++;
 lives-ok { $pdf.update(:prev(9999), :diffs("t/pdf/pdf.in-diffs".IO.open(:w)) ) }, 'update to PDF file - lives';
+$pdf.id = $id++;
 lives-ok { $pdf.update(:prev(9999), :diffs("tmp/pdf.in.json".IO.open(:w)) ) }, 'update to JSON file - lives';
 
 my PDF::Grammar::PDF::Actions $actions .= new;
@@ -77,6 +80,7 @@ my $Info = $pdf.Info //= {};
 $Info.ModDate = DateTime.new( :year(2015), :month(12), :day(26) );
 
 # save-as - does an increment save by default
+$pdf.id = $id++;
 $pdf.save-as('t/pdf/pdf-updated.out');
 $pdf .= open('t/pdf/pdf-updated.out');
 $reader = $pdf.reader;
@@ -119,6 +123,7 @@ is-deeply $ast<cos><body>[0]<objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Leng
 
 # do a full rewrite of the updated PDF. Output should be cleaned up, with a single body and
 # cleansed of old object versions.
+$pdf2.id = $id++;
 ok $pdf2.save-as('t/pdf/pdf-updated-and-rebuilt.pdf', :rebuild), 'save-as :rebuild';
 
 $pdf .= open( 't/pdf/pdf-updated-and-rebuilt.pdf' );
@@ -130,6 +135,7 @@ is +$reader.xrefs, 1, 'reader.xrefs - rebuilt';
 
 $pdf .= open: "t/pdf/samples/pdf-1.5-obstm_and_xref_streams.pdf";
 $pdf.Info.Subject = 'test update of PDF with XRef streams';
+$pdf.id = $id++;
 $pdf.save-as: "tmp/pdf-1.5-updated.pdf";
 lives-ok {$pdf .= open: "tmp/pdf-1.5-updated.pdf"}, "read of updated 1.5+ PDF lives";
 is $pdf.reader.compat, v1.5, 'reader compat';

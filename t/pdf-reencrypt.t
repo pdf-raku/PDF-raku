@@ -4,9 +4,6 @@ plan 6;
 
 use PDF;
 
-# ensure consistant document ID generation
-srand(123456);
-
 my PDF $pdf .= open: "t/pdf/samples/encrypt-40bit.pdf", :password<owner>;
 
 $pdf.Info.Title = 're-encrypted';

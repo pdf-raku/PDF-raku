@@ -7,9 +7,6 @@ use PDF::COS::Dict;
 use PDF::COS::Stream;
 use PDF::Grammar::Test :is-json-equiv;
 
-# ensure consistant document ID generation
-srand(123456);
-
 my PDF::IO::Reader $pdf-in .= new();
 $pdf-in.open( 't/pdf/pdf.in' );
 
@@ -39,9 +36,9 @@ my $json-ast = $pdf-json.ast( :rebuild );
 is-json-equiv $json-ast, $ast, '$reader.open( "tmp/pdf-rewritten.json" )';
 
 $pdf-json.recompress( :compress );
-$pdf-json.save-as('t/pdf/pdf-compressed.pdf');
+$pdf-json.save-as('tmp/pdf-compressed.pdf');
 my PDF::IO::Reader $pdf-compressed .= new();
-$pdf-compressed.open( 't/pdf/pdf-compressed.pdf' );
+$pdf-compressed.open( 'tmp/pdf-compressed.pdf' );
 $ast = $pdf-compressed.ast;
 my $stream = $ast<cos><body>[0]<objects>.first({ .key eq 'ind-obj' && .value[2].key eq 'stream'});
 ok $stream.defined, 'got stream';

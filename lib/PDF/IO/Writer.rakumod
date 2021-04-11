@@ -419,7 +419,7 @@ class PDF::IO::Writer {
         die "xref $obj-count != {$entries.elems}"
             unless $obj-count == +$entries;
          $obj-first-num ~ ' ' ~ $obj-count ~ "\n"
-             ~ self!write-entries($entries );
+             ~ self!write-entries($entries);
     }
 
     method !write-entries($_ where .shape[1] ~~ 3) {

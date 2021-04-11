@@ -9,12 +9,6 @@ use PDF::Grammar::Test;
 use PDF::IO;
 use PDF::IO::Writer;
 
-unless $*PERL.compiler.version >= v2017.04 {
-    plan 0;
-    skip-rest "Rakudo/JSON < 2017.04 incompatibilty";
-    exit;
-}
-
 my PDF::Grammar::COS::Actions $actions .= new();
 
 for 't/pdf'.IO.dir.grep(/ [\w|'-']*? '.json'$/).sort -> $json-file {

@@ -78,14 +78,14 @@ class PDF::COS::Stream
         $.decoded = $prepend ~ ($!decoded // '') ~ $append;
     }
 
-    method decode( $encoded = $.encoded ) {
-        return $encoded unless self<Filter>:exists;
-        PDF::IO::Filter.decode( $encoded, :dict(self) );
+    method decode(PDF::COS::Stream:D $dict: $encoded = $.encoded ) {
+        return $encoded unless $dict<Filter>:exists;
+        PDF::IO::Filter.decode( $encoded, :$dict );
     }
 
-    method encode( $decoded = $.decoded) {
-        return $decoded unless self<Filter>:exists;
-        PDF::IO::Filter.encode( $decoded, :dict(self) );
+    method encode(PDF::COS::Stream:D $dict: $decoded = $.decoded) {
+        return $decoded unless $dict<Filter>:exists;
+        PDF::IO::Filter.encode( $decoded, :$dict );
     }
 
     method content {

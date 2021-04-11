@@ -109,7 +109,7 @@ class PDF::IO::Reader {
     subset ObjNumInt of UInt;
     subset GenNumInt of Int where 0..999;
 
-    has PDF::IO  $.input is rw;             #= raw PDF image (latin-1 encoding)
+    has PDF::IO  $.input is rw;      #= raw PDF image (latin-1 encoding)
     has Str      $.file-name;
     has          %!ind-obj-idx is Hash::int; # keys are: $obj-num*1000 + $gen-num
     has Bool     $.auto-deref is rw = True;
@@ -117,7 +117,7 @@ class PDF::IO::Reader {
     has Str      $.type is rw;       #= 'PDF', 'FDF', etc...
     has uint64   $.prev;             #= xref offset
     has uint     $.size is rw;       #= /Size entry in trailer dict ~ first free object number
-    has uint64    @.xrefs = (0);      #= xref position for each revision in the file
+    has uint64    @.xrefs = (0);     #= xref position for each revision in the file
     has $.crypt is rw;
     has Version:D $.compat is rw = v1.4;   #= cross reference stream mode
 
@@ -130,7 +130,8 @@ class PDF::IO::Reader {
     method trailer is rw {
         Proxy.new(
             FETCH => {
-                self!install-trailer
+                # vivify
+                self!install-trailer(PDF::COS::Dict.new: :reader(self))
                     unless %!ind-obj-idx{0}:exists;
                 self.ind-obj(0, 0).object;
             },
@@ -140,7 +141,7 @@ class PDF::IO::Reader {
         );
     }
 
-    method !install-trailer(PDF::COS::Dict $object = PDF::COS::Dict.new: :reader(self) ) {
+    method !install-trailer(PDF::COS::Dict $object) {
         %!ind-obj-idx{0} = do {
             my PDF::IO::IndObj $ind-obj .= new( :$object, :obj-num(0), :gen-num(0) );
             %( :type(IndexType::External), :$ind-obj );

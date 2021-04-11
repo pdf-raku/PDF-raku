@@ -23,6 +23,7 @@ class PDF:ver<0.4.6>
 
     use PDF::COS::Type::Info;
     has PDF::COS::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary
+    has Str $.id;
     has Str @.ID is entry(:len(2));                       #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array
                                                           #| of two byte-strings constituting a file identifier
 
@@ -31,6 +32,27 @@ class PDF:ver<0.4.6>
     has $!flush = False;
 
     has UInt $.Prev is entry; 
+
+    method id is rw {
+        $!id //= do {
+            # From [PDF 32000 Section 14.4 File Identifiers:
+            #   "File identifiers shall be defined by the optional ID entry in a PDF file’s trailer dictionary.
+            # The ID entry is optional but should be used. The value of this entry shall be an array of two
+            # byte strings. The first byte string shall be a permanent identifier based on the contents of the
+            # file at the time it was originally created and shall not change when the file is incrementally
+            # updated. The second byte string shall be a changing identifier based on the file’s contents at
+            # the time it was last updated. When a file is first written, both identifiers shall be set to the
+            # same value. If both identifiers match when a file reference is resolved, it is very likely that
+            # the correct and unchanged file has been found. If only the first identifier matches, a different
+            # version of the correct file has been found.
+            #
+            # This section also includes a weird and expensive solution for generating the ID.
+            # Contrary to this, just generate a random identifier.
+
+            my Str $hex-string = Buf.new((^256).pick xx 16).decode("latin-1");
+            PDF::COS.coerce: :$hex-string;
+        }
+    }
 
     #| open the input file-name or path
     method open($spec, Str :$type, |c) {
@@ -93,7 +115,7 @@ class PDF:ver<0.4.6>
         self.cb-finish;
 
 	my $type = $.reader.type;
-	self!generate-id( :$type );
+	self!set-id( :$type );
 
         my PDF::IO::Serializer $serializer .= new( :$.reader, :$type );
         my Array $body = $serializer.body( :updates, |c );
@@ -154,7 +176,7 @@ class PDF:ver<0.4.6>
             // self.?type
             // (self<Root><FDF>.defined ?? 'FDF' !! 'PDF');
 
-	self!generate-id( :$type );
+	self!set-id( :$type );
 	my PDF::IO::Serializer $serializer .= new;
 	$serializer.ast( self, :$type, :$!crypt, |c);
     }
@@ -216,32 +238,15 @@ class PDF:ver<0.4.6>
 	self.Str(|c).encode: "latin-1";
     }
 
-    #| Generate a new document ID.
-    method !generate-id(Str :$type = 'PDF') {
-
-	# From [PDF 32000 Section 14.4 File Identifiers:
-	#   "File identifiers shall be defined by the optional ID entry in a PDF file’s trailer dictionary.
-	# The ID entry is optional but should be used. The value of this entry shall be an array of two
-	# byte strings. The first byte string shall be a permanent identifier based on the contents of the
-	# file at the time it was originally created and shall not change when the file is incrementally
-	# updated. The second byte string shall be a changing identifier based on the file’s contents at
-	# the time it was last updated. When a file is first written, both identifiers shall be set to the
-	# same value. If both identifiers match when a file reference is resolved, it is very likely that
-	# the correct and unchanged file has been found. If only the first identifier matches, a different
-	# version of the correct file has been found.
-	#
-	# This section also includes a weird and expensive solution for generating the ID.
-	# Contrary to this, just generate a random identifier.
-
-	my $obj = $type eq 'FDF' ?? self<Root><FDF> !! self;
-	my Str $hex-string = Buf.new((^256).pick xx 16).decode("latin-1");
-	my \new-id = PDF::COS.coerce: :$hex-string;
-
+    #| Initialize or update the document id
+    method !set-id(Str :$type = 'PDF') {
+        my $obj = $type eq 'FDF' ?? self<Root><FDF> !! self;
 	with $obj<ID> {
-	    .[1] = new-id; # Update modification ID
+	    .[1] = $.id; # Update modification ID
 	}
 	else {
-	    $_ = [ new-id, new-id ]; # Initialize creation and modification IDs
+	    $_ = [ $.id, $.id ]; # Initialize creation and modification IDs
 	}
+        $!id = Nil;
     }
 }
