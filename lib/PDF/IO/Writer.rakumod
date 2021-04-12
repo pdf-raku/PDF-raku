@@ -423,7 +423,7 @@ class PDF::IO::Writer {
     }
 
     method !write-entries($_ where .shape[1] ~~ 3) {
-        enum Str ( :Free<f>, :Inuse<n> );
+        my Str enum ObjectType ( :Free<f>, :Inuse<n> );
         ((0 ..^ .elems).map: -> int $i {
             my uint64 $offset  = .[$i;0];
             my uint32 $gen-num = .[$i;1];
