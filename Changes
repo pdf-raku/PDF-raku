@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.4.6  2021-04-12T12:39:56+12:00
   - Use Hash::int for PDF::IO::Reader %!ind-obj-idx (indirect
     object index).
   - Add $pdf.id rw accessor. In particular, this allows assignment of

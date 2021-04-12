@@ -746,7 +746,7 @@ class PDF::IO::Reader {
                             my ObjNumInt $sub-obj-num = .[0];
                             my ObjNumInt $ref-obj-num = $obj-num;
                             my $k := $sub-obj-num * 1000;
-                            %!ind-obj-idx{$k} //= %(
+                            %!ind-obj-idx{$k} = %(
                                 :type(IndexType::Embedded),
                                 :$index,
                                 :$ref-obj-num,
