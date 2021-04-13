@@ -5,7 +5,7 @@ role PDF::COS::Name
     does PDF::COS {
 
     method content {
-        :name(self~'')
+        :name(self.fmt)
     }
     proto method COERCE($){*}
     multi method COERCE(PDF::COS::Name:D $_) is default { $_ }
