@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.4.7  2021-04-14T06:19:49+12:00
+  - Tweak AST construction for latest Rakudo
+
 0.4.6  2021-04-12T12:39:56+12:00
   - Use Hash::int for PDF::IO::Reader %!ind-obj-idx (indirect
     object index).
