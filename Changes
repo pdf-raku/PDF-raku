@@ -1,5 +1,7 @@
 {{$NEXT}}
-  - Tweak Array access for latest Rakudo. See
+
+0.4.8  2021-04-15T07:09:03+12:00
+  - Enum agnostic array access for latest Rakudo. See
     https://github.com/rakudo/rakudo/issues/4310
 
 0.4.7  2021-04-14T06:19:49+12:00
