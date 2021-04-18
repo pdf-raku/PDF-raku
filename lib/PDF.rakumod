@@ -132,41 +132,50 @@ class PDF:ver<0.4.8>
             # no updates that need saving
         }
         else {
-            self!incremental-save($body[0], :$diffs);
+            my IO::Handle $fh;
+            my Bool $in-place = False;
+
+            do with $diffs {
+                # Seperate saving of updates
+                $fh = $_ unless .path eq $.reader.file-name;
+
+            }
+            $fh //= do {
+                $in-place = True;
+                # Append update to the input PDF
+                given $.reader.file-name {
+                    die "Incremental update of JSON files is not supported"
+                        if  m:i/'.json' $/;
+                    .IO.open(:a, :bin);
+                }
+            }
+
+            self!incremental-save($fh, $body[0], :$diffs, :$in-place);
         }
     }
 
-    method !incremental-save(Hash $body, :$diffs) {
+    method !incremental-save(IO::Handle:D $fh, Hash $body, :$diffs, :$in-place) {
+        my constant Pad = "\n\n".encode('latin-1');
+
         my Hash $trailer = $body<trailer><dict>;
 	my UInt $prev = $trailer<Prev>.value;
-
-        constant Preamble = "\n\n";
-        my Numeric $offset = $.reader.input.codes + Preamble.codes;
         my $size = $.reader.size;
         my $compat = $.reader.compat;
-        my PDF::IO::Writer $writer .= new( :$offset, :$prev, :$size, :$compat  );
-	my IO::Handle $fh;
-        my Str $new-body = Preamble ~ $writer.write-body( $body, my @entries);
+        my PDF::IO::Writer $writer .= new: :$prev, :$size, :$compat;
+        my $offset = $.reader.input.codes + Pad.bytes;
 
-        do with $diffs {
-	    $fh = $_ unless .path eq $.reader.file-name;
-	}
-	$fh //= do {
-	    # in-place update. merge the updated entries in the index
-	    # todo: we should be able to leave the input file open and append to it
+        $fh.write: Pad;
+        $writer.stream-body: $fh, $body, my @entries, :$offset;
+
+        if $in-place {
+	    # Input PDF updated; merge the updated entries in the index
 	    $prev = $writer.prev;
 	    my UInt $size = $writer.size;
-	    $.reader.update( :@entries, :$prev, :$size);
+	    $.reader.update-index( :@entries, :$prev, :$size);
 	    $.Size = $size;
 	    @entries = [];
-            given $.reader.file-name {
-                die "Incremental update of JSON files is not supported"
-                    if  m:i/'.json' $/;
-	        .IO.open(:a, :bin);
-            }
 	}
 
-        $fh.write: $new-body.encode('latin-1');
         $fh.close;
     }
 
@@ -208,16 +217,16 @@ class PDF:ver<0.4.8>
 
     multi method save-as(IO::Handle $ioh, |c) is default {
         my $eager := ! $!flush;
-        my $ast = $.ast(:$eager, |c);
-        my PDF::IO::Writer $writer .= new: :$ast;
-        $ioh.write: $writer.Blob;
+        my $ast = $.ast: :$eager, |c;
+        my PDF::IO::Writer $writer .= new;
+        $writer.stream-cos: $ioh, $ast<cos>;
         $ioh.close;
     }
 
     #| stringify to the serialized PDF
     method Str(|c) {
         my PDF::IO::Writer $writer .= new: |c;
-	$writer.write( $.ast )
+	$writer.write: $.ast;
     }
 
     # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )

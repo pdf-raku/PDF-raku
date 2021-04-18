@@ -1,4 +1,6 @@
 {{$NEXT}}
+  - Add PDF::IO::Writer stream-cos() and stream-body() methods for
+    saving to a file-handle. Use in PDF save-as() and update() methods.
 
 0.4.8  2021-04-15T07:09:03+12:00
   - Enum agnostic array access for latest Rakudo. See

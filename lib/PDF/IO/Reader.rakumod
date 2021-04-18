@@ -252,7 +252,7 @@ class PDF::IO::Reader {
     }
 
     # process a batch of indirect object updates
-    method update( :@entries!, UInt :$!prev, UInt :$!size ) {
+    method update-index( :@entries!, UInt :$!prev, UInt :$!size ) {
         @!xrefs.push: $!prev;
 
         for @entries -> Hash $entry {

@@ -67,32 +67,35 @@ class PDF::IO::Writer {
         @out.join: "\n";
     }
 
+    method !make-object($obj, @idx) {
+        do with $obj<ind-obj> -> $ind-obj {
+            # serialization of in-memory object
+            my uint $obj-num = $ind-obj[0];
+            my uint $gen-num = $ind-obj[1];
+            @idx.push: %( :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj );
+
+            $.write-ind-obj( $ind-obj );
+        }
+        elsif my \ref = $obj<copy> {
+            # direct copy of raw object from input to output
+            my uint $obj-num = ref[0];
+            my uint $gen-num = ref[1];
+            my $getter = ref[2];
+            my $ind-obj = $getter.get($obj-num, $gen-num);
+            @idx.push: %( :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj );
+            $.write-ind-obj( $ind-obj );
+        }
+        elsif my \comment = $obj<comment> {
+            $.write-comment(comment);
+        }
+        else {
+            die "don't know how to serialize body component: {$obj.perl}"
+        }
+    }
+
     method !make-objects( @objects, @idx = [] ) {
         @objects.map: -> $obj is rw {
-            my \bytes = do with $obj<ind-obj> -> $ind-obj {
-                # serialization of in-memory object
-		my uint $obj-num = $ind-obj[0];
-		my uint $gen-num = $ind-obj[1];
-		@idx.push: %( :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj );
-
-                $.write-ind-obj( $ind-obj );
-            }
-            elsif my \ref = $obj<copy> {
-                # direct copy of raw object from input to output
-		my uint $obj-num = ref[0];
-		my uint $gen-num = ref[1];
-                my $getter = ref[2];
-                my $ind-obj = $getter.get($obj-num, $gen-num);
-		@idx.push: %( :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj );
-                $.write-ind-obj( $ind-obj );
-            }
-            elsif my \comment = $obj<comment> {
-                $.write-comment(comment);
-            }
-            else {
-                die "don't know how to serialize body component: {$obj.perl}"
-            }
-
+            my \bytes = self!make-object($obj, @idx);
             $!offset += bytes.codes + 1;
             bytes;
         }
@@ -334,6 +337,49 @@ class PDF::IO::Writer {
 	my Bool $write-xref = type ne 'FDF';
         my \body = $.write-body( $body, :$write-xref );
         (header, comment, body).join: "\n";
+    }
+
+    sub print-bytes(IO::Handle:D $fh, Str $chunk) {
+        my $buf = $chunk.encode('latin-1');
+        $fh.write: $buf;
+        $buf.bytes;
+    }
+
+    sub say-bytes(IO::Handle:D $fh, Str $chunk) {
+        print-bytes($fh, $chunk) + print-bytes($fh, "\n");
+    }
+
+    method stream-cos(IO::Handle:D $fh, % (:$header!, :$body!, :$comment = q<%¥±ë¼>) ) {
+        my Str \type = $header<type> // 'PDF';
+        # Form Definition Format is normally written without an xref
+	my Bool $write-xref = type ne 'FDF';
+        temp $!offset;
+        temp $!prev;
+
+        $fh.&say-bytes: $.write-header($header);
+        $fh.&say-bytes: $.write-comment($comment);
+
+        self.stream-body: $fh, $body, my @idx, :$write-xref;
+    }
+
+    multi method stream-body(IO::Handle:D $fh, @body, |c) {
+        self.stream-body: $fh, $_, |c for @body;
+    }
+
+    multi method stream-body(IO::Handle:D $fh, %body, @idx, Bool :$write-xref = True, :$!offset = $fh.tell) {
+        @idx.unshift: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
+
+        for %body<objects>.list {
+            $!offset += $fh.&say-bytes: self!make-object($_, @idx);
+        }
+        my \trailer-dict = %body<trailer> // {};
+        if $write-xref {
+            $fh.&print-bytes: self!make-trailer(trailer-dict, @idx);
+        }
+        else {
+            $fh.&print-bytes: $.write-trailer(trailer-dict);
+            $fh.&print-bytes: '%%EOF';
+        }
     }
 
     method write-header($_ ) {
