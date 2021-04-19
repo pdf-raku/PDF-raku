@@ -17,7 +17,11 @@ sub MAIN(
     Str  :$class is copy,       #= load a class (PDF::Class, PDF::Lite, PDF::API6)
     Bool :$render,              #= render and reformat content (needs PDF::Lite or PDF::Class)
     Bool :$decrypt is copy,     #= decrypt
+    Bool :$stream,              #= buffered PDF write
     ) {
+
+    die "Can't stream a PDF file to itself"
+        if $stream && $file-out eq $file-in;
 
     $compress //= False if $uncompress || $render;
     $rebuild  //= True  if $decrypt || $render;
@@ -78,7 +82,7 @@ sub MAIN(
     }
 
     note "saving ...";
-    ($pdf // $reader).save-as($file-out, :$rebuild);
+    ($pdf // $reader).save-as($file-out, :$stream, :$rebuild);
     note "done";
 
 }

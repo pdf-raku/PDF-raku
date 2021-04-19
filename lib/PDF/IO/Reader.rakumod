@@ -895,10 +895,17 @@ class PDF::IO::Reader {
     }
 
     #| write to PDF/FDF
-    multi method save-as(IO() $output-path, |c ) is default {
+    multi method save-as(IO() $output-path, :$stream, |c ) is default {
         my $ast = $.ast(:!eager, |c);
         my PDF::IO::Writer $writer .= new: :$!input, :$ast;
-        $output-path.spurt: $writer.Blob;
+        if $stream {
+            my $ioh = $output-path.open(:w, :bin);
+            $writer.stream-cos: $ioh, $ast<cos>;
+            $ioh.close;
+        }
+        else {
+            $output-path.spurt: $writer.Blob;
+        }
         $writer;
     }
 

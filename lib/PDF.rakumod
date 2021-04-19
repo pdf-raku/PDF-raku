@@ -193,6 +193,7 @@ class PDF:ver<0.4.9>
     multi method save-as(IO() $iop,
                      Bool :$preserve = True,
                      Bool :$rebuild = False,
+                     Bool :$stream,
                      |c) {
 	when $iop.extension.lc eq 'json' {
             # save as JSON
@@ -210,8 +211,15 @@ class PDF:ver<0.4.9>
 	}
 	default {
             # full save
-	    my $ioh = $iop.open(:w, :bin);
-	    $.save-as($ioh, :$rebuild, |c);
+            if $stream {
+                # wont work for in-place update
+	        my $ioh = $iop.open(:w, :bin);
+	        $.save-as($ioh, :$rebuild, |c);
+            }
+            else {
+                my PDF::IO::Writer $writer .= new: :$.ast;
+                $iop.spurt: $writer.Blob;
+            }
 	}
     }
 
