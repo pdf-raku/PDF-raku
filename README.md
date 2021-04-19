@@ -287,10 +287,11 @@ The page `/Contents` entry is a PDF stream which contains graphical instructions
 This performs an incremental update to the input pdf, which must be indexed `PDF` (not applicable to PDFs opened with `:repair`, FDF or JSON files). A new section is appended to the PDF that contains only updated and newly created objects. This method can be used as a fast and efficient way to make small updates to a large existing PDF document.
     - `:diffs(IO::Handle $fh)` - saves just the updates to an alternate location. This can be later appended to the base PDF to reproduce the updated PDF.
 
-- `$pdf.save-as("mydoc-2.pdf", :compress, :rebuild, :preserve)`
+- `$pdf.save-as("mydoc-2.pdf", :compress, :stream, :preserve, :rebuild)`
 Saves a new document, including any updates. Options:
   - `:compress` - compress objects for minimal size
   - `:!compress` - uncompress objects for human readability
+  - `:stream` - write the PDF progressively
   - `:preserve` - copy the input PDF, then incrementally update. This is generally faster and ensures that any digital signatures are not invalidated,
   - `:rebuild` - discard any unreferenced objects. renumber remaining objects. It may be a good idea to rebuild a PDF Document, that's been incrementally updated a number of times.
 
