@@ -17,7 +17,7 @@ sub MAIN(
     Str  :$class is copy,       #= load a class (PDF::Class, PDF::Lite, PDF::API6)
     Bool :$render,              #= render and reformat content (needs PDF::Lite or PDF::Class)
     Bool :$decrypt is copy,     #= decrypt
-    Bool :$stream,              #= buffered PDF write
+    Bool :$stream,              #= write early and progressively
     ) {
 
     die "Can't stream a PDF file to itself"
@@ -108,6 +108,7 @@ Options:
    --class=name  load class (PDF::Lite, PDF::Class, PDF::API6)
    --render      render and reformat content (needs PDF::Class or PDF::Lite)
    --decrypt     remove encryption
+   --stream      write progressively and early
 
 =head1 DESCRIPTION
 

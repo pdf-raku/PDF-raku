@@ -349,7 +349,7 @@ class PDF::IO::Writer {
         print-bytes($fh, $chunk) + print-bytes($fh, "\n");
     }
 
-    method stream-cos(IO::Handle:D $fh, % (:$header!, :$body!, :$comment = q<%¥±ë¼>) ) {
+    multi method stream-cos(IO::Handle:D $fh, % (:$header!, :$body!, :$comment = q<%¥±ë¼>) ) {
         my Str \type = $header<type> // 'PDF';
         # Form Definition Format is normally written without an xref
 	my Bool $write-xref = type ne 'FDF';
@@ -360,6 +360,10 @@ class PDF::IO::Writer {
         $fh.&say-bytes: $.write-comment($comment);
 
         self.stream-body: $fh, $body, my @idx, :$write-xref;
+    }
+
+    multi method stream-cos(IO::Handle:D $fh) {
+        $.stream-cos($fh, $!ast<cos>);
     }
 
     multi method stream-body(IO::Handle:D $fh, @body, |c) {
@@ -492,7 +496,7 @@ class PDF::IO::Writer {
 
     constant fast-track = set <hex-string literal name real entries>;
 
-    multi method write( Pair $_!) {
+    multi method write(Pair $_) {
         state $fast-writer;
         state $have-pdf-native //= PDF::IO::Util::have-pdf-native()
         ?? do { $fast-writer = (require ::('PDF::Native::Writer')); True }
@@ -505,7 +509,7 @@ class PDF::IO::Writer {
         }
     }
 
-    multi method write( Hash $ast!) {
+    multi method write(Hash $ast) {
         $.write( |$ast );
     }
 
@@ -513,10 +517,20 @@ class PDF::IO::Writer {
         die "unexpected arguments: {[@args].perl}"
             if @args;
 
-        my $key = %opt.keys.sort.first({  $.can("write-$_") })
-            or die "unable to handle {%opt.keys} struct: {%opt.perl}";
-        my $val = %opt{$key}:delete;
-        self."write-$key"($val, |%opt);
+        if %opt {
+            my $key = %opt.keys.sort.first({  $.can("write-$_") })
+                or die "unable to handle {%opt.keys} struct: {%opt.perl}";
+            my $val = %opt{$key}:delete;
+            self."write-$key"($val, |%opt);
+        }
+        else {
+            with $!ast {
+                self.write: $_;
+            }
+            else {
+                die "nothing to write";
+            }
+        }
     }
 
     #| handle indentation.

@@ -190,6 +190,12 @@ class PDF:ver<0.4.9>
 	$serializer.ast( self, :$type, :$!crypt, |c);
     }
 
+    method !ast-writer(|c) {
+        my $eager := ! $!flush;
+        my $ast = $.ast: :$eager, |c;
+        PDF::IO::Writer.new: :$ast;
+    }
+
     multi method save-as(IO() $iop,
                      Bool :$preserve = True,
                      Bool :$rebuild = False,
@@ -214,27 +220,22 @@ class PDF:ver<0.4.9>
             if $stream {
                 # wont work for in-place update
 	        my $ioh = $iop.open(:w, :bin);
-	        $.save-as($ioh, :$rebuild, |c);
+	        self!ast-writer(|c).stream-cos($ioh);
+                $ioh.close;
             }
             else {
-                my PDF::IO::Writer $writer .= new: :$.ast;
-                $iop.spurt: $writer.Blob;
+                $iop.spurt: self!ast-writer(|c).Blob;
             }
 	}
     }
 
     multi method save-as(IO::Handle $ioh, |c) is default {
-        my $eager := ! $!flush;
-        my $ast = $.ast: :$eager, |c;
-        my PDF::IO::Writer $writer .= new;
-        $writer.stream-cos: $ioh, $ast<cos>;
-        $ioh.close;
+        self!ast-writer(|c).stream-cos: $ioh;
     }
 
     #| stringify to the serialized PDF
     method Str(|c) {
-        my PDF::IO::Writer $writer .= new: |c;
-	$writer.write: $.ast;
+	self!ast-writer(|c).write;
     }
 
     # permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )
