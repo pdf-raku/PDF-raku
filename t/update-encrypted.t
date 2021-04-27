@@ -6,7 +6,7 @@ use PDF;
 use PDF::COS::Stream;
 
 # ensure consistant document ID generation
-my $id = $*PROGRAM-NAME.fmt('%-16s').substr(0,16);
+my $id = $*PROGRAM-NAME.fmt('%-16.16s');
 
 't/pdf/samples/encrypt-40bit.pdf'.IO.copy('t/update-encrypted.pdf');
 

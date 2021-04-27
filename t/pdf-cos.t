@@ -48,7 +48,7 @@ class COS::JAR
 }
 
 # ensure consistant document ID generation
-my $id = $*PROGRAM-NAME.fmt('%-16s').substr(0,16);
+my $id = $*PROGRAM-NAME.fmt('%-16.16s');
 
 my COS::JAR $jar .= new;
 $jar.Root = { :Language<LOLCODE>, :Version("1.2"), :Classes[] };

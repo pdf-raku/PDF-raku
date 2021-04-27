@@ -10,7 +10,7 @@ use PDF::Grammar::PDF;
 sub name($name){ PDF::COS::Name.COERCE($name) };
 
 # ensure consistant document ID generation
-my $id = $*PROGRAM-NAME.fmt('%-16s').substr(0,16);
+my $id = $*PROGRAM-NAME.fmt('%-16.16s');
 
 my PDF $pdf .= new;
 my $root     = $pdf.Root       = { :Type(name 'Catalog') };
