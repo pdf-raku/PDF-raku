@@ -1,8 +1,9 @@
 {{$NEXT}}
+  - Fix writing of enumerated names #29
 
 0.4.10  2021-04-20T06:27:30+12:00
-   - Add --stream option to pdf-rewriter.raku and PDF::IO::Reader
-   - Default to :!stream in save-as() method.
+  - Add --stream option to pdf-rewriter.raku and PDF::IO::Reader
+  - Default to :!stream in save-as() method.
 
 0.4.9  2021-04-19T06:37:06+12:00
   - Add PDF::IO::Writer stream-cos() and stream-body() methods for chunked

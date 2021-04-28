@@ -314,16 +314,13 @@ class PDF::IO::Writer {
         ~ ')';
     }
 
-    constant Name-Reg-Chars = set ('!'..'~').grep: { $_ !~~ /<PDF::Grammar::char-delimiter>/};
-
+    my token name-esc-seq {
+        <-[\! .. \~] +[( ) < > \[ \] { } / % ]>+
+    }
     method write-name( Str $_ ) {
-        [~] flat '/', .comb.map( {
-            when $_ ∈ Name-Reg-Chars { $_ }
-            when '#' { '##' }
-            default {
-                .encode.list.map(*.fmt('#%02x')).join: '';
-            }
-        } )
+        '/' ~
+        .subst('#', '##', :g)
+        .subst(/<name-esc-seq>/, {.encode.list.map(*.fmt('#%02x')).join: ''}, :g);
     }
 
     method write-null( $ ) { 'null' }

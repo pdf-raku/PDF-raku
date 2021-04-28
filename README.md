@@ -326,7 +326,7 @@ $reader.trailer<Info><Creator> = PDF::COS::Name.COERCE: 't/helloworld.t';
 ```
 
 ### Utility Scripts
-- `pdf-rewriter.raku [--repair] [--rebuild] [--[/]compress] [--password=Xxx] [--decrypt] [--class=Module] [--render] <pdf-or-json-file-in> [<pdf-or-json-file-out>]`
+- `pdf-rewriter.raku [--repair] [--rebuild] [--stream] [--[/]compress] [--password=Xxx] [--decrypt] [--class=Module] [--render] <pdf-or-json-file-in> [<pdf-or-json-file-out>]`
 This script is a thin wrapper for the `PDF` `.open` and `.save-as` methods. It can typically be used to:
   - uncompress or render a PDF for human readability
   - repair a PDF who's cross-reference index or stream lengths have become invalid

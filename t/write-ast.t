@@ -26,4 +26,7 @@ for 't/write-ast.json'.IO.lines {
         or diag :%ast.perl;
 }
 
+enum ( :Heydər("Heydər Əliyev") );
+is PDF::IO::Writer.write-name(Heydər), '/Heyd#c9#99r#20#c6#8fliyev', 'writer enum name (issue #29)';
+
 done-testing;
