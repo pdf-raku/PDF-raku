@@ -10,7 +10,7 @@ my sub synopsis($input) {
             ?? $input
             !! [~] $input.&substr(0, 32), ' ... ', $input.&substr(*-20)
     ).subst(/\n+/, ' ', :g);
-    desc.perl;
+    desc.raku;
 }
 
 class X::PDF is Exception { }
@@ -442,7 +442,7 @@ class PDF::IO::Reader {
                 when Str   { $val{ $_ } }
                 when UInt  { $val[ $_ ] }
                 when Array { $val[ .[0] ] }
-                default    {die "bad \$.deref arg: {.perl}"}
+                default    {die "bad \$.deref arg: {.raku}"}
             };
         }
         $val = self!ind-deref($val)
@@ -801,7 +801,7 @@ class PDF::IO::Reader {
                     next;
                 }
                 default {
-                    die "unknown ind-obj index <type> $obj-num $gen-num: {.perl}"
+                    die "unknown ind-obj index <type> $obj-num $gen-num: {.raku}"
                 }
             }
 

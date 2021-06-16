@@ -86,7 +86,7 @@ module PDF::COS::Util {
         when !.defined   { :null(Any) }
         when Enumeration { ast-coerce(.value) }
         default {
-            die "don't know how to ast-coerce: {.perl}";
+            die "don't know how to ast-coerce: {.raku}";
         }
     }
 
@@ -134,9 +134,9 @@ module PDF::COS::Util {
     multi sub from-ast( :$null! )           { Any }
 
     multi sub from-ast( *@args, *%opt ) is default {
-        die "unexpected from-ast arguments: {[@args].perl}"
+        die "unexpected from-ast arguments: {[@args].raku}"
             if @args;
-        die "unable to from-ast {%opt.keys} struct: {%opt.perl}"
+        die "unable to from-ast {%opt.keys} struct: {%opt.raku}"
     }
 
 }

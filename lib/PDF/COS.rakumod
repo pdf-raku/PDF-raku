@@ -3,7 +3,7 @@ use v6;
 our $loader;
 our %required;
 
-#| Perl 6 bindings to the Carousel Object System (http://jimpravetz.com/blog/2012/12/in-defense-of-cos/)
+#| Raku bindings to the Carousel Object System (http://jimpravetz.com/blog/2012/12/in-defense-of-cos/)
 role PDF::COS {
     has $.reader is rw;
     has Int $.obj-num is rw;
@@ -35,7 +35,7 @@ role PDF::COS {
             self.new;
         }
         else {
-            warn "failed to coerce {.perl} to {self.WHAT.perl}";
+            warn "failed to coerce {.raku} to {self.WHAT.raku}";
             $v;
         }
     }

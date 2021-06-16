@@ -182,7 +182,7 @@ role PDF::COS::Tie {
                 }
             }
             else {
-                warn "ignoring entry trait attribute: {arg.perl}"
+                warn "ignoring entry trait attribute: {arg.raku}"
                 unless arg ~~ Bool;
             }
         }

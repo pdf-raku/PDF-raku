@@ -131,7 +131,7 @@ class PDF::COS::Stream
 
     method gist {
         my $rv = callsame();
-        $rv ~= "\n" ~ .encoded.Str.perl
+        $rv ~= "\n" ~ .encoded.Str.raku
             with self;
         $rv;
     }

@@ -49,7 +49,7 @@ class PDF::IO::Filter::ASCIIHex {
         # an odd number of hexadecimal digits, it shall behave
         # as if a 0 (zero) followed the last digit."
 
-        my uint8 @bytes = $str.ords.map: -> $a, $b = '0'.ord { @HexDec[$a;$b] // die "Illegal character(s) found in ASCII hex-encoded stream: {($a~$b).perl}" };
+        my uint8 @bytes = $str.ords.map: -> $a, $b = '0'.ord { @HexDec[$a;$b] // die "Illegal character(s) found in ASCII hex-encoded stream: {($a~$b).raku}" };
 
 	PDF::IO::Blob.new( @bytes );
     }

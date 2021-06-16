@@ -89,7 +89,7 @@ class PDF::IO::Writer {
             $.write-comment(comment);
         }
         else {
-            die "don't know how to serialize body component: {$obj.perl}"
+            die "don't know how to serialize body component: {$obj.raku}"
         }
     }
 
@@ -511,12 +511,12 @@ class PDF::IO::Writer {
     }
 
     multi method write( *@args, *%opt ) is default {
-        die "unexpected arguments: {[@args].perl}"
+        die "unexpected arguments: {[@args].raku}"
             if @args;
 
         if %opt {
             my $key = %opt.keys.sort.first({  $.can("write-$_") })
-                or die "unable to handle {%opt.keys} struct: {%opt.perl}";
+                or die "unable to handle {%opt.keys} struct: {%opt.raku}";
             my $val = %opt{$key}:delete;
             self."write-$key"($val, |%opt);
         }

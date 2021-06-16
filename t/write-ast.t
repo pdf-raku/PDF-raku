@@ -1,4 +1,4 @@
-#!/usr/bin/env perl6
+#!/usr/bin/env raku
 
 use Test;
 use JSON::Fast;
@@ -23,7 +23,7 @@ for 't/write-ast.json'.IO.lines {
 
     my PDF::IO::Writer $pdf-data .= new( :%ast );
     is-json-equiv ~$pdf-data, $expected-pdf, "write {%ast.keys.sort}"
-        or diag :%ast.perl;
+        or diag :%ast.raku;
 }
 
 enum ( :Heydər("Heydər Əliyev") );

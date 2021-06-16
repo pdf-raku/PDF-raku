@@ -92,7 +92,6 @@ for flat 1, 2, 10 .. 15 -> $Predictor {
 						       :Colors(2),
                                                        :$BitsPerComponent,
 						       :$Predictor, );
-##        warn { :$BitsPerComponent, :$Predictor, :$encode2c }.perl;
         is-deeply($encode2c, $_, "$desc predictor ($Predictor) multi-channel $BitsPerComponent bpc - encoding")
             with  %expected-bpc-pref{$BitsPerComponent}{$Predictor};
     

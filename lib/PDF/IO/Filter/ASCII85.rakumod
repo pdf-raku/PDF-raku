@@ -63,7 +63,7 @@ class PDF::IO::Filter::ASCII85 {
                if $eod
         }
 
-        die "invalid ASCII85 encoded character: {$0.Str.perl}"
+        die "invalid ASCII85 encoded character: {$0.Str.raku}"
             if $str ~~ /(<-[\!..\u\z]>)/;
 
         my $padding = -$str.codes % 5;

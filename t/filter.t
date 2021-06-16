@@ -29,7 +29,7 @@ for 'ASCIIHexDecode', 'FlateDecode', 'RunLengthDecode', ['FlateDecode', 'RunLeng
         my $decoded;
         lives-ok { $decoded = PDF::IO::Filter.decode($encoded, :%dict); }, $filter-name ~' decoding - lives';
 	is $decoded, $input, "$filter-name roundtrip: $name"
-            or diag :$input.perl;
+            or diag :$input.raku;
 
     }
 
