@@ -79,8 +79,8 @@ class PDF::IO::Crypt {
 
         @user-pass.append: 0 xx 16
             if self.type eq 'AESV2';
-        my $O = hex-string => [~] @!owner-pass.map: *.chr;
-        my $U = hex-string => [~] @user-pass.map: *.chr;
+        my $O = hex-string => [~] @!owner-pass».chr;
+        my $U = hex-string => [~] @user-pass».chr;
 
         my %dict = :$O, :$U, :P($permissions), :R($!revision), :V($version), :Filter<Standard>;
 

@@ -528,7 +528,7 @@ class PDF::IO::Reader {
 
         $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
 
-        index<xref>.map: *.<entries>;
+        index<xref>».<entries>;
     }
 
     #| load PDF 1.4- xref table followed by trailer
@@ -833,7 +833,7 @@ class PDF::IO::Reader {
         }
 
         # preserve file order
-        my @objects = @object-refs.list.sort(*.key).map: *.value;
+        my @objects = @object-refs.list.sort(*.key)».value;
 
         @objects;
     }

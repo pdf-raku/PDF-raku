@@ -19,17 +19,16 @@ class PDF::IO {
 	self.COERCE( $value.open( :bin, |c ) );
     }
 
-    multi method COERCE( IO::Handle $value!, |c ) {
-        (require ::('PDF::IO::Handle')).bless( :$value, |c );
+    multi method COERCE(IO::Handle:D $_!, |c ) {
+        (require ::('PDF::IO::Handle')).COERCE($_, |c );
     }
 
-    multi method COERCE( Str $value! where { !.isa(PDF::IO) }, |c) {
-        (require ::('PDF::IO::Str')).bless( :$value, |c );
+    multi method COERCE( Str:D $_! where { !.isa(PDF::IO) }, |c) {
+        (require ::('PDF::IO::Str')).COERCE($_, |c);
     }
 
     multi method COERCE( Blob $_!, |c) {
-        my $value = .decode: "latin-1";
-        (require ::('PDF::IO::Str')).bless( :$value, |c );
+        (require ('PDF::IO::Str')).COERCE($_, |c);
     }
 
     multi method stream-data( List :$ind-obj! ) {

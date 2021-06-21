@@ -32,4 +32,7 @@ class PDF::IO::Handle
     method substr(|c) is DEPRECATED('Please use byte-str') {
         $.byte-str(|c);
     }
+    multi method COERCE(IO::Handle:D $value!, |c ) {
+        self.bless( :$value, |c );
+    }
 }

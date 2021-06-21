@@ -24,7 +24,7 @@ class PDF::COS::Dict
         self{%alias{.key} // .key} = from-ast(.value) for $dict.pairs.sort;
         self.?cb-init;
 
-	if my $required = set %entries.pairs.grep(*.value.cos.is-required).map(*.key) {
+	if my $required = set %entries.pairs.grep(*.value.cos.is-required)».key {
 	    my $missing = $required (-) self.keys;
 	    die "{self.WHAT.^name}: missing required field(s): $missing"
 	    if $missing;

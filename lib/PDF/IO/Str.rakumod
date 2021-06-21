@@ -35,4 +35,11 @@ class PDF::IO::Str
     }
     method eof { $!pos >= $.codes }
     method close {}
+    multi method COERCE(Str:D $value!, |c) {
+        self.bless( :$value, |c );
+    }
+    multi method COERCE( Blob:D $_!, |c) {
+        my $value = .decode: "latin-1";
+        self.bless( :$value, |c );
+    }
 }
