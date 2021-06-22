@@ -105,7 +105,7 @@ class PDF::COS::Type::XRef
 
         my array $xref-idx = unpack( $buf, W );
 
-        if my \index = self<Index> {
+        if self<Index> -> \index {
             my \n = [+] index[1, 3 ... *];
             die "problem decoding /Type /XRef object. /Index specified {n} objects, got {+$xref-idx}"
                 unless +$xref-idx == n;

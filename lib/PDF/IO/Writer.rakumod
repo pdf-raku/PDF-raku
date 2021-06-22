@@ -76,7 +76,7 @@ class PDF::IO::Writer {
 
             $.write-ind-obj( $ind-obj );
         }
-        elsif my \ref = $obj<copy> {
+        elsif $obj<copy> -> \ref {
             # direct copy of raw object from input to output
             my uint $obj-num = ref[0];
             my uint $gen-num = ref[1];
@@ -85,7 +85,7 @@ class PDF::IO::Writer {
             @idx.push: %( :type(1), :$!offset, :$gen-num, :$obj-num, :$ind-obj );
             $.write-ind-obj( $ind-obj );
         }
-        elsif my \comment = $obj<comment> {
+        elsif $obj<comment> -> \comment {
             $.write-comment(comment);
         }
         else {
@@ -227,8 +227,9 @@ class PDF::IO::Writer {
 
         my @out = @vals.map: {$.write($_)};
         @out.push: $.write-op( $op );
-        @out.push: $.write-comment( @comments.join(' ') )
-            if @comments;
+        if @comments -> $_ {
+            @out.push: $.write-comment( .join(' ') )
+        }
 
         @out.join: ' ';
     }
@@ -511,8 +512,9 @@ class PDF::IO::Writer {
     }
 
     multi method write( *@args, *%opt ) is default {
-        die "unexpected arguments: {[@args].raku}"
-            if @args;
+        if @args -> $_ {
+            die "unexpected arguments: {.raku}"
+        }
 
         if %opt {
             my $key = %opt.keys.sort.first({  $.can("write-$_") })

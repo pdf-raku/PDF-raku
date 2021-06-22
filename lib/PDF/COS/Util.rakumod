@@ -134,8 +134,9 @@ module PDF::COS::Util {
     multi sub from-ast( :$null! )           { Any }
 
     multi sub from-ast( *@args, *%opt ) is default {
-        die "unexpected from-ast arguments: {[@args].raku}"
-            if @args;
+        if @args -> $_ {
+            die "unexpected from-ast arguments: {.raku}"
+        }
         die "unable to from-ast {%opt.keys} struct: {%opt.raku}"
     }
 
