@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.4.12  2021-06-24T11:43:44+12:00
+  - Add COERCE method to PDF::IO::Blob, PDF::IO::Handle, PDF::IO:Str
+
 0.4.11  2021-04-28T12:41:23+12:00
   - Fix writing of enumerated names #29
 
