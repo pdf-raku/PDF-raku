@@ -28,7 +28,7 @@ class PDF::IO {
     }
 
     multi method COERCE( Blob $_!, |c) {
-        (require ('PDF::IO::Str')).COERCE($_, |c);
+        (require ::('PDF::IO::Str')).COERCE($_, |c);
     }
 
     multi method stream-data( List :$ind-obj! ) {
