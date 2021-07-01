@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 8;
+plan 11;
 
 use PDF;
 use PDF::COS::Name;
@@ -47,4 +47,7 @@ is $pdf.ID[0], $pdf-id, 'document ID[0] - post update';
 isnt $pdf.ID[1], $pdf-id, 'document ID[1] - post update';
 ok PDF::Grammar::PDF.parse( $pdf.Str ), '$pdf.Str serialization';
 ok PDF::Grammar::PDF.parse( $pdf.Str: :compat(v1.5) ), '$pdf.Str v1.5 serialization';
+lives-ok {$pdf .= open: $pdf.Blob}, 'reserialize from Blob';
+is-deeply $pdf.Info.Author, $info.Author, 'Info intact';
+lives-ok {$pdf.Blob}, 'second reserialization';
 done-testing;

@@ -137,7 +137,7 @@ class PDF:ver<0.4.12>
 
             do with $diffs {
                 # Seperate saving of updates
-                $fh = $_ unless .path eq $.reader.file-name;
+                $fh = $_ unless .path ~~ $.reader.file-name;
 
             }
             $fh //= do {
@@ -209,7 +209,7 @@ class PDF:ver<0.4.12>
             # copy the input PDF, then incrementally update it. This is faster
             # and plays better with digitally signed documents.
             my $diffs = $iop.open(:a, :bin);
-            given $.reader.file-name {
+            with $.reader.file-name {
 	        .IO.copy( $iop )
                     unless $iop.path eq $_;
             }
