@@ -1,4 +1,5 @@
 {{$NEXT}}
+  - Add error check for zero cross referene offset
 
 0.4.14  2021-07-02T13:14:48+12:00
   - Refix PDF without file associations

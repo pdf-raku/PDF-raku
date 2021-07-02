@@ -346,8 +346,10 @@ class PDF::IO::Reader {
 
         given $type {
             when IndexType::External {
+                die X::PDF::BadXRef::Entry.new: :details("Invalid cross-reference offset $offset for $obj-num $gen-num R")
+                    unless $offset > 0;
                 my UInt $obj-len = do given $end - $offset {
-                    when 0     { die X::PDF::BadXRef::Entry.new: :details("Duplicate cross-reference destination (byte offset $offset) for $obj-num $gen-num R")}
+                    when 0     { X::PDF::BadXRef::Entry.new: :details("Duplicate cross-reference destination (byte offset $offset) for $obj-num $gen-num R")}
                     when * < 0 { die X::PDF::BadXRef::Entry.new: :details("Attempt to fetch object $obj-num $gen-num R at byte offset $offset, past end of PDF ($end bytes)") }
                     default    { $_ - 1 }
                 }
