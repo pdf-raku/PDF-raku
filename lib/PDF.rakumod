@@ -203,13 +203,13 @@ class PDF:ver<0.4.13>
                      |c) {
 	when $iop.extension.lc eq 'json' {
             # save as JSON
-	    $iop.spurt( to-json( $.ast(|c) ));
+	    $iop.spurt: to-json( $.ast(|c) );
 	}
-        when $preserve && !$rebuild && !$!flush && self!is-indexed {
+        when $preserve && !$rebuild && !$!flush && self!is-indexed && $.reader.file-name.defined {
             # copy the input PDF, then incrementally update it. This is faster
             # and plays better with digitally signed documents.
             my $diffs = $iop.open(:a, :bin);
-            with $.reader.file-name {
+            given $.reader.file-name {
 	        .IO.copy( $iop )
                     unless $iop.path eq $_;
             }
