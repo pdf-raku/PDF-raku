@@ -6,27 +6,27 @@ use PDF::IO::Util :pack;
 
 my $buf;
 my uint8 @bytes = (10, 20, 30, 40, 50, 60);
-my buf8 $bytes .= new: @bytes;
+my blob8 $bytes .= new: @bytes;
 
-is-deeply ($buf = unpack(@bytes, 4)), buf8.new(0, 10, 1, 4, 1, 14, 2, 8, 3, 2, 3, 12), '4 bit unpack';
+is-deeply ($buf = unpack(@bytes, 4)), blob8.new(0, 10, 1, 4, 1, 14, 2, 8, 3, 2, 3, 12), '4 bit unpack';
 is-deeply pack($buf, 4), $bytes, 'pack round-trip: 8 => 4 => 8';
 
 is-deeply pack($bytes, 8), $bytes, '8 bit pack';
 is-deeply unpack($bytes, 8), $bytes, '8 bit unpack';
 
-is-deeply ($buf = unpack(@bytes, 16)), buf16.new(2580, 7720, 12860), '16 bit unpack';
+is-deeply ($buf = unpack(@bytes, 16)), blob16.new(2580, 7720, 12860), '16 bit unpack';
 is-deeply pack($buf, 16, ), $bytes, 'resample round-trip: 16 => 8 => 16';
 
-is-deeply ($buf = pack([1415192289,], 32)), buf8.new(84, 90, 30, 225), '32 bit packing';
-is-deeply ($buf = pack([2 ** 32 - 1415192289 - 1,], 32)), buf8.new(255-84, 255-90, 255-30, 255-225), '32 bit packing (twos comp)';
+is-deeply ($buf = pack([1415192289,], 32)), blob8.new(84, 90, 30, 225), '32 bit packing';
+is-deeply ($buf = pack([2 ** 32 - 1415192289 - 1,], 32)), blob8.new(255-84, 255-90, 255-30, 255-225), '32 bit packing (twos comp)';
 
 quietly {
     use PDF::IO::Util :pack-be;
-    is-deeply ($buf = unpack-be(@bytes, 6)), buf8.new(2, 33, 16, 30, 10, 3, 8, 60), '6 bit big-endian unpack';
+    is-deeply ($buf = unpack-be(@bytes, 6)), blob8.new(2, 33, 16, 30, 10, 3, 8, 60), '6 bit big-endian unpack';
     is-deeply pack-be($buf, 6), $bytes, 'resample round-trip: 8 => 6 => 8';
 
-    is-deeply ($buf = unpack([109], 1)), buf8.new(0, 1, 1, 0, 1, 1, 0, 1), '1 bit unpack';
-    is-deeply ($buf = pack($buf, 1)), buf8.new(109), '8 => 1 => 8 round trip';
+    is-deeply ($buf = unpack([109], 1)), blob8.new(0, 1, 1, 0, 1, 1, 0, 1), '1 bit unpack';
+    is-deeply ($buf = pack($buf, 1)), blob8.new(109), '8 => 1 => 8 round trip';
 }
 
 my $shaped;

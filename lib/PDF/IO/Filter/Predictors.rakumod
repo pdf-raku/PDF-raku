@@ -112,7 +112,7 @@ class PDF::IO::Filter::Predictors {
             }
         }
 
-        buf8.new(@out);
+        blob8.new(@out);
     }
 
     multi method encode($buf where Blob | Buf,
@@ -226,7 +226,7 @@ class PDF::IO::Filter::Predictors {
             }
         }
 
-        buf8.new(@out);
+        blob8.new(@out);
     }
 
     multi method decode($buf, Predictor :$Predictor where {None} = None ) is default {

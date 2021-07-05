@@ -67,7 +67,7 @@ class PDF::IO::Filter::ASCII85 {
             if $str ~~ /(<-[\!..\u\z]>)/;
 
         my $padding = -$str.codes % 5;
-        my $buf = ($str ~ ('u' x $padding)).encode('latin-1');
+        my Blob $buf = ($str ~ ('u' x $padding)).encode('latin-1');
 
         my uint32 @buf32;
         @buf32[+$buf div 5 - 1] = 0; # preallocate
@@ -79,7 +79,8 @@ class PDF::IO::Filter::ASCII85 {
         }
 
         $buf = pack(@buf32, 32);
-        $buf.pop for 1 .. $padding;
+        $buf .= subbuf(0, * - $padding - 1)
+            if $padding;
 
         PDF::IO::Blob.new: $buf;
     }

@@ -1,5 +1,7 @@
 {{$NEXT}}
-  - Add error check for zero cross referene offset
+  - Add error check for zero cross reference offset
+  - Change Bufs to Blobs in PDF::IO::Util :&pack and
+    PDF::IO::Filter::Predictors
 
 0.4.14  2021-07-02T13:14:48+12:00
   - Refix PDF without file associations
