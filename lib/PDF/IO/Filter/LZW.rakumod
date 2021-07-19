@@ -36,7 +36,7 @@ class PDF::IO::Filter::LZW {
         my uint8 @data = $in.list;
         my uint8 @out;
 
-        my uint32 $inputBuf = 0;
+        my int32 $inputBuf = 0;
         my uint16 $inputBits = 0;
 
         while @data {
