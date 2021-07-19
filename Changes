@@ -2,6 +2,7 @@
   - Add error check for zero cross reference offset
   - Change Bufs to Blobs in PDF::IO::Util :&pack and
     PDF::IO::Filter::Predictors
+  - Fix overflow error in LZW decode filter #30
 
 0.4.14  2021-07-02T13:14:48+12:00
   - Refix PDF without file associations

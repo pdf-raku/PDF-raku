@@ -1,5 +1,6 @@
 use v6;
-# code adapted from PDF::API2::Basic::PDF::Filter::LZWEncode
+# code adapted from Perl's PDF::API2::Basic::PDF::Filter::LZWEncode
+# getCode() adapted from xPDF's LZWStream::getCode()
 class PDF::IO::Filter::LZW {
 
 
@@ -35,11 +36,11 @@ class PDF::IO::Filter::LZW {
         my uint8 @data = $in.list;
         my uint8 @out;
 
-        my uint16 $partial-code = 0;
-        my uint16 $partial-bits = 0;
+        my uint32 $inputBuf = 0;
+        my uint16 $inputBits = 0;
 
         while @data {
-            my $code = read-dat(@data, $partial-code, $partial-bits, $code-len)
+            my $code = getCode(@data, $inputBuf, $inputBits, $code-len)
                 // last;
 
             unless $EarlyChange {
@@ -56,12 +57,10 @@ class PDF::IO::Filter::LZW {
             elsif $code == eod-marker {
                 last;
             }
-            elsif $code > eod-marker {
-                @table[$next-code] = [@table[$code].list];
-                @table[$next-code].push: @table[$code + 1][0];
-            }
             else {
-                @table[$next-code] = [@table[$code].list];
+                @table[$next-code] = @table[$code].clone;
+                @table[$next-code].push: @table[$code + 1][0]
+                    if $code > eod-marker;
             }
 
             @out.append: @table[$next-code++];
@@ -82,18 +81,16 @@ class PDF::IO::Filter::LZW {
        PDF::IO::Blob.new: $out;
     }
 
-    sub read-dat(@data, $partial-code is rw, $partial-bits is rw, $code-length) {
+    sub getCode(@data, $inputBuf is rw, $inputBits is rw, $nextBits) {
 
-        while $partial-bits < $code-length {
+        while $inputBits < $nextBits {
             return Mu unless @data;
-            $partial-code = ($partial-code +< 8) + @data.shift;
-            $partial-bits += 8;
+            $inputBuf = ($inputBuf +< 8) + @data.shift;
+            $inputBits += 8;
         }
 
-        my $code = $partial-code +> ($partial-bits - $code-length);
-        $partial-code +&= (1 +< ($partial-bits - $code-length)) - 1;
-        $partial-bits -= $code-length;
-
+        my uint32 $code = ($inputBuf +> ($inputBits - $nextBits)) +& ((1 +< $nextBits) - 1);
+        $inputBits -= $nextBits;
         $code;
     }
 }
