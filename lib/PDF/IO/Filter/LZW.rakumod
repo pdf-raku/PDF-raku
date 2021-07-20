@@ -10,6 +10,11 @@ class PDF::IO::Filter::LZW {
     use PDF::IO::Filter::Predictors;
     use PDF::IO::Blob;
 
+    my constant InitialCodeLen = 9;
+    my constant ClearTable = 256;
+    my constant EodMarker = 257;
+    my constant DictSize = 256;
+
     sub predictor-class {
         state $predictor-class = PDF::IO::Util::have-pdf-native()
             ?? (require ::('PDF::Native::Filter::Predictors'))
@@ -26,22 +31,16 @@ class PDF::IO::Filter::LZW {
     }
     multi method decode(Blob $in, :$Predictor, :$EarlyChange = 1, |c --> Blob) is default {
 
-        my constant initial-code-len = 9;
-        my constant clear-table = 256;
-        my constant eod-marker = 257;
-        my constant dict-size = 256;
-        my uint16 $next-code = 258;
-        my uint16 $code-len = initial-code-len;
-        my @table = map {[$_,]}, (0 ..^ dict-size);
-        my uint8 @data = $in.list;
+        my int32 $next-code = 258;
+        my int32 $code-len = InitialCodeLen;
+        my @table = map {[$_,]}, (0 ..^ DictSize);
         my uint8 @out;
-
+        my int32 $i = 0;
         my int32 $inputBuf = 0;
-        my uint16 $inputBits = 0;
+        my int32 $inputBits = 0;
 
-        while @data {
-            my $code = getCode(@data, $inputBuf, $inputBits, $code-len)
-                // last;
+        loop {
+            my int32 $code = getCode($in, $i, $inputBuf, $inputBits, $code-len);
 
             unless $EarlyChange {
                 if $next-code == (1 +< $code-len) and $code-len < 12 {
@@ -49,18 +48,18 @@ class PDF::IO::Filter::LZW {
                 }
             }
 
-            if $code == clear-table {
-                $code-len = initial-code-len;
-                $next-code = eod-marker + 1;
+            if $code == ClearTable {
+                $code-len = InitialCodeLen;
+                $next-code = EodMarker + 1;
                 next;
             }
-            elsif $code == eod-marker {
+            elsif $code == EodMarker {
                 last;
             }
             else {
                 @table[$next-code] = @table[$code].clone;
                 @table[$next-code].push: @table[$code + 1][0]
-                    if $code > eod-marker;
+                    if $code > EodMarker;
             }
 
             @out.append: @table[$next-code++];
@@ -81,16 +80,15 @@ class PDF::IO::Filter::LZW {
        PDF::IO::Blob.new: $out;
     }
 
-    sub getCode(@data, $inputBuf is rw, $inputBits is rw, $nextBits) {
+    sub getCode(Blob $in, $i is rw, $inputBuf is rw, $inputBits is rw, $nextBits) {
 
         while $inputBits < $nextBits {
-            return Mu unless @data;
-            $inputBuf = ($inputBuf +< 8) + @data.shift;
+            my $v := $in[$i++] // return EodMarker;
+            $inputBuf = ($inputBuf +< 8) + $v;
             $inputBits += 8;
         }
 
-        my uint32 $code = ($inputBuf +> ($inputBits - $nextBits)) +& ((1 +< $nextBits) - 1);
         $inputBits -= $nextBits;
-        $code;
+        ($inputBuf +> $inputBits) +& ((1 +< $nextBits) - 1);
     }
 }
