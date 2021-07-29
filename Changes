@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.4.15  2021-07-29T12:43:43+12:00
   - Add error check for zero cross reference offset
   - Change Bufs to Blobs in PDF::IO::Util :&pack and
     PDF::IO::Filter::Predictors
