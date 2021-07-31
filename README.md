@@ -204,7 +204,7 @@ The PDF is composed of a series indirect objects, for example, the first object 
 >> endobj
 ```
 
-It's an indirect object with object number `1` and generation number `0`, with a `<<` ... `>>` delimited dictionary containing the author and the date that the document was created. This PDF dictionary is roughly equivalent to a Raku hash:
+It's an indirect object with object number `1` and generation number `0`, with a `<<` ... `>>` delimited dictionary containing the author and the date that the document was created. This PDF dictionary is roughly equivalent to the Raku hash:
 
 ``` { :CreationDate("D:20151225000000Z00'00'"), :Producer("Raku PDF"), } ```
 
@@ -223,9 +223,10 @@ startxref
 %%EOF
 ```
 
-The `<<` ... `>>` delimited section is the trailer dictionary and the main entry point into the document. The entry `/Info 1 0 R` is an indirect reference to the first object (object number 1, generation 0) described above.
+The `<<` ... `>>` delimited section is the trailer dictionary and the main entry point into the document. The entry `/Info 1 0 R` is an indirect reference to the first object (object number 1, generation 0) described above. The entry `/Root 2 0 R` points the root of the actual PDF document,
+commonly known as the Document Catalog.
 
-Immediately above this is the cross reference table:
+Immediately above the trailer is the cross reference table:
 
 ```
 xref
@@ -397,7 +398,7 @@ my PDF::COS::Dict $dict .= COERCE: {
 };
 ```
 
-`COERCE()` acts recursively on container objects (arrays, dictionarys and streams).
+`COERCE()` acts recursively on container objects (arrays, dictionaries and streams).
 
 ```
 # same but with default coercements
