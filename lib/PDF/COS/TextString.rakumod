@@ -58,7 +58,7 @@ PDFDocEncoding or UTF-16BE with a leading byte-order marker
             # decode UTF-18BE / PDFDoc encoded byte string
 	    my uint8 @be = $value.ords;
             if $value.starts-with(BOM-BE) {
-                $value = Buf.new(@be).decode('utf-16');
+                $value = Blob.new(@be).decode('utf-16');
                 $bom //= True;
             }
             else {

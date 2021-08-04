@@ -123,6 +123,10 @@ role PDF::COS::Tie {
                         }
                     }
                 }
+                elsif $lval.isa(array) && $!type ~~ Positional[Numeric] {
+                    # assume numeric. not so easy to type-check atm
+                    # https://github.com/rakudo/rakudo/issues/4485
+                }
                 else {
                     my \of-type = $!decont ?? $!type.of !! $!type;
                     unless $lval ~~ of-type {
