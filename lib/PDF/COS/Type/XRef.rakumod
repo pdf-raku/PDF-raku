@@ -115,13 +115,13 @@ class PDF::COS::Type::XRef
     }
 
     #= an extra decoding stage - build index entries from raw decoded data
-    multi method decode-index($encoded = $.encoded) {
-
+    method decode-index($encoded = $.encoded) {
         my Array \index = self<Index> // [ 0, $.Size ];
         my array \decoded = $.decode( $encoded );
         my uint32 @index[+decoded;4];
         my array @decoded-segs;
         my uint $i = 0;
+
         for index.list -> $obj-num is rw, \num-entries {
             die "/XRef stream content overflow"
                 if $i + num-entries > +decoded;

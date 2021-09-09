@@ -16,10 +16,9 @@ class PDF::IO::Filter::LZW {
     my constant DictSize = 256;
 
     sub predictor-class {
-        state $predictor-class = PDF::IO::Util::have-pdf-native()
+        state $ = INIT PDF::IO::Util::have-pdf-native()
             ?? (require ::('PDF::Native::Filter::Predictors'))
             !! PDF::IO::Filter::Predictors;
-        $predictor-class
     }
 
     multi method encode($) {
@@ -33,7 +32,7 @@ class PDF::IO::Filter::LZW {
 
         my int32 $next-code = 258;
         my int32 $code-len = InitialCodeLen;
-        my @table = map {[$_,]}, (0 ..^ DictSize);
+        my @table = map *.Array, (0 ..^ DictSize);
         my uint8 @out;
         my int32 $i = 0;
         my int32 $inputBuf = 0;

@@ -291,9 +291,9 @@ class PDF::IO::Writer {
 
 
     method write-hex-string( Str $_ ) {
-        [~] flat '<', .encode("latin-1").map({ 
-            .fmt: '%02x';
-        }), '>';
+        [~] ('<',
+             slip(.encode("latin-1").map(*.fmt('%02x'))),
+             '>');
     }
 
     method write-ind-obj(@_) {

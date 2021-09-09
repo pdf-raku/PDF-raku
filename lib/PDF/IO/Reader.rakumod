@@ -491,7 +491,7 @@ class PDF::IO::Reader {
         self!load-index( PDF::Grammar::PDF, $.actions, |c );
     }
 
-    multi method load-cos($type, |c) is default {
+    multi method load-cos($type, |c) {
         self!load-index(PDF::Grammar::COS, $.actions, |c );
     }
 
@@ -577,7 +577,6 @@ class PDF::IO::Reader {
     method !load-index($grammar, $actions, |c) is default {
         my UInt \tail-bytes = min(1024, $!input.codes);
         my Str $tail = $!input.byte-str(* - tail-bytes);
-
         my UInt %offsets-seen;
         @!xrefs = [];
 
@@ -610,7 +609,6 @@ class PDF::IO::Reader {
                 PDF::IO::Util::have-pdf-native()
                     ?? self!load-xref-table-fast( xref, $dict, :$offset)
                     !! self!load-xref-table( xref, $dict, :$offset));
-
                 with $dict<XRefStm> {
                     # hybrid 1.4 / 1.5 with a cross-reference stream
                     # that contains additional objects
