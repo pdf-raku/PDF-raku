@@ -480,16 +480,15 @@ class PDF::IO::Reader {
         self!full-scan((require ::('PDF::Grammar::FDF')), $.actions);
     }
 
-    #| scan the entire PDF, bypass any indices. Populate index with
-    #| raw ast indirect objects. Useful if the index is corrupt and/or
-    #| the PDF has been hand-created/edited.
-    multi method load-cos('PDF', :$repair! where .so, |c ) {
-        self!full-scan( PDF::Grammar::PDF, $.actions, :repair, |c );
-    }
-
-    multi method load-cos('PDF', |c ) {
-        self!load-index( PDF::Grammar::PDF, $.actions, |c );
-    }
+     #| Load a regular PDF file, repair or index mode
+     multi method load-cos(
+         'PDF',
+         :$repair, #| scan the PDF, bypass any indices or stream lengths
+         |c ) {
+         $repair
+             ?? self!full-scan( PDF::Grammar::PDF, $.actions, :repair, |c )
+             !! self!load-index( PDF::Grammar::PDF, $.actions, |c );
+     }
 
     multi method load-cos($type, |c) {
         self!load-index(PDF::Grammar::COS, $.actions, |c );
@@ -632,7 +631,7 @@ class PDF::IO::Reader {
                  );
 
             for @obj-idx {
-                for 0 ..^ .elems -> $i {
+                for ^.elems -> $i {
                     my $type := .[$i;Type];
 
                     if $type == IndexType::Embedded {

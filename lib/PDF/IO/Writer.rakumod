@@ -120,7 +120,7 @@ class PDF::IO::Writer {
                 if !$!size || $!size <= $_;
         }
 
-        for 0 ..^ $n -> $i {
+        for ^$n -> $i {
             my $idx := @idx[$i];
             my UInt $type := $idx<type>;
             my $obj-num := $idx<obj-num>;
@@ -444,7 +444,7 @@ class PDF::IO::Writer {
 	    # [ PDF 32000 7.5.4 Cross-Reference Table:
 	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"]
             my uint64 @entries[$obj-count;3];
-            for 0 ..^ $obj-count {
+            for ^$obj-count {
                 my uint8  $type    = @idx[$i;0];
                 my uint32 $gen-num = @idx[$i;2];
                 my uint64 $offset  = @idx[$i;3];
@@ -472,7 +472,7 @@ class PDF::IO::Writer {
 
     method !write-entries($_ where .shape[1] ~~ 3) {
         my Str enum ObjectType ( :Free<f>, :Inuse<n> );
-        ((0 ..^ .elems).map: -> int $i {
+        ((^.elems).map: -> int $i {
             my uint64 $offset  = .[$i;0];
             my uint32 $gen-num = .[$i;1];
             my uint32 $type    = .[$i;2];

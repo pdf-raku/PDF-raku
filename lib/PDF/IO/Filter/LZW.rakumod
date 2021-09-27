@@ -32,7 +32,7 @@ class PDF::IO::Filter::LZW {
 
         my int32 $next-code = 258;
         my int32 $code-len = InitialCodeLen;
-        my @table = map *.Array, (0 ..^ DictSize);
+        my @table = map *.Array, (^DictSize);
         my uint8 @out;
         my int32 $i = 0;
         my int32 $inputBuf = 0;

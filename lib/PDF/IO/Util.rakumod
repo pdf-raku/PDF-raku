@@ -107,7 +107,7 @@ module PDF::IO::Util {
         my uint $w-len = +$W;
 
         loop (my uint32 $i = 0; $i < $in-len;) {
-            for 0 ..^ $w-len -> uint $wi {
+            for ^$w-len -> uint $wi {
                 my uint32 $v = $in[$i++];
                 my $n = $W[$wi];
                 $j += $n;

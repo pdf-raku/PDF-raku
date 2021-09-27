@@ -58,7 +58,7 @@ class PDF::IO::Crypt::AESV2
     }
 
     method decrypt( $key, $enc-iv) {
-        my Buf $iv .= new: $enc-iv[0 ..^ KeyLen];
+        my Buf $iv .= new: $enc-iv[^KeyLen];
         my @enc = +$enc-iv > KeyLen ?? $enc-iv[KeyLen .. *] !! [];
         self!aes-decrypt($key, Buf.new(@enc), :$iv );
     }

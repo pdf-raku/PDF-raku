@@ -1,4 +1,5 @@
 {{$NEXT}}
+  - Fix to PDF::COS::DateTime.new
 
 0.4.15  2021-07-29T12:43:43+12:00
   - Add error check for zero cross reference offset

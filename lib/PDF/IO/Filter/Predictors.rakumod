@@ -138,7 +138,7 @@ class PDF::IO::Filter::Predictors {
 
             for 1 .. $Columns {
 
-                for 0 ..^ $Colors {
+                for ^$Colors {
                     @pixels[$_] = (@pixels[$_] + nums[ $idx++ ]) +& $bit-mask;
                 }
 
@@ -184,27 +184,27 @@ class PDF::IO::Filter::Predictors {
                         for 1 .. $row-size;
                 }
                 when 1 { # Left
-                    @out[$n++] = $buf[$idx++] for 0 ..^ $colors;
+                    @out[$n++] = $buf[$idx++] for ^$colors;
                     for $colors ^.. $row-size {
                         my \left-val = @out[$n - $colors];
                         @out[$n++] = $buf[$idx++] + left-val;
                     }
                 }
                 when 2 { # Up
-                    for 0 ..^ $row-size {
+                    for ^$row-size {
                         my \up-val = $row ?? @out[$n - $row-size] !! 0;
                         @out[$n++] = $buf[$idx++] + up-val;
                     }
                 }
                 when  3 { # Average
-                    for 0 ..^ $row-size -> int $i {
+                    for ^$row-size -> int $i {
                         my \left-val = $i < $colors ?? 0 !! @out[$n - $colors];
                         my \up-val = $row ?? @out[$n - $row-size] !! 0;
                         @out[$n++] = $buf[$idx++] + (left-val + up-val) div 2;
                     }
                 }
                 when 4 { # Paeth
-                    for 0 ..^ $row-size -> \i {
+                    for ^$row-size -> \i {
                         my \left-val = i < $colors ?? 0 !! @out[$n - $colors];
                         my \up-val = $row ?? @out[$n - $row-size] !! 0;
                         my \up-left-val = $row && i >= $colors ?? @out[$n - $colors - $row-size] !! 0;

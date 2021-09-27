@@ -41,7 +41,7 @@ role PDF::COS::Tie::Array does PDF::COS::Tie {
 
     method check {
         self.AT-POS($_, :check)
-            for 0 ..^ max(@!index, self);
+            for ^max(@!index, self);
         self
     }
 

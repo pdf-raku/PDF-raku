@@ -74,7 +74,7 @@ class PDF::COS::Type::ObjStm
         die X::PDF::ObjStm::Decode.new( :$.obj-num, :$.gen-num, :details("Expected /N = {n} index entries, got {+object-index}"))
             unless +object-index >= n;
 
-        [ (0 ..^ n).map: -> \i {
+        [ (^n).map: -> \i {
             my UInt \obj-num = object-index[i][0];
             my UInt \begin = first + object-index[i][1];
             my UInt \end = ((i+2) <= +object-index)
