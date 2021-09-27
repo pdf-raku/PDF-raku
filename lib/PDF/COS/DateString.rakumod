@@ -44,11 +44,11 @@ class PDF::COS::DateString
 
     multi method new(DateTime $dt!) {
         my %args = <year month day hour minute second timezone>.map: {$_ => $dt."$_"() };
-        $.new( |%args, :&formatter);
+        nextwith( |%args, :&formatter);
     }
 
     multi method new(UInt :$year!, |c) {
-        callwith( :&formatter, :$year, |c);
+        nextwith( :&formatter, :$year, |c);
     }
 
     method content {
