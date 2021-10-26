@@ -43,5 +43,5 @@ is $catalog.Info.CreationDate.year, 1997, 'Info.CreationDate.year';
 is ~ $catalog.Info.CreationDate, "D:19970915110347-08'00'", 'Info.CreationDate stringification';
 isa-ok $catalog.Info.Title, ::('PDF::COS::TextString'), 'Info.Title';
 is $catalog.Info.Title, "PostScript Language Reference, Third Edition", 'Info.Title';
-isa-ok $catalog.Info.Trapped, PDF::COS::Name, 'Info.Trapped';
+does-ok $catalog.Info.Trapped, PDF::COS::Name, 'Info.Trapped';
 lives-ok {$catalog.check}, '.check lives';
