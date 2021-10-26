@@ -73,10 +73,11 @@ lives-ok {$jar.save-as: "t/lolcode.cjar" }, 'save as cos';
 $jar.id = $id++;
 lives-ok {$jar.save-as: "tmp/lolcode.cjar.json" }, 'save as json';
 dies-ok { $jar.open: "t/helloworld.pdf" }, "PDF open as JAR - fails";
-lives-ok {$jar = $jar.open: "t/lolcode.cjar" }, "open";
+lives-ok {$jar .= open: "t/lolcode.cjar" }, "open";
 
 does-ok $jar, COS::JAR;
 is $jar.type, 'JAR', 'read type';
+is-deeply $jar.Root.reader, $jar.reader, 'root reader';
 is $jar.Root.Language, 'LOLCODE', 'read accessor';
 is $jar.Root.Classes[0].Author, "Heydər Əliyev", 'text string latinish';
 is $jar.Root.Classes[0].Description, $Description, 'text string with utf-16 surrogates';

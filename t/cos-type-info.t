@@ -1,8 +1,9 @@
 use v6;
 use Test;
-plan 9;
+plan 10;
 
 use PDF::COS::Dict;
+use PDF::COS::Name;
 use PDF::COS::Type::Info;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
@@ -42,4 +43,5 @@ is $catalog.Info.CreationDate.year, 1997, 'Info.CreationDate.year';
 is ~ $catalog.Info.CreationDate, "D:19970915110347-08'00'", 'Info.CreationDate stringification';
 isa-ok $catalog.Info.Title, ::('PDF::COS::TextString'), 'Info.Title';
 is $catalog.Info.Title, "PostScript Language Reference, Third Edition", 'Info.Title';
+isa-ok $catalog.Info.Trapped, PDF::COS::Name, 'Info.Trapped';
 lives-ok {$catalog.check}, '.check lives';

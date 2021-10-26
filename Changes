@@ -1,4 +1,5 @@
 {{$NEXT}}
+  - PDF::COS::Bool now does the PDF::COS role
 
 0.4.17  2021-09-29T14:46:25+13:00
   - Refix PDF::COS::DateTime.new

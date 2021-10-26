@@ -1,13 +1,13 @@
 use v6;
 
 our $loader;
-our %required;
+our %loaded;
 
 #| Raku bindings to the Carousel Object System (http://jimpravetz.com/blog/2012/12/in-defense-of-cos/)
 role PDF::COS {
     has $.reader is rw;
     has Int $.obj-num is rw;
-    has UInt $.gen-num is rw;
+    has Int $.gen-num is rw;
 
     method is-indirect is rw returns Bool {
 	Proxy.new(
@@ -71,9 +71,9 @@ role PDF::COS {
     }
 
     method required(Str \mod-name) {
-	%required{mod-name}:exists
-            ?? %required{mod-name}
-            !! %required{mod-name} = do given ::(mod-name) {
+	%loaded{mod-name}:exists
+            ?? %loaded{mod-name}
+            !! %loaded{mod-name} = do given ::(mod-name) {
                 $_ ~~ Failure ?? do {.so; (require ::(mod-name))} !! $_;
             }
     }

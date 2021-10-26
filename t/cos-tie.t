@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 46;
+plan 48;
 
 use PDF::IO::Reader;
 use PDF::IO::Writer;
@@ -20,6 +20,8 @@ my $root-obj = $reader.trailer<Root>;
 is-deeply $root-obj.reader, $reader, 'root object .reader';
 is $root-obj.obj-num, 1, 'root object .obj-num';
 is $root-obj.gen-num, 0, 'root object .gen-num';
+is-deeply $root-obj.ind-ref, 'ind-ref' => [1, 0];
+is-deeply $root-obj.link, 'ind-ref' => [1, 0, $reader];
 
 # sanity
 

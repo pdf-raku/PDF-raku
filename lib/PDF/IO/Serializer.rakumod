@@ -127,9 +127,8 @@ class PDF::IO::Serializer {
     #| to an object-number and generation-number.
     method !index-object( Pair $ind-obj! is rw, :$object!) {
         my Int $obj-num = $object.obj-num 
-            if $object.can('obj-num')
-            && (! $!reader || $object.reader === $!reader);
-        my UInt $gen-num;
+            if ! $!reader || $object.reader === $!reader;
+        my Int $gen-num;
         constant TrailerObjNum = 0;
 
         if $obj-num.defined && (($obj-num > 0 && ! $.renumber) || $obj-num == TrailerObjNum) {

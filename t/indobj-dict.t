@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 27;
+plan 29;
 
 use PDF::IO::IndObj;
 use PDF::COS::Util :to-ast;
@@ -15,6 +15,7 @@ sub ind-obj-tests( :$ind-obj!, :$class!, :$to-json) {
     my PDF::IO::IndObj $dict-obj .= new( :$ind-obj, :$reader );
     my $object = $dict-obj.object;
     isa-ok $object, $class;
+    is-deeply $object.reader, $reader, 'reader stickeyness';
     is $dict-obj.obj-num, $ind-obj[0], '$.obj-num';
     is $dict-obj.gen-num, $ind-obj[1], '$.gen-num';
     is-json-equiv $dict-obj.object, $to-json, 'object to json';
