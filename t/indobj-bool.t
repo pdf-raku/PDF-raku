@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 7;
+plan 8;
 
 use PDF::IO::IndObj;
 use PDF::Grammar::PDF;
@@ -17,6 +17,7 @@ my PDF::IO::IndObj $ind-obj .= new( |$ast, :$input );
 is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 isa-ok $ind-obj.object, Bool;
+does-ok $ind-obj.object, ::('PDF::COS::Bool');
 is $ind-obj.object, True, '$.object';
 my $content = $ind-obj.content;
 isa-ok $content, Pair;

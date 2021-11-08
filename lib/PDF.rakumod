@@ -27,7 +27,7 @@ class PDF:ver<0.4.17>
     has Str @.ID is entry(:len(2));                       #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array
                                                           #| of two byte-strings constituting a file identifier
 
-    has Hash $.Root is entry( :indirect );                #| generic document root, as defined by subclassee, e.g.  PDF::Class, PDF::FDF
+    has Hash $.Root is entry(:indirect);                  #| generic document root, as defined by subclassee, e.g.  PDF::Class, PDF::FDF
     has $.crypt is rw;
     has $!flush = False;
 
@@ -44,7 +44,7 @@ class PDF:ver<0.4.17>
             # the time it was last updated. When a file is first written, both identifiers shall be set to the
             # same value. If both identifiers match when a file reference is resolved, it is very likely that
             # the correct and unchanged file has been found. If only the first identifier matches, a different
-            # version of the correct file has been found.
+            # version of the correct file has been found."
             #
             # This section also includes a weird and expensive solution for generating the ID.
             # Contrary to this, just generate a random identifier.

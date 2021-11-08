@@ -25,8 +25,8 @@ my $content = $ind-obj.content;
 isa-ok $content, Pair;
 is-json-equiv $content, (:int(42)), '$.content';
 
-is $ind-obj.object.flag-is-set(2), True, 'flag 2 is set'; is
-$ind-obj.object.flag-is-set(3), False, 'flag 3 is unset';
+is $ind-obj.object.flag-is-set(2), True, 'flag 2 is set';
+is $ind-obj.object.flag-is-set(3), False, 'flag 3 is unset';
 
 is-json-equiv $ind-obj.ast, %ast, 'ast regeneration';
 

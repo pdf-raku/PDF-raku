@@ -12,9 +12,9 @@ class PDF::COS::Coercer {
     use PDF::COS;
     use PDF::COS::Tie::Array;
     use PDF::COS::Tie::Hash;
-    use PDF::COS::Null;
     use PDF::COS::ByteString;
     use PDF::COS::DateString;
+    use PDF::COS::Null;
     use PDF::COS::TextString;
 
     method coerce($a is raw, $b is raw) { self.coerce-to($a, $b) }
