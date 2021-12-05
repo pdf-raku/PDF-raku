@@ -53,44 +53,39 @@ PDFDocEncoding or UTF-16BE with a leading byte-order marker
         %enc;
     }
 
-    method new( Str :$value! is copy, :$bom is copy, |c ) {
-        if $value ~~ PDF::COS::ByteString {
-            # decode UTF-18BE / PDFDoc encoded byte string
-	    my uint8 @be = $value.ords;
-            if $value.starts-with(BOM-BE) {
-                $value = Blob.new(@be).decode('utf-16');
-                $bom //= True;
+    method new( Str:D :$value! is copy, Bool :$bom is copy, |c ) {
+        given $value {
+            when PDF::COS::TextString {
+                return $_;
             }
-            else {
-                $value = @be.map({@pdfdoc-dec[$_] // ''}).join;
-                $bom //= False;
+            when PDF::COS::ByteString {
+                # decode UTF-18BE / PDFDoc encoded byte string
+                if .starts-with(BOM-BE) {
+                    $bom //= True;
+                    $value = .substr(2).encode('latin-1').decode('utf16be');
+                }
+                else {
+                    $bom //= False;
+                    $value = .ords.map({@pdfdoc-dec[$_] // ''}).join;
+                }
             }
         }
-        my \obj = callwith(:$value, |c); # dispatch to Str.new
-        obj.bom = $_ with $bom;
-        obj;
+
+        callwith(:$value, :$bom, |c); # dispatch to Str.new
     }
 
     our sub utf16-encode(Str $str --> Str) {
-	 my Str \byte-string = $str.encode("utf-16").map( -> \ord {
-                   my \lo = ord mod 0x100;
-                   my \hi = ord div 0x100;
-		   hi.chr ~ lo.chr;
-	 }).join('');
-
-	 BOM-BE ~ byte-string;
+	 BOM-BE ~ $str.encode('utf16be').decode('latin-1');
     }
 
     our sub pdfdoc-encode(Str $str --> Str) {
-        $str.ords.map({%pdfdoc-enc{$_} // ''}).join;
+        $str.ords.map({%pdfdoc-enc{$_} // return Nil}).join;
     }
 
     method content {
-        my $val = self.bom // self ~~ /<-[\x0..\xFF]>/
-	    ?? utf16-encode(self)
-            !! pdfdoc-encode(self);
-
-	$!type => $val;
+        my $doc-enc = pdfdoc-encode(self)
+            unless $!bom;
+	$!type => $doc-enc // utf16-encode(self);
     }
     multi method COERCE(Str:D $value, |c) {
         self.new: :$value, |c;

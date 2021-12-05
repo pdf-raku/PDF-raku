@@ -27,7 +27,7 @@ class PDF:ver<0.4.17>
     has Str @.ID is entry(:len(2));                       #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array
                                                           #| of two byte-strings constituting a file identifier
 
-    has Hash $.Root is entry(:indirect);                  #| generic document root, as defined by subclassee, e.g.  PDF::Class, PDF::FDF
+    has Hash $.Root is entry(:indirect);                  #| generic document root, as defined by subclassee, e.g.  PDF::Class, FDF
     has $.crypt is rw;
     has $!flush = False;
 
@@ -70,7 +70,7 @@ class PDF:ver<0.4.17>
         doc;
     }
 
-    method encrypt( Str :$owner-pass!, Str :$user-pass = '', :$EncryptMetadata = True, |c ) {
+    method encrypt(PDF:D $doc: Str :$owner-pass!, Str :$user-pass = '', :$EncryptMetadata = True, |c ) {
 
         die '.encrypt(:!EncryptMetadata, ...) is not yet supported'
             unless $EncryptMetadata;
@@ -83,9 +83,9 @@ class PDF:ver<0.4.17>
             }
         }
 
-        self<Encrypt>:delete;
+        $doc<Encrypt>:delete;
         $!flush = True;
-        $!crypt = (require ::('PDF::IO::Crypt::PDF')).new: :doc(self), :$owner-pass, :$user-pass, |c;
+        $!crypt = (require ::('PDF::IO::Crypt::PDF')).new: :$doc, :$owner-pass, :$user-pass, |c;
     }
 
     method !is-indexed {
@@ -187,7 +187,7 @@ class PDF:ver<0.4.17>
 
 	self!set-id( :$type );
 	my PDF::IO::Serializer $serializer .= new;
-	$serializer.ast( self, :$type, :$!crypt, |c);
+	$serializer.ast: self, :$type, :$!crypt, |c;
     }
 
     method !ast-writer(|c) {
