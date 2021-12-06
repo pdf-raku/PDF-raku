@@ -1,5 +1,7 @@
 {{$NEXT}}
   - PDF::COS::Bool now does the PDF::COS role
+  - Regenerated PDFDoc encoding from PDF::ISO_32000 resource:
+    Table_D2-PDFDocEncoding_Character_Set.json
 
 0.4.17  2021-09-29T14:46:25+13:00
   - Refix PDF::COS::DateTime.new
