@@ -77,6 +77,8 @@ use PDF::Grammar::Test :is-json-equiv;
 
     is $dict.Names[1], 'b', 'defaulted array';
     does-ok $dict.Names[1], PDF::COS::Name, 'defaulted array';
+    todo "test may fail on Raku < 2021.10"
+        unless $*RAKU.compiler.version >= v2021.10; 
     lives-ok { $dict.Txt = 'Hi' }, 'text-string sanity';
 }
 
