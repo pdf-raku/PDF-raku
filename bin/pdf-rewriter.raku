@@ -6,8 +6,8 @@ use PDF;
 
 #| rewrite a PDF or FDF and/or convert to/from JSON
 sub MAIN(
-    Str $file-in,               #= input PDF, FDF or JSON file (.json extension)
-    Str $file-out = $file-in,   #= output PDF, FDF or JSON file (.json extension)
+    Str $file-in,               #= input PDF, FDF or JSON file
+    Str $file-out = $file-in,   #= output PDF, FDF or JSON file
     Str  :$password  = '';      #= password for encrypted documents
     Bool :$repair    = False,   #= bypass and repair index. recompute stream lengths. Handy when
                                 #= PDF files have been hand-edited.
@@ -95,11 +95,12 @@ pdf-rewriter.raku - Rebuild a PDF using L<PDF> modules.
 
 =head1 SYNOPSIS
 
-pdf-rewriter.raku [options] file.pdf [out.pdf]
-pdf-rewriter.raku [options] file.pdf [out.json] # convert to json
-pdf-rewriter.raku [options] file.json [out.pdf] # convert from json
+    pdf-rewriter.raku [options] file.pdf [out.pdf]
+    pdf-rewriter.raku [options] file.pdf [out.json] # convert to json
+    pdf-rewriter.raku [options] file.json [out.pdf] # convert from json
 
-Options:
+=head2 Options
+
    --password    password for an encrypted PDF
    --repair      repair the input PDF
    --rebuild     rebuild object tree (renumber, garbage collect and deduplicate objects)

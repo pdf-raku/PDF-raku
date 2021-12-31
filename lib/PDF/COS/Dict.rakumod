@@ -42,8 +42,4 @@ class PDF::COS::Dict
         ast-coerce self;
     }
     multi method COERCE(PDF::COS::Dict $dict) is default { $dict }
-    multi method COERCE(Hash $dict, |c) {
-        my $class := PDF::COS.load-dict: $dict, :base-class(self.WHAT);
-        $class.new: :$dict, |c;
-    }
 }

@@ -64,4 +64,5 @@ class PDF::COS::Loader {
 	$base-class;
     }
 
+    method pdf-class { require ::('PDF') }
 }

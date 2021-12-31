@@ -217,12 +217,10 @@ role PDF::COS::Tie {
         default        { $_ }
     }
 
-    method mixin($role) {
-        with self {
-            unless .does($role) {
-                .^mixin($role);
-                .tie-init;
-            }
+    method mixin(Any:D: $role) {
+        unless $.does($role) {
+            $.^mixin($role);
+            $.tie-init;
         }
         self;
     }
