@@ -16,7 +16,7 @@ class PDF::COS::TextString
 
 See - [PDF 32000 TABLE 34 PDF data types]
     - [IS0-32000 Table D.2 – PDFDocEncoding Character Set]
-    
+
 text-string: Bytes that represent characters encoded using either
 PDFDocEncoding or UTF-16BE with a leading byte-order marker
 
@@ -25,11 +25,12 @@ To regenerate:
     =begin code :lang<raku>
     use JSON::Fast;
 
-    my $tab = from-json("PDF-ISO_32000-raku/resources/ISO_32000/misc/Table_D2-PDFDocEncoding_Character_Set.json".IO.slurp)<table><rows>;
+    my $tab = from-json("PDF-ISO_32000-raku/resources/ISO_32000/misc/Table_D2-PDFDocEncoding_Character_Set.json".IO.slurp)
+    my $rows = $tab<table><rows>;
 
     my @enc = '' xx 256;
 
-    for $tab.List {
+    for $rows.List {
         my $u = .[4];
         if $u.starts-with('U+') {
             my $i = .[1].Int;
@@ -82,16 +83,14 @@ To regenerate:
             when PDF::COS::TextString {
                 return $_;
             }
+            when .starts-with(BOM-BE) {
+                $bom //= True;
+                $value = .substr(2).encode('latin-1').decode('utf16be');
+            }
             when PDF::COS::ByteString {
-                # decode UTF-18BE / PDFDoc encoded byte string
-                if .starts-with(BOM-BE) {
-                    $bom //= True;
-                    $value = .substr(2).encode('latin-1').decode('utf16be');
-                }
-                else {
-                    $bom //= False;
-                    $value = .ords.map({@pdfdoc-dec[$_] // ''}).join;
-                }
+                # decode UTF-16BE / PDFDoc encoded byte string
+                $bom //= False;
+                $value = .ords.map({@pdfdoc-dec[$_] // ''}).join;
             }
         }
 
