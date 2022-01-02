@@ -42,13 +42,4 @@ class PDF::COS::Array
         }
         :$array;
     }
-    multi method COERCE(PDF::COS::Array $array) is default { $array }
-    multi method COERCE(List $array is raw, |c) {
-        my $class := PDF::COS.load-array: $array, :base-class(self.WHAT);
-        $class.new: :$array, |c;
-    }
-    multi method COERCE(Seq:D $seq is raw, |c) {
-        self.COERCE: $seq.Array, |c;
-    }
-
 }

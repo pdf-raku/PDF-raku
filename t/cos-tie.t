@@ -125,7 +125,7 @@ my PDF::COS::Dict $h2 .= COERCE: {};
 dies-ok { ArrayRole.COERCE($h2) }, 'Hash/Array misapplication';
 ok !$h2.does(ArrayRole), 'Hash/Array misapplication';
 
-my  PDF::COS::Array $a1 .= COERCE: [];
+my PDF::COS::Array $a1 .= COERCE: [];
 lives-ok { ArrayRole.COERCE($a1) }, 'tied array role application';
 does-ok $a1, ArrayRole, 'Hash/Hash application';
 $a1.Bar = 69;

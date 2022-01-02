@@ -88,15 +88,11 @@ role PDF::COS {
 
     method load-array(List $array) {
         my $base-class = $.required('PDF::COS::Array');
-        $.load-delegate( :$array, :$base-class );
+        $.load-delegate: :$array, :$base-class;
     }
 
     method load-dict(Hash $dict, :$base-class = $.required('PDF::COS::Dict')) {
-	$.load-delegate( :$dict, :$base-class );
-    }
-
-    multi method coerce( List :$array!, |c ) {
-        $.load-array($array).new: :$array, |c;
+	$.load-delegate: :$dict, :$base-class;
     }
 
     my subset IndRef of Pair is export(:IndRef) where {.key eq 'ind-ref'};
@@ -134,6 +130,10 @@ role PDF::COS {
         self!add-role($bool, 'PDF::COS::Bool');
     }
     multi method coerce( Bool :$bool! is copy) { self.coerce: :$bool }
+
+    multi method coerce( List :$array!, |c ) {
+        $.required('PDF::COS::Array').COERCE: $array, |c;
+    }
 
     multi method coerce( Hash :$dict!, |c ) {
         $.required('PDF::COS::Dict').COERCE: $dict, |c;

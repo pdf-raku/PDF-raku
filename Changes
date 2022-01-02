@@ -1,4 +1,5 @@
 {{$NEXT}}
+  - Refactor Array coercements for consistency with Dict and Stream
 
 0.4.18  2022-01-01T07:42:10+13:00
   - PDF::COS::Bool now does the PDF::COS role
@@ -63,7 +64,7 @@
 Release 0.4.4
 - Add COERCE methods to COS roles and classes. For example:
       my PDF::COS::TextString $s .= COERCE: 'Hi';
-  or using Rakudo 2020.11+ coercian semantics:
+  or using Rakudo 2020.11+ coercion semantics:
       my PDF::COS::TextString() $s = 'Hi';
 
 Release 0.4.3
@@ -72,7 +73,7 @@ Release 0.4.3
 - [pdf-rewriter.raku]
   -- added --render option to render and reformat pages.  This option also requires
      an upstream module such as PDF::Lite or PDF::Class.
-  -- Hide backtrace for handled errors (type X::PDF)
+  -- Hide back trace for handled errors (type X::PDF)
 - [PDF::COS::TextString] Decode as UTF16-BE / PDFDoc when input is a byte-string #26
 - [PDF::COS::Util] rename  pack-pp() -> pack-be() [big endian]
 
@@ -94,7 +95,7 @@ Release 0.4.0
 Release 0.3.8
 - [PDF::Writer] - Fixed .write-content() method to sanitise any non-latin
   unicode chars in comment strings, which otherwise breaks serialization.
-  Choosing to map them to #Xxx where Xxx is a hexidecimal number
+  Choosing to map them to #Xxx where Xxx is a hexadecimal number
 - [PDF] Add $.open(:type) option. Asserts that the PDF file is of a given type 'PDF', 'FDF' etc.
 - [pdf-rewriter.p6] --class option changed from a Boolean to a string. Any class
   can now be loaded that is based on PDF (PDF::Lite, PDF::Class, PDF::API6).
@@ -170,12 +171,12 @@ Release 0.3.1
 - Handle utf-16 encoding in PDF::COS::DateString
 
 Release 0.3.0
-- Renamed PDF::DAO classess to PDF::COS, where COS stands for
+- Renamed PDF::DAO classes to PDF::COS, where COS stands for
   Carousel Object System (see
   https://en.wikipedia.org/wiki/Portable_Document_Format#File_structure)
 - Improvements to PDF::COS.coerce($obj, $type) multi methods.
 - Fixed class-level PDF::COS::Stream.gist
-- Support Hybrid PDFs that contain both cross refence tables and streams
+- Support Hybrid PDFs that contain both cross reference tables and streams
 
 Release 0.2.8
 - [PDF::DAO]
@@ -259,7 +260,7 @@ Release 0.0.9
 - withdrew non-standard PDF::DAO::Dict.new( $dict) positionals,
   in favour of PDF::DAO::Dict.new( :$dict ) named arguments.
   Same also for stream and array object constructors.
-- Use of sigel-less variables, where appropriate.
+- Use of sigil-less variables, where appropriate.
 - Revamped handing of PDF::DAO::Tie :entry and :index traits.
 - Fixes for PDF::Storage::Input::Str (byte-string reader) and
   PDF::Storage::Filter::Predictors
