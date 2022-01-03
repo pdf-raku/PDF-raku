@@ -118,7 +118,7 @@ PDF files are also indexed for random access and may also have internal compress
 
 They have a reasonably well specified structure. The document starts from the `Root` entry in the trailer dictionary, which is the main entry point into a PDF.
 
-This module is based on the [PDF PDF 32000-1:2008 1.7](http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/PDF32000_2008.pdf) specification. It implements syntax, basic data-types, serialization and encryption rules as described in the first four chapters of the specification. Read and write access to data structures is via direct manipulation of tied arrays and hashes.
+This module is based on the [PDF 32000-1:2008 1.7](http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/PDF32000_2008.pdf) specification. It implements syntax, basic data-types, serialization and encryption rules as described in the first four chapters of the specification. Read and write access to data structures is via direct manipulation of tied arrays and hashes.
 
 ## The Basics
 
