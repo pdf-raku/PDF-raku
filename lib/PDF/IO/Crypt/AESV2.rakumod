@@ -51,7 +51,7 @@ class PDF::IO::Crypt::AESV2
     }
 
     method encrypt( $key, $dec --> Buf) {
-        my Buf $iv .= new: (^256).pick(KeyLen);
+        my Buf $iv .= new( (^256).pick xx KeyLen );
         my $enc = $iv;
         $enc.append: self!aes-encrypt($key, $dec, :$iv );
         $enc;

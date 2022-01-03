@@ -49,7 +49,7 @@ class PDF:ver<0.4.18>
             # This section also includes a weird and expensive solution for generating the ID.
             # Contrary to this, just generate a random identifier.
 
-            my Str $hex-string = Buf.new((^256).pick(16)).decode("latin-1");
+            my Str $hex-string = Buf.new((^256).pick xx 16).decode("latin-1");
             PDF::COS.coerce: :$hex-string;
         }
     }
