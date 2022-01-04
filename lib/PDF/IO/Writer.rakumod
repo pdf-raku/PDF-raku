@@ -316,12 +316,11 @@ class PDF::IO::Writer {
     }
 
     my token name-esc-seq {
-        <-[\! .. \~] +[( ) < > \[ \] { } / % ]>+
+        <-[\! .. \~] +[( ) < > \[ \] { } / % #]>+
     }
     method write-name( Str $_ ) {
         '/' ~
-        .subst('#', '##', :g)
-        .subst(/<name-esc-seq>/, {.Str.encode.list.map(*.fmt('#%02x')).join: ''}, :g);
+        .subst(/<name-esc-seq>/, {.Str.encode.map(*.fmt('#%02x')).join: ''}, :g);
     }
 
     method write-null( $ ) { 'null' }
