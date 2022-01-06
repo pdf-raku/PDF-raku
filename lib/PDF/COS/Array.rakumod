@@ -42,4 +42,5 @@ class PDF::COS::Array
         }
         :$array;
     }
+    multi method COERCE(PDF::COS::Array $array) is default { $array }
 }
