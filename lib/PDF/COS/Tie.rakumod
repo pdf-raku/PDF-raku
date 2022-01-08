@@ -225,6 +225,11 @@ role PDF::COS::Tie {
         self;
     }
 
+    method role-model(PDF::COS::Tie $obj is raw) {
+        $obj.mixin($_) for self.^roles;
+        $obj;
+    }
+
     #| indirect reference
     multi method deref(IndRef $ind-ref!) {
 	my (Int $obj-num, Int $gen-num, $reader) = $ind-ref.value.list;
