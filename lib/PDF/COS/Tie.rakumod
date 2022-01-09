@@ -217,7 +217,7 @@ role PDF::COS::Tie {
         default        { $_ }
     }
 
-    method mixin(Any:D: $role) {
+    method mixin(Any:D: $role is raw) {
         unless $.does($role) {
             $.^mixin($role);
             $.tie-init;
@@ -226,8 +226,7 @@ role PDF::COS::Tie {
     }
 
     method role-model(PDF::COS::Tie $obj is raw) {
-        $obj.mixin($_) for self.^roles;
-        $obj;
+        $obj.mixin: self.^roles[0];
     }
 
     #| indirect reference

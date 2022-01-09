@@ -56,7 +56,7 @@ role PDF::COS::Tie::Hash
 
     method check {
         self.AT-KEY($_, :check)
-            for (flat self.keys, self.entries.grep(*.value.cos.is-required).keys).unique.sort;
+            for (self.keys.Slip, self.entries.grep(*.value.cos.is-required).Slip).unique.sort;
         self.?cb-check();
         self
     }
