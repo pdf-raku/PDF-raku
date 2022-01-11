@@ -1,6 +1,9 @@
 {{$NEXT}}
+
+0.4.19  2022-01-12T06:47:11+13:00
   - Refactor Array coercements for consistency with Dict and Stream
   - Fixed PDF::IO::Writer name serialization to encode '#' as #23 (not ##)
+  - Fixed some test fails from git checkout on Windows #31 
 
 0.4.18  2022-01-01T07:42:10+13:00
   - PDF::COS::Bool now does the PDF::COS role
