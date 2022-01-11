@@ -1,0 +1,30 @@
+1 0 obj << /Type /Catalog /Outlines 2 0 R /Pages 3 0 R >>
+endobj
+
+5 0 obj << /Length 68 >> stream
+BT
+  /F1 24 Tf  % useless comment
+  100 100 Td (Hello, world!) Tj
+ET
+endstream
+endobj
+
+3 0 obj << /Type /Outlines /Count 0 >>
+endobj
+
+4 2 obj [ /PDF /Text ]
+endobj
+
+xref
+0 2
+0000000000 65535 f 
+0000000000 00000 n 
+3 3
+0000000185 00000 n 
+0000000232 00002 n 
+0000000066 00000 n 
+trailer
+<< /Root 1 0 R /Size 6 >>
+startxref
+263
+%%EOF

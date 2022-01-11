@@ -1,0 +1,20 @@
+%FDF-1.2
+%¥±ë
+1 0 obj <<
+  /FDF <<
+    /F (Document.pdf)
+    /Fields [ <<
+        /T (Street)
+        /V (345 Park Ave.)
+      >> <<
+        /T (City)
+        /V (San Jose)
+      >> ]
+    /ID [ <7A0631678ED475F0898815F0A818CFA1> <BEF7724317B311718E8675B677EF9B4E> ]
+  >>
+>> endobj
+trailer
+<<
+  /Root 1 0 R
+>>
+%%EOF
