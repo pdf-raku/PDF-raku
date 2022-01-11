@@ -1,8 +1,0 @@
-5 0 obj <<
-  /Length 68
->> stream
-BT
-  /F1 24 Tf  % useless comment
-  100 100 Td (Hello, world!) Tj
-ET
-endstream endobj
