@@ -1,2 +1,4 @@
 *.pdf binary
 t/pdf/*.in binary
+t/pdf/*.out binary
+t/pdf/*.in-diffs binary
