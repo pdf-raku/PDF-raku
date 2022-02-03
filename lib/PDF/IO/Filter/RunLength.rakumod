@@ -14,7 +14,7 @@ class PDF::IO::Filter::RunLength {
         my int $j = 0;
 
         while $i <= n {
-            my int $ind = 0;
+            my uint $ind = 0;
             my $ind-pos = $j++;
             my \ord = input[$i++];
             @out[$j++] = ord;
