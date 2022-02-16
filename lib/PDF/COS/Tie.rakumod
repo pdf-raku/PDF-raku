@@ -125,6 +125,7 @@ role PDF::COS::Tie {
                 elsif $lval.isa(array) && $!type ~~ Positional[Numeric] {
                     # assume numeric. not so easy to type-check atm
                     # https://github.com/rakudo/rakudo/issues/4485
+                    # update: fixed as of Rakudo 2021.
                 }
                 else {
                     my \of-type = $!decont ?? $!type.of !! $!type;
@@ -226,7 +227,13 @@ role PDF::COS::Tie {
     }
 
     method role-model(PDF::COS::Tie $obj is raw) {
-        $obj.mixin: self.^roles[0];
+        if self.^roles -> \roles {
+            $obj.mixin: roles[0];
+        }
+        else {
+            warn "can't mixin {self.WHAT.raku}";
+            $obj;
+        }
     }
 
     #| indirect reference
