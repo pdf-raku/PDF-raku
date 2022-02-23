@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.4.21  2022-02-23T14:06:44+13:00
+   - Attempted fix of flapping error in PDF::COS::Tie role-model() method
+
 0.4.20  2022-02-06T11:53:46+13:00
   - Fix PDF::IO::Filter::RunLength for pending Rakudo 2022.02; niner++
 
