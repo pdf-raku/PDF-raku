@@ -226,14 +226,9 @@ role PDF::COS::Tie {
         self;
     }
 
-    method role-model(PDF::COS::Tie $obj is raw) {
-        if self.^roles -> \roles {
-            $obj.mixin: roles[0];
-        }
-        else {
-            warn "can't mixin {self.WHAT.raku}";
-            $obj;
-        }
+    method role(::?ROLE:) {
+        # unpunned role
+        self.^roles[0];
     }
 
     #| indirect reference

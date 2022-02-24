@@ -86,10 +86,10 @@ role PDF::COS::Tie::Hash
     }
 
     multi method COERCE(PDF::COS::Tie::Hash $hash) {
-        self.role-model: $hash;
+        $hash.mixin: self.role;
     }
     multi method COERCE(Hash $dict is raw, |c) {
         my Hash:U $class := PDF::COS.load-dict($dict);
-        self.role-model: $class.new(:$dict, |c);
+        $class.new(:$dict, |c).mixin: self.role;
     }
 }
