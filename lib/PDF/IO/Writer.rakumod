@@ -338,6 +338,12 @@ class PDF::IO::Writer {
     }
 
     sub print-bytes(IO::Handle:D $fh, Str $chunk) {
+        CATCH {
+            default {
+                note "error printing {$chunk.raku}";
+                .rethrow();
+            }
+        }
         my $buf = $chunk.encode('latin-1');
         $fh.write: $buf;
         $buf.bytes;

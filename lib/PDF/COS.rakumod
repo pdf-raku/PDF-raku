@@ -5,6 +5,7 @@ our %loaded;
 
 #| Raku bindings to the Carousel Object System (http://jimpravetz.com/blog/2012/12/in-defense-of-cos/)
 role PDF::COS {
+    my subset LatinStr of Str:D is export(:LatinStr) where !.contains(/<-[\x0 .. \xff]>/);
     has $.reader is rw;
     has Int $.obj-num is rw;
     has Int $.gen-num is rw;
@@ -35,7 +36,7 @@ role PDF::COS {
             self.new;
         }
         else {
-            warn "failed to coerce {.raku} to {self.WHAT.raku}";
+            warn "failed to coerce {$v.raku} to {self.WHAT.raku}";
             $v;
         }
     }
@@ -111,12 +112,12 @@ role PDF::COS {
     }
     multi method coerce( Numeric :$real! is copy) { self.coerce: :$real }
 
-    multi method coerce( Str :$hex-string! is rw) {
+    multi method coerce( LatinStr :$hex-string! is rw) {
         self!add-role($hex-string, 'PDF::COS::ByteString', 'hex-string');
     }
     multi method coerce( Str :$hex-string! is copy) { self.coerce: :$hex-string }
 
-    multi method coerce( Str :$literal! is rw) {
+    multi method coerce( LatinStr :$literal! is rw) {
         self!add-role($literal, 'PDF::COS::ByteString');
     }
     multi method coerce( Str :$literal! is copy) { self.coerce: :$literal }
