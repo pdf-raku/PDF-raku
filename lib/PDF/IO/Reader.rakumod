@@ -30,6 +30,10 @@ class X::PDF::BadTrailer is X::PDF {
     method message {"Expected file trailer 'startxref ... \%\%EOF', got: {$!tail.&synopsis()}"}
 }
 
+class X::PDF::NoTrailer is X::PDF {
+    method message {"PDF file trailer not found"}
+}
+
 class X::PDF::BadXRef is X::PDF {}
 
 class X::PDF::BadXRef::Parse is X::PDF::BadXRef {
@@ -759,6 +763,9 @@ class PDF::IO::Reader {
                 my Hash \trailer = PDF::COS.coerce( |$_ );
                 self!set-trailer( trailer.content<dict> );
                 self!setup-crypt(|c);
+            }
+            else {
+                die X::PDF::NoTrailer.new;
             }
         }
 
