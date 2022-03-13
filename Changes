@@ -1,5 +1,9 @@
 {{$NEXT}}
-   - ensure latin-1 subsets in Str -> ByteString coercements
+
+0.4.22  2022-03-13T17:07:05+13:00
+   - ensure strings are latin-1 in ByteString coercements
+   - simplify date string coercements
+   - add X::PDF::NoTrailer error
 
 0.4.22  2022-02-24T13:21:35+13:00
    - Replace role-model() method with role()

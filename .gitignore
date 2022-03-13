@@ -3,3 +3,4 @@
 Makefile
 blib/
 examples/*.pdf
+PDF-*
