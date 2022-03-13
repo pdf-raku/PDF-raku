@@ -1,9 +1,12 @@
 {{$NEXT}}
 
-0.4.22  2022-03-13T17:07:05+13:00
+0.4.23  2022-03-13T17:25:53+13:00
    - ensure strings are latin-1 in ByteString coercements
    - simplify date string coercements
    - add X::PDF::NoTrailer error
+
+0.4.22  2022-03-13T17:07:05+13:00
+   - initial CPAN -> zef release
 
 0.4.22  2022-02-24T13:21:35+13:00
    - Replace role-model() method with role()
