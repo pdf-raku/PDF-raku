@@ -42,15 +42,6 @@ class PDF::COS::DateString
 	nextwith( iso-date, :&formatter );
     }
 
-    multi method new(DateTime $dt!) {
-        my %args = <year month day hour minute second timezone>.map: {$_ => $dt."$_"() };
-        self.bless: |%args, :&formatter;
-    }
-
-    multi method new(UInt :$year!, |c) {
-        self.bless; :&formatter, :$year, |c;
-    }
-
     method content {
 	my Str $literal = formatter( self );
 	:$literal;
@@ -61,8 +52,9 @@ class PDF::COS::DateString
         self.new($obj, |c);
     }
 
-    multi method COERCE(DateTime:D $obj, |c) {
-        self.new($obj, |c);
+    multi method COERCE(DateTime:D $dt, |c) {
+        my %args = <year month day hour minute second timezone>.map: {$_ => $dt."$_"() };
+        self.new: |%args, :&formatter;
     }
 
 =begin pod
