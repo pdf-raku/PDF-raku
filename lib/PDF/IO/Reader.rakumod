@@ -765,7 +765,8 @@ class PDF::IO::Reader {
                 self!setup-crypt(|c);
             }
             else {
-                die X::PDF::NoTrailer.new;
+                die X::PDF::NoTrailer.new
+                    unless self.trailer;
             }
         }
 
