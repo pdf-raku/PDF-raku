@@ -6,14 +6,12 @@ module PDF::COS::Util {
 
     proto sub to-ast(|) is export(:to-ast) {*};
     multi sub to-ast(Pair $p!) {$p}
-    multi sub to-ast(PDF::COS $object!) {$object.content}
-    multi sub to-ast($other!) is default {
-        ast-coerce $other
-    }
+    multi sub to-ast(PDF::COS $object!) { $object.content }
+    multi sub to-ast($other!) { ast-coerce $other }
     proto sub ast-coerce(|) is export(:ast-coerce) {*};
     multi sub ast-coerce(Int:D $int!) {:$int}
-    multi sub ast-coerce(Numeric:D $real!) {:$real}
-    multi sub ast-coerce(Str:D $literal!) {:$literal}
+    multi sub ast-coerce(Numeric:D $real!) { :$real }
+    multi sub ast-coerce(Str:D $literal!)  { :$literal }
 
     my %seen{Any};
 
@@ -82,7 +80,7 @@ module PDF::COS::Util {
 	:$literal
     }
     multi sub ast-coerce(Bool:D $bool!) {:$bool}
-    multi sub ast-coerce($_) is default {
+    multi sub ast-coerce($_) {
         when !.defined   { :null(Any) }
         when Enumeration { ast-coerce(.value) }
         default {
@@ -133,7 +131,7 @@ module PDF::COS::Util {
 
     multi sub from-ast( :$null! )           { Any }
 
-    multi sub from-ast( *@args, *%opt ) is default {
+    multi sub from-ast( *@args, *%opt ) {
         if @args -> $_ {
             die "unexpected from-ast arguments: {.raku}"
         }

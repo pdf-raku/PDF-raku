@@ -44,7 +44,7 @@ class PDF::IO::Crypt::AESV2
     }
 
     multi method crypt( $bytes, Str :$mode! where 'encrypt'|'decrypt',
-                        UInt :$obj-num!, UInt :$gen-num! ) is default {
+                        UInt :$obj-num!, UInt :$gen-num! ) {
 
         my $obj-key = self!object-key( $obj-num, $gen-num );
         self."$mode"( $obj-key, $bytes);

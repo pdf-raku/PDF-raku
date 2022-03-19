@@ -34,7 +34,7 @@ class PDF::IO {
     multi method stream-data( List :$ind-obj! ) {
         $.stream-data( |$ind-obj[2] );
     }
-    multi method stream-data( Hash :$stream! ) is default {
+    multi method stream-data( Hash :$stream! ) {
         $stream<encoded>
     }
 

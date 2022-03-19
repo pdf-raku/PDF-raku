@@ -148,7 +148,7 @@ role PDF::COS::Tie {
 	    $lval;
 	}
 
-	multi method tie($lval is copy, :$check) is default is rw {
+	multi method tie($lval is copy, :$check) is rw {
 	    $.tie($lval, :$check);
 	}
 
@@ -228,7 +228,7 @@ role PDF::COS::Tie {
 
     method role(::?ROLE:) {
         # unpunned role
-        self.^roles[0];
+        $.^roles[0];
     }
 
     #| indirect reference
@@ -258,7 +258,7 @@ role PDF::COS::Tie {
     }
 
     #| simple value. no need to coerce
-    multi method deref($value) is default { $value }
+    multi method deref($value) { $value }
 }
 
 =begin pod

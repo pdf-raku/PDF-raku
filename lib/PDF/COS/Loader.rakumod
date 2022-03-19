@@ -14,7 +14,7 @@ class PDF::COS::Loader {
         %handler{$subclass} = $class-def;
     }
 
-    method find-delegate( Str $type!, $subtype?, :$base-class! ) is default {
+    method find-delegate( Str $type!, $subtype?, :$base-class! ) {
 
 	my Str $subclass = $type;
 	$subclass ~= '::' ~ $_
@@ -60,7 +60,7 @@ class PDF::COS::Loader {
 	$.find-delegate( type, subtype, :$base-class );
     }
 
-    multi method load-delegate( :$base-class!, |c ) is default {
+    multi method load-delegate( :$base-class!, |c ) {
 	$base-class;
     }
 

@@ -43,10 +43,10 @@ class PDF::COS::Coercer {
         $obj;
     }
 
-    multi method coerce-to($obj is rw, PDF::COS $class, |c) is default {
+    multi method coerce-to($obj is rw, PDF::COS $class, |c) {
 	$obj = $class.COERCE( $obj, |c );
     }
-    multi method coerce-to($obj, PDF::COS $class, |c) is default {
+    multi method coerce-to($obj, PDF::COS $class, |c) {
 	$class.COERCE( $obj, |c );
     }
 

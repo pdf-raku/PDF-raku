@@ -29,7 +29,7 @@ class PDF::IO::Serializer {
     }
 
     #| we don't reference count anything else at the moment.
-    multi method ref-count($) is default { }
+    multi method ref-count($) { }
 
     my subset DictIndObj of Pair where {.key eq 'ind-obj'
                                         && .value[2] ~~ Pair
@@ -110,7 +110,7 @@ class PDF::IO::Serializer {
     }
 
     #| return objects without renumbering existing objects. requires a PDF reader
-    multi method body( Bool:_ :$*compress, Bool :$eager = True ) is default {
+    multi method body( Bool:_ :$*compress, Bool :$eager = True ) {
         my @objects = $!reader.get-objects(:$eager);
 
         my %dict = self!get-root(@objects);
@@ -239,7 +239,7 @@ class PDF::IO::Serializer {
     }
 
     #| handles other basic types
-    multi method freeze($other) is default {
+    multi method freeze($other) {
         to-ast $other
     }
 

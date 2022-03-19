@@ -214,7 +214,7 @@ class PDF::IO::Writer {
         "ID\n" ~ $image-data<encoded>;
     }
 
-    multi method write-op(Str $op, *@args) is default {
+    multi method write-op(Str $op, *@args) {
         my @vals;
         my @comments;
         for @args -> \arg {
@@ -413,7 +413,7 @@ class PDF::IO::Writer {
         [~] $.write-dict(%dict), " stream\n", $data, "\nendstream";
     }
 
-    method write-trailer(% (:%dict), :$prev) is default {
+    method write-trailer(% (:%dict), :$prev) {
 
         %dict<Prev> = :int($_)
             with $prev;
@@ -517,7 +517,7 @@ class PDF::IO::Writer {
         $.write( |$ast );
     }
 
-    multi method write( *@args, *%opt ) is default {
+    multi method write( *@args, *%opt ) {
         if @args -> $_ {
             die "unexpected arguments: {.raku}"
         }

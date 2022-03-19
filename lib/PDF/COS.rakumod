@@ -148,7 +148,7 @@ role PDF::COS {
         $.required('PDF::COS::Null').COERCE: $null;
     }
 
-    multi method coerce($val) is default { $val }
+    multi method coerce($val) { $val }
 
     method !coercer {
         $.required('PDF::COS::Coercer');
@@ -165,7 +165,7 @@ role PDF::COS {
 	$.loader.load-delegate(|c);
     }
 
-    multi method ACCEPTS(Any:D $v) is default {
+    multi method ACCEPTS(Any:D $v) {
         self.defined ?? $v eqv self !! callsame();
     }
 }

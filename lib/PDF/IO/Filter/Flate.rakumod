@@ -15,7 +15,7 @@ class PDF::IO::Filter::Flate {
             !! PDF::IO::Filter::Predictors;
     }
 
-    multi method encode(Blob $_, :$Predictor, |c --> PDF::IO::Blob) is default {
+    multi method encode(Blob $_, :$Predictor, |c --> PDF::IO::Blob) {
         PDF::IO::Blob.new: compress($Predictor ?? predictor-class.encode( $_, :$Predictor, |c ) !! $_);
     }
     multi method encode(Str $_, |c) {

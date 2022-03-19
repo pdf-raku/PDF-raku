@@ -56,7 +56,7 @@ module PDF::IO::Util {
 
     sub get-bit($num, $bit) { $num +> ($bit) +& 1 }
     sub set-bit($bit) { 1 +< ($bit) }
-    multi sub resample( $nums!, UInt $n!, UInt $m!) is default {
+    multi sub resample( $nums!, UInt $n!, UInt $m!) {
         warn "unoptimised $n => $m bit sampling";
         Blob[ of($m) ].new: flat gather {
             my int $m0 = 1;

@@ -28,7 +28,7 @@ class PDF::IO::Filter::LZW {
     multi method decode(Str $_, |c) {
 	$.decode( .encode("latin-1"), |c);
     }
-    multi method decode(Blob $in, :$Predictor, :$EarlyChange = 1, |c --> Blob) is default {
+    multi method decode(Blob $in, :$Predictor, :$EarlyChange = 1, |c --> Blob) {
 
         my int32 $next-code = 258;
         my int32 $code-len = InitialCodeLen;

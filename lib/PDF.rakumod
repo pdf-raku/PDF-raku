@@ -196,6 +196,10 @@ class PDF:ver<0.4.23>
         PDF::IO::Writer.new: :$ast;
     }
 
+    multi method save-as(IO::Handle $ioh, |c) {
+        self!ast-writer(|c).stream-cos: $ioh;
+    }
+
     multi method save-as(IO() $iop,
                      Bool :$preserve = True,
                      Bool :$rebuild = False,
@@ -227,10 +231,6 @@ class PDF:ver<0.4.23>
                 $iop.spurt: self!ast-writer(|c).Blob;
             }
 	}
-    }
-
-    multi method save-as(IO::Handle $ioh, |c) is default {
-        self!ast-writer(|c).stream-cos: $ioh;
     }
 
     #| stringify to the serialized PDF

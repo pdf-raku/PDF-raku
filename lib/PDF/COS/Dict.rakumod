@@ -41,5 +41,5 @@ class PDF::COS::Dict
     method content {
         ast-coerce self;
     }
-    multi method COERCE(PDF::COS::Dict $dict) is default { $dict }
+    multi method COERCE(PDF::COS::Dict $dict) { $dict }
 }

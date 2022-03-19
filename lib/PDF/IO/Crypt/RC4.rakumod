@@ -30,7 +30,7 @@ class PDF::IO::Crypt::RC4
 	$.crypt( $text.encode("latin-1"), |c ).decode("latin-1");
     }
 
-    multi method crypt( $bytes, UInt :$obj-num!, UInt :$gen-num! ) is default {
+    multi method crypt( $bytes, UInt :$obj-num!, UInt :$gen-num! ) {
 	# Algorithm 3.1
 
         my $obj-key = self!object-key( $obj-num, $gen-num );

@@ -48,7 +48,7 @@ class PDF::IO::Crypt::PDF
     }
 
     #| read existing encryption
-    submethod !load( Hash :$doc!, |c ) is default {
+    method !load( Hash :$doc!, |c ) {
 	die "document is not encrypted"
             unless $doc<Encrypt>:exists;
 
@@ -82,7 +82,7 @@ class PDF::IO::Crypt::PDF
         with $!str-f { .crypt($v, |c) } else { $v }
     }
 
-    multi method crypt($v, |c) is default {
+    multi method crypt($v, |c) {
         with $!stm-f { .crypt($v, |c) } else { $v }
     }
 

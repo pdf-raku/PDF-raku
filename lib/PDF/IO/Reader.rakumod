@@ -577,7 +577,7 @@ class PDF::IO::Reader {
 
     #| scan indices, starting at PDF tail. objects can be loaded on demand,
     #| via the $.ind-obj() method.
-    method !load-index($grammar, $actions, |c) is default {
+    method !load-index($grammar, $actions, |c) {
         my UInt \tail-bytes = min(1024, $!input.codes);
         my Str $tail = $!input.byte-str(* - tail-bytes);
         my UInt %offsets-seen;
@@ -902,7 +902,7 @@ class PDF::IO::Reader {
     }
 
     #| write to PDF/FDF
-    multi method save-as(IO() $output-path, :$stream, |c ) is default {
+    multi method save-as(IO() $output-path, :$stream, |c ) {
         my $ast = $.ast(:!eager, |c);
         my PDF::IO::Writer $writer .= new: :$!input, :$ast;
         if $stream {

@@ -229,7 +229,7 @@ class PDF::IO::Filter::Predictors {
         blob8.new(@out);
     }
 
-    multi method decode($buf, Predictor :$Predictor where {None} = None ) is default {
+    multi method decode($buf, Predictor :$Predictor where {None} = None ) {
         $buf;
     }
 
