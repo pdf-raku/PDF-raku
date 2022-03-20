@@ -8,7 +8,7 @@ role PDF::COS::Name
         :name(self.fmt)
     }
     proto method COERCE($){*}
-    multi method COERCE(PDF::COS::Name:D $_) { $_ }
+    multi method COERCE(PDF::COS::Name:D $_) is default { $_ }
     multi method COERCE(Str:D $str) { $str but PDF::COS::Name }
 }
 
