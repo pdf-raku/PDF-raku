@@ -165,7 +165,7 @@ role PDF::COS {
 	$.loader.load-delegate(|c);
     }
 
-    multi method ACCEPTS(Any:D $v) {
+    multi method ACCEPTS(Any:D $v) is default {
         self.defined ?? $v eqv self !! callsame();
     }
 }
