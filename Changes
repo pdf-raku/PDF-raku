@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.4.24  2022-03-26T07:41:03+13:00
    - further fixes to latin-1 in ByteString coercements
 
 0.4.23  2022-03-13T17:25:53+13:00

@@ -1,5 +1,5 @@
 use Test;
-plan 43;
+plan 47;
 
 use PDF::Grammar::Test :&is-json-equiv;
 use PDF::COS::Bool;
@@ -14,15 +14,20 @@ use PDF::COS::Type::Info;
 use PDF::COS::Dict;
 use PDF::COS::Stream;
 
-my PDF::COS::ByteString $string .= COERCE('Test');
-is $string, 'Test';
+my PDF::COS::ByteString $string .= COERCE("Test\n");
+is $string, "Test\n";
 does-ok $string, PDF::COS::ByteString;
-is-deeply $string.content, (:literal<Test>);
+is-deeply $string.content, (:literal("Test\n"));
+
+lives-ok {$string = PDF::COS.coerce: :hex-string("abc")}, 'byte-string coercement latin chars';
+dies-ok {$string = PDF::COS.coerce: :hex-string("\x[abc]")}, 'byte-string coercement non-latin chars';
 
 my PDF::COS::Name $name .= COERCE('Fred');
 is $name, 'Fred';
 does-ok $name, PDF::COS::Name;
 is-deeply $name.content, (:name<Fred>);
+lives-ok {$name = PDF::COS.coerce: :name("abc\x[abc]")}, 'name coercement non-latin chars';
+is-deeply $name.content, (:name("abc\x[abc]"));
 
 my PDF::COS::TextString $text .= COERCE('Hello');
 is $text, 'Hello';
