@@ -6,5 +6,6 @@ class PDF::COS::Null
     is Any {
     method defined { False }
     method content { :null(Any) };
+    multi method ACCEPTS(Any:U) { True }
 }
 
