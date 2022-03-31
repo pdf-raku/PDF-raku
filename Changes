@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.4.25  2022-03-31T16:42:09+13:00
+   - Replace role() method with induct(). Only mixin punned roles.
+
 0.4.24  2022-03-26T07:41:03+13:00
    - further fixes to latin-1 in ByteString coercements
 

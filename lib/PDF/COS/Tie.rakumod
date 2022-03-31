@@ -227,7 +227,7 @@ role PDF::COS::Tie {
     }
 
     # apply ourselves, if we're a punned role
-    method induct($obj is raw) {
+    method induce($obj is raw) {
         $obj.mixin: self.^pun_source
             if self.^is_pun;
         $obj;
