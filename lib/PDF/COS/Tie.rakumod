@@ -226,9 +226,11 @@ role PDF::COS::Tie {
         self;
     }
 
-    method role(::?ROLE:) {
-        # unpunned role
-        $.^roles[0];
+    # apply ourselves, if we're a punned role
+    method induct($obj is raw) {
+        $obj.mixin: self.^pun_source
+            if self.^is_pun;
+        $obj;
     }
 
     #| indirect reference
