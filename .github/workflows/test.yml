@@ -19,6 +19,9 @@ jobs:
         raku-version:
           - 'latest'
           - '2021.12'
+        exclude:
+          - os: windows-latest
+            raku-version: 'latest'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
