@@ -14,10 +14,10 @@ role PDF::COS {
 	    STORE => -> \p, Bool \indirect {
 		if indirect {
 		    # Ensure this object is indirect. Serializer will renumber
-		    self.obj-num //= -1;
+		    $!obj-num //= -1;
 		}
 		else {
-		    self.obj-num = Nil;
+		    $!obj-num = Nil;
 		}
 	    },
 	    );
