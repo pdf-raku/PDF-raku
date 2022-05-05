@@ -10,10 +10,11 @@ class PDF::COS::Array
 
     use PDF::COS::Util :from-ast, :to-ast;
 
-    my %seen{Any} = (); #= to catch circular references
+    my %seen{Int} = (); #= to catch circular references
 
     submethod TWEAK(:$array!) {
-        %seen{$array} = self;
+        %seen{$*THREAD.id} //= my %{Any};
+        temp %seen{$*THREAD.id}{$array} = self;
         self.tie-init;
         # this may trigger cascading PDF::COS::Tie coercians
         # e.g. native Array to PDF::COS::Array
@@ -23,8 +24,7 @@ class PDF::COS::Array
     }
 
     method new(List() :$array = [], |c) {
-        %seen{$array} // do {
-            temp %seen{$array};
+        %seen{$*THREAD.id}{$array} // do {
             self.bless(:$array, |c);
         }
     }

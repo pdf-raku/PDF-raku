@@ -136,10 +136,10 @@ class PDF::COS::Stream
         $rv;
     }
 
-    multi method COERCE(Hash $hash, |c) {
-        my $params = <dict encoded decoded>.first({$hash{$_}})
-            ?? $hash
-            !! %( :dict($hash) );
+    multi method COERCE(Hash $dict, |c) {
+        my $params = <dict encoded decoded>.first({ $dict{$_}:exists })
+            ?? $dict
+            !! %( :$dict );
         my $class := PDF::COS.load-dict: $params<dict>//{}, :base-class(self.WHAT);
         $class.new: |$params, |c;
     }

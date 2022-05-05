@@ -11,11 +11,11 @@ class PDF::COS::Dict
     does PDF::COS::Tie::Hash {
 
     use PDF::COS::Util :from-ast, :ast-coerce;
-
-    my %seen{Any} = (); #= to catch circular references
+    my %seen{Int} = (); #= to catch circular references
 
     submethod TWEAK(:$dict!) {
-        %seen{$dict} = self;
+        %seen{$*THREAD.id} //= my %{Any};
+        temp %seen{$*THREAD.id}{$dict} = self;
         self.tie-init;
         my %entries := self.entries;
         my %alias = %entries.pairs.map({ .value.cos.alias => .key}).grep(*.key);
@@ -32,8 +32,7 @@ class PDF::COS::Dict
     }
 
     method new(Hash() :$dict = {}, |c) {
-        %seen{$dict} // do {
-            temp %seen{$dict};
+        %seen{$*THREAD.id}{$dict} // do {
             self.bless(:$dict, |c);
         }
     }
