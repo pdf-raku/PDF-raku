@@ -259,15 +259,19 @@ class PDF::IO::Writer {
             default                  {$_}
         };
         my $pad = $!indent;
-        temp $!indent ~= '  ';  # for indentation of child dictionarys
-        my @entries = @keys.map({ $.write-name($_) ~ ' ' ~ $.write( $dict{$_} ); });
+        temp $!indent ~= '  ';  # for indentation of child dictionaries
+        my @entries = @keys.map: { $.write-name($_) ~ ' ' ~ $.write: $dict{$_} };
         my $len = $!indent;
+        my Bool $multi-line;
         for @entries {
             $len += .chars;
-            last if $len > 64;
+            if $len > 64 {
+                $multi-line = True;
+                last;
+            }
         }
 
-        $len > 64
+        $multi-line
             ?? join("\n", '<<', @entries.map({$!indent ~ $_}), $pad ~ '>>')
             !! join(' ', '<<', @entries, '>>');
     }

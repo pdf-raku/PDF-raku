@@ -78,11 +78,12 @@ class PDF::IO::Serializer {
     #| prepare a set of indirect objects for an incremental update. Only return:
     #| - objects that have been fetched and updated, and
     #| - the trailer dictionary (returned as first object)
-    multi method body( Bool :$updates! where .so,
-                       :$*compress,
-                       :$!size = $!reader.size;
-                       :$prev = $!reader.prev;
-                     ) {
+    multi method body(
+        Bool :$updates! where .so,
+        :$*compress,
+        :$!size = $!reader.size;
+        :$prev = $!reader.prev;
+    ) {
         # disable auto-deref to keep all analysis and freeze stages lazy. if it hasn't been
         # loaded, it hasn't been updated
         temp $!reader.auto-deref = False;

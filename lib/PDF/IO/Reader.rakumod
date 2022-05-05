@@ -124,6 +124,7 @@ class PDF::IO::Reader {
     has uint64    @.xrefs = (0);     #= xref position for each revision in the file
     has $.crypt is rw;
     has Version:D $.compat is rw = v1.4;   #= cross reference stream mode
+    has Lock $!lock .= new;
 
     my enum IndexType <Free External Embedded>;
 
@@ -404,30 +405,32 @@ class PDF::IO::Reader {
                     Bool :$eager = True,     #| fetch object, if not already loaded
         ) {
 
-        my Hash $idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
-            // die "unable to find object: $obj-num $gen-num R";
+        $!lock.protect: {
+            my Hash $idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
+                // die "unable to find object: $obj-num $gen-num R";
 
-        my $ind-obj;
-        my Bool $have-ast = True;    
-        with $idx<ind-obj> {
-            $ind-obj := $_;
-            $have-ast := False
-                if $ind-obj.isa(PDF::IO::IndObj);
-        }
-        else {
-            return unless $eager;
-            $idx<ind-obj> = $ind-obj := self!fetch-ind-obj(|$idx, :$obj-num, :$gen-num);
-        }
+            my $ind-obj;
+            my Bool $have-ast = True;    
+            with $idx<ind-obj> {
+                $ind-obj := $_;
+                $have-ast := False
+                    if $ind-obj.isa(PDF::IO::IndObj);
+            }
+            else {
+                return unless $eager;
+                $idx<ind-obj> = $ind-obj := self!fetch-ind-obj(|$idx, :$obj-num, :$gen-num);
+            }
 
-        if $get-ast {
-            # AST requested.
-            $have-ast ?? :$ind-obj !! $ind-obj.ast;
-        }
-        else {
-            # Object requested.
-            $have-ast
-                ?? ($idx<ind-obj> = PDF::IO::IndObj.new( :$ind-obj, :reader(self) ))
-                !! $ind-obj;
+            if $get-ast {
+                # AST requested.
+                $have-ast ?? :$ind-obj !! $ind-obj.ast;
+            }
+            else {
+                # Object requested.
+                $have-ast
+                    ?? ($idx<ind-obj> = PDF::IO::IndObj.new( :$ind-obj, :reader(self) ))
+                    !! $ind-obj;
+            }
         }
     }
 
