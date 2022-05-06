@@ -882,15 +882,15 @@ class PDF::IO::Reader {
         }
     }
 
-    method ast( Bool :$rebuild, |c ) {
-        my PDF::IO::Serializer $serializer .= new: :reader(self);
+    method ast(::CLASS:D $reader: Bool :$rebuild, |c ) {
+        my PDF::IO::Serializer $serializer .= new: :$reader;
 
         my Array $body = $rebuild
-            ?? $serializer.body( self.trailer, |c )
+            ?? $serializer.body( $reader.trailer, |c )
             !! $serializer.body( |c );
 
         .crypt-ast('body', $body, :mode<encrypt>)
-            with self.crypt;
+            with $reader.crypt;
 
         :cos{
             :header{ :$.type, :$.version },

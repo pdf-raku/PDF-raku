@@ -10,7 +10,7 @@ class PDF::COS::Dict
     does PDF::COS
     does PDF::COS::Tie::Hash {
 
-    use PDF::COS::Util :from-ast, :ast-coerce;
+    use PDF::COS::Util :&from-ast, :&ast-coerce;
     my %seen{Int} = (); #= to catch circular references
 
     submethod TWEAK(:$dict!) {
@@ -37,8 +37,6 @@ class PDF::COS::Dict
         }
     }
 
-    method content {
-        ast-coerce self;
-    }
+    method content { ast-coerce self; }
     multi method COERCE(PDF::COS::Dict $dict) { $dict }
 }

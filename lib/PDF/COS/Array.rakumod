@@ -8,8 +8,7 @@ class PDF::COS::Array
     does PDF::COS
     does PDF::COS::Tie::Array {
 
-    use PDF::COS::Util :from-ast, :to-ast;
-
+    use PDF::COS::Util :&from-ast, :&ast-coerce;
     my %seen{Int} = (); #= to catch circular references
 
     submethod TWEAK(:$array!) {
@@ -29,18 +28,6 @@ class PDF::COS::Array
         }
     }
 
-    my %content-cache{Any} = ();
-
-    method content {
-	my $obj = self;
-        my $array = %content-cache{$obj};
-        unless $array {
-	    # to-ast may recursively call $.content. cache to break any cycles
-            temp %content-cache{$obj} = $array = [];
-            $array.push: to-ast($_)
-                for self.list;
-        }
-        :$array;
-    }
+    method content { ast-coerce self; }
     multi method COERCE(PDF::COS::Array $array) { $array }
 }
