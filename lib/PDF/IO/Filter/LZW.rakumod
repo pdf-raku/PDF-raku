@@ -6,6 +6,7 @@ class PDF::IO::Filter::LZW {
 
     # Maintainer's Note: LZW is described in the PDF 32000 spec
     # in section 7.4.4
+    use PDF::COS;
     use PDF::IO::Util;
     use PDF::IO::Filter::Predictors;
     use PDF::IO::Blob;
@@ -17,7 +18,7 @@ class PDF::IO::Filter::LZW {
 
     sub predictor-class {
         state $ = INIT PDF::IO::Util::have-pdf-native()
-            ?? (require ::('PDF::Native::Filter::Predictors'))
+            ?? PDF::COS.required('PDF::Native::Filter::Predictors')
             !! PDF::IO::Filter::Predictors;
     }
 

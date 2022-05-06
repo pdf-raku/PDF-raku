@@ -97,6 +97,7 @@ class X::PDF::ObjStmObject::Parse is X::PDF {
 
 class PDF::IO::Reader {
 
+    use PDF::COS;
     use PDF::Grammar:ver<0.2.1+>;
     use PDF::Grammar::COS;
     use PDF::Grammar::PDF;
@@ -156,7 +157,7 @@ class PDF::IO::Reader {
     method !setup-crypt(Str :$password = '') {
         my Hash $doc = self.trailer;
         with $doc<Encrypt> -> \enc {
-            $!crypt = (require ::('PDF::IO::Crypt::PDF')).new( :$doc );
+            $!crypt = PDF::COS.required('PDF::IO::Crypt::PDF').new( :$doc );
             $!crypt.authenticate( $password );
             my \enc-obj-num = enc.obj-num // -1;
             my \enc-gen-num = enc.gen-num // -1;
@@ -484,7 +485,7 @@ class PDF::IO::Reader {
     #| Load input in FDF (Form Data Definition) format.
     #| Use full-scan mode, as these are not indexed.
     multi method load-cos('FDF') {
-        self!full-scan((require ::('PDF::Grammar::FDF')), $.actions);
+        self!full-scan(PDF::COS.required('PDF::Grammar::FDF'), $.actions);
     }
 
      #| Load a regular PDF file, repair or index mode
@@ -542,7 +543,7 @@ class PDF::IO::Reader {
     #| load PDF 1.4- xref table followed by trailer
     #| experimental use of PDF::Native::Reader
     method !load-xref-table-fast(Str $xref is copy, $dict is rw, :$offset) {
-        state $fast-reader //= (require ::('PDF::Native::Reader')).new;
+        state $fast-reader //= PDF::COS.required('PDF::Native::Reader').new;
 
         # fast load of the xref segments
         my $buf = $xref.encode("latin-1");

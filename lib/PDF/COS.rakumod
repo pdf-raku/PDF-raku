@@ -70,7 +70,7 @@ role PDF::COS {
     }
 
     my $resolve-lock = Lock.new;
-    method required(Str $pkg) {
+    method required(Str $pkg) is hidden-from-backtrace {
         $resolve-lock.protect: { ::{$pkg}:exists ?? ::($pkg) !! do require ::($pkg) }
     }
     method !add-role($obj is rw, Str $role-name, Str $param?) {

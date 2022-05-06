@@ -1,6 +1,7 @@
 use v6;
 
 class PDF::IO {
+    use PDF::COS;
     # a poor man's polymorphism: allow pdf input from IO handles or strings
     # could be obseleted by cat-strings, when available
     has Str $.path is rw;
@@ -20,15 +21,15 @@ class PDF::IO {
     }
 
     multi method COERCE(IO::Handle:D $_!, |c ) {
-        (require ::('PDF::IO::Handle')).COERCE($_, |c );
+        PDF::COS.required('PDF::IO::Handle').COERCE($_, |c );
     }
 
     multi method COERCE( Str:D $_! where { !.isa(PDF::IO) }, |c) {
-        (require ::('PDF::IO::Str')).COERCE($_, |c);
+        PDF::COS.required('PDF::IO::Str').COERCE($_, |c);
     }
 
     multi method COERCE( Blob $_!, |c) {
-        (require ::('PDF::IO::Str')).COERCE($_, |c);
+        PDF::COS.required('PDF::IO::Str').COERCE($_, |c);
     }
 
     multi method stream-data( List :$ind-obj! ) {

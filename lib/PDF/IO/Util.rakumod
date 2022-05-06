@@ -2,6 +2,8 @@ use v6;
 
 module PDF::IO::Util {
 
+    use PDF::COS;
+
     sub load-lib {
         CATCH {
             when X::CompUnit::UnsatisfiedDependency {
@@ -10,7 +12,7 @@ module PDF::IO::Util {
                 warn "error loading PDF::Native: {.Str}";
             }
         }
-        (require PDF::Native).lib-version; # ping the library
+        PDF::COS.required('PDF::Native').lib-version; # ping the library
     }
 
     our sub have-pdf-native(:$min-version = v0.0.1) {
@@ -23,7 +25,7 @@ module PDF::IO::Util {
 
     #| loads a faster alternative
     our sub xs(Str $module-name, Str $sub-name) {
-        (require ::($module-name)).so;
+        PDF::COS.required($module-name).so;
         ::($module-name)::('&'~$sub-name);
     }
     #= network (big-endian) ordered byte packing and unpacking

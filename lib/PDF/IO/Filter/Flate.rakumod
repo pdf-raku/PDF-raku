@@ -2,6 +2,7 @@ use v6;
 
 class PDF::IO::Filter::Flate {
 
+    use PDF::COS;
     use PDF::IO::Filter::Predictors;
     use Compress::Zlib;
     use PDF::IO::Blob;
@@ -11,7 +12,7 @@ class PDF::IO::Filter::Flate {
     # See also http://www.libpng.org/pub/png/book/chapter09.html - PNG predictors
     sub predictor-class {
         state $ = INIT PDF::IO::Util::have-pdf-native()
-            ?? (require ::('PDF::Native::Filter::Predictors'))
+            ?? PDF::COS.required('PDF::Native::Filter::Predictors')
             !! PDF::IO::Filter::Predictors;
     }
 

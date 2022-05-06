@@ -8,7 +8,7 @@ use PDF::COS::Name;
 use PDF::COS::Stream;
 use PDF::Grammar::PDF;
 
-constant PAGES = 25;
+constant PAGES = 1200;
 
 sub name($name){ PDF::COS::Name.COERCE($name) };
 
@@ -31,7 +31,7 @@ my %Resources = :Procset[ name('PDF'), name('Text')],
 };
 
 my PDF::COS::Dict:D $page-tree-root = $root<Pages>    = { :Type(name 'Pages'), :Kids[], :Count(0), :@MediaBox, :%Resources };
-my @pages = (^PAGES).hyper(:batch(1)).map: {
+my @pages = (^PAGES).hyper.map: {
     my PDF::COS::Stream() $Contents = { :decoded("BT /F1 24 Tf  100 450 Td (Hello, page {$_+1}!) Tj ET" ) };
 
     { :Type(name 'Page'), :Parent($page-tree-root), :@MediaBox, :$Contents };
@@ -52,7 +52,7 @@ $page-tree-root = $pdf.Root<Pages>;
 
 my Lock $lock .= new;
 
-(0..^(10 * PAGES)).race(:batch(1)).map: {
+(0..^(PAGES)).race.map: {
     my $page-idx = $_ % PAGES;
     my $n = $_ div PAGES  +  1;
     my PDF::COS::Dict:D $page = $page-tree-root<Kids>[$page-idx];
@@ -64,6 +64,8 @@ my Lock $lock .= new;
         $contents.decoded ~= " BT /F1 24 Tf  $x 400 Td ($n) Tj ET";
     }
 }
+
+say now - INIT now;
 
 lives-ok { $pdf.update }
 

@@ -2,6 +2,7 @@ use v6;
 
 class PDF::COS::Loader {
 
+    use PDF::COS;
     use PDF::COS::Util :from-ast;
 
     method class-paths { 'PDF::COS::Type' }
@@ -67,5 +68,5 @@ class PDF::COS::Loader {
 	$base-class;
     }
 
-    method pdf-class { require ::('PDF') }
+    method pdf-class { PDF::COS.required('PDF') }
 }

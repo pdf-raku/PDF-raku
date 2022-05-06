@@ -4,9 +4,10 @@ use PDF::COS::Dict;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
-class PDF:ver<0.5.0>
+class PDF:ver<0.5.1>
     is PDF::COS::Dict {
 
+    use PDF::COS;
     use PDF::IO::Serializer;
     use PDF::IO::Reader;
     use PDF::IO::Writer;
@@ -85,7 +86,7 @@ class PDF:ver<0.5.0>
 
         $doc<Encrypt>:delete;
         $!flush = True;
-        $!crypt = (require ::('PDF::IO::Crypt::PDF')).new: :$doc, :$owner-pass, :$user-pass, |c;
+        $!crypt = PDF::COS.required('PDF::IO::Crypt::PDF').new: :$doc, :$owner-pass, :$user-pass, |c;
     }
 
     method !is-indexed {

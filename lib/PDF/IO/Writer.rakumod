@@ -3,6 +3,7 @@ use v6;
 class PDF::IO::Writer {
 
     use PDF::Grammar:ver(v0.2.1+);
+    use PDF::COS;
     use PDF::IO;
     use PDF::IO::Util;
     use PDF::COS::Type::XRef;
@@ -507,7 +508,7 @@ class PDF::IO::Writer {
     multi method write(Pair $_) {
         state $fast-writer;
         state $have-pdf-native //= PDF::IO::Util::have-pdf-native()
-        ?? do { $fast-writer = (require ::('PDF::Native::Writer')); True }
+        ?? do { $fast-writer = PDF::COS.required('PDF::Native::Writer'); True }
         !! False;
         
         given ($have-pdf-native && .key ∈ fast-track
