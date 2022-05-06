@@ -1,20 +1,27 @@
 {{$NEXT}}
-   - protect Reader ind-obj method to allow concurrent fetching of
-     indirect objects. added test t/threads.t
+
+0.5.0  2022-05-06T13:19:02+12:00
+   - Improved thread safety of reading and fetching objects.
+     -- Protect PDF::COS loader() method
+     -- Protect Reader ind-obj method to allow concurrent fetching
+     -- Better scoping of %seen + general refactor in PDF::COS::{Dict|Array}
+     -- Some locking and deprecations in PDF::COS::Loader
+     -- Added test t/threads.t
+     This round of changes targets concurrent PDF reading only!
 
 0.4.25  2022-03-31T16:42:09+13:00
    - Replace role() method with induce(). Only mixin punned roles.
 
 0.4.24  2022-03-26T07:41:03+13:00
-   - further fixes to latin-1 in ByteString coercements
+   - Further fixes to latin-1 in ByteString coercements
 
 0.4.23  2022-03-13T17:25:53+13:00
-   - ensure strings are latin-1 in ByteString coercements
-   - simplify date string coercements
-   - add X::PDF::NoTrailer error
+   - Ensure strings are latin-1 in ByteString coercements
+   - Simplify date string coercements
+   - Add X::PDF::NoTrailer error
 
 0.4.22  2022-03-13T17:07:05+13:00
-   - initial CPAN -> zef release
+   - Initial CPAN -> zef release
 
 0.4.22  2022-02-24T13:21:35+13:00
    - Replace role-model() method with role()

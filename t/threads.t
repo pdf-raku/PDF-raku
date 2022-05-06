@@ -8,11 +8,11 @@ use PDF::COS::Name;
 use PDF::COS::Stream;
 use PDF::Grammar::PDF;
 
-constant PAGES = 20;
+constant PAGES = 25;
 
 sub name($name){ PDF::COS::Name.COERCE($name) };
 
-# ensure consistant document ID generation
+# ensure consistent document ID generation
 my $id = $*PROGRAM-NAME.fmt('%-16.16s');
 
 my PDF:D $pdf .= new;
