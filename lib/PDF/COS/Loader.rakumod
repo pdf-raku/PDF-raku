@@ -8,7 +8,7 @@ class PDF::COS::Loader {
 
     our %handler;
     my Lock $lock .= new;
-    method handler {%handler}
+    method handler is DEPRECATED {%handler} # Not thread-safe
     method warn {False}
 
     method install-delegate( Str $subclass, $class-def ) is rw {
