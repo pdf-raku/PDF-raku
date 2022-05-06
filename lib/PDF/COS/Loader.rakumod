@@ -7,11 +7,12 @@ class PDF::COS::Loader {
     method class-paths { 'PDF::COS::Type' }
 
     our %handler;
+    my Lock $lock .= new;
     method handler {%handler}
     method warn {False}
 
     method install-delegate( Str $subclass, $class-def ) is rw {
-        %handler{$subclass} = $class-def;
+        $lock.protect: { %handler{$subclass} = $class-def; }
     }
 
     method find-delegate( Str $type!, $subtype?, :$base-class! ) {
@@ -20,8 +21,10 @@ class PDF::COS::Loader {
 	$subclass ~= '::' ~ $_
             with $subtype;
 
-	return %handler{$subclass}
-	    if %handler{$subclass}:exists;
+        $lock.protect: {
+            return %handler{$subclass}
+                if %handler{$subclass}:exists;
+        }
 
         my $handler-class = $base-class;
         my Bool $resolved;
