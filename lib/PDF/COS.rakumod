@@ -1,6 +1,7 @@
 use v6;
 
 our $loader;
+our %loaded;
 
 #| Raku bindings to the Carousel Object System (http://jimpravetz.com/blog/2012/12/in-defense-of-cos/)
 role PDF::COS {
@@ -70,8 +71,14 @@ role PDF::COS {
     }
 
     my $resolve-lock = Lock.new;
-    method required(Str $pkg) is hidden-from-backtrace {
-        $resolve-lock.protect: { ::{$pkg}:exists ?? ::($pkg) !! do require ::($pkg) }
+    method required(Str \mod-name) is hidden-from-backtrace {
+        $resolve-lock.protect: {
+            %loaded{mod-name}:exists
+                ?? %loaded{mod-name}
+                !! %loaded{mod-name} = do given ::(mod-name) {
+                    $_ ~~ Failure ?? do {.so; (require ::(mod-name))} !! $_;
+                }
+        }
     }
     method !add-role($obj is rw, Str $role-name, Str $param?) {
 	my $role = $.required($role-name);
