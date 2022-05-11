@@ -5,6 +5,7 @@ role PDF::COS::Tie {
     use PDF::COS :IndRef;
     has Attribute $.of-att is rw;      #| default attribute
     has Attribute %.entries;
+    my constant $Lock = Lock.new;
 
     #| generate an indirect reference to ourselves
     method ind-ref returns IndRef {
@@ -61,14 +62,13 @@ role PDF::COS::Tie {
 	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::COS.coerce($lval, $type) };
         has UInt $.length;
         has $.default;
-        has Lock $!lock .= new;
         my class CosOfAttr is Attribute does COSAttrHOW {}
         has CosOfAttr $!of-att;
 
         method of-att {
             # anonymous attribute for individual items in an array or hash
             unless $!of-att.defined {
-                $!lock.protect: {
+                $Lock.protect: {
                     without $!of-att {
                         my $type := $!type.of;
                         $_ = CosOfAttr.new( :name('@!' ~ $.accessor-name), :$type, :package<?> );
@@ -81,7 +81,7 @@ role PDF::COS::Tie {
 
         multi method tie(IndRef $lval is rw) is rw { $lval } # undereferenced - don't know it's type yet
 	multi method tie($lval is rw, :$check) is rw {
-            $!lock.protect: {
+            $Lock.protect: {
                 if !$lval.defined {
                     if $check {
                         return $.tie( PDF::COS.coerce($_)) with $.default;
