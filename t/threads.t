@@ -31,7 +31,7 @@ my %Resources = :Procset[ name('PDF'), name('Text')],
 };
 
 my PDF::COS::Dict:D $page-tree-root = $root<Pages>    = { :Type(name 'Pages'), :Kids[], :Count(0), :@MediaBox, :%Resources };
-my @pages = (^PAGES).hyper.map: {
+my @pages = (^PAGES).hyper(:batch(1)).map: {
     my PDF::COS::Stream() $Contents = { :decoded("BT /F1 24 Tf  100 450 Td (Hello, page {$_+1}!) Tj ET" ) };
 
     { :Type(name 'Page'), :Parent($page-tree-root), :@MediaBox, :$Contents };

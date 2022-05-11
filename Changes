@@ -1,4 +1,5 @@
 {{$NEXT}}
+   - Fix a thread-safety issue in COS::Tie tie() method.
 
 0.5.2  2022-05-11T12:58:16+12:00
    - Partially back-out PDF::COS required() method to fix PDF::Class

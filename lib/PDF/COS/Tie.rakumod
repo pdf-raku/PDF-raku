@@ -61,90 +61,96 @@ role PDF::COS::Tie {
 	has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::COS.coerce($lval, $type) };
         has UInt $.length;
         has $.default;
+        has Lock $!lock .= new;
         my class CosOfAttr is Attribute does COSAttrHOW {}
         has CosOfAttr $!of-att;
 
         method of-att {
             # anonymous attribute for individual items in an array or hash
-            without $!of-att {
-                my $type := $!type.of;
-                $_ = CosOfAttr.new( :name('@!' ~ $.accessor-name), :$type, :package<?> );
-                .cos = $.clone(:!decont, :$type);
+            unless $!of-att.defined {
+                $!lock.protect: {
+                    without $!of-att {
+                        my $type := $!type.of;
+                        $_ = CosOfAttr.new( :name('@!' ~ $.accessor-name), :$type, :package<?> );
+                        .cos = $.clone(:!decont, :$type);
+                    }
+                }
             }
             $!of-att;
         }
 
         multi method tie(IndRef $lval is rw) is rw { $lval } # undereferenced - don't know it's type yet
 	multi method tie($lval is rw, :$check) is rw {
-            if !$lval.defined {
-                if $check {
-                    return $.tie( PDF::COS.coerce($_)) with $.default;
-                    die "missing required field: $.accessor-name"
-                        if $.is-required;
+            $!lock.protect: {
+                if !$lval.defined {
+                    if $check {
+                        return $.tie( PDF::COS.coerce($_)) with $.default;
+                        die "missing required field: $.accessor-name"
+                            if $.is-required;
+                    }
                 }
-            }
-            elsif !($lval ~~ $!type) {
-                my \reader  = $lval.?reader;
+                elsif !($lval ~~ $!type) {
+                    my \reader  = $lval.?reader;
 
-                if ($!type ~~ Positional[Mu] && $lval ~~ List)
-                || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
-                    # of-att typed array declaration, e.g.:
-                    #     has PDF::Catalog @.Kids is entry(:indirect);
-                    # or, typed hash declarations, e.g.:
-                    #     has PDF::ExtGState %.ExtGState is entry;
-                    my Attribute $att := $lval.of-att;
-                    if $att.defined {
-                        # already processed elsewhere. check that the type matches
-                        die "conflicting types for {$att.name} {$att.type.gist} {$!type.of.gist}"
-                            unless $!type.of ~~ $att.type;
+                    if ($!type ~~ Positional[Mu] && $lval ~~ List)
+                    || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
+                        # of-att typed array declaration, e.g.:
+                        #     has PDF::Catalog @.Kids is entry(:indirect);
+                        # or, typed hash declarations, e.g.:
+                        #     has PDF::ExtGState %.ExtGState is entry;
+                        my Attribute $att := $lval.of-att;
+                        if $att.defined {
+                            # already processed elsewhere. check that the type matches
+                            die "conflicting types for {$att.name} {$att.type.gist} {$!type.of.gist}"
+                                unless $!type.of ~~ $att.type;
+                        }
+                        else {
+                            $att = self.of-att;
+                            my \of-type = $att.type;
+                            my \v = $lval.values;
+
+                            if $check {
+                                with $.length {
+                                    die "array not of length: {$_}"
+                                        if +v != $_;
+                                }
+                            }
+
+                            for v {
+                                unless $_ ~~ of-type | IndRef {
+                                    ($att.cos.coerce)($_, of-type);
+                                    if $check {
+                                        die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
+                                        unless $_ ~~ of-type;
+                                    }
+                                    .reader //= reader if .defined;
+                                }
+                            }
+                        }
+                    }
+                    elsif $lval.isa(array) && $!type ~~ Positional[Numeric] {
+                        # assume numeric. not so easy to type-check atm
+                        # https://github.com/rakudo/rakudo/issues/4485
+                        # update: fixed as of Rakudo 2021.
                     }
                     else {
-                        $att = self.of-att;
-                        my \of-type = $att.type;
-                        my \v = $lval.values;
-
-                        if $check {
-                            with $.length {
-                                die "array not of length: {$_}"
-                                    if +v != $_;
-                            }
-                        }
-
-                        for v {
-                            unless $_ ~~ of-type | IndRef {
-                                ($att.cos.coerce)($_, of-type);
-                                if $check {
-                                    die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
-                                    unless $_ ~~ of-type;
+                        my \of-type = $!decont ?? $!type.of !! $!type;
+                        unless $lval ~~ of-type {
+                            ($.coerce)($lval, of-type);
+                            if $check {
+                                with $lval {
+                                    die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.^name}"
+                                        unless $_ ~~ of-type;
                                 }
-                                .reader //= reader if .defined;
                             }
                         }
                     }
-                }
-                elsif $lval.isa(array) && $!type ~~ Positional[Numeric] {
-                    # assume numeric. not so easy to type-check atm
-                    # https://github.com/rakudo/rakudo/issues/4485
-                    # update: fixed as of Rakudo 2021.
                 }
                 else {
-                    my \of-type = $!decont ?? $!type.of !! $!type;
-                    unless $lval ~~ of-type {
-                        ($.coerce)($lval, of-type);
-                        if $check {
-                            with $lval {
-                                die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.^name}"
-                                    unless $_ ~~ of-type;
-                            }
-                        }
-                    }
+                    $lval.obj-num //= -1
+                        if $.is-indirect && $lval ~~ PDF::COS;
                 }
             }
-            else {
-                $lval.obj-num //= -1
-                    if $.is-indirect && $lval ~~ PDF::COS;
-            }
-
 	    $lval;
 	}
 
