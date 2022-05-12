@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.5.4  2022-05-12T13:37:30+12:00
    - Fix a thread-safety issue in PDF::COS::Util ast-coerce() sub.
 
 0.5.3  2022-05-12T07:59:14+12:00
