@@ -13,13 +13,14 @@ module PDF::COS::Util {
     multi sub ast-coerce(Numeric:D $real!) { :$real }
     multi sub ast-coerce(Str:D $literal!)  { :$literal }
 
-    my %seen{Any};
+    my %seen{Int};
 
     multi sub ast-coerce(Hash:D $_dict!) {
-	my $dict = %seen{$_dict};
+        %seen{$*THREAD.id} //= my %{Any};
+	my $dict = %seen{$*THREAD.id}{$_dict};
 
 	without $dict {
-	    $dict = temp %seen{$_dict} = {};
+	    $dict = temp %seen{$*THREAD.id}{$_dict} = {};
 	    $dict{.key} = to-ast(.value)
                 for $_dict.pairs;
 	}
@@ -42,10 +43,11 @@ module PDF::COS::Util {
     }
 
     multi sub ast-coerce(List:D $_list!) {
-	my $array = %seen{$_list};
+        %seen{$*THREAD.id} //= my %{Any};
+	my $array = %seen{$*THREAD.id}{$_list};
 
 	without $array {
-	    $array = temp %seen{$_list} = [ ];
+	    $array = temp %seen{$*THREAD.id}{$_list} = [ ];
 	    $array.push( to-ast( $_ ) )
                 for $_list.values;
 	}
