@@ -22,7 +22,6 @@ class PDF::COS::Dict
         # this may trigger cascading PDF::COS::Tie coercians
         # e.g. native Array to PDF::COS::Array
         self{%alias{.key} // .key} = from-ast(.value) for $dict.pairs.sort;
-        %seen{$*THREAD.id}{$dict}:delete;
         self.?cb-init;
 
 	if set %entries.pairs.grep(*.value.cos.is-required)».key -> $required {
@@ -30,6 +29,7 @@ class PDF::COS::Dict
 	    die "{self.WHAT.^name}: missing required field(s): $missing"
 	    if $missing;
 	}
+        LEAVE %seen{$*THREAD.id}{$dict}:delete;
     }
 
     method new(Hash() :$dict = {}, |c) {

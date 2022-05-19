@@ -23,7 +23,7 @@ module PDF::COS::Util {
 	    $dict = %seen{$*THREAD.id}{$_dict} = {};
 	    $dict{.key} = to-ast(.value)
                 for $_dict.pairs;
-            %seen{$*THREAD.id}{$_dict}:delete;
+            LEAVE %seen{$*THREAD.id}{$_dict}:delete;
 	}
 
 	:$dict;
@@ -51,7 +51,7 @@ module PDF::COS::Util {
 	    $array = %seen{$*THREAD.id}{$_list} = [ ];
 	    $array.push( to-ast( $_ ) )
                 for $_list.values;
-            %seen{$*THREAD.id}{$_list}:delete;
+            LEAVE %seen{$*THREAD.id}{$_list}:delete;
 	}
 
         :$array;

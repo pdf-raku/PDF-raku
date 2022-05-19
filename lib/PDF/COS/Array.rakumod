@@ -18,8 +18,8 @@ class PDF::COS::Array
         # this may trigger cascading PDF::COS::Tie coercians
         # e.g. native Array to PDF::COS::Array
         self[$_] = from-ast($array[$_]) for ^$array;
-        %seen{$*THREAD.id}{$array}:delete;
         self.?cb-init();
+        LEAVE %seen{$*THREAD.id}{$array}:delete;
     }
 
     method new(List() :$array = [], |c) {
