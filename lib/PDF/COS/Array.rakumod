@@ -13,12 +13,12 @@ class PDF::COS::Array
 
     submethod TWEAK(:$array!) {
         %seen{$*THREAD.id} //= my %{Any};
-        temp %seen{$*THREAD.id}{$array} = self;
+        %seen{$*THREAD.id}{$array} = self;
         self.tie-init;
         # this may trigger cascading PDF::COS::Tie coercians
         # e.g. native Array to PDF::COS::Array
         self[$_] = from-ast($array[$_]) for ^$array;
-
+        %seen{$*THREAD.id}{$array}:delete;
         self.?cb-init();
     }
 
@@ -29,5 +29,5 @@ class PDF::COS::Array
     }
 
     method content { ast-coerce self; }
-    multi method COERCE(PDF::COS::Array $array) { $array }
+    multi method COERCE(::?CLASS $array) { $array }
 }

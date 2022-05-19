@@ -15,13 +15,14 @@ class PDF::COS::Dict
 
     submethod TWEAK(:$dict!) {
         %seen{$*THREAD.id} //= my %{Any};
-        temp %seen{$*THREAD.id}{$dict} = self;
+        %seen{$*THREAD.id}{$dict} = self;
         self.tie-init;
         my %entries := self.entries;
         my %alias = %entries.pairs.map({ .value.cos.alias => .key}).grep(*.key);
         # this may trigger cascading PDF::COS::Tie coercians
         # e.g. native Array to PDF::COS::Array
         self{%alias{.key} // .key} = from-ast(.value) for $dict.pairs.sort;
+        %seen{$*THREAD.id}{$dict}:delete;
         self.?cb-init;
 
 	if set %entries.pairs.grep(*.value.cos.is-required)».key -> $required {
@@ -38,5 +39,5 @@ class PDF::COS::Dict
     }
 
     method content { ast-coerce self; }
-    multi method COERCE(PDF::COS::Dict $dict) { $dict }
+    multi method COERCE(::?CLASS $dict) { $dict }
 }

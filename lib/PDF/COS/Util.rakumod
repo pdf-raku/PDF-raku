@@ -20,9 +20,10 @@ module PDF::COS::Util {
 	my $dict = %seen{$*THREAD.id}{$_dict};
 
 	without $dict {
-	    $dict = temp %seen{$*THREAD.id}{$_dict} = {};
+	    $dict = %seen{$*THREAD.id}{$_dict} = {};
 	    $dict{.key} = to-ast(.value)
                 for $_dict.pairs;
+            %seen{$*THREAD.id}{$_dict}:delete;
 	}
 
 	:$dict;
@@ -47,9 +48,10 @@ module PDF::COS::Util {
 	my $array = %seen{$*THREAD.id}{$_list};
 
 	without $array {
-	    $array = temp %seen{$*THREAD.id}{$_list} = [ ];
+	    $array = %seen{$*THREAD.id}{$_list} = [ ];
 	    $array.push( to-ast( $_ ) )
                 for $_list.values;
+            %seen{$*THREAD.id}{$_list}:delete;
 	}
 
         :$array;
