@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.5.5  2022-05-19T12:58:40+12:00
+   - Fix possible memory leaks in PDF object construction
+
 0.5.4  2022-05-12T13:37:30+12:00
    - Fix a thread-safety issue in PDF::COS::Util ast-coerce() sub.
 
