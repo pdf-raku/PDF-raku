@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.5.6  2022-05-21T09:43:39+12:00
    - More thread protection for array/hash construction
 
 0.5.5  2022-05-19T12:58:40+12:00
