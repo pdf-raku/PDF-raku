@@ -1,4 +1,5 @@
 {{$NEXT}}
+   - More thread protection for array/hash construction
 
 0.5.5  2022-05-19T12:58:40+12:00
    - Fix possible memory leaks in PDF object construction

@@ -13,10 +13,11 @@ module PDF::COS::Util {
     multi sub ast-coerce(Numeric:D $real!) { :$real }
     multi sub ast-coerce(Str:D $literal!)  { :$literal }
 
+    my Lock $lock .= new;
     my %seen{Int};
 
     multi sub ast-coerce(Hash:D $_dict!) {
-        %seen{$*THREAD.id} //= my %{Any};
+        $lock.protect: {%seen{$*THREAD.id} //= my %{Any}};
 	my $dict = %seen{$*THREAD.id}{$_dict};
 
 	without $dict {

@@ -9,10 +9,10 @@ class PDF::COS::Array
     does PDF::COS::Tie::Array {
 
     use PDF::COS::Util :&from-ast, :&ast-coerce;
+    my Lock $lock .= new;
     my %seen{Int} = (); #= to catch circular references
 
     submethod TWEAK(:$array!) {
-        %seen{$*THREAD.id} //= my %{Any};
         %seen{$*THREAD.id}{$array} = self;
         self.tie-init;
         # this may trigger cascading PDF::COS::Tie coercians
@@ -23,6 +23,7 @@ class PDF::COS::Array
     }
 
     method new(List() :$array = [], |c) {
+        $lock.protect: {%seen{$*THREAD.id} //= my %{Any}};
         %seen{$*THREAD.id}{$array} // do {
             self.bless(:$array, |c);
         }
