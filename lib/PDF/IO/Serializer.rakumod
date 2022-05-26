@@ -7,7 +7,6 @@ class PDF::IO::Serializer {
     use PDF::COS::Util :to-ast;
 
     has UInt $.size is rw = 1;      #| first free object number
-    has Pair  @!objects;            #| renumbered objects
     has Array %!objects-idx{Any};   #| unique objects index
     has UInt %!ref-count{Any};
     has Bool $.renumber = True;
@@ -64,15 +63,14 @@ class PDF::IO::Serializer {
         temp $trailer.gen-num = 0;
 
         %!ref-count = ();
-        @!objects = ();
         $.ref-count( $trailer );
-        $.freeze( $trailer, :indirect);
-        my %dict = self!get-root(@!objects);
+        my @objects = gather { $.freeze( $trailer, :indirect); }
+        my %dict = self!get-root(@objects);
 
         %dict<Size> = :int($.size)
             unless $.type eq 'FDF';
 
-        [ { :@!objects, :trailer{ :%dict } }, ];
+        [ { :@objects, :trailer{ :%dict } }, ];
     }
 
     #| prepare a set of indirect objects for an incremental update. Only return:
@@ -91,7 +89,6 @@ class PDF::IO::Serializer {
         # using the same object and generation numbers
         temp $!renumber = False;
         %!ref-count = ();
-        @!objects = ();
         my \trailer = $!reader.trailer;
 
         temp trailer.obj-num = 0;
@@ -100,14 +97,16 @@ class PDF::IO::Serializer {
         my @updated-objects = $!reader.get-updates.list;
 
         $.ref-count($_) for @updated-objects;
-        $.freeze($_, :indirect ) for @updated-objects;
+        my @objects = gather {
+            $.freeze($_, :indirect ) for @updated-objects;
+        }
 
-        my %dict = self!get-root(@!objects);
+        my %dict = self!get-root(@objects);
 
         %dict<Prev> = :int($prev);
         %dict<Size> = :int($!size);
 
-        [ { :@!objects, :trailer{ :%dict } }, ]
+        [ { :@objects, :trailer{ :%dict } }, ]
     }
 
     #| return objects without renumbering existing objects. requires a PDF reader
@@ -132,7 +131,7 @@ class PDF::IO::Serializer {
         my Int $gen-num;
         constant TrailerObjNum = 0;
 
-        if $obj-num.defined && (($obj-num > 0 && ! $.renumber) || $obj-num == TrailerObjNum) {
+        if $obj-num.defined && (($obj-num > 0 && ! $!renumber) || $obj-num == TrailerObjNum) {
             # keep original object number
             $gen-num = $object.gen-num;
         }
@@ -142,7 +141,7 @@ class PDF::IO::Serializer {
             $gen-num = 0;
         }
 
-        @!objects.push: (:ind-obj[ $obj-num, $gen-num, $ind-obj]);
+        take (:ind-obj[ $obj-num, $gen-num, $ind-obj]);
         my $ind-ref = [ $obj-num, $gen-num ];
         %!objects-idx{$object} = $ind-ref;
         :$ind-ref;
@@ -205,13 +204,13 @@ class PDF::IO::Serializer {
             }
 
             # register prior to traversing the object; in case there are cyclical references
-            my \ret = $indirect || $.is-indirect( $object )
+            my \rv = $indirect || $.is-indirect( $object )
               ?? self!index-object($ind-obj, :$object )
               !! $ind-obj;
 
             $slot = self!freeze-dict($object);
 
-            ret;
+            rv;
         }
     }
 
@@ -229,13 +228,13 @@ class PDF::IO::Serializer {
             my $slot := $ind-obj.value;
 
             # register prior to traversing the object; in case there are cyclical references
-            my \ret = $indirect || $.is-indirect( $object )
+            my \rv = $indirect || $.is-indirect( $object )
                 ?? self!index-object($ind-obj, :$object )
                 !! $ind-obj;
 
             $slot = self!freeze-array($object);
 
-            ret;
+            rv;
         }
     }
 

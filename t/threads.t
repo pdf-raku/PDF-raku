@@ -8,7 +8,7 @@ use PDF::COS::Name;
 use PDF::COS::Stream;
 use PDF::Grammar::PDF;
 
-constant PAGES = 1200;
+constant PAGES = 120;
 
 sub name($name){ PDF::COS::Name.COERCE($name) };
 
@@ -50,22 +50,13 @@ $pdf .= open: "tmp/threads.pdf";
 
 $page-tree-root = $pdf.Root<Pages>;
 
-my Lock $lock .= new;
+(0..^(PAGES)).race.map: -> $idx {
+    my $n = $idx + 1;
+    my PDF::COS::Dict:D $page = $page-tree-root<Kids>[$idx];
 
-(0..^(PAGES)).race.map: {
-    my $page-idx = $_ % PAGES;
-    my $n = $_ div PAGES  +  1;
-    my PDF::COS::Dict:D $page = $page-tree-root<Kids>[$page-idx];
-
-    # thread safety is not guaranteed on object updates. use a lock
     my PDF::COS::Stream:D $contents = $page<Contents>;
-    $lock.protect: {
-        my $x = 85  + 15 * $n;
-        $contents.decoded ~= " BT /F1 24 Tf  $x 400 Td ($n) Tj ET";
-    }
+    $contents.decoded ~= " BT /F1 24 Tf  100 400 Td ($n) Tj ET";
 }
-
-say now - INIT now;
 
 lives-ok { $pdf.update }
 
