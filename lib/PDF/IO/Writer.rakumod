@@ -17,9 +17,24 @@ class PDF::IO::Writer {
     has Str  $.indent is rw = '';
     has Version $.compat = v1.4;
 
+    #| optional role to apply when LibXML::Native is available
+    role Native-Speed-Ups {
+        # load some native faster alternatives
+        has $!writer = PDF::COS.required('PDF::Native::Writer');
+
+        method write-hex-string($_) { $!writer.write-hex-string($_) }
+        method write-literal($_) { $!writer.write-literal($_) }
+        method write-name($_) { $!writer.write-name($_) }
+        method write-real($_) { $!writer.write-real($_) }
+        method write-entries($_) { $!writer.write-entries($_) }
+    }
+
     submethod TWEAK(:$input) {
         $!input .= COERCE( $_ )
-            with $input;
+           with $input;
+        if PDF::IO::Util::have-pdf-native() {
+            self does Native-Speed-Ups;
+        }
     }
 
     method Str returns Str {
@@ -506,16 +521,7 @@ class PDF::IO::Writer {
     constant fast-track = set <hex-string literal name real entries>;
 
     multi method write(Pair $_) {
-        state $fast-writer;
-        state $have-pdf-native //= PDF::IO::Util::have-pdf-native()
-        ?? do { $fast-writer = PDF::COS.required('PDF::Native::Writer'); True }
-        !! False;
-        
-        given ($have-pdf-native && .key ∈ fast-track
-               ?? $fast-writer
-               !! self) -> $writer {
-            $writer."write-{.value.defined ?? .key !! 'null'}"( .value );
-        }
+        self."write-{.value.defined ?? .key !! 'null'}"( .value );
     }
 
     multi method write(Hash $ast) {

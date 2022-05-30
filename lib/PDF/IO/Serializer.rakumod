@@ -4,7 +4,7 @@ class PDF::IO::Serializer {
 
     use PDF::COS;
     use PDF::COS::Stream;
-    use PDF::COS::Util :to-ast;
+    use PDF::COS::Util :&to-ast;
 
     has UInt $.size is rw = 1;      #| first free object number
     has Array %!objects-idx{Any};   #| unique objects index

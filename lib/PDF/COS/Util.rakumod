@@ -85,12 +85,10 @@ module PDF::COS::Util {
 	:$literal
     }
     multi sub ast-coerce(Bool:D $bool!) {:$bool}
-    multi sub ast-coerce($_) {
-        when !.defined   { :null(Any) }
-        when Enumeration { ast-coerce(.value) }
-        default {
-            die "don't know how to ast-coerce: {.raku}";
-        }
+    multi sub ast-coerce(Any:U) {:null(Any) }
+    multi sub ast-coerce(Enumeration $_) { ast-coerce(.value) }
+    multi sub ast-coerce(Any:D $_) {
+        die "don't know how to ast-coerce: {.raku}";
     }
 
     proto sub from-ast(|) is export(:from-ast) {*};
