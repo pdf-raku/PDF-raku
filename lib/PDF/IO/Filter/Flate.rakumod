@@ -11,9 +11,10 @@ class PDF::IO::Filter::Flate {
     # Maintainer's Note: Flate is described in the PDF 32000 spec in section 7.4.4.
     # See also http://www.libpng.org/pub/png/book/chapter09.html - PNG predictors
     sub predictor-class {
-        state $ = INIT PDF::IO::Util::have-pdf-native()
-            ?? PDF::COS.required('PDF::Native::Filter::Predictors')
-            !! PDF::IO::Filter::Predictors;
+        # load a faster alternative, if available
+        state $ = INIT given try {require ::('PDF::Native::Filter::Predictors')} {
+            $_ === Nil ?? PDF::IO::Filter::Predictors !! $_;
+        }
     }
 
     multi method encode(Blob $_, :$Predictor, |c --> PDF::IO::Blob) {

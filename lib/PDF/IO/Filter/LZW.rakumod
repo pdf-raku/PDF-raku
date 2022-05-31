@@ -3,7 +3,6 @@ use v6;
 # getCode() adapted from xPDF's LZWStream::getCode()
 class PDF::IO::Filter::LZW {
 
-
     # Maintainer's Note: LZW is described in the PDF 32000 spec
     # in section 7.4.4
     use PDF::COS;
@@ -17,9 +16,10 @@ class PDF::IO::Filter::LZW {
     my constant DictSize = 256;
 
     sub predictor-class {
-        state $ = INIT PDF::IO::Util::have-pdf-native()
-            ?? PDF::COS.required('PDF::Native::Filter::Predictors')
-            !! PDF::IO::Filter::Predictors;
+        # load a faster alternative, if available
+        state $ = INIT given try {require ::('PDF::Native::Filter::Predictors')} {
+            $_ === Nil ?? PDF::IO::Filter::Predictors !! $_;
+        }
     }
 
     multi method encode($) {

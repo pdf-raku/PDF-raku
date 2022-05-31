@@ -542,12 +542,11 @@ class PDF::IO::Reader {
 
     #| load PDF 1.4- xref table followed by trailer
     #| experimental use of PDF::Native::Reader
-    method !load-xref-table-fast(Str $xref is copy, $dict is rw, :$offset) {
-        state $fast-reader //= PDF::COS.required('PDF::Native::Reader').new;
-
+    method !load-xref-table-fast(Str $xref is copy, $dict is rw, :$offset, :$fast-reader!) {
         # fast load of the xref segments
         my $buf = $xref.encode("latin-1");
-        my array $entries = $fast-reader.read-xref($buf);
+        my array $entries = $fast-reader.read-xref($buf)
+            // die X::PDF::BadXRef::Parse.new( :$offset, :$xref );
         my $bytes = $fast-reader.xref-bytes;
 
         # parse and load the trailer
@@ -599,9 +598,9 @@ class PDF::IO::Reader {
         my UInt $offset = $!prev;
         my UInt \input-bytes = $!input.codes;
         my UInt @discarded;
-
         my Hash $dict;
         my UInt @ends;
+        state $fast-reader = INIT try { (require ::('PDF::Native::Reader')).new }
 
         while $offset.defined {
             my array @obj-idx; # array of shaped arrays
@@ -613,8 +612,8 @@ class PDF::IO::Reader {
             if xref ~~ m:s/^ xref/ {
                 # traditional 1.4 cross reference index
                 @obj-idx.append: (
-                PDF::IO::Util::have-pdf-native()
-                    ?? self!load-xref-table-fast( xref, $dict, :$offset)
+                $fast-reader.defined
+                    ?? self!load-xref-table-fast( xref, $dict, :$offset, :$fast-reader)
                     !! self!load-xref-table( xref, $dict, :$offset));
                 with $dict<XRefStm> {
                     # hybrid 1.4 / 1.5 with a cross-reference stream

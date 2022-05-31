@@ -5,7 +5,6 @@ class PDF::IO::Writer {
     use PDF::Grammar:ver(v0.2.1+);
     use PDF::COS;
     use PDF::IO;
-    use PDF::IO::Util;
     use PDF::COS::Type::XRef;
     use PDF::IO::IndObj;
 
@@ -17,23 +16,28 @@ class PDF::IO::Writer {
     has Str  $.indent is rw = '';
     has Version $.compat = v1.4;
 
-    #| optional role to apply when LibXML::Native is available
-    role Native-Speed-Ups {
-        # load some native faster alternatives
-        has $!writer = PDF::COS.required('PDF::Native::Writer');
+    my Lock $lock .= new;
 
-        method write-hex-string($_) { $!writer.write-hex-string($_) }
-        method write-literal($_) { $!writer.write-literal($_) }
-        method write-name($_) { $!writer.write-name($_) }
-        method write-real($_) { $!writer.write-real($_) }
-        method write-entries($_) { $!writer.write-entries($_) }
+    #| optional role to apply when LibXML::Native is available
+    role Native-Speed-Ups[$writer] {
+        # load some native faster alternatives
+
+        method write-bool($_)       { $writer.write-bool($_) }
+        method write-hex-string($_) { $writer.write-hex-string($_) }
+        method write-literal($_)    { $writer.write-literal($_) }
+        method write-name($_)       { $writer.write-name($_) }
+        method write-real($_)       { $writer.write-real($_) }
+        method write-entries($_)    { $writer.write-entries($_) }
     }
 
     submethod TWEAK(:$input) {
         $!input .= COERCE( $_ )
            with $input;
-        if PDF::IO::Util::have-pdf-native() {
-            self does Native-Speed-Ups;
+
+        given try {require ::('PDF::Native::Writer')} -> $writer {
+            unless $writer === Nil {
+                self does Native-Speed-Ups[$writer];
+            }
         }
     }
 
@@ -53,7 +57,7 @@ class PDF::IO::Writer {
     }
 
     method write-array(List $_ ) {
-	temp $!indent ~= '  ';  # for indentation of child dictionarys
+	temp $!indent ~= '  ';  # for indentation of child dictionaries
 	('[', .map({ $.write($_) }), ']').join: ' ';
     }
 
@@ -230,7 +234,7 @@ class PDF::IO::Writer {
         "ID\n" ~ $image-data<encoded>;
     }
 
-    multi method write-op(Str $op, *@args) {
+    multi method write-op(Str:D $op, *@args) {
         my @vals;
         my @comments;
         for @args -> \arg {
@@ -243,15 +247,13 @@ class PDF::IO::Writer {
         }
 
         my @out = @vals.map: {$.write($_)};
-        @out.push: $.write-op( $op );
+        @out.push: $op;
         if @comments -> $_ {
             @out.push: $.write-comment( .join(' ') )
         }
 
         @out.join: ' ';
     }
-
-    multi method write-op( Str $_ ) { .Str }
 
     multi method write-comment(List $_) {
         .map({ $.write-comment($_) }).join: "\n";
@@ -337,10 +339,11 @@ class PDF::IO::Writer {
     }
 
     my token name-esc-seq {
-        <-[\! .. \~] +[( ) < > \[ \] { } / % #]>+
+        <-[\! .. \~] +[( ) < > \[ \] { } / %]>+
     }
     method write-name( Str $_ ) {
         '/' ~
+        .subst('#', '##', :g)
         .subst(/<name-esc-seq>/, {.Str.encode.map(*.fmt('#%02x')).join: ''}, :g);
     }
 
@@ -517,8 +520,6 @@ class PDF::IO::Writer {
     }
 
     proto method write(|c) returns Str {*}
-
-    constant fast-track = set <hex-string literal name real entries>;
 
     multi method write(Pair $_) {
         self."write-{.value.defined ?? .key !! 'null'}"( .value );

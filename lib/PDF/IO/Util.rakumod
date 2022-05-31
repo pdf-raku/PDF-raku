@@ -4,36 +4,24 @@ module PDF::IO::Util {
 
     use PDF::COS;
 
-    sub load-lib {
-        CATCH {
-            when X::CompUnit::UnsatisfiedDependency {
-            }
-            default {
-                warn "error loading PDF::Native: {.Str}";
-            }
-        }
-        PDF::COS.required('PDF::Native').lib-version; # ping the library
-    }
-
-    our sub have-pdf-native(:$min-version = v0.0.1) {
-        # experimental loading of PDF::Native (WIP)
-        state Version $version
-            ||= (%*ENV<USE_PDF_NATIVE> && load-lib())
-            ||  v0.0.0;
-        $version >= $min-version;
+    our sub have-pdf-native(Version :$min-version = v0.0.1) {
+        try ((require ::('PDF::Native')) !=== Nil)
+        && ::('PDF::Native').version >= $min-version;
     }
 
     #| loads a faster alternative
-    our sub xs(Str $module-name, Str $sub-name) {
-        PDF::COS.required($module-name).so;
-        ::($module-name)::('&'~$sub-name);
+    our sub native-speed-up(Str $module-name, Str $sub-name) {
+        try {
+            require ::($module-name);
+            ::($module-name)::('&'~$sub-name);
+        }
     }
     #= network (big-endian) ordered byte packing and unpacking
     proto sub unpack-be( $, $ --> Blob) is export(:pack-be) {*};
     proto sub pack-be( $, $ --> Blob) is export(:pack-be) {*};
     my constant Packer = 'PDF::Native::Buf';
-    our &pack is export(:pack) = BEGIN have-pdf-native() ?? xs(Packer, 'pack') !! &pack-be;
-    our &unpack is export(:pack) = BEGIN have-pdf-native() ?? xs(Packer, 'unpack') !! &unpack-be;
+    our &pack is export(:pack) = INIT native-speed-up(Packer, 'pack') // &pack-be;
+    our &unpack is export(:pack) = INIT native-speed-up(Packer, 'unpack') // &unpack-be;
     multi sub unpack-be( $nums!, 4)  { blob8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
     multi sub unpack-be( $nums!, 16) { blob16.new: flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
     multi sub unpack-be( $nums!, 32) { blob32.new: flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
