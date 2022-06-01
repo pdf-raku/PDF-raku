@@ -3,6 +3,7 @@ use v6;
 module PDF::IO::Util {
 
     use PDF::COS;
+    use NativeCall;
 
     our sub have-pdf-native(Version :$min-version = v0.0.1) {
         try ((require ::('PDF::Native')) !=== Nil)
@@ -74,11 +75,11 @@ module PDF::IO::Util {
     multi sub unpack-raku( $nums!, Array $W!)  {
         my uint $w-len = +$W;
         my $out-len = (+$nums * $w-len) div $W.sum;
-        my uint32 @out[$out-len div $w-len; $w-len];
+        my uint64 @out[$out-len div $w-len; $w-len];
         my uint $i = 0;
 
         loop (my uint $j = 0; $j < $out-len;) {
-            my uint32 $v = 0;
+            my uint64 $v = 0;
             my $k = $j % $w-len;
             for 1 .. $W[$k] {
                 $v +<= 8;
@@ -91,14 +92,14 @@ module PDF::IO::Util {
 
     multi sub pack-raku(array $shaped, Array $W!)  {
         my buf8 $out .= allocate($W.sum * +$shaped);
-        my blob32 $in .= new: $shaped;
-        my uint32 $in-len = +$in;
-        my int32 $j = -1;
+        my blob64 $in .= new: $shaped;
+        my uint64 $in-len = +$in;
+        my int64 $j = -1;
         my uint $w-len = +$W;
 
-        loop (my uint32 $i = 0; $i < $in-len;) {
+        loop (my size_t $i = 0; $i < $in-len;) {
             for ^$w-len -> uint $wi {
-                my uint32 $v = $in[$i++];
+                my uint64 $v = $in[$i++];
                 my $n = $W[$wi];
                 $j += $n;
                 loop (my $k = 0; $k < $n; $k++) {

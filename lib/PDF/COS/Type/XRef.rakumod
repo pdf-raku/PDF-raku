@@ -35,7 +35,7 @@ class PDF::COS::Type::XRef
         self<Size> //= 0;
     }
 
-    method encode(array $xref = $.decoded --> Blob) {
+    method encode(array[uint64] $xref = $.decoded --> Blob) {
 
         self.Index[0] //= 0;
         self.Index[1] ||= $.Size;
@@ -46,7 +46,7 @@ class PDF::COS::Type::XRef
         die '/XRef mandatory /Size entry is missing or zero'
             unless $.next-obj-num;
 
-        my uint32 @width;
+        my uint64 @width;
         for $xref.pairs {
             my $v = .value;
             given @width[.key[1]] {
@@ -55,11 +55,12 @@ class PDF::COS::Type::XRef
         }
 
         # /W resize to widest byte-widths, if needed
-        my UInt @W = @width.map: {
-            when * < 256 { 1 }
-            when * < 65536 { 2 }
-            when * < 16777216 { 3 }
-            default { 4 }
+        my UInt @W = @width.map: -> $v is copy {
+            my $w = 1;
+            while $v >= 256 {
+                $w++; $v div= 256;
+            }
+            $w;
         };
         self<W> = @W;
 
@@ -68,13 +69,13 @@ class PDF::COS::Type::XRef
     }
 
     #= inverse of $.decode-index. calculates and sets $.Size and $.Index
-    method encode-index(array $xref-index) {
+    method encode-index(array[uint64] $xref-index) {
         my $size = 1;
         my $n = +$xref-index;
         my UInt @index;
-        my uint32 @xref[$n;3];
+        my uint64 @xref[$n;3];
 
-        for ^$n  -> $i {
+        for ^$n -> $i {
             my $obj-num = $xref-index[$i; 0];
             my Bool \contiguous = ?( $obj-num == $size );
             @index.push( $obj-num, 0 )
@@ -93,7 +94,7 @@ class PDF::COS::Type::XRef
         $.encode(@xref);
     }
 
-    method decode($? --> array) {
+    method decode($? --> array[uint64]) {
         my $buf = callsame;
 	$buf .= encode('latin-1')
 	    if $buf.isa(Str);
@@ -116,9 +117,8 @@ class PDF::COS::Type::XRef
     #= an extra decoding stage - build index entries from raw decoded data
     method decode-index($encoded = $.encoded) {
         my Array \index = self<Index> // [ 0, $.Size ];
-        my array \decoded = $.decode( $encoded );
-        my uint32 @index[+decoded;4];
-        my array @decoded-segs;
+        my array[uint64] \decoded = $.decode( $encoded );
+        my uint64 @index[+decoded;4];
         my uint $i = 0;
 
         for index.list -> $obj-num is rw, \num-entries {

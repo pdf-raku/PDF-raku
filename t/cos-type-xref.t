@@ -24,7 +24,7 @@ is-json-equiv $xref-obj.Index, [ 214, 35, 1000, 2], '$xref.new .Index';
 my $xref;
 lives-ok {$xref = $xref-obj.decode; }, 'basic content decode - lives';
 isa-ok $xref.shape[0], Int, 'index is shaped';
-my uint32 @expected-xref[37;3] = ([1, 16, 0], [1, 741, 0], [1, 1030, 0], [1, 1446, 0], [1, 2643, 0], [1, 3442, 0], [1, 4244, 0], [1, 5039, 0], [1, 5656, 0], [1, 6392, 0], [1, 7070, 0], [1, 7747, 0], [1, 8445, 0], [1, 11116, 0], [1, 17708, 0], [1, 19707, 0], [1, 34503, 0], [1, 116, 0], [2, 217, 0], [2, 217, 1], [2, 217, 2], [2, 217, 3], [2, 217, 4], [2, 217, 5], [2, 217, 6], [2, 217, 7], [2, 217, 8], [2, 217, 9], [2, 217, 10], [2, 217, 11], [2, 217, 12], [2, 217, 13], [2, 217, 14], [2, 217, 15], [2, 217, 16], [2, 217, 17], [1, 495, 0]);
+my uint64 @expected-xref[37;3] = ([1, 16, 0], [1, 741, 0], [1, 1030, 0], [1, 1446, 0], [1, 2643, 0], [1, 3442, 0], [1, 4244, 0], [1, 5039, 0], [1, 5656, 0], [1, 6392, 0], [1, 7070, 0], [1, 7747, 0], [1, 8445, 0], [1, 11116, 0], [1, 17708, 0], [1, 19707, 0], [1, 34503, 0], [1, 116, 0], [2, 217, 0], [2, 217, 1], [2, 217, 2], [2, 217, 3], [2, 217, 4], [2, 217, 5], [2, 217, 6], [2, 217, 7], [2, 217, 8], [2, 217, 9], [2, 217, 10], [2, 217, 11], [2, 217, 12], [2, 217, 13], [2, 217, 14], [2, 217, 15], [2, 217, 16], [2, 217, 17], [1, 495, 0]);
 
 is-json-equiv [$xref.list.rotor(3)], [@expected-xref.rotor(3)], 'decoded index as expected';
 lives-ok {$xref-obj.check}, '.check lives';
@@ -56,7 +56,7 @@ is $xref-new.Size, 37, '$xref.new .Size';
 is-json-equiv $xref-new.Index, [ 42, 37], '$xref.new .Index';
 is-deeply $xref.values, $xref-roundtrip2.values, '$xref.new round-trip';
 
-my uint32 @decoded[2;3] = ([1, 16, 0], [1, 1 +< 16 , 1 +< 8]);
+my uint64 @decoded[2;3] = [1, 16, 0], [1, 1 +< 16 , 1 +< 8];
 my PDF::COS $xref-wide .= coerce( :stream{ :dict{ :Foo(:name<bar>), :Type(:name<XRef>) }, :@decoded} );
 dies-ok {$xref-wide.encode}, 'encode incomplete setup';
 $xref-wide.first-obj-num = 42;

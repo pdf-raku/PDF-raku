@@ -19,7 +19,7 @@ class PDF::IO::Writer {
     my Lock $lock .= new;
 
     #| optional role to apply when LibXML::Native is available
-    role Native-Speed-Ups[$writer] {
+    role Native-Drop-Ins[$writer] {
         # load some native faster alternatives
 
         method write-bool($_)       { $writer.write-bool($_) }
@@ -36,7 +36,7 @@ class PDF::IO::Writer {
 
         given try {require ::('PDF::Native::Writer')} -> $writer {
             unless $writer === Nil {
-                self does Native-Speed-Ups[$writer];
+                self does Native-Drop-Ins[$writer];
             }
         }
     }
