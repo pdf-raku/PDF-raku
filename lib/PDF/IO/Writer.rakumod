@@ -58,7 +58,7 @@ class PDF::IO::Writer {
 
     method write-array(List $_ ) {
 	temp $!indent ~= '  ';  # for indentation of child dictionaries
-	('[', .map({ $.write($_) }), ']').join: ' ';
+	('[', .map({ $.write($_) }).Slip, ']').join: ' ';
     }
 
     multi method write-body(List $_, |c ) {

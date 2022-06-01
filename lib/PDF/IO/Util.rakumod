@@ -10,29 +10,29 @@ module PDF::IO::Util {
     }
 
     #| loads a faster alternative
-    our sub native-speed-up(Str $module-name, Str $sub-name) {
+    our sub native-delegate(Str $sub-name) {
+        my constant Packer = 'PDF::Native::Buf';
         try {
-            require ::($module-name);
-            ::($module-name)::('&'~$sub-name);
+            require ::(Packer);
+            ::(Packer)::('&'~$sub-name);
         }
     }
     #= network (big-endian) ordered byte packing and unpacking
-    proto sub unpack-be( $, $ --> Blob) is export(:pack-be) {*};
-    proto sub pack-be( $, $ --> Blob) is export(:pack-be) {*};
-    my constant Packer = 'PDF::Native::Buf';
-    our &pack is export(:pack) = INIT native-speed-up(Packer, 'pack') // &pack-be;
-    our &unpack is export(:pack) = INIT native-speed-up(Packer, 'unpack') // &unpack-be;
-    multi sub unpack-be( $nums!, 4)  { blob8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
-    multi sub unpack-be( $nums!, 16) { blob16.new: flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
-    multi sub unpack-be( $nums!, 32) { blob32.new: flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
-    multi sub unpack-be( $nums!, $n) { resample( $nums, 8, $n); }
-    multi sub pack-be( $nums!, 4)  { blob8.new: flat $nums.list.map: -> \hi, \lo { hi +< 4  +  lo } }
-    multi sub pack-be( $nums!, 16) { blob8.new: flat $nums.list.map: { ($_ +> 8, $_) } }
-    multi sub pack-be( $nums!, 32) { blob8.new: flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
-    multi sub pack-be( $nums!, UInt $n) { resample( $nums, $n, 8); }
+    our &pack is export(:pack) = INIT native-delegate('pack') // &pack-raku;
+    our &unpack is export(:pack) = INIT native-delegate('unpack') // &unpack-raku;
+    proto sub unpack-raku( $, $ --> Blob) is export(:pack-raku) {*};
+    proto sub pack-raku( $, $ --> Blob) is export(:pack-raku) {*};
+    multi sub unpack-raku( $nums!, 4)  { blob8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
+    multi sub unpack-raku( $nums!, 16) { blob16.new: flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
+    multi sub unpack-raku( $nums!, 32) { blob32.new: flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
+    multi sub unpack-raku( $nums!, $n) { resample( $nums, 8, $n); }
+    multi sub pack-raku( $nums!, 4)  { blob8.new: flat $nums.list.map: -> \hi, \lo { hi +< 4  +  lo } }
+    multi sub pack-raku( $nums!, 16) { blob8.new: flat $nums.list.map: { ($_ +> 8, $_) } }
+    multi sub pack-raku( $nums!, 32) { blob8.new: flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
+    multi sub pack-raku( $nums!, UInt $n) { resample( $nums, $n, 8); }
 
     #= little-endian ordered packing
-    proto sub pack-le( $, $ --> Blob) is export(:pack,:pack-be) {*};
+    proto sub pack-le( $, $ --> Blob) is export(:pack,:pack-raku) {*};
     multi sub pack-le( $nums!, 32) { blob8.new: flat $nums.list.map: { ($_, $_ +> 8, $_ +> 16, $_ +> 24) } }
 
     sub of(UInt $bits) {
@@ -71,7 +71,7 @@ module PDF::IO::Util {
     }
     #| variable resampling, e.g. to decode/encode:
     #|   obj 123 0 << /Type /XRef /W [1, 3, 1] ... >>
-    multi sub unpack-be( $nums!, Array $W!)  {
+    multi sub unpack-raku( $nums!, Array $W!)  {
         my uint $w-len = +$W;
         my $out-len = (+$nums * $w-len) div $W.sum;
         my uint32 @out[$out-len div $w-len; $w-len];
@@ -89,7 +89,7 @@ module PDF::IO::Util {
         @out;
     }
 
-    multi sub pack-be(array $shaped, Array $W!)  {
+    multi sub pack-raku(array $shaped, Array $W!)  {
         my buf8 $out .= allocate($W.sum * +$shaped);
         my blob32 $in .= new: $shaped;
         my uint32 $in-len = +$in;
