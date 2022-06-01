@@ -55,16 +55,10 @@ class PDF::COS::Type::XRef
         }
 
         # /W resize to widest byte-widths, if needed
-        my UInt @W = @width.map: -> $v is copy {
-            my $w = 1;
-            while $v >= 256 {
-                $w++; $v div= 256;
-            }
-            $w;
-        };
+        my @W = packing-widths($xref, 3);
         self<W> = @W;
-
         my \buf := pack( $xref, @W,);
+
         nextwith( PDF::IO::Blob.new: buf );
     }
 

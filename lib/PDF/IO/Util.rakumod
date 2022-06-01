@@ -21,6 +21,7 @@ module PDF::IO::Util {
     #= network (big-endian) ordered byte packing and unpacking
     our &pack is export(:pack) = INIT native-delegate('pack') // &pack-raku;
     our &unpack is export(:pack) = INIT native-delegate('unpack') // &unpack-raku;
+    our &packing-widths is export(:pack) = INIT native-delegate('packing-widths') // &packing-widths-raku;
     proto sub unpack-raku( $, $ --> Blob) is export(:pack-raku) {*};
     proto sub pack-raku( $, $ --> Blob) is export(:pack-raku) {*};
     multi sub unpack-raku( $nums!, 4)  { blob8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
@@ -109,5 +110,25 @@ module PDF::IO::Util {
             }
          }
 	 $out;
+    }
+
+    # Compute /W for a cross reference stream, etc
+    sub packing-widths-raku(array $shaped, UInt:D $n) {
+        my uint64 @max[$n];
+        for $shaped.pairs {
+            my $v = .value;
+            given @max[.key[1]] {
+                $_ = $v if $v > $_
+            }
+        }
+
+        @max.map: -> $v is copy {
+            my $w = 0; # length 0 is permitted
+            while $v {
+                $w++;
+                $v div= 256;
+            }
+            $w;
+        }
     }
 }
