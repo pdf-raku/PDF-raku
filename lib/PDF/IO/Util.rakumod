@@ -113,7 +113,7 @@ module PDF::IO::Util {
     }
 
     # Compute /W for a cross reference stream, etc
-    sub packing-widths-raku(array $shaped, UInt:D $n) {
+    sub packing-widths-raku($shaped, UInt:D $n) {
         my uint64 @max[$n];
         for $shaped.pairs {
             my $v = .value;

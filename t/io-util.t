@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 15;
+plan 19;
 
 use PDF::IO::Util :pack;
 
@@ -34,8 +34,16 @@ my $shaped;
 is-deeply ($shaped = unpack(@bytes, [1, 3, 2])).values, (10, 1318440, 12860), '[1, 3, 2] unpack';
 is-deeply array[uint8].new(pack($shaped, [1, 3, 2])), @bytes, '[1, 3, 2] => 8 pack';
 
-my uint32 @in[4;3] = [1, 16, 0], [1, 741, 0], [1, 1030, 0], [1, 1446, 0];
-my $W = [1, 2, 1];
+my uint64 @in[4;3] = [1, 16, 0], [1, 741, 0], [1, 1030, 0], [1, 1446, 0];
+my @W = [1, 2, 1];
 my $out = buf8.new(1, 0, 16, 0,  1, 2, 229, 0,  1, 4, 6, 0,  1, 5, 166, 0);
 
-is-deeply pack(@in, $W,), $out, '$W[1, 2, 1] packing';
+is-deeply pack(@in, @W), $out, '@W[1, 2, 1] packing';
+is-deeply unpack($out, @W).list, @in.list;
+
+@W = packing-widths(@in, 3);
+# zero column is zero-width
+is-deeply @W, [1,2,0], 'packing widths - zero column';
+my $out2 = buf8.new(1, 0,16,  1, 2,229,  1, 4,6,  1, 5,166,);
+is-deeply pack(@in, @W), $out2, '@W[1, 2, 0] pack';
+is-deeply unpack($out2, @W).list, @in.list;
