@@ -1,4 +1,6 @@
 {{$NEXT}}
+   - Utilize with PDF::Native v0.0.2+ cross reference stream
+     unpack-xref-stream() and pack-xref-stream() subroutines.
 
 0.5.7  2022-06-02T06:26:44+12:00
    - Upgrade from 32 to 64 bit indexing in cross reference streams

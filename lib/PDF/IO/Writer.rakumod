@@ -14,7 +14,7 @@ class PDF::IO::Writer {
     has UInt $.prev;
     has UInt $.size;
     has Str  $.indent is rw = '';
-    has Version $.compat = v1.4;
+    has Rat $.compat is rw = 1.4;
 
     my Lock $lock .= new;
 
@@ -122,7 +122,7 @@ class PDF::IO::Writer {
     }
 
     method !make-trailer($dict, @idx) {
-        $!compat >= v1.5
+        $!compat >= 1.5
             ?? self!make-trailer-stream($dict, @idx)
             !! self!make-trailer-xref($dict, @idx);
     }
@@ -179,8 +179,8 @@ class PDF::IO::Writer {
     method !make-trailer-xref( Hash $trailer, @idx ) {
         my $total-entries = +@idx;
 	my uint64 @idx-sorted[$total-entries;4] = @idx
-            .sort({ $^a<obj-num> <=> $^b<obj-num> || $^a<gen-num> <=> $^b<gen-num> })
-            .map: {[.<type>, .<obj-num>, .<gen-num>, .<offset> ]};
+            .map({[.<type>, .<obj-num>, .<gen-num>, .<offset> ]})
+            .sort({ $^a[1] <=> $^b[1] || $^a[2] <=> $^b[2] });
 
 	my Str \xref-str = self!write-xref-segments: self!xref-segments( @idx-sorted );
 	my UInt \startxref = $.offset;

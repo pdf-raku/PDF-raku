@@ -6,18 +6,19 @@ use PDF;
 
 #| rewrite a PDF or FDF and/or convert to/from JSON
 sub MAIN(
-    Str $file-in,               #= input PDF, FDF or JSON file
-    Str $file-out = $file-in,   #= output PDF, FDF or JSON file
-    Str  :$password  = '';      #= password for encrypted documents
-    Bool :$repair    = False,   #= bypass and repair index. recompute stream lengths. Handy when
-                                #= PDF files have been hand-edited.
-    Bool :$rebuild  is copy,    #= rebuild object tree (renumber, garbage collect and deduplicate objects)
-    Bool :$compress is copy,    #= compress streams
-    Bool :$uncompress,          #= uncompress streams
-    Str  :$class is copy,       #= load a class (PDF::Class, PDF::Lite, PDF::API6)
-    Bool :$render,              #= render and reformat content (needs PDF::Lite or PDF::Class)
-    Bool :$decrypt is copy,     #= decrypt
-    Bool :$stream,              #= write early and progressively
+    Str $file-in,               # input PDF, FDF or JSON file
+    Str $file-out = $file-in,   # output PDF, FDF or JSON file
+    Str  :$password  = '';      # password for encrypted documents
+    Bool :$repair    = False,   # bypass and repair index. recompute stream lengths. Handy when
+                                # PDF files have been hand-edited.
+    Bool :$rebuild ,    # rebuild object tree (renumber, garbage collect and deduplicate objects)
+    Bool :$compress is copy,    # compress streams
+    Bool :$uncompress,          # uncompress streams
+    Str  :$class is copy,       # load a class (PDF::Class, PDF::Lite, PDF::API6)
+    Bool :$render,              # render and reformat content (needs PDF::Lite or PDF::Class)
+    Bool :$decrypt is copy,     # decrypt
+    Bool :$stream,              # write early and progressively
+    Rat :$compat,               # PDF compatibility level (1.4 or 1.5)
     ) {
 
     die "Can't stream a PDF file to itself"
@@ -46,6 +47,8 @@ sub MAIN(
     else {
         $reader .= new.open( $file-in, :$repair, :$password );
     }
+
+    $reader.compat = $_ with $compat;
 
     if $decrypt {
         with $reader.crypt {

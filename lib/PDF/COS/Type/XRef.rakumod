@@ -8,7 +8,7 @@ class PDF::COS::Type::XRef
     is PDF::COS::Stream {
 
     use PDF::COS;
-    use PDF::IO::Util :pack;
+    use PDF::IO::Util :pack, :native-delegate;
     use PDF::IO::Blob;
     use PDF::COS::Tie;
     use PDF::COS::Name;
@@ -46,14 +46,6 @@ class PDF::COS::Type::XRef
         die '/XRef mandatory /Size entry is missing or zero'
             unless $.next-obj-num;
 
-        my uint64 @width;
-        for $xref.pairs {
-            my $v = .value;
-            given @width[.key[1]] {
-                $_ = $v if $v > $_
-            }
-        }
-
         # /W resize to widest byte-widths, if needed
         my @W = packing-widths($xref, 3);
         self<W> = @W;
@@ -62,12 +54,9 @@ class PDF::COS::Type::XRef
         nextwith( PDF::IO::Blob.new: buf );
     }
 
-    #= inverse of $.decode-index. calculates and sets $.Size and $.Index
-    method encode-index(array[uint64] $xref-index) {
-        my $size = 1;
+    sub pack-xref-stream-raku($xref-index where .shape[1] ~~ 4, @xref, @index) {
+        my $size = -1;
         my $n = +$xref-index;
-        my UInt @index;
-        my uint64 @xref[$n;3];
 
         for ^$n -> $i {
             my $obj-num = $xref-index[$i; 0];
@@ -80,9 +69,17 @@ class PDF::COS::Type::XRef
             @xref[$i; 2] = $xref-index[$i; 3];
             $size = $obj-num + 1;
         }
+        $size;
+    }
 
-        self<Size> = $size
-           if !self<Size> || self<Size> < $size;
+    #= inverse of $.decode-index. calculates and sets $.Size and $.Index
+    method encode-index(array[uint64] $xref-index) {
+        my UInt @index;
+        my $n = +$xref-index;
+        my uint64 @xref[$n;3];
+        my &xref-packer := native-delegate('pack-xref-stream') // &pack-xref-stream-raku;
+        my $size = &xref-packer($xref-index, @xref, @index);
+        self<Size> = $size;
         self<Index> = @index;
 
         $.encode(@xref);
@@ -109,12 +106,10 @@ class PDF::COS::Type::XRef
     }
 
     #= an extra decoding stage - build index entries from raw decoded data
-    method decode-index($encoded = $.encoded) {
-        my Array \index = self<Index> // [ 0, $.Size ];
-        my array[uint64] \decoded = $.decode( $encoded );
+
+    sub unpack-xref-stream-raku(\decoded where .shape[1] ~~ 3, \index) {
         my uint64 @index[+decoded;4];
         my uint $i = 0;
-
         for index.list -> $obj-num is rw, \num-entries {
             die "/XRef stream content overflow"
                 if $i + num-entries > +decoded;
@@ -129,6 +124,13 @@ class PDF::COS::Type::XRef
         }
 
         @index;
+    }
+
+    method decode-index($encoded = $.encoded) {
+        my Array \index = self<Index> // [ 0, $.Size ];
+        my array[uint64] \decoded = $.decode( $encoded );
+        my &xref-unpacker := native-delegate('unpack-xref-stream') // &unpack-xref-stream-raku;
+        &xref-unpacker(decoded, index);
     }
 
 }

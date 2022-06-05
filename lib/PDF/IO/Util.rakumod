@@ -2,7 +2,6 @@ use v6;
 
 module PDF::IO::Util {
 
-    use PDF::COS;
     use NativeCall;
 
     our sub have-pdf-native(Version :$min-version = v0.0.1) {
@@ -11,7 +10,7 @@ module PDF::IO::Util {
     }
 
     #| loads a faster alternative
-    our sub native-delegate(Str $sub-name) {
+    our sub native-delegate(Str $sub-name) is export(:native-delegate) {
         my constant Packer = 'PDF::Native::Buf';
         try {
             require ::(Packer);
@@ -27,7 +26,7 @@ module PDF::IO::Util {
     multi sub unpack-raku( $nums!, 4)  { blob8.new: flat $nums.list.map: { ($_ +> 4, $_ +& 15) } }
     multi sub unpack-raku( $nums!, 16) { blob16.new: flat $nums.list.map: -> \hi, \lo { hi +< 8  +  lo } }
     multi sub unpack-raku( $nums!, 32) { blob32.new: flat $nums.list.map: -> \b1, \b2, \b3, \b4 { b1 +< 24  +  b2 +< 16  +  b3 +< 8  +  b4 } }
-    multi sub unpack-raku( $nums!, $n) { resample( $nums, 8, $n); }
+    multi sub unpack-raku( $nums!, UInt $n) { resample( $nums, 8, $n); }
     multi sub pack-raku( $nums!, 4)  { blob8.new: flat $nums.list.map: -> \hi, \lo { hi +< 4  +  lo } }
     multi sub pack-raku( $nums!, 16) { blob8.new: flat $nums.list.map: { ($_ +> 8, $_) } }
     multi sub pack-raku( $nums!, 32) { blob8.new: flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }

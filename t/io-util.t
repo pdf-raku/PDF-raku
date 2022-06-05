@@ -8,7 +8,7 @@ my Blob $buf;
 my uint8 @bytes = (10, 20, 30, 40, 50, 60);
 my blob8 $bytes .= new: @bytes;
 
-is-deeply ($buf = unpack(@bytes, 4)), blob8.new(0, 10, 1, 4, 1, 14, 2, 8, 3, 2, 3, 12), '4 bit unpack';
+is-deeply ($buf = unpack(@bytes, 4)), blob8.new(0,10, 1,4, 1,14, 2,8, 3,2, 3,12), '4 bit unpack';
 is-deeply pack($buf, 4), $bytes, 'pack round-trip: 8 => 4 => 8';
 
 is-deeply pack($bytes, 8), $bytes, '8 bit pack';

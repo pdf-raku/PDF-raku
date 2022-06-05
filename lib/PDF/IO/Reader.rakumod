@@ -124,7 +124,13 @@ class PDF::IO::Reader {
     has uint     $.size is rw;       #= /Size entry in trailer dict ~ first free object number
     has uint64    @.xrefs = (0);     #= xref position for each revision in the file
     has $.crypt is rw;
-    has Version:D $.compat is rw = v1.4;   #= cross reference stream mode
+    has Rat $.compat;        #= cross reference stream mode
+    method compat is rw {
+        Proxy.new: 
+            FETCH => { $!compat // $!version // 1.4 },
+            STORE => -> $, $!compat {}
+        ;
+    }
     has Lock $!lock .= new;
 
     my enum IndexType <Free External Embedded>;
@@ -233,7 +239,6 @@ class PDF::IO::Reader {
             without root;
         $!type = root<header><type> // 'PDF';
         $!version = root<header><version> // 1.2;
-
         for root<body>.list {
 
             for .<objects>.list.reverse {
@@ -477,8 +482,8 @@ class PDF::IO::Reader {
             or PDF::Grammar::COS.subparse($preamble ~ $!input.byte-str(32, 1024), :$.actions, :rule<header>)
             or die X::PDF::BadHeader.new( :$preamble );
         given $/.ast {
-            $.version = .<version>;
-            $.type = .<type>;
+            $!version = .<version>;
+            $!type = .<type>;
         }
     }
 
@@ -626,7 +631,7 @@ class PDF::IO::Reader {
             else {
                 # PDF 1.5+ cross reference stream.
                 # need to write index in same format for Adobe reader (issue #22)
-                $!compat = v1.5;
+                $!compat = 1.5;
                 @obj-idx.push: self!load-xref-stream(xref, $dict, :$offset, :@discarded);
             }
 
@@ -891,9 +896,8 @@ class PDF::IO::Reader {
 
         .crypt-ast('body', $body, :mode<encrypt>)
             with $reader.crypt;
-
         :cos{
-            :header{ :$.type, :$.version },
+            :header{ :$.type, :version($.compat) },
             :$body,
         }
     }
@@ -907,7 +911,7 @@ class PDF::IO::Reader {
     #| write to PDF/FDF
     multi method save-as(IO() $output-path, :$stream, |c ) {
         my $ast = $.ast(:!eager, |c);
-        my PDF::IO::Writer $writer .= new: :$!input, :$ast;
+        my PDF::IO::Writer $writer .= new: :$!input, :$ast, :$.compat;
         if $stream {
             my $ioh = $output-path.open(:w, :bin);
             $writer.stream-cos: $ioh, $ast<cos>;
