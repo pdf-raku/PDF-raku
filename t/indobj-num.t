@@ -2,6 +2,7 @@ use v6;
 use Test;
 plan 23;
 
+use PDF::COS::Util :&flag-is-set;
 use PDF::IO::IndObj;
 
 use PDF::Grammar::PDF;
@@ -25,15 +26,15 @@ my $content = $ind-obj.content;
 isa-ok $content, Int;
 is-json-equiv $content, 42, '$.content';
 
-is $ind-obj.object.flag-is-set(2), True, 'flag 2 is set';
-is $ind-obj.object.flag-is-set(3), False, 'flag 3 is unset';
+is $ind-obj.object.&flag-is-set(2), True, 'flag 2 is set';
+is $ind-obj.object.&flag-is-set(3), False, 'flag 3 is unset';
 
 is-json-equiv $ind-obj.ast, %ast, 'ast regeneration';
 
 my PDF::COS $twos-comp-mask .= coerce( :int(-44) );
-is $twos-comp-mask.flag-is-set(3), True, 'twos-comp flag 3 is set';
-is $twos-comp-mask.flag-is-set(4), False, 'twos-comp flag 4 is unset';
-is $twos-comp-mask.flag-is-set(5), True, 'twos-comp flag 5 is set';
+is $twos-comp-mask.&flag-is-set(3), True, 'twos-comp flag 3 is set';
+is $twos-comp-mask.&flag-is-set(4), False, 'twos-comp flag 4 is unset';
+is $twos-comp-mask.&flag-is-set(5), True, 'twos-comp flag 5 is set';
 
 $input = '5 6 obj 4.2 endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)

@@ -10,8 +10,6 @@ module PDF::COS::Util {
     multi sub to-ast($other!) { ast-coerce $other }
     proto sub ast-coerce(|) is export(:ast-coerce) {*};
     multi sub ast-coerce(Numeric:D $_) { $_ }
-##    multi sub ast-coerce(Int:D $int!) {:$int}
-##    multi sub ast-coerce(Numeric:D $real!) { :$real }
     multi sub ast-coerce(Str:D $literal!)  { :$literal }
 
     my Lock $lock .= new;
@@ -106,8 +104,6 @@ module PDF::COS::Util {
 
     multi sub from-ast( Array :$array! )    { $array }
 
-    multi sub from-ast( Bool :$bool! )      { $bool }
-
     multi sub from-ast( Hash :$dict! )      { $dict }
 
     multi sub from-ast( Str :$encoded! )    { $encoded }
@@ -118,16 +114,16 @@ module PDF::COS::Util {
 
     multi sub from-ast( Array :$ind-obj! )  { from-ast |$ind-obj[2].kv }
 
-    multi sub from-ast( Numeric :$int! )    { PDF::COS.coerce :$int; }
-
     multi sub from-ast( Str :$literal! )    { PDF::COS.coerce :$literal }
 
     multi sub from-ast( Str :$name! )       { PDF::COS.coerce :$name }
 
-    multi sub from-ast( Numeric :$real! )   { PDF::COS.coerce :$real }
-
     multi sub from-ast( Hash :$stream! )    { $stream }
 
+    # Pre PDF v0.5.8 compatibility; needed for older JSON files
+    multi sub from-ast( Bool :$bool! )      { $bool }
+    multi sub from-ast( Numeric :$int! )    { $int }
+    multi sub from-ast( Numeric :$real! )   { $real }
     multi sub from-ast( :$null! )           { Any }
 
     multi sub from-ast( *@args, *%opt ) {
