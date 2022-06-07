@@ -43,6 +43,7 @@ is $Pages<Type>, 'Pages', 'Pages<Type>';
 is-deeply $Pages.reader, $reader, 'root has deref - stickyness';
 
 # force an object to indirect
+$Pages<Count> = PDF::COS.coerce: $Pages<Count>;
 $Pages<Count>.is-indirect = True;
 is $Pages<Count>.obj-num, -1, 'set .is-indirect = True';
 $Pages<Count>.is-indirect = False;

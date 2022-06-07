@@ -35,11 +35,11 @@ my $catalog = $pdf<Root>;
 
 # firstly, write and analyse just the updates
 $pdf.id = $id++;
-lives-ok { $pdf.update(:prev(9999), :diffs("t/pdf/pdf.in-diffs".IO.open(:w)) ) }, 'update to PDF file - lives';
+lives-ok {$pdf.update(:prev(9999), :diffs("t/pdf/pdf.in-diffs".IO.open(:w)) ); }, 'update to PDF file - lives';
 $pdf.id = $id++;
 lives-ok { $pdf.update(:prev(9999), :diffs("tmp/pdf.in.json".IO.open(:w)) ) }, 'update to JSON file - lives';
 
-my PDF::Grammar::PDF::Actions $actions .= new;
+my PDF::Grammar::PDF::Actions $actions .= new: :lite;
 my Str $body-str = "t/pdf/pdf.in-diffs".IO.slurp(:bin).decode('latin-1');
 ok PDF::Grammar::PDF.subparse( $body-str.trim, :rule<body>, :$actions), "can reparse update-body";
 my $pdf-ast = $/.ast;
@@ -47,18 +47,18 @@ my $json-ast =  from-json("tmp/pdf.in.json".IO.slurp);
 
 for $pdf-ast<body>, $json-ast<cos><body>[0] -> $body {
     is-json-equiv $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
-    is-json-equiv $body<trailer><dict><Size>, (:int(11)), 'body trailer dict - Size';
-    is-json-equiv $body<trailer><dict><Prev>, (:int(9999)), 'body trailer dict - Prev';
+    is-json-equiv $body<trailer><dict><Size>, 11, 'body trailer dict - Size';
+    is-json-equiv $body<trailer><dict><Prev>, 9999, 'body trailer dict - Prev';
     my $updated-objects = $body<objects>;
     is +$updated-objects, 3, 'number of updates';
     is-json-equiv $updated-objects[0], (
         :ind-obj[3, 0, :dict{ Kids => :array[ :ind-ref[4, 0], :ind-ref[9, 0]],
-                              Count => :int(2),
+                              :Count(2),
                               Type => :name<Pages>,
                             }]), 'altered /Pages';
 
     is-json-equiv $updated-objects[1], (
-        :ind-obj[9, 0, :dict{ MediaBox => :array[ :int(0), :int(0), :int(420), :int(595)],
+        :ind-obj[9, 0, :dict{ MediaBox => :array[ 0, 0, 420, 595],
                               Contents => :ind-ref[10, 0],
                               Resources => :dict{ Font => :dict{ F1 => :ind-ref[7, 0]},
                                                   ProcSet => :ind-ref[6, 0]},
@@ -68,7 +68,7 @@ for $pdf-ast<body>, $json-ast<cos><body>[0] -> $body {
 
     is-json-equiv $updated-objects[2], (
         :ind-obj[10, 0, :stream{ :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET"),
-                                 :dict{Length => :int(70) },
+                                 :dict{ :Length(70) },
                                }]), 'inserted content';
 }
 
@@ -111,13 +111,13 @@ my PDF $pdf2 .= open: 't/pdf/pdf-updated.out';
 $reader = $pdf2.reader;
 is $reader.type, 'PDF', 'reader type';
 is +$reader.xrefs, 2, 'reader.xrefs - reread';
-is $reader.compat, v1.4, 'reader compat';
+is $reader.compat, v1.2, 'reader compat';
 
 my $ast = $reader.ast( :rebuild );
 is $ast<cos><header><type>, 'PDF', 'pdf ast type';
 is +$ast<cos><body>, 1, 'single body';
 is +$ast<cos><body>[0]<objects>, 10, 'read-back has object count';
-is-deeply $ast<cos><body>[0]<objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ Length => :int(70)},
+is-json-equiv $ast<cos><body>[0]<objects>[9], ( :ind-obj[10, 0, :stream{ :dict{ :Length(70)},
                                                                      :encoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET")},
                               ]), 'inserted content';
 

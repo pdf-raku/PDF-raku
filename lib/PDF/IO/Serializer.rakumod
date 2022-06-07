@@ -14,6 +14,7 @@ class PDF::IO::Serializer {
     has Str $.type = $!reader.?type // 'PDF';
 
     #| Reference count hashes. Could be derivate class of PDF::COS::Dict or PDF::COS::Stream.
+
     multi method ref-count(Hash $dict) {
         unless %!ref-count{$dict}++ { # already encountered
             $.ref-count($dict{$_}) for $dict.keys.sort
@@ -67,7 +68,7 @@ class PDF::IO::Serializer {
         my @objects = gather { $.freeze( $trailer, :indirect); }
         my %dict = self!get-root(@objects);
 
-        %dict<Size> = :int($.size)
+        %dict<Size> = $.size
             unless $.type eq 'FDF';
 
         [ { :@objects, :trailer{ :%dict } }, ];
@@ -95,7 +96,6 @@ class PDF::IO::Serializer {
         temp trailer.gen-num = 0;
 
         my @updated-objects = $!reader.get-updates.list;
-
         $.ref-count($_) for @updated-objects;
         my @objects = gather {
             $.freeze($_, :indirect ) for @updated-objects;
@@ -103,8 +103,8 @@ class PDF::IO::Serializer {
 
         my %dict = self!get-root(@objects);
 
-        %dict<Prev> = :int($prev);
-        %dict<Size> = :int($!size);
+        %dict<Prev> = $prev;
+        %dict<Size> = $!size;
 
         [ { :@objects, :trailer{ :%dict } }, ]
     }
@@ -117,7 +117,7 @@ class PDF::IO::Serializer {
         self!discard-linearization(@objects);
 
         %dict<Prev>:delete;
-        %dict<Size> = :int($!reader.size)
+        %dict<Size> = $!reader.size
             unless $.type eq 'FDF';
 
         [ { :@objects, :trailer{ :%dict } }, ]
@@ -160,7 +160,8 @@ class PDF::IO::Serializer {
         %!ref-count{$_} > 1            #| multiply referenced; needs to be indirect
             || ? .?obj-num             #| indirect if it has an object number
             || $_ ~~ PDF::COS::Stream  #| streams need to be indirect
-            || ($_ ~~ Hash && (.<Type>:exists)) # typed hash?
+
+            || ($_ ~~ Hash && (.<Type>:exists)); # typed hash?
    }
 
     #| prepare an object for output.
@@ -232,16 +233,16 @@ class PDF::IO::Serializer {
                 ?? self!index-object($ind-obj, :$object )
                 !! $ind-obj;
 
-            $slot = self!freeze-array($object);
+            $slot = $object.of ~~ Numeric
+                     ?? $object
+                     !! self!freeze-array($object);
 
             rv;
         }
     }
 
     #| handles other basic types
-    multi method freeze($other) {
-        to-ast $other
-    }
+    multi method freeze($other) { to-ast $other  }
 
     #| build AST, starting at the trailer.
     method ast(

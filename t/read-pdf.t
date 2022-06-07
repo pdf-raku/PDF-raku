@@ -23,7 +23,7 @@ is-json-equiv $ast<cos><header>, {:type<PDF>, :version(1.2)}, '$ast header';
 is +$ast<cos><body>, 1, 'single body';
 is +$ast<cos><body>[0]<objects>, 7, '$ast objects';
 is-json-equiv $ast<cos><body>[0]<objects>[0], (:ind-obj([1, 0, :dict({:Outlines(:ind-ref([2, 0])), :Pages(:ind-ref([3, 0])), :Type(:name("Catalog"))})])), '$ast<body><objects>[0]';
-is-json-equiv $ast<cos><body>[0]<trailer>, (:dict({:Root(:ind-ref([1, 0])), :Size(:int(8))})), '$ast trailer';
+is-json-equiv $ast<cos><body>[0]<trailer>, (:dict({:Root(:ind-ref([1, 0])), :Size(8)})), '$ast trailer';
 
 my PDF::IO::Reader $pdf-repaired .= new();
 $pdf-repaired.open( 't/pdf/pdf.in', :repair );

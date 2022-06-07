@@ -1,16 +1,15 @@
 use v6;
-use PDF::COS;
+use PDF::COS;;
 
 role PDF::COS::Int
     does PDF::COS {
 
+    use PDF::COS::Util :&flag-is-set;
     method flag-is-set(uint $flag-num) returns Bool {
-	my uint $i = self;
-	my \bit = 1 +< ($flag-num - 1);
-	? ($i +& bit);
+        flag-is-set(self, $flag-num);
     }
 
-    method content { :int(self+0) };
+    method content { self+0 };
 
     multi method COERCE(Int:D() $int) {
         $int but $?ROLE;

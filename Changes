@@ -1,6 +1,11 @@
 {{$NEXT}}
-   - Utilize with PDF::Native v0.0.2+ cross reference stream
+   - Use PDF::Grammar v0.2.9+ :lite mode for lighter AST's.
+   - Numeric objects are no longer cast to roles PDF::COS::Int,
+     PDF::COS::Bool, PDF::COS::Real unless they are indirect
+     objects.
+   - Utilize PDF::Native v0.0.2+ cross reference stream
      unpack-xref-stream() and pack-xref-stream() subroutines.
+   - Add --compat option to pdf-rewriter.raku script.
 
 0.5.7  2022-06-02T06:26:44+12:00
    - Upgrade from 32 to 64 bit indexing in cross reference streams

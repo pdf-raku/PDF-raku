@@ -19,13 +19,14 @@ class PDF::IO::Writer {
     my Lock $lock .= new;
 
     #| optional role to apply when LibXML::Native is available
-    role Native-Drop-Ins[$writer] {
+    role Native[$writer] {
         # load some native faster alternatives
 
         method write-bool($_)       { $writer.write-bool($_) }
         method write-hex-string($_) { $writer.write-hex-string($_) }
         method write-literal($_)    { $writer.write-literal($_) }
         method write-name($_)       { $writer.write-name($_) }
+        method write-int($_)        { $writer.write-int($_) }
         method write-real($_)       { $writer.write-real($_) }
         method write-entries($_)    { $writer.write-entries($_) }
     }
@@ -34,9 +35,12 @@ class PDF::IO::Writer {
         $!input .= COERCE( $_ )
            with $input;
 
-        given try {require ::('PDF::Native::Writer')} -> $writer {
-            unless $writer === Nil {
-                self does Native-Drop-Ins[$writer];
+        $lock.protect: {
+            # No thread-safe on older Rakudos
+            given try {require ::('PDF::Native::Writer')} -> $writer {
+                unless $writer === Nil {
+                    self does Native[$writer];
+                }
             }
         }
     }
@@ -520,6 +524,10 @@ class PDF::IO::Writer {
     }
 
     proto method write(|c) returns Str {*}
+
+    multi method write(Bool:D $_)    { $.write-bool($_); }
+    multi method write(Int:D $_)     { $.write-int($_); }
+    multi method write(Numeric:D $_) { $.write-real($_); }
 
     multi method write(Pair $_) {
         self."write-{.value.defined ?? .key !! 'null'}"( .value );

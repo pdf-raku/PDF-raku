@@ -8,7 +8,7 @@ use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 use PDF::Grammar::Test :is-json-equiv;
 
-my PDF::Grammar::PDF::Actions $actions .= new;
+my PDF::Grammar::PDF::Actions $actions .= new: :lite;
 
 my $input = '42 5 obj [0.9505 1.0000 1.0890 [1 2 (abc)]] endobj';
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
@@ -22,8 +22,8 @@ is $ind-obj.obj-num, 42, '$.obj-num';
 is $ind-obj.gen-num, 5, '$.gen-num';
 my $content = $ind-obj.content;
 isa-ok $content, Pair;
-is-json-equiv $content, ( :array[:real(0.9505e0), :real(1e0), :real(1.089e0),
-                             :array[:int(1), :int(2), :literal<abc>],
+is-json-equiv $content, ( :array[0.9505e0, 1e0, 1.089e0,
+                             :array[1, 2, :literal<abc>],
                      ]), '$.content';
 
 is-json-equiv $ind-obj.ast, %ast, 'ast regeneration';

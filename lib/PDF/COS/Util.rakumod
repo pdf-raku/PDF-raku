@@ -9,8 +9,9 @@ module PDF::COS::Util {
     multi sub to-ast(PDF::COS $object!) { $object.content }
     multi sub to-ast($other!) { ast-coerce $other }
     proto sub ast-coerce(|) is export(:ast-coerce) {*};
-    multi sub ast-coerce(Int:D $int!) {:$int}
-    multi sub ast-coerce(Numeric:D $real!) { :$real }
+    multi sub ast-coerce(Numeric:D $_) { $_ }
+##    multi sub ast-coerce(Int:D $int!) {:$int}
+##    multi sub ast-coerce(Numeric:D $real!) { :$real }
     multi sub ast-coerce(Str:D $literal!)  { :$literal }
 
     my Lock $lock .= new;
@@ -31,17 +32,13 @@ module PDF::COS::Util {
     }
 
     multi sub ast-coerce(array:D $a) {
-        my $tag = do given $a.of {
-                 when num|num64 { 'real' }
-                 when str       { 'literal' }
-                 default        { 'int'  }
-        };
-        :array[ $a.map({ $tag => $_ }) ]
+        $a.of ~~ Str
+            ?? :array[ $a.map( -> $literal { :$literal }) ]
+            !! array => $a.Array;     
     }
 
     multi sub ast-coerce(List:D $a where .of ~~ Numeric) {
-        my $tag = $a.of ~~ Int ?? 'int' !! 'real';
-        :array[ $a.map({ $tag => $_ }) ]
+        array => $a.Array;
     }
 
     multi sub ast-coerce(List:D $_list!) {
@@ -84,8 +81,7 @@ module PDF::COS::Util {
 	my Str $literal = date-time-formatter($date-time);
 	:$literal
     }
-    multi sub ast-coerce(Bool:D $bool!) {:$bool}
-    multi sub ast-coerce(Any:U) {:null(Any) }
+    multi sub ast-coerce(Any:U) {Any}
     multi sub ast-coerce(Enumeration $_) { ast-coerce(.value) }
     multi sub ast-coerce(Any:D $_) {
         die "don't know how to ast-coerce: {.raku}";
@@ -141,4 +137,8 @@ module PDF::COS::Util {
         die "unable to from-ast {%opt.keys} struct: {%opt.raku}"
     }
 
+    sub flag-is-set(uint $mask, uint8 $flag-num) is export(:flag-is-set) {
+	my \bit = 1 +< ($flag-num - 1);
+	? ($mask +& bit);
+    }
 }

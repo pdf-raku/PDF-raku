@@ -26,19 +26,19 @@ $dict<Root>[2] := $dict<Root>;
 $dict<Root>[0]<Parent> := $dict<Root>;
 
 my $dict-ast = to-ast($dict);
-is $dict-ast<dict><Root><array>[1]<dict><ID><int>, 2, 'ast dereference';
+is $dict-ast<dict><Root><array>[1]<dict><ID>, 2, 'ast dereference';
 
 # our serializer should create indirect refs to resolve the above
 my Hash $body = PDF::IO::Serializer.new.body( $dict )[0];
 is-deeply $body<trailer><dict><Root>, (:ind-ref[1, 0]), 'body trailer dict - Root';
-is-deeply $body<trailer><dict><Size>, (:int(3)), 'body trailer dict - Size';
+is-deeply $body<trailer><dict><Size>, 3, 'body trailer dict - Size';
 my $s-objects = $body<objects>;
 is +$s-objects, 2, 'expected number of objects';
-is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{ID => :int(1), Parent => :ind-ref[1, 0]},
+is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{:ID(1), Parent => :ind-ref[1, 0]},
                                                  :ind-ref[2, 0],
                                                  :ind-ref[1, 0]]]), "circular array reference resolution";
 
-is-deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], ID => :int(2)}]), "circular hash ref resolution";
+is-deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], :ID(2)}]), "circular hash ref resolution";
 
 $dict = PDF::COS.coerce: { :Root{
     :Type(name 'Catalog'),
@@ -104,7 +104,7 @@ is $writer.write( :ind-obj(@objects-renumbered[0].value)), "1000 0 obj\n<< /Name
 
 my @objects-compressed = @(PDF::IO::Serializer.new.body($dict, :compress)[0]<objects>);
 my $stream = @objects-compressed.tail(2).head.value[2]<stream>;
-is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(:int(54))}, 'compressed dict';
+is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(54)}, 'compressed dict';
 is $stream<encoded>.codes, 54, 'compressed stream length';
 
 # just to define current behaviour wrt to non-latin chars; blows up during write.

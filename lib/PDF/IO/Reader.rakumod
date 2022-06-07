@@ -113,6 +113,7 @@ class PDF::IO::Reader {
     use JSON::Fast;
     subset ObjNumInt of UInt;
     subset GenNumInt of Int where 0..999;
+    subset StreamAstNode of Pair:D where .key eq 'stream';
 
     has PDF::IO  $.input is rw;      #= raw PDF image (latin-1 encoding)
     has Str      $.file-name;
@@ -136,7 +137,7 @@ class PDF::IO::Reader {
     my enum IndexType <Free External Embedded>;
 
     method actions {
-        state $actions //= PDF::Grammar::PDF::Actions.new
+        state $actions //= PDF::Grammar::PDF::Actions.new: :lite;
     }
 
     method trailer is rw {
@@ -375,7 +376,7 @@ class PDF::IO::Reader {
                 $actual-gen-num = $ind-obj[1];
 
                 self!fetch-stream-data($ind-obj, $!input, :$offset, :$obj-len)
-                    if $ind-obj[2].key eq 'stream';
+                    if $ind-obj[2] ~~ StreamAstNode;
 
                 with $!crypt {
                     .crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> )
@@ -724,7 +725,7 @@ class PDF::IO::Reader {
 
                 my $stream-type;
 
-                if $object.key eq 'stream' {
+                if $object ~~ StreamAstNode {
                     my \stream = $object.value;
                     my Hash \dict = stream<dict>;
                     $stream-type = .value with dict<Type>;
@@ -870,7 +871,7 @@ class PDF::IO::Reader {
         for self.get-objects
             .grep(*.key eq 'ind-obj')
             .map(*.value)
-            .grep(*.[2].key eq 'stream') {
+            .grep: {.[2] ~~ StreamAstNode} {
 
             my ObjNumInt \obj-num = .[0];
             my GenNumInt \gen-num = .[1];

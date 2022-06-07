@@ -9,7 +9,7 @@ role PDF::COS::Type::Encrypt
 
     # use ISO_32000::Table_20-Entries_common_to_all_encryption_dictionaries;
     # also does ISO_32000::Table_20Entries_common_to_all_encryption_dictionaries;
-
+    use PDF::COS::Util :&flag-is-set;
     use PDF::COS::Tie;
     use PDF::COS::Name;
     has PDF::COS::Name $.Filter is entry(:required);      #| (Required) The name of the preferred security handler for this document. Typically, it is the name of the security handler that was used to encrypt the document. If SubFilter is not present, only this security handler should be used when opening the document. If it is present, consumer applications can use any security handler that implements the format specified by SubFilter.
@@ -63,8 +63,8 @@ role PDF::COS::Type::Encrypt
 
 
     method permitted(UInt $flag --> Bool) {
-        given self.permissions {
-            .flag-is-set($flag) || .flag-is-set(PermissionsFlag::All);
+        given self.permissions -> $p {
+            flag-is-set($p, $flag) || flag-is-set($p, PermissionsFlag::All);
         }
     }
 }

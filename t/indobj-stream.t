@@ -57,4 +57,4 @@ stream_tests( $stream-obj, 'stream object, null DecodeParms' );
 my PDF::COS $stream2 .= coerce( :stream{  :dict{ :Foo( :name<Bar> ) } } );
 is-json-equiv $stream2.content, (:dict{:Foo(:name<Bar>)}), 'stream without content';
 $stream2.decoded = 'ABC12345678';
-is-json-equiv $stream2.content, (:stream{ :dict{:Foo(:name<Bar>), :Length{ :int(11) } }, :encoded<ABC12345678> }), 'stream with content';
+is-json-equiv $stream2.content, (:stream{ :dict{:Foo(:name<Bar>), :Length(11) }, :encoded<ABC12345678> }), 'stream with content';

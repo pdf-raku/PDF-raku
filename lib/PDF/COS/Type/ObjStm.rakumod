@@ -66,7 +66,7 @@ class PDF::COS::Type::ObjStm
         my UInt \n = $.N;
 
         my Str \object-index-str = bytes.substr(0, first);
-        my PDF::Grammar::PDF::Actions $actions .= new;
+        my PDF::Grammar::PDF::Actions $actions .= new: :terse;
         PDF::Grammar::PDF.parse(object-index-str, :rule<object-stream-index>, :$actions)
             or die X::PDF::ObjStm::Decode.new( :$.obj-num, :$.gen-num, :details("Unable to parse object stream index: {object-index-str}"));
 

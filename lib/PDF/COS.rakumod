@@ -150,6 +150,10 @@ role PDF::COS {
         $.required('PDF::COS::Null').COERCE: $null;
     }
 
+    multi method coerce(Bool:D $val is rw) { self!add-role($val, 'PDF::COS::Bool');}
+    multi method coerce(Int:D $val is rw) { self!add-role($val, 'PDF::COS::Int');}
+    multi method coerce(Numeric:D $val is rw) { self!add-role($val, 'PDF::COS::Real');}
+    multi method coerce(Numeric:D $val is copy) { $.coerce($val) }
     multi method coerce($val) { $val }
 
     method !coercer {

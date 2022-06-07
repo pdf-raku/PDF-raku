@@ -159,7 +159,7 @@ class PDF:ver<0.5.7>
         my constant Pad = "\n\n".encode('latin-1');
 
         my Hash $trailer = $body<trailer><dict>;
-	my UInt $prev = $trailer<Prev>.value;
+	my UInt $prev = $trailer<Prev>;
         my $size = $.reader.size;
         my $compat = $.reader.compat;
         my PDF::IO::Writer $writer .= new: :$prev, :$size, :$compat;

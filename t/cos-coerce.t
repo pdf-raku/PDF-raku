@@ -45,12 +45,12 @@ for $date-string, DateTime.new( :year(2015), :month(12), :day(25) ) -> $date-in 
 my PDF::COS::Int $int .= COERCE(42);
 is $int, 42;
 does-ok $int, PDF::COS::Int;
-is-deeply $int.content, (:int(42));
+is-deeply $int.content, 42;
 
 my PDF::COS::Real $real .= COERCE(4.2);
 is $real, 4.2;
 does-ok $real, PDF::COS::Real;
-is-deeply $real.content, (:real(4.2));
+is-deeply $real.content, 4.2;
 
 my PDF::COS::Null $null .= COERCE(Any);
 nok $null.defined;
