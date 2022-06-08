@@ -93,7 +93,7 @@ my $catalog = $pdf<Root>;
 my $Parent = $catalog<Pages>;
 
 # create additional content, use existing font /F1
-my PDF::COS::Stream $Contents() = { :decoded("BT /F1 16 Tf  15 25 Td (Goodbye for now!) Tj ET" ) };
+my PDF::COS::Stream() $Contents = { :decoded("BT /F1 16 Tf  15 25 Td (Goodbye for now!) Tj ET" ) };
 
 # create a new page. add it to the page-tree
 $Parent<Kids>.push: { :Type( :name<Page> ), :$Parent, :$Contents };
