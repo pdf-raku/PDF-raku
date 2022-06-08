@@ -528,6 +528,7 @@ class PDF::IO::Writer {
     multi method write(Bool:D $_)    { $.write-bool($_); }
     multi method write(Int:D $_)     { $.write-int($_); }
     multi method write(Numeric:D $_) { $.write-real($_); }
+    multi method write(Any:U $_)     { $.write-null($_); }
 
     multi method write(Pair $_) {
         self."write-{.value.defined ?? .key !! 'null'}"( .value );
