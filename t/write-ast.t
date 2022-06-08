@@ -5,7 +5,9 @@ use JSON::Fast;
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::IO::Writer;
 
-is PDF::IO::Writer.new.write(:array[ :real(0.31415926e0), :real(1.3e-17), :real(0.00000000), :real(0e0), :real(1) ]), '[ 0.31416 0 0 0 1 ]';
+is PDF::IO::Writer.new.write(:array[ :real(0.31415926e0), :real(1.3e-17), :real(0.00000000), :real(0e0), :int(1), :null(Any) ]), '[ 0.31416 0 0 0 1 null ]', 'AST - old format';
+
+is PDF::IO::Writer.new.write(:array[ 0.31415926e0, 1.3e-17, 0.00000000, 0e0, 1, Any ]), '[ 0.31416 0 0 0 1 null ]', 'AST - lite';
 
 for 't/write-ast.json'.IO.lines {
 
