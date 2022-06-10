@@ -11,11 +11,12 @@ class PDF::COS::Dict
     does PDF::COS::Tie::Hash {
 
     use PDF::COS::Util :&from-ast, :&ast-coerce;
-    my Lock $lock .= new;
-    my %seen{Int} = (); #= to catch circular references
+    my %seen{Hash} = (); #= to catch circular references
+    my Lock $seen-lock .= new;
 
-    submethod TWEAK(:$dict!) {
-        %seen{$*THREAD.id}{$dict} = self;
+    submethod TWEAK(:$dict!, :$seen-lock) {
+        %seen{$dict} = self;
+        .unlock with $seen-lock;
         self.tie-init;
         my %entries := self.entries;
         my %alias = %entries.pairs.map({ .value.cos.alias => .key}).grep(*.key);
@@ -29,13 +30,17 @@ class PDF::COS::Dict
 	    die "{self.WHAT.^name}: missing required field(s): $missing"
 	    if $missing;
 	}
-        LEAVE %seen{$*THREAD.id}{$dict}:delete;
     }
 
     method new(Hash() :$dict = {}, |c) {
-        $lock.protect: {%seen{$*THREAD.id} //= my %{Any}};
-        %seen{$*THREAD.id}{$dict} // do {
-            self.bless(:$dict, |c);
+        $seen-lock.lock;
+        with %seen{$dict} -> $obj {
+            $seen-lock.unlock;
+            $obj;
+        }
+        else {
+            LEAVE $seen-lock.protect: { %seen{$dict}:delete }
+            self.bless(:$dict, :$seen-lock, |c);
         }
     }
 
