@@ -19,16 +19,16 @@ class PDF::COS::Dict
         .unlock with $seen-lock;
         self.tie-init;
         my %entries := self.entries;
-        my %alias = %entries.pairs.map({ .value.cos.alias => .key}).grep(*.key);
+        my %alias := self.aliases;
         # this may trigger cascading PDF::COS::Tie coercians
         # e.g. native Array to PDF::COS::Array
         self{%alias{.key} // .key} = from-ast(.value) for $dict.pairs.sort;
         self.?cb-init;
 
-	if set %entries.pairs.grep(*.value.cos.is-required)».key -> $required {
-	    my $missing = $required (-) self.keys;
+	if self.required-entries -> $required  {
+	    my $missing = $required.keys (-) self.keys;
 	    die "{self.WHAT.^name}: missing required field(s): $missing"
-	    if $missing;
+	        if $missing;
 	}
     }
 

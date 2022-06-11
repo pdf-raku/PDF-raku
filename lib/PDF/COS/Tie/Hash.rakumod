@@ -5,6 +5,9 @@ use PDF::COS::Tie :COSDictAttrHOW;
 role PDF::COS::Tie::Hash
     does PDF::COS::Tie {
 
+    has Str %.aliases;
+    has Bool %.required-entries;
+
     use PDF::COS;
     #| resolve a heritable property by dereferencing /Parent entries
     sub inherit($object, Str $key, :$seen is copy) {
@@ -46,7 +49,9 @@ role PDF::COS::Tie::Hash
            given att.cos {
                my \key  = .accessor-name;
                %.entries{key} //= att;
+               %!required-entries{key} = True if .is-required;
                with .alias -> \alias {
+                   %!aliases{alias} = key;
                    self{key} //= $_
                        with self{alias}:delete;
                }
@@ -56,7 +61,7 @@ role PDF::COS::Tie::Hash
 
     method check {
         self.AT-KEY($_, :check)
-            for (self.keys.Slip, self.entries.grep(*.value.cos.is-required).Slip).unique.sort;
+            for unique(self.keys.Slip, %!required-entries.keys.sort.Slip);
         self.?cb-check();
         self
     }
