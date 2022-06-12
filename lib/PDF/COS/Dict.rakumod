@@ -26,9 +26,9 @@ class PDF::COS::Dict
         self.?cb-init;
 
 	if self.required-entries -> $required  {
-	    my $missing = $required.keys (-) self.keys;
-	    die "{self.WHAT.^name}: missing required field(s): $missing"
-	        if $missing;
+	    my @missing = $required.keys.grep: {self{$_}:!exists};
+	    die "{self.WHAT.^name}: missing required field(s): {@missing.sort.join: ','}"
+	        if @missing;
 	}
     }
 
