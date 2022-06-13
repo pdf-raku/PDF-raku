@@ -13,8 +13,8 @@ lives-ok {MyName.COERCE( 'Foo')}, 'coerce to name subset';
 nok 'Foo' ~~ MyName, "role hasn't leaked";
 
 enum « :Baz<Baz> »;
-my MyName $baz;
-lives-ok { $baz .= COERCE(Baz); }, 'coerce to enum lives';
+my MyName() $baz;
+lives-ok { $baz = Baz; }, 'coerce to enum lives';
 does-ok $baz, PDF::COS::Name, 'coerce to enum is name';
 is-deeply $baz.content, (:name<Baz>), 'content';
 

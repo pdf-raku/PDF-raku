@@ -4,11 +4,11 @@ plan 18;
 
 use PDF::IO;
 
-my $ioh = "t/helloworld.pdf".IO;
-
-my PDF::IO $in-ioh .= COERCE( $ioh );
+my IO $ioh = "t/helloworld.pdf".IO;
 my Str $str = $ioh.slurp(:bin).decode('latin-1');
-my PDF::IO $in-str .= COERCE( $str );
+
+my PDF::IO() $in-ioh = $ioh;
+my PDF::IO() $in-str = $str;
 
 for :$in-ioh, :$in-str {
     my ($test, $input) = .kv;

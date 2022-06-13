@@ -34,10 +34,10 @@ class PDF::COS::Coercer {
     multi method coerce-to( PDF::COS $obj is rw, PDF::COS $type, |c) {
         unless $obj ~~ $type {
             if $obj ~~ PDF::COS::ByteString && $type ~~ PDF::COS::TextString | PDF::COS::DateString {
-                $obj = $type.COERCE( $obj, |c );
+                $obj = $type.COERCE: $obj, |c ;
             }
             else {
-	        warn X::PDF::Coerce.new( :$obj, :$type )
+	        warn X::PDF::Coerce.new: :$obj, :$type;
             }
         }
         $obj;

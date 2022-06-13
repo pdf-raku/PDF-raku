@@ -28,7 +28,7 @@ my $catalog = $pdf<Root>;
     my $Parent = $catalog<Pages>;
     my $Resources = $Parent<Kids>[0]<Resources>;
     my $MediaBox = $Parent<Kids>[0]<MediaBox>;
-    my PDF::COS::Stream $Contents .= COERCE( { :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) } );
+    my PDF::COS::Stream() $Contents = { :decoded("BT /F1 16 Tf  88 250 Td (and they all lived happily ever after!) Tj ET" ) };
     $Parent<Kids>.push: { :Type(name 'Page'), :$MediaBox, :$Resources, :$Parent, :$Contents };
     $Parent<Count>++;
 }

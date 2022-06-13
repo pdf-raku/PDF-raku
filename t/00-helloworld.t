@@ -17,7 +17,7 @@ my $root     = $pdf.Root       = { :Type(name 'Catalog') };
 my $outlines = $root<Outlines> = { :Type(name 'Outlines'), :Count(0) };
 my $pages    = $root<Pages>    = { :Type(name 'Pages'), :Kids[], :Count(0) };
 
-my PDF::COS::Stream $Contents .= COERCE: { :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) };
+my PDF::COS::Stream() $Contents = { :decoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET" ) };
 my @MediaBox = 0, 0, 420, 595;
 my %Resources = :Procset[ name('PDF'), name('Text')],
                 :Font{

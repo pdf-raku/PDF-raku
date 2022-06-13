@@ -294,7 +294,7 @@ class PDF::IO::Reader {
     }
 
     multi method open($input!, |c) {
-        $!input .= COERCE( $input );
+        $!input .= COERCE: $input;
         $.load-header( );
         $.load-cos( $.type, |c );
     }

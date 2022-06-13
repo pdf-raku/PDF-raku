@@ -40,6 +40,8 @@ is-deeply $s-objects[0], (:ind-obj[1, 0, :array[ :dict{:ID(1), Parent => :ind-re
 
 is-deeply $s-objects[1], (:ind-obj[2, 0, :dict{SelfRef => :ind-ref[2, 0], :ID(2)}]), "circular hash ref resolution";
 
+my PDF::COS::Stream() $Contents = { :encoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET") };
+
 $dict = PDF::COS.coerce: { :Root{
     :Type(name 'Catalog'),
     :Pages{
@@ -53,7 +55,7 @@ $dict = PDF::COS.coerce: { :Root{
                                  },
                                  :Procset[ name('PDF'),  name('Text') ],
                      },
-                     :Contents( PDF::COS::Stream.COERCE( { :encoded("BT /F1 24 Tf  100 250 Td (Hello, world!) Tj ET") } ) ),
+                     :$Contents,
                    },
                 ],
             :Count(1),
@@ -90,7 +92,7 @@ is-json-equiv @objects[3], (:ind-obj[4, 0, :dict{
                                                },
                                    ]), 'page object';
 
-my PDF::COS::Dict $obj-with-utf8 .= COERCE: { :Root{ :Name(name "Heydər Əliyev") } };
+my PDF::COS::Dict() $obj-with-utf8 = { :Root{ :Name(name "Heydər Əliyev") } };
 $obj-with-utf8<Root>.is-indirect = True;
 my PDF::IO::Writer $writer .= new;
 
@@ -108,7 +110,7 @@ is-deeply $stream<dict>, { :Filter(:name<FlateDecode>), :Length(54)}, 'compresse
 is $stream<encoded>.codes, 54, 'compressed stream length';
 
 # just to define current behaviour wrt to non-latin chars; blows up during write.
-my PDF::COS::Dict $obj-with-bad-byte-string .= COERCE: { :Root{ :Name("Heydər Əliyev") } };
+my PDF::COS::Dict() $obj-with-bad-byte-string = { :Root{ :Name("Heydər Əliyev") } };
 $body = PDF::IO::Serializer.new.body($obj-with-bad-byte-string)[0];
 @objects = @($body<objects>);
 dies-ok {$writer.write( :ind-obj(@objects[0].value) )}, 'out-of-range byte-string dies during write';

@@ -63,7 +63,7 @@ VISIBLE "HAI WORLD!"
 KTHXBYE
 \_(ツ)_/
 
-my PDF::COS::Stream $Source .= COERCE: { :$decoded, :dict{ :Filter<FlateDecode> } };
+my PDF::COS::Stream() $Source = { :$decoded, :dict{ :Filter<FlateDecode> } };
 
 my $Description = "Moon phases: \x1f311\x1f313\x1f315\x1f317";
 

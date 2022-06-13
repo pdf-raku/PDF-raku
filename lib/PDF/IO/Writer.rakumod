@@ -32,7 +32,7 @@ class PDF::IO::Writer {
     }
 
     submethod TWEAK(:$input) {
-        $!input .= COERCE( $_ )
+        $!input .= COERCE: $_
            with $input;
 
         $lock.protect: {
