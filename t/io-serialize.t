@@ -98,11 +98,11 @@ my PDF::IO::Writer $writer .= new;
 
 @objects = @(PDF::IO::Serializer.new.body($obj-with-utf8)[0]<objects>);
 is-json-equiv @objects, [:ind-obj[1, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'name serialization';
-is $writer.write( :ind-obj(@objects[0].value)), "1 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj\n", 'name write';
+is $writer.write( 'ind-obj' => @objects[0].value), "1 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj\n", 'name write';
 
 my @objects-renumbered = @(PDF::IO::Serializer.new.body($obj-with-utf8, :size(1000))[0]<objects>);
 is-json-equiv @objects-renumbered, [:ind-obj[1000, 0, :dict{ Name => :name("Heydər Əliyev")}]], 'renumbered serialization';
-is $writer.write( :ind-obj(@objects-renumbered[0].value)), "1000 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj\n", 'renumbered write';
+is $writer.write( 'ind-obj' => @objects-renumbered[0].value), "1000 0 obj\n<< /Name /Heyd#c9#99r#20#c6#8fliyev >>\nendobj\n", 'renumbered write';
 
 my @objects-compressed = @(PDF::IO::Serializer.new.body($dict, :compress)[0]<objects>);
 my $stream = @objects-compressed.tail(2).head.value[2]<stream>;

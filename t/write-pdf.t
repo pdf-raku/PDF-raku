@@ -25,7 +25,7 @@ for 't/pdf'.IO.dir.grep(/ [\w|'-']*? '.json'$/).sort -> $json-file {
     my ($rule) = %ast.keys;
     my %expected = :%ast;
 
-    my $class = PDF::Grammar::COS;
+    my PDF::Grammar::COS $class;
 
     PDF::Grammar::Test::parse-tests($class, ~$input, :$rule, :$actions, :suite("[$pdf-input-file]"), :%expected );
 

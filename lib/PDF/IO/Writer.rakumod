@@ -7,7 +7,6 @@ class PDF::IO::Writer {
     use PDF::IO;
     use PDF::COS::Type::XRef;
     use PDF::IO::IndObj;
-
     has PDF::IO $!input;
     has $.ast is rw;
     has UInt $.offset;
@@ -213,7 +212,7 @@ class PDF::IO::Writer {
     }
 
     multi method write-content($_ where Pair | Hash) {
-        my ($op, $args) = .kv;
+        my :($op, $args) := .kv;
         $args //= [];
         $.write-op($op, |@$args);
     }
@@ -298,8 +297,6 @@ class PDF::IO::Writer {
             !! join(' ', '<<', @entries, '>>');
     }
 
-    #| invertors for PDF::Grammar::Function expr term
-    #| an array is a sequence of sub-expressions
     multi method write-expr(List $_) {
 	[~] '{ ', .map({ $.write($_) }).join(' '), ' }';
     }
@@ -440,7 +437,7 @@ class PDF::IO::Writer {
         [~] $.write-dict(%dict), " stream\n", $data, "\nendstream";
     }
 
-    method write-trailer(% (:%dict), :$prev) {
+    method write-trailer(% (:%dict!), :$prev) {
 
         %dict<Prev> = :int($_)
             with $prev;
@@ -531,31 +528,33 @@ class PDF::IO::Writer {
     multi method write(Any:U $_)     { $.write-null($_); }
 
     multi method write(Pair $_) {
-        self."write-{.value.defined ?? .key !! 'null'}"( .value );
+        .value.defined
+            ?? self."write-{.key}"( .value )
+            !! self.write-null(Any);
     }
 
-    multi method write(Hash $ast) {
-        $.write( |$ast );
+    multi method write(%ast where .elems == 1) {
+        $.write: %ast.pairs[0];
+    }
+    multi method write(%ast is copy) is DEPRECATED {
+        my $key = %ast.keys.sort.first({ $.can("write-$_") })
+            or die "unable to handle {%ast.keys} struct: {%ast.raku}";
+        my $val = %ast{$key}:delete;
+        self."write-$key"($val, |%ast);
     }
 
-    multi method write( *@args, *%opt ) {
-        if @args -> $_ {
-            die "unexpected arguments: {.raku}"
-        }
-
-        if %opt {
-            my $key = %opt.keys.sort.first({  $.can("write-$_") })
-                or die "unable to handle {%opt.keys} struct: {%opt.raku}";
-            my $val = %opt{$key}:delete;
-            self."write-$key"($val, |%opt);
+    multi method write(*%ast where .so) is DEPRECATED {
+        $.write: %ast;
+    }
+    multi method write($_, *@) {
+        die "unable to write: {.raku}";
+    }
+    multi method write {
+        with $!ast {
+            self.write: $_;
         }
         else {
-            with $!ast {
-                self.write: $_;
-            }
-            else {
-                die "nothing to write";
-            }
+            die "nothing to write";
         }
     }
 
