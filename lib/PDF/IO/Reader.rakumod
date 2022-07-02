@@ -608,6 +608,8 @@ class PDF::IO::Reader {
         my UInt @ends;
         state $fast-reader = INIT try { (require ::('PDF::Native::Reader')).new }
 
+        $!compat = $!version // 1.4;
+
         while $offset.defined {
             my array @obj-idx; # array of shaped arrays
             @!xrefs.unshift: $offset;
@@ -617,7 +619,6 @@ class PDF::IO::Reader {
             my Str \xref = self!locate-xref(input-bytes, tail-bytes, $tail, $offset);
             if xref ~~ m:s/^ xref/ {
                 # traditional 1.4 cross reference index
-                $!compat = 1.4;
                 @obj-idx.append: (
                 $fast-reader.defined
                     ?? self!load-xref-table-fast( xref, $dict, :$offset, :$fast-reader)
@@ -629,12 +630,13 @@ class PDF::IO::Reader {
                     my Str \xref-stm = self!locate-xref(input-bytes, tail-bytes, $tail, $_);
                     @obj-idx.push: self!load-xref-stream(xref-stm, $xref-dict, :offset($_), :@discarded);
                 }
+                $!compat = 1.4 if $!compat > 1.4;
             }
             else {
                 # PDF 1.5+ cross reference stream.
                 # need to write index in same format for Adobe reader (issue #22)
-                $!compat = 1.5;
                 @obj-idx.push: self!load-xref-stream(xref, $dict, :$offset, :@discarded);
+                $!compat = 1.5 if $!compat < 1.5;
             }
 
             self!set-trailer: $dict;
@@ -899,7 +901,7 @@ class PDF::IO::Reader {
         .crypt-ast('body', $body, :mode<encrypt>)
             with $reader.crypt;
         :cos{
-            :header{ :$.type, :version($.compat) },
+            :header{ :$.type, :$!version },
             :$body,
         }
     }
