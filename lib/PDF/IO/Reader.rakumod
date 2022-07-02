@@ -617,6 +617,7 @@ class PDF::IO::Reader {
             my Str \xref = self!locate-xref(input-bytes, tail-bytes, $tail, $offset);
             if xref ~~ m:s/^ xref/ {
                 # traditional 1.4 cross reference index
+                $!compat = 1.4;
                 @obj-idx.append: (
                 $fast-reader.defined
                     ?? self!load-xref-table-fast( xref, $dict, :$offset, :$fast-reader)
