@@ -212,7 +212,8 @@ class PDF::IO::Writer {
     }
 
     multi method write-content($_ where Pair | Hash) {
-        my :($op, $args) := .kv;
+        ##        my :($op, $args) := .kv; # needs Rakudo > 2020.12
+        my ($op, $args) := .kv;
         $args //= [];
         $.write-op($op, |@$args);
     }
