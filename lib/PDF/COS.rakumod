@@ -70,36 +70,15 @@ role PDF::COS {
 	 $.required('PDF::COS::DateString').COERCE($dt);
     }
 
-    my $resolution-cache := {};
-    my sub resolve-package(Str:D $pkg) is export(:resolve-package) is raw {
-        my \found = $resolution-cache{$pkg};
-        found !=== Any ?? found !! resolve-package-slow-path($pkg);
-    }
-
-    sub add-to-cache(Str:D $pkg, \result --> Nil) {
-        my $new-cache = $resolution-cache.clone;
-        $new-cache{$pkg} := result;
-        $resolution-cache := $new-cache;
-    }
-
-    my &resolve-package-slow-path = $*RAKU.compiler.version >= v2022.04.74.g.1.c.4680544
-        ??  anon sub resolve-package-slow-path(Str:D $pkg) is raw {
-                my \found = do require ::($pkg);
-                add-to-cache($pkg, found);
-                found
-            }
-        !!  do {
-                my $resolve-lock = Lock.new;
-                anon sub resolve-package-slow-path(Str:D $pkg) is raw {
-                    my \found = $resolve-lock.protect: { require ::($pkg) }
-                    add-to-cache($pkg, found);
-                    found
+    my $resolve-lock = Lock.new;
+    method required(Str \mod-name) is hidden-from-backtrace {
+        $resolve-lock.protect: {
+            %loaded{mod-name}:exists
+                ?? %loaded{mod-name}
+                !! %loaded{mod-name} = do given ::(mod-name) {
+                    $_ ~~ Failure ?? do {.so; (require ::(mod-name))} !! $_;
                 }
-            }
-
-    method required(Str:D $pkg) is hidden-from-backtrace {
-        my \found = $resolution-cache{$pkg};
-        found !=== Any ?? found !! resolve-package-slow-path($pkg);
+        }
     }
     method !add-role($obj is rw, Str $role-name, Str $param?) {
 	my $role = $.required($role-name);

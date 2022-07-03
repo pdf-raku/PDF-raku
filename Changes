@@ -18,7 +18,7 @@
 
 0.5.7  2022-06-02T06:26:44+12:00
    - Upgrade from 32 to 64 bit indexing in cross reference streams
-     to support opening very large PDF 1.5+ (> 3.2Gb) files.
+     to support opening very large PDF 1.5+ (> 32Gb) files.
    - Added compatibility and automatic loading of PDF::Native. Soon
      to be released optional performance enhancement module.
 
