@@ -32,7 +32,7 @@ module PDF::COS::Util {
     multi sub ast-coerce(array:D $a) {
         $a.of ~~ Str
             ?? :array[ $a.map( -> $literal { :$literal }) ]
-            !! array => $a.Array;     
+            !! array => $a.Array;
     }
 
     multi sub ast-coerce(List:D $a where .of ~~ Numeric) {
@@ -80,10 +80,10 @@ module PDF::COS::Util {
 	:$literal
     }
     multi sub ast-coerce(Any:U) {Any}
-    multi sub ast-coerce(Enumeration $_) { ast-coerce(.value) }
     multi sub ast-coerce(Any:D $_) {
         die "don't know how to ast-coerce: {.raku}";
     }
+    multi sub ast-coerce(Enumeration $_) is default { ast-coerce(.value) }
 
     proto sub from-ast(|) is export(:from-ast) {*};
 

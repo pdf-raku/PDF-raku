@@ -3,6 +3,7 @@
    - Add PDF::COS::Dict required-entries() and aliases method
    - Faster version of required() method; adapted from LibXML.
    - Deprecate Hash slow-path in PDF::IO::Writer
+   - Fix regression in Pod::To::PDF t/render-pdf-test-sheets.t
 
 0.5.9  2022-06-09T08:20:15+12:00
    - Fix writing of Any as 'null'
