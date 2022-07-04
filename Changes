@@ -1,9 +1,11 @@
 {{$NEXT}}
 
+0.5.11  2022-07-04T15:46:11+12:00
+   - Fix locking for consistency in PDF::COS::Util ast_coerce()
+
 0.5.10  2022-07-04T12:46:14+12:00
    - Fix pdf-checker.raku for PDF 0.5.8+
    - Add PDF::COS::Dict required-entries() and aliases method
-   - Faster version of required() method; adapted from LibXML.
    - Deprecate Hash slow-path in PDF::IO::Writer
    - Fix regression in Pod::To::PDF t/render-pdf-test-sheets.t
 
