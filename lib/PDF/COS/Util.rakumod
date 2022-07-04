@@ -13,20 +13,22 @@ module PDF::COS::Util {
     multi sub ast-coerce(Str:D $literal!)  { :$literal }
 
     my Lock $lock .= new;
-    my %seen{Int};
+    my %seen{Any};
 
-    multi sub ast-coerce(Hash:D $_dict!) {
-        $lock.protect: {%seen{$*THREAD.id} //= my %{Any}};
-	my $dict = %seen{$*THREAD.id}{$_dict};
-
-	without $dict {
-	    $dict = %seen{$*THREAD.id}{$_dict} = {};
-	    $dict{.key} = to-ast(.value)
-                for $_dict.pairs;
-            LEAVE %seen{$*THREAD.id}{$_dict}:delete;
-	}
-
-	:$dict;
+    multi sub ast-coerce(Hash:D $_hash!) {
+        my $init;
+        my $dict = $lock.protect: {
+            %seen{$_hash} //= do {
+                $init = True;
+                %()
+            }
+        }
+        if $init {
+            LEAVE $lock.protect: { %seen{$_hash}:delete }
+    	    $dict{.key} = to-ast(.value)
+                for $_hash.pairs;
+        }
+        :$dict;
     }
 
     multi sub ast-coerce(array:D $a) {
@@ -40,17 +42,19 @@ module PDF::COS::Util {
     }
 
     multi sub ast-coerce(List:D $_list!) {
-        %seen{$*THREAD.id} //= my %{Any};
-	my $array = %seen{$*THREAD.id}{$_list};
-
-	without $array {
-	    $array = %seen{$*THREAD.id}{$_list} = [ ];
+        my $init;
+	my $array = $lock.protect: {
+            %seen{$_list} //= do {
+                $init = True;
+                [];
+            }
+        }
+        if $init {
+            LEAVE $lock.protect: { %seen{$_list}:delete }
 	    $array.push( to-ast( $_ ) )
-                for $_list.values;
-            LEAVE %seen{$*THREAD.id}{$_list}:delete;
-	}
-
-        :$array;
+            for $_list.values;
+        }
+	:$array;
     }
 
     sub date-time-formatter(DateTime $dt) returns Str is export(:date-time-formatter) {
@@ -138,3 +142,4 @@ module PDF::COS::Util {
 	? ($mask +& bit);
     }
 }
+
