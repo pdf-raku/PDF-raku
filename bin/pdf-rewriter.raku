@@ -11,7 +11,7 @@ sub MAIN(
     Str  :$password  = '';      # password for encrypted documents
     Bool :$repair    = False,   # bypass and repair index. recompute stream lengths. Handy when
                                 # PDF files have been hand-edited.
-    Bool :$rebuild ,    # rebuild object tree (renumber, garbage collect and deduplicate objects)
+    Bool :$rebuild is copy,     # rebuild object tree (renumber, garbage collect and deduplicate objects)
     Bool :$compress is copy,    # compress streams
     Bool :$uncompress,          # uncompress streams
     Str  :$class is copy,       # load a class (PDF::Class, PDF::Lite, PDF::API6)

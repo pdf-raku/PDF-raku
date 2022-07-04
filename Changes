@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.5.10  2022-07-04T12:46:14+12:00
    - Fix pdf-checker.raku for PDF 0.5.8+
    - Add PDF::COS::Dict required-entries() and aliases method
    - Faster version of required() method; adapted from LibXML.
