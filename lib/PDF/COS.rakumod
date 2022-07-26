@@ -21,7 +21,7 @@ role PDF::COS {
 		    $!obj-num = Nil;
 		}
 	    },
-	    );
+	);
     }
 
     # high precedence rule to strip enumerations

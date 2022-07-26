@@ -50,7 +50,6 @@ class PDF::COS::Coercer {
 	$class.COERCE( $obj, |c );
     }
 
-
     multi method coerce-to( List:D $obj is copy, PDF::COS::Tie::Array $role) {
         PDF::COS.coerce($obj).mixin: $role;
     }

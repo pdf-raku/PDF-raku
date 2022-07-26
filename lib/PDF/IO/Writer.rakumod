@@ -131,13 +131,14 @@ class PDF::IO::Writer {
     }
 
     #| build a PDF 1.5+ Cross Reference Stream
-    method !make-trailer-stream( Hash $trailer, @idx ) {
+    method !make-trailer-stream( Hash $trailer, @idx is copy) {
 	my UInt \startxref = $.offset;
         my %dict = %$trailer<dict>;
         my PDF::COS::Type::XRef $xref .= new: :%dict;
         $xref.Filter = 'FlateDecode';
         my $n := +@idx;
         my uint64 @xref-index[$n;4];
+        @idx .= sort: { .<obj-num> };
         with @idx.tail<obj-num> {
             $!size = $_ + 1
                 if !$!size || $!size <= $_;

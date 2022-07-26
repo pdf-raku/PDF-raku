@@ -57,12 +57,12 @@ class PDF::COS::Type::XRef
     sub pack-xref-stream-raku($xref-index where .shape[1] ~~ 4, @xref, @index) {
         my $size = -1;
         my $n = +$xref-index;
-
         for ^$n -> $i {
             my $obj-num = $xref-index[$i; 0];
-            my Bool \contiguous = ?( $obj-num == $size );
-            @index.push( $obj-num, 0 )
-                unless contiguous;
+            given $obj-num <=> $size {
+                when More { @index.push( $obj-num, 0 ) }
+                when Less { die "/XRef /Index is not sorted by ascending obj-num" }
+            }
             @index.tail++;
             @xref[$i; 0] = $xref-index[$i; 1];
             @xref[$i; 1] = $xref-index[$i; 2];
