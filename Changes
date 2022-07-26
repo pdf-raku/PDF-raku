@@ -1,5 +1,7 @@
 {{$NEXT}}
-   - Ensure cross reference entries are sorted by object number
+
+0.5.12  2022-07-27T05:13:06+12:00
+   - Ensure cross reference entries are sorted by object number #35
 
 0.5.11  2022-07-04T15:46:11+12:00
    - Fix locking for consistency in PDF::COS::Util ast_coerce()
