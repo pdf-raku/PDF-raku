@@ -5,6 +5,7 @@ class PDF::IO::Serializer {
     use PDF::COS;
     use PDF::COS::Stream;
     use PDF::COS::Util :&to-ast;
+    use PDF::COS::Type::ObjStm;
 
     has UInt $.size is rw = 1;      #| first free object number
     has Array %!objects-idx{Any};   #| unique objects index
@@ -125,7 +126,7 @@ class PDF::IO::Serializer {
 
     #| construct a reverse index that maps unique $objects
     #| to an object-number and generation-number.
-    method !index-object( Pair $ind-obj! is rw, :$object!) {
+    method !index-object( Pair $node!, :$object!) {
         my Int $obj-num = $object.obj-num 
             if ! $!reader || $object.reader === $!reader;
         my Int $gen-num;
@@ -141,7 +142,7 @@ class PDF::IO::Serializer {
             $gen-num = 0;
         }
 
-        take (:ind-obj[ $obj-num, $gen-num, $ind-obj]);
+        take (:ind-obj[ $obj-num, $gen-num, $node]);
         my $ind-ref = [ $obj-num, $gen-num ];
         %!objects-idx{$object} = $ind-ref;
         :$ind-ref;
@@ -187,29 +188,27 @@ class PDF::IO::Serializer {
                 $stream = $object.encoded;
             }
 
-            my $ind-obj;
-            my $slot;
-            my $dict;
-
-            with $stream {
+            my Hash $dict;
+            my $node;
+            my $node-value := do with $stream {
                 my $encoded = .Str;
-                $ind-obj = :stream{
+                $node = :stream{
                     :$dict,
                     :$encoded,
                 };
-                $slot := $ind-obj.value<dict>;
+                $node.value<dict>;
             }
             else {
-                $ind-obj = :$dict;
-                $slot := $ind-obj.value;
+                $node = :$dict;
+                $node.value;
             }
 
             # register prior to traversing the object; in case there are cyclical references
             my \rv = $indirect || $.is-indirect( $object )
-              ?? self!index-object($ind-obj, :$object )
-              !! $ind-obj;
+              ?? self!index-object($node, :$object )
+              !! $node;
 
-            $slot = self!freeze-dict($object);
+            $node-value = self!freeze-dict($object);
 
             rv;
         }
@@ -223,17 +222,16 @@ class PDF::IO::Serializer {
             :$ind-ref
         }
         else {
-            my $array;
-
-            my $ind-obj = :$array;
-            my $slot := $ind-obj.value;
+            my Array $array;
+            my $node = :$array;
+            my $node-value := $node.value;
 
             # register prior to traversing the object; in case there are cyclical references
             my \rv = $indirect || $.is-indirect( $object )
-                ?? self!index-object($ind-obj, :$object )
-                !! $ind-obj;
+                ?? self!index-object($node, :$object )
+                !! $node;
 
-            $slot = $object.of ~~ Numeric
+            $node-value = $object.of ~~ Numeric
                      ?? $object
                      !! self!freeze-array($object);
 
