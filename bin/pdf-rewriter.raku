@@ -24,7 +24,7 @@ sub MAIN(
     die "Can't stream a PDF file to itself"
         if $stream && $file-out eq $file-in;
 
-    $compress //= False if $uncompress || $render;
+    $compress //= False if $uncompress;
     $rebuild  //= True  if $decrypt || $render;
     $class    //= 'PDF::Lite' if $render;
 
@@ -79,7 +79,11 @@ sub MAIN(
         my $n = $pdf.page-count;
         for 1 .. $n {
             $*ERR.print: "rendering... $_/$n\r";
-            $pdf.page($_).render;
+            with $pdf.page($_) {
+                .render;
+                .<Contents><Filter>:delete
+                    unless $compress;
+            }
         }
         $*ERR.say: '';
     }
