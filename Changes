@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.5.13  2022-12-11T09:21:41+13:00
    - make pdf-rewriter.raku --render option only uncompress page content
    - refactor of PDF::COS::Tie multi-methods. Added !tie-container() private
      method for Hash/Dict coercement.
