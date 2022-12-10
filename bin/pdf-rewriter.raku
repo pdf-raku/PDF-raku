@@ -1,4 +1,4 @@
-#!/usr/bin/env perl6
+#!/usr/bin/env raku
 # Simple round trip read and rewrite a PDF
 use v6;
 use PDF::IO::Reader;

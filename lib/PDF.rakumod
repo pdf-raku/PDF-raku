@@ -4,7 +4,7 @@ use PDF::COS::Dict;
 
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
-class PDF:ver<0.5.12>
+class PDF:ver<0.5.13>
     is PDF::COS::Dict {
 
     use PDF::COS;

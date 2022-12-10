@@ -1,4 +1,7 @@
 {{$NEXT}}
+   - make pdf-rewriter.raku --render option only uncompress page content
+   - refactor of PDF::COS::Tie multi-methods. Added !tie-container() private
+     method for Hash/Dict coercement.
 
 0.5.12  2022-07-27T05:13:06+12:00
    - Ensure cross reference entries are sorted by object number #35
@@ -26,7 +29,7 @@
 
 0.5.7  2022-06-02T06:26:44+12:00
    - Upgrade from 32 to 64 bit indexing in cross reference streams
-     to support opening very large PDF 1.5+ (> 32Gb) files.
+     to support opening very large PDF 1.5+ (> 3.2Gb) files.
    - Added compatibility and automatic loading of PDF::Native. Soon
      to be released optional performance enhancement module.
 

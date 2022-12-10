@@ -836,8 +836,8 @@ class PDF::IO::Reader {
                     }
                 }
             }
-            else {
-                next if $incremental;
+            elsif $incremental {
+                next;
             }
 
             if $incremental && $offset && $obj-num {
@@ -852,9 +852,7 @@ class PDF::IO::Reader {
         }
 
         # preserve file order
-        my @objects = @object-refs.list.sort(*.key)».value;
-
-        @objects;
+        my @ = @object-refs.list.sort(*.key)».value;
     }
 
     #| get just updated objects. return as indirect objects
