@@ -206,6 +206,8 @@ role PDF::COS::Tie {
             %opts<alias> = %opts<accessor-name>;
             %opts<accessor-name> = $_;
         }
+        warn ':item-or-array should be used with arrays ("@" sigil)'
+            if %opts<decont> && !$att.name.starts-with: '@';
         %opts;
     }
 
