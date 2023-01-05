@@ -50,7 +50,7 @@ $pdf .= open: "tmp/threads.pdf";
 
 $page-tree-root = $pdf.Root<Pages>;
 
-(0..^(PAGES)).race.map: -> $idx {
+(^PAGES).race.map: -> $idx {
     my $n = $idx + 1;
     my PDF::COS::Dict:D $page = $page-tree-root<Kids>[$idx];
 

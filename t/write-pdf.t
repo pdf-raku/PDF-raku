@@ -22,7 +22,7 @@ for 't/pdf'.IO.dir.grep(/ [\w|'-']*? '.json'$/).sort -> $json-file {
     my PDF::IO::Writer $pdf-output .= new( :$input, :offset(0), :%ast );
     $pdf-output-file.IO.spurt: $pdf-output.Blob;
 
-    my ($rule) = %ast.keys;
+    my $rule = %ast.keys.head;
     my %expected = :%ast;
 
     my PDF::Grammar::COS $class;

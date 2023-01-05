@@ -3,9 +3,6 @@ use Test;
 plan 4;
 
 use PDF::IO::Reader;
-use PDF::IO::Writer;
-use PDF::COS;
-
 my PDF::IO::Reader $reader .= new;
 
 sub deref($val is rw, *@ops) is rw {

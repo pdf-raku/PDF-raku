@@ -134,7 +134,7 @@ role PDF::COS::Tie {
                 elsif $lval.isa(array) && $!type ~~ Positional[Numeric] {
                     # assume numeric. not so easy to type-check atm
                     # https://github.com/rakudo/rakudo/issues/4485
-                    # update: fixed as of Rakudo 2021.
+                    # update: fixed as of Rakudo 2021.08
                 }
                 else {
                     my \of-type = $!decont ?? $!type.of !! $!type;
@@ -207,7 +207,7 @@ role PDF::COS::Tie {
             %opts<accessor-name> = $_;
         }
         warn ':item-or-array should be used with arrays ("@" sigil)'
-            if %opts<decont> && !$att.name.starts-with: '@';
+            if %opts<decont> && $att.type !~~ Positional[Mu];
         %opts;
     }
 

@@ -264,7 +264,7 @@ class PDF:ver<0.5.13>
 	    .[1] = $.id; # Update modification ID
 	}
 	else {
-	    $_ = [ $.id, $.id ]; # Initialize creation and modification IDs
+	    $_ = [ $.id xx 2 ]; # Initialize creation and modification IDs
 	}
         $!id = Nil;
     }
