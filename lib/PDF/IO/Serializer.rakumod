@@ -157,13 +157,9 @@ class PDF::IO::Serializer {
     }
 
     #| should this be serialized as an indirect object?
-    method is-indirect($_) {
-        %!ref-count{$_} > 1            #| multiply referenced; needs to be indirect
-            || ? .?obj-num             #| indirect if it has an object number
-            || $_ ~~ PDF::COS::Stream  #| streams need to be indirect
-
-            || ($_ ~~ Hash && (.<Type>:exists)); # typed hash?
-   }
+    multi method is-indirect(PDF::COS::Stream) { True }
+    multi method is-indirect(Hash $_ where { .<Type>:exists }) { True }
+    multi method is-indirect($_) { %!ref-count{$_} > 1 || ? .obj-num }
 
     #| prepare an object for output.
     #| - if already encountered, return an indirect reference
