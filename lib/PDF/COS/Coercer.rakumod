@@ -16,7 +16,7 @@ class PDF::COS::Coercer {
     use PDF::COS::DateString;
     use PDF::COS::Null;
     use PDF::COS::TextString;
-
+    our $warn;
     method coerce($a is raw, $b is raw) { self.coerce-to($a, $b) }
 
     # strip enumerations
@@ -36,7 +36,7 @@ class PDF::COS::Coercer {
             if $obj ~~ PDF::COS::ByteString && $type ~~ PDF::COS::TextString | PDF::COS::DateString {
                 $obj = $type.COERCE: $obj, |c ;
             }
-            else {
+            elsif $warn {
 	        warn X::PDF::Coerce.new: :$obj, :$type;
             }
         }
@@ -59,7 +59,7 @@ class PDF::COS::Coercer {
     }
 
     multi method coerce-to( Any:D $obj, $type) {
-	warn X::PDF::Coerce.new( :$obj, :$type );
+	warn X::PDF::Coerce.new( :$obj, :$type ) if $warn;
         $obj;
     }
 
