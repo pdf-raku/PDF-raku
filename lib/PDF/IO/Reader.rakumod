@@ -228,12 +228,12 @@ class PDF::IO::Reader {
     }
 
     #| open the named PDF/FDF file
-    multi method open( Str $!file-name where {!.isa(PDF::IO)}, |c) {
+    multi method open( Str $!file-name where {!.isa(PDF::IO)}, |c) is hidden-from-backtrace {
         $.open( $!file-name.IO, |c );
     }
 
     #| deserialize a JSON dump
-    multi method open(IO::Path $input-path  where .extension.lc eq 'json', |c ) {
+    multi method open(IO::Path $input-path  where .extension.lc eq 'json', |c ) is hidden-from-backtrace {
         my \ast = from-json( $input-path.IO.slurp );
         my \root = ast<cos> if ast.isa(Hash);
         die X::PDF::BadJSON.new( :input-file($input-path.absolute) )
@@ -293,7 +293,7 @@ class PDF::IO::Reader {
         }
     }
 
-    multi method open($input!, |c) {
+    multi method open($input!, |c) is hidden-from-backtrace {
         $!input .= COERCE: $input;
         $.load-header( );
         $.load-cos( $.type, |c );
@@ -593,12 +593,12 @@ class PDF::IO::Reader {
         @!xrefs = [];
 
         $grammar.parse($tail, :$actions, :rule<postamble>)
-            or try {
+            or do {
                 CATCH { default {die X::PDF::BadTrailer.new( :$tail ); } }
                 # unable to find 'startxref'
                 # see if the PDF can be loaded sequentially
                 return self!full-scan( $grammar, $actions, |c )
-        }
+            }
 
         $!prev = $/.ast<startxref>;
         my UInt $offset = $!prev;

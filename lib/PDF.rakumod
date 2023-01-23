@@ -56,7 +56,7 @@ class PDF:ver<0.5.14>
     }
 
     #| open the input file-name or path
-    method open($spec, Str :$type, |c) {
+    method open($spec, Str :$type, |c) is hidden-from-backtrace {
         my PDF::IO::Reader $reader .= new;
         my \doc = self.new: :$reader;
 

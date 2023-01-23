@@ -16,7 +16,7 @@ class PDF::IO {
         $value;
     }
 
-    multi method COERCE( IO::Path $value, |c ) {
+    multi method COERCE( IO::Path $value, |c ) is hidden-from-backtrace {
 	self.COERCE( $value.open( :bin, |c ) );
     }
 
@@ -30,6 +30,10 @@ class PDF::IO {
 
     multi method COERCE( Blob $_!, |c) {
         PDF::COS.required('PDF::IO::Str').COERCE($_, |c);
+    }
+
+    multi method COERCE( Failure $_) is hidden-from-backtrace {
+        .throw;
     }
 
     multi method stream-data( List :$ind-obj! ) {
