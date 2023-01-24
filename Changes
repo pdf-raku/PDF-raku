@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.5.15  2023-01-25T06:41:44+13:00
+    - Handle and throw on IO.open failures
+
 0.5.14  2023-01-19T14:59:45+13:00
    - Suppress warning from PDF::COS::Coercer. See
      https://github.com/pdf-raku/PDF-Class-raku/issues/21
