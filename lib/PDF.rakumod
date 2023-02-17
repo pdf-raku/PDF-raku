@@ -34,6 +34,10 @@ class PDF:ver<0.5.15>
 
     has UInt $.Prev is entry; 
 
+    submethod TWEAK(:$file, |c) is hidden-from-backtrace {
+        self!open-file($_, |c) with $file;
+    }
+
     method id is rw {
         $!id //= do {
             # From [PDF 32000 Section 14.4 File Identifiers:
@@ -56,19 +60,21 @@ class PDF:ver<0.5.15>
     }
 
     #| open the input file-name or path
-    method open($spec, Str :$type, |c) is hidden-from-backtrace {
+    method open($spec, |c) is hidden-from-backtrace {
+        self.new!open-file: $spec, |c;
+    }
+    method !open-file(::?CLASS:D: $spec, Str :$type, |c) is hidden-from-backtrace {
         my PDF::IO::Reader $reader .= new;
-        my \doc = self.new: :$reader;
-
-        $reader.trailer = doc;
+        self.reader = $reader;
+        $reader.trailer = self;
         $reader.open($spec, |c);
         with $type {
             die "PDF file has wrong type: " ~ $reader.type
                 unless $reader.type eq $_;
         }
-        doc.crypt = $_
+        self.crypt = $_
             with $reader.crypt;
-        doc;
+        self;
     }
 
     method encrypt(PDF:D $doc: Str :$owner-pass!, Str :$user-pass = '', :$EncryptMetadata = True, |c ) {

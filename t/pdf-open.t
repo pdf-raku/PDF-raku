@@ -4,21 +4,20 @@ use Test;
 use PDF;
 use PDF::IO::Reader;
 
-for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
+for 't/pdf/samples'.IO.dir.sort -> $file {
 
-    my Str \ext = pdf-file.extension;
+    my Str \ext = $file.extension;
     next unless ext ~~ m:i/ [json|pdf|fdf] $/;
-    my $desc = ~ pdf-file;
+    my $desc = ~ $file;
 
-    my $pdf;
+    my PDF $pdf;
     if $desc ~~ /damaged/ {
-        dies-ok {$pdf = PDF.open( pdf-file ); $pdf.Info}, "$desc open - dies";
+        dies-ok {$pdf .= new: :$file; $pdf.Info}, "$desc open - dies";
         next;
     }
 
-    ##    lives-ok {
-    $pdf = PDF.open( pdf-file ); $pdf.Info; #}, "$desc open - lives"
-     ##   or next;
+    lives-ok { $pdf .= new: :$file; $pdf.Info; }, "$desc open - lives"
+        or next;
 
     isa-ok $pdf, ::('PDF'), "$desc trailer";
     ok $pdf.reader.defined, "$desc \$pdf.reader defined";
@@ -33,7 +32,7 @@ for 't/pdf/samples'.IO.dir.sort -> \pdf-file {
     else {
 	ok $pdf<Root> && $pdf<Root><Pages>, "$desc <Root><Pages> entry";
 
-	unless pdf-file ~~ /'no-pages'/ {
+	unless $file ~~ /'no-pages'/ {
 	    does-ok $pdf.Info, ::('PDF::COS::Type::Info'), "$desc document info";
 	    ok $pdf.Info && $pdf.Info.CreationDate // $pdf.Info.ModDate, "$desc <Info><CreationDate> entry";
 	    isa-ok $pdf<Info><CreationDate>//$pdf<Info><ModDate>, DateTime, "$desc CreationDate";
