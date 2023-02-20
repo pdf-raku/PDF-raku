@@ -64,9 +64,8 @@ class PDF:ver<0.5.15>
         self.new!open-file: $spec, |c;
     }
     method !open-file(::?CLASS:D: $spec, Str :$type, |c) is hidden-from-backtrace {
-        my PDF::IO::Reader $reader .= new;
+        my PDF::IO::Reader $reader .= new: :trailer(self);
         self.reader = $reader;
-        $reader.trailer = self;
         $reader.open($spec, |c);
         with $type {
             die "PDF file has wrong type: " ~ $reader.type

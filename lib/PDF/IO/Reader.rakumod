@@ -136,6 +136,10 @@ class PDF::IO::Reader {
 
     my enum IndexType <Free External Embedded>;
 
+    submethod TWEAK(PDF::COS::Dict :$trailer) {
+        self!install-trailer($_) with $trailer;
+    }
+
     method actions {
         state $actions //= PDF::Grammar::PDF::Actions.new: :lite;
     }
