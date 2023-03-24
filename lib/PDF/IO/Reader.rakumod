@@ -416,10 +416,10 @@ class PDF::IO::Reader {
                     Bool :$eager = True,     #| fetch object, if not already loaded
         ) {
 
-        $!lock.protect: {
-            my Hash $idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
-                // die "unable to find object: $obj-num $gen-num R";
+        my Hash $idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
+            // die "unable to find object: $obj-num $gen-num R";
 
+        $!lock.protect: {
             my $ind-obj;
             my Bool $have-ast = True;    
             with $idx<ind-obj> {
