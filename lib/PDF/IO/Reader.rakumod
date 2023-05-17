@@ -328,6 +328,7 @@ class PDF::IO::Reader {
 
             # ensure stream is followed by an 'endstream' marker
             my Str \tail = $input.byte-str( $offset + from + length, 20 );
+
             if tail ~~ m{<PDF::Grammar::COS::stream-tail>} {
                 warn X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
@@ -367,7 +368,7 @@ class PDF::IO::Reader {
                 my UInt $obj-len = do given $end - $offset {
                     when 0     { X::PDF::BadXRef::Entry.new: :details("Duplicate cross-reference destination (byte offset $offset) for $obj-num $gen-num R")}
                     when * < 0 { die X::PDF::BadXRef::Entry.new: :details("Attempt to fetch object $obj-num $gen-num R at byte offset $offset, past end of PDF ($end bytes)") }
-                    default    { $_ - 1 }
+                    default    { $_ }
                 }
 
                 my $input = $!input.byte-str( $offset, $obj-len );

@@ -11,7 +11,7 @@
     "JSON::Fast",
     "Method::Also",
     "OpenSSL",
-    "PDF::Grammar:ver<0.2.9+>"
+    "PDF::Grammar:ver<0.3.1+>"
   ],
   "description": "Base classes for reading, manipulation and writing of PDF data",
   "license": "Artistic-2.0",

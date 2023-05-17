@@ -323,7 +323,7 @@ class PDF::IO::Writer {
     }
 
     method write-ind-obj(@_) {
-        my (UInt \obj-num, UInt \gen-num, \object where Pair | Hash) = @_;
+        my (UInt \obj-num, UInt \gen-num, \object) = @_;
 
         "%d %d obj\n%s\nendobj\n".sprintf(obj-num, gen-num, $.write( object ));
     }
