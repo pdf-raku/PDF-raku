@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.5.17  2023-05-18T07:16:56+12:00
+    - Increase indirect object parse window by 1 byte.
+      fixes: https://github.com/pdf-raku/PDF-Class-raku/issues/22
+
 0.5.16  2023-02-21T05:46:04+13:00
     - Add :$file option to new(). Implicitly opens a PDF
 
