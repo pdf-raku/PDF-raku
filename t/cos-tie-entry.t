@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 74;
+plan 76;
 
 use PDF::COS::Dict;
 use PDF::COS::Name;
@@ -19,8 +19,9 @@ use PDF::Grammar::Test :is-json-equiv;
         has UInt $.three-dd is entry(:key<3DD>);
         has PDF::COS::Name $.Name is entry(:default<Foo>);
         has PDF::COS::Name @.Names is entry(:default['a', 'b', 'c']);
-        our subset TextString of PDF::COS::TextString;
-        has TextString $.Txt is entry;
+        has PDF::COS::TextString $.Txt is entry;
+        subset NameX of PDF::COS::Name where 'X';
+        has NameX $.X is entry;
     }
 
     my TestDict $dict;
@@ -56,10 +57,10 @@ use PDF::Grammar::Test :is-json-equiv;
     ok $fred ~~ TestDict::FredDict, 'subset sanity';
     lives-ok {$dict.SubsetDict =  $fred;}, 'subset dict - valid';
     quietly dies-ok {$dict.SubsetDict =  %()}, 'subset dict - invalid';
-    is-deeply $dict.Txt, TestDict::TextString, 'entry without default';
-    lives-ok {$dict.Txt = TestDict::TextString}, 'assignment to correct type object';
+    is-deeply $dict.Txt, PDF::COS::TextString, 'entry without default';
+    lives-ok {$dict.Txt = PDF::COS::TextString}, 'assignment to correct type object';
     quietly dies-ok {$dict.Txt = Hash}, 'assigment to wrong type object';
-    is-deeply $dict.Txt, TestDict::TextString, 'entry without default';
+    is-deeply $dict.Txt, PDF::COS::TextString, 'entry without default';
     ok !($dict<Name>:exists), 'defaulted entry';
     ok !($dict<Name>.defined), 'defaulted raw value';
     is $dict.Name, 'Foo', 'defaulted accessor value';
@@ -77,9 +78,9 @@ use PDF::Grammar::Test :is-json-equiv;
 
     is $dict.Names[1], 'b', 'defaulted array';
     does-ok $dict.Names[1], PDF::COS::Name, 'defaulted array';
-    todo "test may fail on Raku < 2021.10"
-        unless $*RAKU.compiler.version >= v2021.10; 
-    lives-ok { $dict.Txt = 'Hi' }, 'text-string sanity';
+    lives-ok { $dict.Txt = 'Hi';}, 'text-string sanity';
+    lives-ok { $dict.X = 'X';}, 'name subset valide';
+    dies-ok { $dict.X = 'Y';}, 'name subset invalid';
 }
 
 {
