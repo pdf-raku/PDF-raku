@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.5.18  2023-05-24T08:53:23+12:00
+    - Rework invalid test in t/cos-tie-entry.t, which was failing on
+      Rakudo blead
+
 0.5.17  2023-05-18T07:16:56+12:00
     - Increase indirect object parse window by 1 byte.
       fixes: https://github.com/pdf-raku/PDF-Class-raku/issues/22
