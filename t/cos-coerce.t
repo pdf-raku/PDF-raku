@@ -96,9 +96,4 @@ sub coerce-dict-test(PDF::COS::Dict() $dict) {
     is $dict<Length>, $Length;
 }
 
-if $*PERL.compiler.version > v2020.10 {
-    coerce-dict-test( { :$Length});
-}
-else {
-    skip "Rakudo 2020.11 needed for coercements", 2;
-}
+coerce-dict-test( { :$Length});
