@@ -18,7 +18,7 @@ jobs:
           - windows-latest
         raku-version:
           - 'latest'
-          - '2021.12'
+          - '2022.07'
         exclude:
           - os: windows-latest
             raku-version: 'latest'
