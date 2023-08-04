@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.5.19  2023-08-04T16:09:25+12:00
+    - Fix xref loading via PDF::Native to allow whitespace between
+      xref and trailer.
+
 0.5.18  2023-05-24T08:53:23+12:00
     - Rework invalid test in t/cos-tie-entry.t, which was failing on
       Rakudo blead
