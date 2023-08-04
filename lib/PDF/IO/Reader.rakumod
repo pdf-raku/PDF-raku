@@ -562,7 +562,7 @@ class PDF::IO::Reader {
 
         # parse and load the trailer
         my $trailer = $buf.subbuf($bytes).decode("latin-1");
-        my $parse = PDF::Grammar::COS.subparse( $trailer, :rule<trailer>, :$.actions );
+        my $parse = PDF::Grammar::COS.subparse( $trailer.trim, :rule<trailer>, :$.actions );
         die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
             unless $parse;
         my \index = $parse.ast;
