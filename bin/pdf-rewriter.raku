@@ -66,6 +66,7 @@ sub MAIN(
     }
     elsif $decrypt {
         # ensure all objects have been loaded and decrypted
+        note "decrypting...";
         $reader.get-objects;
     }
 
@@ -76,13 +77,14 @@ sub MAIN(
     }
 
     if $render {
-        my $n = $pdf.page-count;
-        for 1 .. $n {
-            $*ERR.print: "rendering... $_/$n\r";
+        my $n := $pdf.page-count;
+        (1 .. $n).race.map: {
+            $*ERR.print: "rendering... $_/$n  \r";
             with $pdf.page($_) {
                 .render;
                 .<Contents><Filter>:delete
                     unless $compress;
+                .finish;
             }
         }
         $*ERR.say: '';
