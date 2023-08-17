@@ -18,7 +18,7 @@ class PDF::IO::Crypt::PDF
     }
 
     #| generate encryption
-    submethod !generate( Hash :$doc!, Bool :$aes, UInt :$V = $aes ?? 4 !! 3, |c ) {
+    submethod !generate( Hash :$doc!, Bool :$aes, UInt :$V = $aes ?? 4 !! 2, |c ) {
         my $class = $aes
             ?? PDF::IO::Crypt::AESV2
             !! PDF::IO::Crypt::RC4;

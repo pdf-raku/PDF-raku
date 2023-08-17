@@ -63,10 +63,8 @@ class PDF::IO::Crypt {
 	    && $Length %% 8;
 
 	$!key-bytes = $Length +> 3;
-	$doc.generate-id
-	    unless $doc<ID>;
-
-	@!doc-id = $doc<ID>[0].ords;
+        my $id = $doc<ID> // [$doc.id];
+	@!doc-id = $id[0].ords;
 	my uint8 @p8 = pack-le($permissions, 32);
 	@!permissions = @p8;
 

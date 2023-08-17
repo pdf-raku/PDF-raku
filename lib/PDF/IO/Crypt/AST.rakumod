@@ -18,16 +18,16 @@ role PDF::IO::Crypt::AST {
     }
 
     multi method crypt-ast('array', Array $ast, |c) {
-	$.crypt-ast($_, |c) for $ast.values;
+	$.crypt-ast($_, |c) for $ast.values.grep(*.defined)
     }
 
     multi method crypt-ast('dict', Hash $ast, |c) {
-	$.crypt-ast(.value, |c) for $ast.pairs.sort;
+	$.crypt-ast(.value, |c) for $ast.pairs.sort
     }
 
     multi method crypt-ast('stream', Hash $ast, |c) {
-	$.crypt-ast($_, |c)
-	    for $ast.pairs;
+        $.crypt-ast($_, |c)
+            for $ast.pairs;
         $ast<dict><Length> = %( :int(.codes) )
             with $ast<encoded>;
     }
