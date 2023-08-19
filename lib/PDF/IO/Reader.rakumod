@@ -1,5 +1,3 @@
-use v6;
-
 my sub substr($_, |c) {
     .can('byte-str') ?? .byte-str(|c) !! .substr(|c);
 }

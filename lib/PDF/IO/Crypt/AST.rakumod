@@ -2,6 +2,7 @@ use v6;
 
 role PDF::IO::Crypt::AST {
 
+    my subset EncryptionDictLike of Hash where .<Filter> && .<U> && .<O> && .<P>;
     #| encrypt/decrypt all strings/streams in a PDF body
     multi method crypt-ast('body', Array $body, Str :$mode = 'decrypt') {
 	for $body.values {
@@ -18,11 +19,13 @@ role PDF::IO::Crypt::AST {
     }
 
     multi method crypt-ast('array', Array $ast, |c) {
-	$.crypt-ast($_, |c) for $ast.values.grep(*.defined)
+	$.crypt-ast($_, |c) for $ast.values
     }
 
     multi method crypt-ast('dict', Hash $ast, |c) {
-	$.crypt-ast(.value, |c) for $ast.pairs.sort
+        if $ast ~~ EncryptionDictLike {
+	    $.crypt-ast(.value, |c) for $ast.pairs.sort;
+        }
     }
 
     multi method crypt-ast('stream', Hash $ast, |c) {
@@ -34,10 +37,15 @@ role PDF::IO::Crypt::AST {
 
     multi method crypt-ast(Str $key where 'hex-string'|'literal'|'encoded' , $ast is rw, :$obj-num, |c) {
 	$ast = $.crypt( $ast, :$obj-num, |c )
-	    if $obj-num
+	    if $obj-num;
+    }
+    multi method crypt-ast(Str $key where 'hex-string'|'literal'|'encoded' , $ast, :$obj-num, :$gen-num, |c) {
+        warn "read only '$key' {$ast.raku} in $obj-num $gen-num R";
     }
 
-    multi method crypt-ast( Pair $p, |c) { $.crypt-ast( $p.key, $p.value, |c) }
+    multi method crypt-ast( Pair $p, |c) {
+        $.crypt-ast( $p.key, $p.value, |c)
+    }
 
     #| for JSON deserialization, e.g. { :int(42) } => :int(42)
     use PDF::Grammar :AST-Types;
@@ -47,6 +55,6 @@ role PDF::IO::Crypt::AST {
     }
 
     multi method crypt-ast(Str $key, $) { }
-    multi method crypt-ast(Numeric) { }
-
+    multi method crypt-ast(Numeric:D, |c) { }
+    multi method crypt-ast(Any:U, |c) { }
 }
