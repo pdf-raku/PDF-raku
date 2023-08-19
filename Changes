@@ -1,4 +1,6 @@
 {{$NEXT}}
+    - Fix #37 some text values not being encrypted. Also fix logic
+      around bypassing encryption dictionary.
 
 0.5.19  2023-08-04T16:09:25+12:00
     - Fix xref loading via PDF::Native to allow whitespace between

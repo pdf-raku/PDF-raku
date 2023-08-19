@@ -2,7 +2,8 @@ use v6;
 
 role PDF::IO::Crypt::AST {
 
-    my subset EncryptionDictLike of Hash where .<Filter> && .<U> && .<O> && .<P>;
+    my subset EncryptionDictLike of Hash where (.<Filter>:exists) && (.<U>:exists) && (.<O>:exists) && (.<P>:exists);
+
     #| encrypt/decrypt all strings/streams in a PDF body
     multi method crypt-ast('body', Array $body, Str :$mode = 'decrypt') {
 	for $body.values {
@@ -23,7 +24,7 @@ role PDF::IO::Crypt::AST {
     }
 
     multi method crypt-ast('dict', Hash $ast, |c) {
-        if $ast ~~ EncryptionDictLike {
+        unless $ast ~~ EncryptionDictLike {
 	    $.crypt-ast(.value, |c) for $ast.pairs.sort;
         }
     }

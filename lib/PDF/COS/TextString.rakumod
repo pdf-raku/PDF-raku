@@ -106,9 +106,10 @@ To regenerate:
     }
 
     method content {
-        my $doc-enc = pdfdoc-encode(self)
+        my $doc-enc = self.&pdfdoc-encode()
             unless $!bom;
-	$!type => $doc-enc // utf16-encode(self);
+        $doc-enc //= self.&utf16-encode();
+	$!type => $doc-enc;
     }
     multi method COERCE(Str:D $value, |c) {
         self.new: :$value, |c;

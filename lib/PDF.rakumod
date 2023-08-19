@@ -1,5 +1,3 @@
-use v6;
-
 use PDF::COS::Dict;
 
 #| this class represents the top level node in a PDF or FDF document,
