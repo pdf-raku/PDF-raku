@@ -98,7 +98,7 @@ for $test-v1, $test-v2, $test-v4-rc4, $test-identity {
 
     my $obj-num = 6;
     my $gen-num = 0;
-    my $length = 46;
+    my $Length = 46;
 
     is-deeply $crypt.crypt(:$obj-num, :$gen-num, $cipher-text), $plain-text, "$case - decryption";
     is-deeply $crypt.crypt(:$obj-num, :$gen-num, $plain-text), $cipher-text, "$case - encryption";
@@ -106,14 +106,14 @@ for $test-v1, $test-v2, $test-v4-rc4, $test-identity {
     my $encoded = $cipher-text;
     my $ast = :ind-obj[ $obj-num, $gen-num,
 			:stream{
-			    :dict{ :Length{ :int($length) } },
+			    :dict{ :$Length },
 			    :$encoded,
 			}];
 
     $encoded = $plain-text;
     my $ast-decrypted = :ind-obj[ $obj-num, $gen-num,
 			      :stream{
-				  :dict{ :Length{ :int($length) } },
+				  :dict{ :$Length },
 				  :$encoded,
 				  }];
 

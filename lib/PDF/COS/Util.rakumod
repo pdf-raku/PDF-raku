@@ -52,7 +52,7 @@ module PDF::COS::Util {
         if $init {
             LEAVE $lock.protect: { %seen{$_list}:delete }
 	    $array.push( to-ast( $_ ) )
-            for $_list.values;
+                for $_list.values;
         }
 	:$array;
     }

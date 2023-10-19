@@ -32,7 +32,7 @@ role PDF::IO::Crypt::AST {
     multi method crypt-ast('stream', Hash $ast, |c) {
         $.crypt-ast($_, |c)
             for $ast.pairs;
-        $ast<dict><Length> = %( :int(.codes) )
+        $ast<dict><Length> = .codes
             with $ast<encoded>;
     }
 
