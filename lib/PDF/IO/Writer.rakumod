@@ -17,7 +17,7 @@ class PDF::IO::Writer {
 
     my Lock $lock .= new;
 
-    #| optional role to apply when LibXML::Native is available
+    #| optional role to apply when PDF::Native is available
     role Native[$writer] {
         # load some native faster alternatives
 
@@ -35,7 +35,7 @@ class PDF::IO::Writer {
            with $input;
 
         $lock.protect: {
-            # No thread-safe on older Rakudos
+            # Not thread-safe on older Rakudos
             given try {require ::('PDF::Native::Writer')} -> $writer {
                 unless $writer === Nil {
                     self does Native[$writer];
@@ -471,7 +471,7 @@ class PDF::IO::Writer {
         my Hash @xrefs;
         loop (my uint $i = 0; $i < $total-entries;) {
             my uint $obj-count = self!xref-segment-length(@idx, $i, $total-entries);
-            my uint32 $obj-first-num = @idx[$i;1];
+            my uint $obj-first-num = @idx[$i;1];
 
 	    # [ PDF 32000 7.5.4 Cross-Reference Table:
 	    # "Each cross-reference subsection contains entries for a contiguous range of object numbers"]

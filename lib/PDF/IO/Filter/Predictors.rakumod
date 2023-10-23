@@ -162,14 +162,14 @@ class PDF::IO::Filter::Predictors {
             $colors *= $bpc div 8;
             $bpc = 8;
         }
+        my uint $row-size = ($colors * $bpc * $Columns + 7) div 8;
+        my $rows = +$buf div ($row-size + 1);
+
         my uint $idx = 0;
         my uint8 @out;
         my int $n = 0;
 
-        my uint $row-size = ($colors * $bpc * $Columns + 7) div 8;
-
         # each input row also has a tag
-        my $rows = +$buf div ($row-size + 1);
         # preallocate
         @out[$rows * $row-size - 1] = 0
             if $rows;
