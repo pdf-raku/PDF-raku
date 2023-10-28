@@ -43,7 +43,8 @@ To regenerate:
 
 =end pod
 
-    constant BOM-BE = "\xFE\xFF";
+    constant BOM-UTF16-BE = "\xFE\xFF";
+    constant BOM-UTF8 = "\xEF\xBB\xBF";
 
     our constant @pdfdoc-dec = [
      "\0", "\x[1]", "\x[2]", "\x[3]", "\x[4]", "\x[5]", "\x[6]",
@@ -83,9 +84,14 @@ To regenerate:
             when PDF::COS::TextString {
                 return $_;
             }
-            when .starts-with(BOM-BE) {
+            when .starts-with(BOM-UTF16-BE) {
                 $bom //= True;
                 $value = .substr(2).encode('latin-1').decode('utf16be');
+            }
+            when .starts-with(BOM-UTF8) {
+                # PDF 2.0
+                $bom //= True;
+                $value = .substr(3).encode('latin-1').decode('utf8');
             }
             when PDF::COS::ByteString {
                 # decode UTF-16BE / PDFDoc encoded byte string
@@ -98,7 +104,7 @@ To regenerate:
     }
 
     our sub utf16-encode(Str $str --> Str) {
-	 BOM-BE ~ $str.encode('utf16be').decode('latin-1');
+	 BOM-UTF16-BE ~ $str.encode('utf16be').decode('latin-1');
     }
 
     our sub pdfdoc-encode(Str $str --> Str) {

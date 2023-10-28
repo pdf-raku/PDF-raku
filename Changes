@@ -1,4 +1,5 @@
 {{$NEXT}}
+    - Add read support for PDF 2.0 UTF-8 encoded text strings
 
 0.6.0  2023-08-20T11:54:07+12:00
     - Fix #37 some text values not being encrypted. Also fix logic

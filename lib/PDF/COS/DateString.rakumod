@@ -21,9 +21,15 @@ class PDF::COS::DateString
             $/;
 
     multi method new(Str $pdf-date! is copy) {
-        constant BOM-BE = "\xFE\xFF";
-        $pdf-date = Buf.new($pdf-date.ords).decode('utf-16')
-            if $pdf-date.starts-with(BOM-BE);
+        my constant BOM-UTF16-BE = "\xFE\xFF";
+        my constant BOM-UTF8 = "\xEF\xBB\xBF";
+        if $pdf-date.starts-with(BOM-UTF16-BE) {
+            $pdf-date = Buf.new($pdf-date.ords).decode('utf16be');
+        }
+        elsif $pdf-date.starts-with(BOM-UTF8) {
+            # PDF 2.0
+            $pdf-date = Buf.new($pdf-date.ords).decode('utf8');
+        }
 	$pdf-date ~~ DateRegex
 	    or die "Date /$pdf-date/ not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
 
