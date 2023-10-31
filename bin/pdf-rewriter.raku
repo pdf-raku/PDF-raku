@@ -82,6 +82,7 @@ sub MAIN(
             $*ERR.print: "rendering... $_/$n  \r";
             with $pdf.page($_) {
                 .render;
+                .finish;
                 .<Contents><Filter>:delete
                     unless $compress;
                 .finish;
