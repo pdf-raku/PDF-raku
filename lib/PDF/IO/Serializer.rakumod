@@ -241,7 +241,7 @@ class PDF::IO::Serializer {
     #| build AST, starting at the trailer.
     method ast(
         PDF::COS $trailer!,
-        Numeric :$version=1.3,
+        Numeric :$version=1.4,
         Str     :$!type,     #| e.g. 'PDF', 'FDF;
         Bool    :$compress,
                 :$crypt,

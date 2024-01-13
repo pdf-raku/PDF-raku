@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+0.6.2  2024-01-13T14:09:09+13:00
+    - Change header version from '%PDF-1.3' to '%PDF-1.4'. This module,
+      and the wider PDF tool-chain, implement a number of PDF 1.4 features.
+      See https://en.wikipedia.org/wiki/History_of_PDF.
+
 0.6.1  2023-11-01T06:18:06+13:00
     - Add read support for PDF 2.0 UTF-8 encoded text strings
     - Fix pdf-rewriter.raku --render when input pages are an array

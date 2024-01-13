@@ -13,7 +13,7 @@ class PDF::IO::Writer {
     has UInt $.prev;
     has UInt $.size;
     has Str  $.indent is rw = '';
-    has Rat $.compat is rw = 1.4;
+    has Rat  $.compat is rw = 1.4;
 
     my Lock $lock .= new;
 
@@ -418,7 +418,7 @@ class PDF::IO::Writer {
 
     method write-header($_ ) {
         my Str \type = .<type> // 'PDF';
-        '%%%s-%.1f'.sprintf(type, .<version> // 1.2);
+        '%%%s-%.1f'.sprintf(type, .<version> // 1.4);
     }
 
     multi method write-real( Int $_ ) {
