@@ -65,7 +65,7 @@ role PDF::COS::Tie::Array does PDF::COS::Tie {
 	my Attribute \att = $.index[$pos] // $.of-att;
 
         .tie($lval, :$check) with att;
-	nextwith($pos, $lval )
+	self.BIND-POS($pos, $lval )
     }
 
     method push($val) {

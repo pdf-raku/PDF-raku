@@ -87,7 +87,7 @@ role PDF::COS::Tie::Hash
 	my Attribute \att = %.entries{$key} // $.of-att;
 
         .tie($lval, :$check) with att;
-	nextwith($key, $lval )
+	self.BIND-KEY($key, $lval )
     }
 
     multi method COERCE(PDF::COS::Tie::Hash $hash) {
