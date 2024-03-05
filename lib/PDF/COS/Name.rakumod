@@ -1,8 +1,8 @@
 use v6;
-use PDF::COS;
 
-role PDF::COS::Name
-    does PDF::COS {
+role PDF::COS::Name {
+    use PDF::COS;
+    also does PDF::COS;
 
     method content {
         :name(self.fmt)

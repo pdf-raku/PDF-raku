@@ -1,10 +1,10 @@
 use v6;
 
-use PDF::COS;
+class PDF::COS::TextString {
 
-class PDF::COS::TextString
-    does PDF::COS
-    is Str {
+    use PDF::COS;
+    also does PDF::COS;
+    also is Str;
 
     use PDF::COS::ByteString;
 

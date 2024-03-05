@@ -1,14 +1,15 @@
 use v6;
 
-use PDF::COS;
-use PDF::COS::Tie;
-use PDF::COS::Tie::Hash;
-
 #| Dict - base class for dictionary objects, e.g. Catalog Page ...
-class PDF::COS::Dict
-    is Hash
-    does PDF::COS
-    does PDF::COS::Tie::Hash {
+class PDF::COS::Dict {
+    also is Hash;
+
+    use PDF::COS;
+    use PDF::COS::Tie;
+    use PDF::COS::Tie::Hash;
+
+    also does PDF::COS;
+    also does PDF::COS::Tie::Hash;
 
     use PDF::COS::Util :&from-ast, :&ast-coerce;
     my %seen{Hash} = (); #= to catch circular references

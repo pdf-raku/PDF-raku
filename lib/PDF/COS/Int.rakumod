@@ -1,8 +1,8 @@
 use v6;
-use PDF::COS;;
 
-role PDF::COS::Int
-    does PDF::COS {
+role PDF::COS::Int {
+    use PDF::COS;
+    also does PDF::COS;
 
     use PDF::COS::Util :&flag-is-set;
     method flag-is-set(uint $flag-num) is DEPRECATED returns Bool {

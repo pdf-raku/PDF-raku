@@ -1,12 +1,13 @@
 use v6;
 
-use PDF::COS;
-use PDF::COS::Tie::Array;
+class PDF::COS::Array {
+    also is Array;
 
-class PDF::COS::Array
-    is Array
-    does PDF::COS
-    does PDF::COS::Tie::Array {
+    use PDF::COS;
+    use PDF::COS::Tie::Array;
+
+    also does PDF::COS;
+    also does PDF::COS::Tie::Array;
 
     use PDF::COS::Util :&from-ast, :&ast-coerce;
     my %seen{List} = (); #= to catch circular references

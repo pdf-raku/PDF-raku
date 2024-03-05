@@ -1,8 +1,9 @@
-use PDF::COS :LatinStr;
 my subset ContentType of Str where 'literal'|'hex-string';
 
-role PDF::COS::ByteString[ContentType $type = 'literal']
-    does PDF::COS {
+role PDF::COS::ByteString[ContentType $type = 'literal'] {
+
+    use PDF::COS :LatinStr;
+    also does PDF::COS;
 
     method content {
         my $value = self.fmt;

@@ -1,10 +1,10 @@
 use v6;
 
-use PDF::COS;
+class PDF::COS::DateString {
 
-class PDF::COS::DateString
-    does PDF::COS
-    is DateTime {
+    use PDF::COS;
+    also does PDF::COS;
+    also is DateTime;
 
     use PDF::COS::Util :date-time-formatter;
     BEGIN our &formatter = &date-time-formatter;

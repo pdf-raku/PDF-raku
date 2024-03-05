@@ -1,10 +1,9 @@
 use v6;
 
-use PDF::COS::Dict;
-
 #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
-class PDF::COS::Stream
-    is PDF::COS::Dict {
+class PDF::COS::Stream {
+    use PDF::COS::Dict;
+    also is PDF::COS::Dict;
 
     use PDF::COS::Tie;
     use PDF::COS::Name;
