@@ -1,6 +1,5 @@
 use v6;
 
-
 unit role PDF::COS::Tie::Hash;
 
 use PDF::COS::Tie :COSDictAttrHOW;

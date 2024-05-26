@@ -1,67 +1,67 @@
 use v6;
 
-class PDF::COS::DateString {
+unit class PDF::COS::DateString;
 
-    use PDF::COS;
-    also does PDF::COS;
-    also is DateTime;
+use PDF::COS;
+also does PDF::COS;
+also is DateTime;
 
-    use PDF::COS::Util :date-time-formatter;
-    BEGIN our &formatter = &date-time-formatter;
+use PDF::COS::Util :date-time-formatter;
+BEGIN our &formatter = &date-time-formatter;
 
-    our constant DateRegex = rx/^
-                'D:'?
-                $<year>=\d**4
-                [$<dd>=\d**2]**0..5
-                [$<tz-sign>=< + - Z >
-	          [$<tz-hour>=\d**2
-                    [\' $<tz-min>=\d**2]? \'?
-                  ]?
-                ]?
-            $/;
+our constant DateRegex = rx/^
+            'D:'?
+            $<year>=\d**4
+            [$<dd>=\d**2]**0..5
+            [$<tz-sign>=< + - Z >
+              [$<tz-hour>=\d**2
+                [\' $<tz-min>=\d**2]? \'?
+              ]?
+            ]?
+        $/;
 
-    multi method new(Str $pdf-date! is copy) {
-        my constant BOM-UTF16-BE = "\xFE\xFF";
-        my constant BOM-UTF8 = "\xEF\xBB\xBF";
-        if $pdf-date.starts-with(BOM-UTF16-BE) {
-            $pdf-date = Buf.new($pdf-date.ords).decode('utf16be');
-        }
-        elsif $pdf-date.starts-with(BOM-UTF8) {
-            # PDF 2.0
-            $pdf-date = Buf.new($pdf-date.ords).decode('utf8');
-        }
-	$pdf-date ~~ DateRegex
-	    or die "Date /$pdf-date/ not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
-
-        my UInt \year  = +$<year>;
-        my UInt \month = +( @<dd>[0] // 1 );
-        my UInt \day   = +( @<dd>[1] // 1 );
-        my UInt \hour  = +( @<dd>[2] // 0 );
-        my UInt \min   = +( @<dd>[3] // 0 );
-        my UInt \sec   = +( @<dd>[4] // 0 );
-        my Str  \tz = $<tz-sign> && $<tz-sign> ne 'Z'
-            ?? sprintf '%s%02d%02d', $<tz-sign>, $<tz-hour>, $<tz-min>
-	    !! '';
-
-        my Str \iso-date = sprintf "%04d-%02d-%02dT%02d:%02d:%02d%s", year, month, day, hour, min, sec, tz;
-
-	nextwith( iso-date, :&formatter );
+multi method new(Str $pdf-date! is copy) {
+    my constant BOM-UTF16-BE = "\xFE\xFF";
+    my constant BOM-UTF8 = "\xEF\xBB\xBF";
+    if $pdf-date.starts-with(BOM-UTF16-BE) {
+        $pdf-date = Buf.new($pdf-date.ords).decode('utf16be');
     }
-
-    method content {
-	my Str $literal = formatter( self );
-	:$literal;
+    elsif $pdf-date.starts-with(BOM-UTF8) {
+        # PDF 2.0
+        $pdf-date = Buf.new($pdf-date.ords).decode('utf8');
     }
+    $pdf-date ~~ DateRegex
+        or die "Date /$pdf-date/ not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
 
-    multi method COERCE(PDF::COS::DateString $_) { $_ }
-    multi method COERCE(Str:D $obj, |c) {
-        self.new($obj, |c);
-    }
+    my UInt \year  = +$<year>;
+    my UInt \month = +( @<dd>[0] // 1 );
+    my UInt \day   = +( @<dd>[1] // 1 );
+    my UInt \hour  = +( @<dd>[2] // 0 );
+    my UInt \min   = +( @<dd>[3] // 0 );
+    my UInt \sec   = +( @<dd>[4] // 0 );
+    my Str  \tz = $<tz-sign> && $<tz-sign> ne 'Z'
+        ?? sprintf '%s%02d%02d', $<tz-sign>, $<tz-hour>, $<tz-min>
+        !! '';
 
-    multi method COERCE(DateTime:D $dt, |c) {
-        my %args = <year month day hour minute second timezone>.map: {$_ => $dt."$_"() };
-        self.new: |%args, :&formatter;
-    }
+    my Str \iso-date = sprintf "%04d-%02d-%02dT%02d:%02d:%02d%s", year, month, day, hour, min, sec, tz;
+
+    nextwith( iso-date, :&formatter );
+}
+
+method content {
+    my Str $literal = formatter( self );
+    :$literal;
+}
+
+multi method COERCE(PDF::COS::DateString $_) { $_ }
+multi method COERCE(Str:D $obj, |c) {
+    self.new($obj, |c);
+}
+
+multi method COERCE(DateTime:D $dt, |c) {
+    my %args = <year month day hour minute second timezone>.map: {$_ => $dt."$_"() };
+    self.new: |%args, :&formatter;
+}
 
 =begin pod
 
@@ -85,5 +85,3 @@ The apostrophe character (') after HH and mm is part of the syntax. All fields a
 # numerical fields default to zero values. A plus sign (+) as the value of the O field signifies that local time is later than UT, a minus sign (−) signifies that local time is earlier than UT, and the letter Z signifies that local time is equal to UT. If no UT information is specified, the relationship of the specified time to UT is considered to be unknown. Regardless of whether the time zone is known, the rest of the date should be specified in local time.
 
 =end pod
-
-}

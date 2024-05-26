@@ -160,15 +160,11 @@ role PDF::COS {
         $.required('PDF::COS::Coercer');
     }
 
-    method loader is rw {
+    method loader is rw handles <load-delegate> {
 	unless $loader.can('load-delegate') {
 	    $loader = $.required('PDF::COS::Loader');
 	}
 	$loader
-    }
-
-    method load-delegate(|c) {
-	$.loader.load-delegate(|c);
     }
 
     multi method ACCEPTS(Any:D $v) is default {
