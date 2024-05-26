@@ -1,12 +1,12 @@
 use v6;
 
-
 unit role PDF::COS::Tie::Hash;
 
 use PDF::COS::Tie :COSDictAttrHOW;
 also does PDF::COS::Tie;
 
 has Str %.aliases;
+has Attribute %.entries;
 has Bool %.required-entries;
 
 use PDF::COS;
@@ -49,7 +49,7 @@ method tie-init {
    for class.^attributes.grep(COSDictAttrHOW) -> \att {
        given att.cos {
            my \key  = .accessor-name;
-           %.entries{key} //= att;
+           %!entries{key} //= att;
            %!required-entries{key} = True if .is-required;
            with .alias -> \alias {
                %!aliases{alias} = key;
@@ -74,7 +74,7 @@ method AT-KEY($key, :$check) is rw {
     $val := $.deref(:$key, $val)
         if $val ~~ Pair | List | Hash;
 
-    with %.entries{$key} // $.of-att {
+    with %!entries{$key} // $.of-att {
         .tie($val, :$check);
     }
     else {
@@ -85,7 +85,7 @@ method AT-KEY($key, :$check) is rw {
 #| handle hash assignments: $foo<bar> = 42; $foo{$baz} := $x;
 method ASSIGN-KEY($key, $val, :$check) {
     my $lval = $.lvalue($val);
-    my Attribute \att = %.entries{$key} // $.of-att;
+    my Attribute \att = %!entries{$key} // $.of-att;
 
     .tie($lval, :$check) with att;
     self.BIND-KEY($key, $lval )

@@ -6,6 +6,7 @@ use PDF::COS::Tie :COSArrayAttrHOW;
 also does PDF::COS::Tie;
 
 has Attribute @.index is rw;    #| for typed indices
+has Attribute %.entries;
 
 method rw-accessor(Attribute $att) is rw {
     my UInt $pos := $att.index;
@@ -31,12 +32,7 @@ method tie-init {
    my \class = self.WHAT;
 
    for class.^attributes.grep(COSArrayAttrHOW) -> \att {
-       my \pos = att.index;
-       without @!index[pos] {
-           $_ = att;
-           my \key = att.cos.accessor-name;
-           %.entries{key} = att;
-       }
+       @!index[att.index] //= (%!entries{att.cos.accessor-name} = att);
    }
 }
 

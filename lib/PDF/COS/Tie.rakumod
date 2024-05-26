@@ -2,7 +2,6 @@ unit role PDF::COS::Tie;
 
 use PDF::COS :IndRef;
 has Attribute $.of-att is rw;      #| default attribute
-has Attribute %.entries;
 my constant $Lock = Lock.new;
 
 #| generate an indirect reference to ourselves
