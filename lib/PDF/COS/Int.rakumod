@@ -1,18 +1,17 @@
 use v6;
 
-role PDF::COS::Int {
-    use PDF::COS;
-    also does PDF::COS;
+unit role PDF::COS::Int;
 
-    use PDF::COS::Util :&flag-is-set;
-    method flag-is-set(uint $flag-num) is DEPRECATED returns Bool {
-        flag-is-set(self, $flag-num);
-    }
+use PDF::COS;
+also does PDF::COS;
 
-    method content { self+0 };
-
-    multi method COERCE(Int:D() $int) {
-        $int but $?ROLE;
-    }
+use PDF::COS::Util :&flag-is-set;
+method flag-is-set(uint $flag-num) is DEPRECATED returns Bool {
+    flag-is-set(self, $flag-num);
 }
 
+method content { self+0 };
+
+multi method COERCE(Int:D() $int) {
+    $int but $?ROLE;
+}

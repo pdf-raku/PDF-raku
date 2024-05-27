@@ -7,7 +7,7 @@ use PDF::COS;
 use PDF::IO;
 use PDF::COS::Type::XRef;
 use PDF::IO::IndObj;
-has PDF::IO $!input;
+has PDF::IO() $.input;
 has $.ast is rw;
 has UInt $.offset;
 has UInt $.prev;
@@ -30,9 +30,7 @@ role Native[$writer] {
     method write-entries($_)    { $writer.write-entries($_) }
 }
 
-submethod TWEAK(:$input) {
-    $!input .= COERCE: $_
-       with $input;
+submethod TWEAK {
 
     $lock.protect: {
         # Not thread-safe on older Rakudos
