@@ -8,6 +8,8 @@ use OpenSSL::Digest;
 use PDF::COS::Dict;
 use PDF::IO::Util :pack;
 use PDF::COS::Type::Encrypt;
+use PDF::COS::Name;
+use PDF::COS::ByteString;
 
 has UInt $!revision;         #| encryption revision
 has Bool $!EncryptMetadata;
@@ -77,19 +79,17 @@ method !generate(:$doc!,
 
     @user-pass.append: 0 xx 16
         if self.type eq 'AESV2';
-    my $O = hex-string => [~] @!owner-pass».chr;
-    my $U = hex-string => [~] @user-pass».chr;
+    my PDF::COS::ByteString['hex-string']() $O = [~] @!owner-pass».chr;
+    my PDF::COS::ByteString['hex-string']() $U = [~] @user-pass».chr;
 
     my %dict = :$O, :$U, :P($permissions), :R($!revision), :V($version), :Filter<Standard>;
 
     if $version >= 4 {
-        %dict<CF> = {
-            :StdCF{
-                :CFM{ :name(self.type) },
-            },
-        };
-        %dict<StmF> = :name<StdCF>;
-        %dict<StrF> = :name<StdCF>;
+        my PDF::COS::Name() $CFM = self.type;
+        my PDF::COS::Name() $StdCF = 'StdCF';
+        %dict<CF> = { :StdCF{ :$CFM } };
+        %dict<StmF> = $StdCF;
+        %dict<StrF> = $StdCF;
     }
 
     %dict<Length> = $Length unless $version == 1;
@@ -169,12 +169,12 @@ method !do-iter-crypt(Blob $code, @pass, $n=0, $m=19) {
 method compute-user(@pass-padded, :$key! is rw) {
     # Algorithm 3.2
     my uint8 @input = flat @pass-padded,       # 1, 2
-                           @!owner-pass,                # 3
-                           @!permissions,                # 4
+                           @!owner-pass,       # 3
+                           @!permissions,      # 4
                            @!doc-id;           # 5
 
 
-    @input.append: 0xff xx 4             # 6
+    @input.append: 0xff xx 4                   # 6
         if $!revision >= 4 && ! $!EncryptMetadata;
 
     my uint $n = 5;
@@ -214,7 +214,7 @@ method !auth-user-pass(@pass) {
     my $key;
     my uint8 @computed := $.compute-user( @pass, :$key );
     my uint8 @expected = $!revision >= 3
-        ?? @user-pass[0 .. 15]
+        ?? @user-pass[^16]
         !! @user-pass;
 
     @computed eqv @expected
@@ -229,7 +229,7 @@ method !compute-owner-key(@pass-padded) {
     my uint $n = 5;
     my uint $reps = 1;
 
-    if $!revision >= 3 {                       # 3
+    if $!revision >= 3 {                # 3
         $n = $!key-bytes;
         $reps = 51;
     }

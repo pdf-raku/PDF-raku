@@ -220,16 +220,15 @@ multi method freeze( Array $object!, Bool :$indirect ) {
     else {
         my Array $array;
         my $node = :$array;
-        my $node-value := $node.value;
 
         # register prior to traversing the object; in case there are cyclical references
         my \rv = $indirect || $.is-indirect( $object )
             ?? self!index-object($node, :$object )
             !! $node;
 
-        $node-value = $object.of ~~ Numeric
-                 ?? $object
-                 !! self!freeze-array($object);
+        $node.value = $object.of ~~ Numeric
+             ?? $object
+             !! self!freeze-array($object);
 
         rv;
     }
