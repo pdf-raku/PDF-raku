@@ -23,7 +23,8 @@ method !object-key(UInt $obj-num, UInt $gen-num ) {
 
     my UInt $size = +@obj-key;
     my $key = md5( Buf.new(@obj-key) );
-    $key.reallocate($size) if $size < 16;
+    $key.reallocate($size)
+        if $size < OpenSSL::Digest::MD5_DIGEST_LENGTH;
     $key;
 }
 

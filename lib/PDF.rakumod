@@ -69,7 +69,7 @@ method !open-file(::?CLASS:D: $spec, Str :$type, |c) is hidden-from-backtrace {
         die "PDF file has wrong type: " ~ $reader.type
             unless $reader.type eq $_;
     }
-    self.crypt = $_
+    $!crypt = $_
         with $reader.crypt;
     self;
 }
@@ -211,17 +211,17 @@ multi method save-as(IO() $iop,
                  |c) {
     when $iop.extension.lc eq 'json' {
         # save as JSON
-        $iop.spurt: to-json( $.ast(|c) );
+        $iop.spurt: to-json( $.ast: |c );
     }
     when $preserve && !$rebuild && !$!flush && self!is-indexed && $.reader.file-name.defined {
         # copy the input PDF, then incrementally update it. This is faster
         # and plays better with digitally signed documents.
         my $diffs = $iop.open(:a, :bin);
         given $.reader.file-name {
-            .IO.copy( $iop )
+            .IO.copy: $iop
                 unless $iop.path eq $_;
         }
-        $.update( :$diffs, |c);
+        $.update: :$diffs, |c;
     }
     default {
         # full save
@@ -261,8 +261,8 @@ method Blob(|c) returns Blob {
 }
 
 #| Initialize or update the document id
-method !set-id(Str :$type = 'PDF') {
-    my $obj = $type eq 'FDF' ?? self<Root><FDF> !! self;
+method !set-id(Str :$type) {
+    my $obj = $type ~~ 'FDF' ?? self<Root><FDF> !! self;
     with $obj<ID> {
         .[1] = $.id; # Update modification ID
     }

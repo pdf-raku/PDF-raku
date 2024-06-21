@@ -139,7 +139,7 @@ class PDF::IO::Reader {
     }
 
     method actions {
-        state $actions //= PDF::Grammar::PDF::Actions.new: :lite;
+        PDF::Grammar::PDF::Actions.new: :lite;
     }
 
     method trailer is rw {
@@ -481,9 +481,10 @@ class PDF::IO::Reader {
         # digits giving the major and minor version numbers).
 
         my Str $preamble = $!input.byte-str(0, 32);
+        my $actions = $.actions;
 
-        PDF::Grammar::COS.subparse($preamble, :$.actions, :rule<header>)
-            or PDF::Grammar::COS.subparse($preamble ~ $!input.byte-str(32, 1024), :$.actions, :rule<header>)
+        PDF::Grammar::COS.subparse($preamble, :$actions, :rule<header>)
+            or PDF::Grammar::COS.subparse($preamble ~ $!input.byte-str(32, 1024), :$actions, :rule<header>)
             or die X::PDF::BadHeader.new( :$preamble );
         given $/.ast {
             $!version = .<version>;
