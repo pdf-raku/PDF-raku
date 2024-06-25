@@ -230,7 +230,7 @@ class PDF::IO::Reader {
     }
 
     #| open the named PDF/FDF file
-    multi method open( Str $!file-name where {!.isa(PDF::IO)}, |c) is hidden-from-backtrace {
+    multi method open( Str $!file-name where {!.does(PDF::IO)}, |c) is hidden-from-backtrace {
         $.open( $!file-name.IO, |c );
     }
 
@@ -295,8 +295,7 @@ class PDF::IO::Reader {
         }
     }
 
-    multi method open($input!, |c) is hidden-from-backtrace {
-        $!input .= COERCE: $input;
+    multi method open(PDF::IO() $!input!, |c) is hidden-from-backtrace {
         $.load-header( );
         $.load-cos( $.type, |c );
     }

@@ -24,11 +24,12 @@ class PDF::COS::Type::ObjStm
     use PDF::Grammar::PDF::Actions;
     use PDF::COS::Tie;
     use PDF::COS::Name;
+    use PDF::IO;
 
 ##    use ISO_32000::Table_16-Additional_entries_specific_to_an_object_stream_dictionary;
 ##    also does ISO_32000::Table_16-Additional_entries_specific_to_an_object_stream_dictionary;
 
-    has PDF::COS::Name $.Type is entry( :required ) where 'ObjStm'; #| (Required) The type of PDF object that this dictionary describes; shall be ObjStm for an object stream.
+    has PDF::COS::Name $.Type is entry( :required ) where 'ObjStm'; #| (Required) The type of PDF object that this dictionary describes; is ObjStm for an object stream.
     has UInt $.N is entry(:required);             #| (Required) The number of compressed objects in the stream.
     has UInt $.First is entry(:required);         #| (Required) The byte offset (in the decoded stream) of the first compressed object.
     has PDF::COS::Type::ObjStm $.Extends is entry;      #| (Optional) A reference to an object stream, of which the current object stream is considered an extension
@@ -61,11 +62,10 @@ class PDF::COS::Type::ObjStm
     }
 
     method decode($? --> Array) {
-        my \bytes = callsame;
-        my UInt \first = $.First;
-        my UInt \n = $.N;
-
-        my Str \object-index-str = bytes.substr(0, first);
+        my PDF::IO() $bytes = callsame;
+        my UInt:D \first = $.First;
+        my UInt:D \n = $.N;
+        my Str:D \object-index-str = $bytes.byte-str(0, first);
         my PDF::Grammar::PDF::Actions $actions .= new: :lite;
         PDF::Grammar::PDF.parse(object-index-str, :rule<object-stream-index>, :$actions)
             or die X::PDF::ObjStm::Decode.new( :$.obj-num, :$.gen-num, :details("Unable to parse object stream index: {object-index-str}"));
@@ -73,19 +73,18 @@ class PDF::COS::Type::ObjStm
         my Array \object-index = $/.ast;
         die X::PDF::ObjStm::Decode.new( :$.obj-num, :$.gen-num, :details("Expected /N = {n} index entries, got {+object-index}"))
             unless +object-index >= n;
+        object-index.push: [0, $bytes.codes];
 
         [ (^n).map: -> \i {
-            my UInt \obj-num = object-index[i][0];
-            my UInt \begin = first + object-index[i][1];
-            my UInt \end = ((i+2) <= +object-index)
-                ?? first + object-index[i + 1][1]
-                !! bytes.codes;
-            my Int \length = end - begin;
-            die X::PDF::ObjStm::Decode.new( :$.obj-num, :$.gen-num, :details("Index offset {begin} exceeds decoded data length {bytes.codes}"))
-                if begin > bytes.codes;
+            my UInt:D \obj-num = object-index[i][0];
+            my UInt:D \begin = first + object-index[i][1];
+            my UInt:D \end   = first + object-index[i + 1][1];
+            my Int:D  \length = end - begin;
+            die X::PDF::ObjStm::Decode.new( :$.obj-num, :$.gen-num, :details("Index offset {begin} exceeds decoded data length {$bytes.codes}"))
+                if begin > $bytes.codes;
             die X::PDF::ObjStm::Decode.new( :$.obj-num, :$.gen-num, :details("Offsets are not in ascending order"))
                 if length <= 0;
-            my Str \object-str = bytes.substr( begin, length );
+            my Str \object-str = $bytes.byte-str( begin, length );
             [ obj-num, object-str ]
         } ]
     }

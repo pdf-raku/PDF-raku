@@ -3,11 +3,11 @@ use Test;
 plan 10;
 
 use PDF::IO::Reader;
-use PDF::IO;
+use PDF::IO::Str;
 
 sub make-pdf( :$header='%PDF-1.3', :$length=46, :$xref-digit='0', :$eof='%%EOF', :$endobj = 'endobj') {
 
-    PDF::IO.COERCE: q:s:to"END";
+    PDF::IO::Str.COERCE: q:s:to"END";
 $header
 %xyz
 1 0 obj <<

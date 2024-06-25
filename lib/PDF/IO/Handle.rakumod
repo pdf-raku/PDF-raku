@@ -3,9 +3,9 @@ use v6;
 unit class PDF::IO::Handle;
 
 use PDF::IO;
-also is PDF::IO;
+also does PDF::IO;
 
-has IO::Handle $.value is required handles <read close eof seek slurp-rest>;
+has IO::Handle $.value is required handles <read close eof seek slurp-rest path>;
 has Str $!str;
 has UInt $.codes is rw;
 
@@ -29,9 +29,7 @@ multi method subbuf( UInt $from!, UInt $length = $.codes - $from + 1 --> Blob) {
     $!value.read( $length );
 }
 
-method substr(|c) is DEPRECATED('Please use byte-str') {
-    $.byte-str(|c);
-}
+multi method COERCE(::?CLASS $_) is default { $_ }
 multi method COERCE(IO::Handle:D $value!, |c ) {
     self.bless( :$value, |c );
 }

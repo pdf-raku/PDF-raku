@@ -3,7 +3,7 @@ use v6;
 unit class PDF::IO::Str;
 
 use PDF::IO;
-also is PDF::IO;
+also does PDF::IO;
 also is Str;
 
 has $!pos = 0;
@@ -36,9 +36,11 @@ method slurp {
 }
 method eof { $!pos >= $.codes }
 method close {}
+
 multi method COERCE(Str:D $value!, |c) {
     self.bless( :$value, |c );
 }
+multi method COERCE(::?CLASS:D $_) is default { $_ }
 multi method COERCE( Blob:D $_!, |c) {
     my $value = .decode: "latin-1";
     self.bless( :$value, |c );

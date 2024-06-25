@@ -10,7 +10,7 @@ use PDF::COS::Dict;
 use PDF::COS::Name;
 use PDF::COS::Stream;
 
-sub name($str){ PDF::COS::Name.COERCE($str) };
+sub name( PDF::COS::Name() $str){ $str };
 
 # construct a nasty cyclic structure
 my $dict1 = { :ID(1) };
