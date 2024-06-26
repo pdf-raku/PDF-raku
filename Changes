@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.6.4  2024-06-26T15:40:09+12:00
+    - Change PDF::IO from a class to a role so that is can be applied to
+      PDF::IO::Blob. Some general tidying of PDF::IO coercements.
+
 0.6.3  2024-01-30T15:01:34+13:00
     - Fix some array/hash dispatch failures in Rakudo 2024.01. E.g.:
       https://github.com/pdf-raku/PDF-raku/actions/runs/7509248357/job/20998615029

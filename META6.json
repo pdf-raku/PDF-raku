@@ -65,11 +65,11 @@
   },
   "resources": [
   ],
-  "source-url": "git://github.com/pdf-raku/PDF-raku.git",
+  "source-url": "https://github.com/pdf-raku/PDF-raku.git",
   "tags": [
     "pdf"
   ],
   "test-depends": [
   ],
-  "version": "0.6.3"
+  "version": "0.6.4"
 }
