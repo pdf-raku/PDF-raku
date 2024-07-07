@@ -100,6 +100,7 @@ method load-dict(Hash $dict, :$base-class = $.required('PDF::COS::Dict')) {
 }
 
 my subset IndRef of Pair is export(:IndRef) where {.key eq 'ind-ref'};
+my subset IndObj of Pair is export(:IndObj) where {.key eq 'ind-obj'};
 
 multi method coerce( List :$ind-ref! --> IndRef) {
     :$ind-ref

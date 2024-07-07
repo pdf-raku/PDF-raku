@@ -3,7 +3,7 @@ use v6;
 unit class PDF::IO::Writer;
 
 use PDF::Grammar:ver(v0.2.1+);
-use PDF::COS;
+use PDF::COS :IndObj;
 use PDF::IO;
 use PDF::COS::Type::XRef;
 use PDF::IO::IndObj;
@@ -17,8 +17,8 @@ has Rat  $.compat is rw = 1.4;
 
 my Lock $lock .= new;
 
-#| optional role to apply when PDF::Native is available
-role Native[$writer] {
+#| optional override role to apply when PDF::Native is available
+role NativeWriter[$writer] {
     # load some native faster alternatives
 
     method write-bool($_)       { $writer.write-bool($_) }
@@ -30,14 +30,33 @@ role Native[$writer] {
     method write-entries($_)    { $writer.write-entries($_) }
 }
 
+#| further overrides when native Cos objects are available
+role NativeCos[$cos-dict, $cos-array, $cos-ind-obj] {
+    my $buf = buf8.allocate(8192);
+
+    method write-ind-obj($_) {
+        $cos-ind-obj.COERCE($_).Str(:$buf);;
+    }
+
+    method write-array($_) {
+        $cos-array.COERCE($_).Str(:$buf);
+    }
+    method write-dict($_) {
+        $cos-dict.COERCE($_).Str(:$buf);
+    }
+}
+
 submethod TWEAK {
 
     $lock.protect: {
         # Not thread-safe on older Rakudos
-        given try {require ::('PDF::Native::Writer')} -> $writer {
-            unless $writer === Nil {
-                self does Native[$writer];
-            }
+        try {
+            require ::('PDF::Native::Writer');
+            self does NativeWriter[::('PDF::Native::Writer')];
+        }
+        try {
+            require ::('PDF::Native::Cos');
+            self does NativeCos[::('PDF::Native::Cos::CosDict'), ::('PDF::Native::Cos::CosArray'), ::('PDF::Native::Cos::CosIndObj')];
         }
     }
 }
@@ -210,9 +229,8 @@ multi method write-content(List $_ ) {
     .map({ $.write-content($_) }).join("\n");
 }
 
-multi method write-content($_ where Pair | Hash) {
-    ##        my :($op, $args) := .kv; # needs Rakudo > 2020.12
-    my ($op, $args) := .kv;
+multi method write-content($_ where Associative) {
+    my :($op, $args) := .kv; # needs Rakudo > 2020.12
     $args //= [];
     $.write-op($op, |@$args);
 }
@@ -269,6 +287,8 @@ multi method write-comment(Str $_) {
     }
 }
 
+constant MultiLineDictLineSize = 65;
+
 method write-dict(Hash $dict) {
 
     # prioritize /Type and /Subtype entries. output /Length as last entry
@@ -282,11 +302,11 @@ method write-dict(Hash $dict) {
     my $pad = $!indent;
     temp $!indent ~= '  ';  # for indentation of child dictionaries
     my @entries = @keys.map: { $.write-name($_) ~ ' ' ~ $.write: $dict{$_} };
-    my $len = $!indent;
+    my $len = 0;
     my Bool $multi-line;
     for @entries {
         $len += .chars;
-        if $len > 64 {
+        if $len >= MultiLineDictLineSize {
             $multi-line = True;
             last;
         }

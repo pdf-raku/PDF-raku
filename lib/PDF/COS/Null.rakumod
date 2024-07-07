@@ -7,7 +7,5 @@ use PDF::COS;
 also does PDF::COS;
 
 method defined { False }
-method content { :null(Any) };
+method content { :null(Any) }
 multi method ACCEPTS(Any:U) { True }
-
-

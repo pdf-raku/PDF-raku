@@ -2,7 +2,7 @@ use v6;
 
 unit class PDF::IO::IndObj;
 
-use PDF::COS :IndRef;
+use PDF::COS :IndRef, :IndObj;
 has $.object handles <content obj-num gen-num>;
 
 #| construct by wrapping a pre-existing PDF::COS
@@ -19,8 +19,11 @@ multi submethod TWEAK( Array :$ind-obj!, |c ) {
     $!object.gen-num = $ind-obj[1];
 }
 
+multi method COERCE( ::?CLASS:D $_ ) { $_ }
+multi method COERCE( IndObj:D $_ ) { self.new: |$_ }
+
 #| recreate a PDF::Grammar::PDF / PDF::IO::Writer compatible ast from the object
-method ast returns Pair {
+method ast returns IndObj {
     :ind-obj[ $.obj-num, $.gen-num, $.content ]
 }
 

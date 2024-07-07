@@ -103,7 +103,7 @@ class PDF::IO::Reader {
     use PDF::IO;
     use PDF::IO::IndObj;
     use PDF::IO::Serializer;
-    use PDF::COS :IndRef;
+    use PDF::COS :IndRef, :IndObj;
     use PDF::COS::Dict;
     use PDF::COS::Util :from-ast, :to-ast;
     use PDF::IO::Writer;
@@ -134,8 +134,47 @@ class PDF::IO::Reader {
 
     my enum IndexType <Free External Embedded>;
 
+    # faster native method overrides
+    role NativeReader[$native-reader] {
+        #| load PDF 1.4- xref table followed by trailer
+        method load-xref-table(Str $xref is copy, $dict is rw, :$offset) {
+            # fast load of the xref segments
+            my $buf = $xref.encode("latin-1");
+            my array $entries = $native-reader.read-xref($buf)
+                // die X::PDF::BadXRef::Parse.new( :$offset, :$xref );
+            my $bytes = $native-reader.xref-bytes;
+
+            # parse and load the trailer
+            my $trailer = $buf.subbuf($bytes).decode("latin-1");
+            my $parse = PDF::Grammar::COS.subparse( $trailer.trim, :rule<trailer>, :$.actions );
+            die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
+                unless $parse;
+            my \index = $parse.ast;
+            $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
+
+            my uint64 @seg[+$entries div 4;4] Z= @$entries;
+
+            [@seg, ];
+        }
+    }
+
+    role NativeCos[$cos-node, $cos-ind-obj] {
+        # stub
+    }
+
     submethod TWEAK(PDF::COS::Dict :$trailer) {
         self!install-trailer($_) with $trailer;
+        $!lock.protect: {
+            # Not thread-safe on older Rakudos
+            try {
+                require ::('PDF::Native::Reader');
+                self does NativeReader[::('PDF::Native::Reader').new];
+            }
+            try {
+                require ::('PDF::Native::Cos');
+                self does NativeCos[::('PDF::Native::Cos::CosNode'), ::('PDF::Native::Cos::CosIndObj'),];
+            }
+        }
     }
 
     method actions {
@@ -312,9 +351,10 @@ class PDF::IO::Reader {
         $obj-raw.value<encoded> //= do {
             my UInt \from = $obj-raw.value<start>:delete;
             my UInt \length = $.deref( $obj-raw.value<dict><Length> )
-                // die X::PDF::BadIndirectObject.new(:$obj-num, :$gen-num, :$offset,
-                                                     :details("Stream mandatory /Length field is missing")
-                                                    );
+                // die X::PDF::BadIndirectObject.new(
+                       :$obj-num, :$gen-num, :$offset,
+                       :details("Stream mandatory /Length field is missing")
+            );
 
             with $obj-len {
                 die X::PDF::BadIndirectObject.new(
@@ -368,7 +408,7 @@ class PDF::IO::Reader {
                     default    { $_ }
                 }
 
-                my $input = $!input.byte-str( $offset, $obj-len );
+                my Str $input = $!input.byte-str( $offset, $obj-len );
                 PDF::Grammar::COS.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
                     or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
 
@@ -537,7 +577,7 @@ class PDF::IO::Reader {
     }
 
     #| load PDF 1.4- xref table followed by trailer
-    method !load-xref-table(Str $xref is copy, $dict is rw, :$offset) {
+    method load-xref-table(Str $xref is copy, $dict is rw, :$offset) {
         my $parse = PDF::Grammar::COS.subparse( $xref, :rule<index>, :$.actions );
         die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
             unless $parse;
@@ -549,27 +589,6 @@ class PDF::IO::Reader {
         index<xref>».<entries>;
     }
 
-    #| load PDF 1.4- xref table followed by trailer
-    #| experimental use of PDF::Native::Reader
-    method !load-xref-table-fast(Str $xref is copy, $dict is rw, :$offset, :$fast-reader!) {
-        # fast load of the xref segments
-        my $buf = $xref.encode("latin-1");
-        my array $entries = $fast-reader.read-xref($buf)
-            // die X::PDF::BadXRef::Parse.new( :$offset, :$xref );
-        my $bytes = $fast-reader.xref-bytes;
-
-        # parse and load the trailer
-        my $trailer = $buf.subbuf($bytes).decode("latin-1");
-        my $parse = PDF::Grammar::COS.subparse( $trailer.trim, :rule<trailer>, :$.actions );
-        die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
-            unless $parse;
-        my \index = $parse.ast;
-        $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
-
-        my uint64 @seg[+$entries div 4;4] Z= @$entries;
-
-        [@seg, ];
-    }
 
     #| load a PDF 1.5+ XRef Stream
     method !load-xref-stream(Str $xref is copy, $dict is rw, UInt :$offset, :@discarded) {
@@ -609,7 +628,6 @@ class PDF::IO::Reader {
         my UInt @discarded;
         my Hash $dict;
         my UInt @ends;
-        state $fast-reader = INIT try { (require ::('PDF::Native::Reader')).new }
 
         $!compat = $!version // 1.4;
 
@@ -622,10 +640,7 @@ class PDF::IO::Reader {
             my Str \xref = self!locate-xref(input-bytes, tail-bytes, $tail, $offset);
             if xref ~~ m:s/^ xref/ {
                 # traditional 1.4 cross reference index
-                @obj-idx.append: (
-                $fast-reader.defined
-                    ?? self!load-xref-table-fast( xref, $dict, :$offset, :$fast-reader)
-                    !! self!load-xref-table( xref, $dict, :$offset));
+                @obj-idx.append: self.load-xref-table( xref, $dict, :$offset);
                 with $dict<XRefStm> {
                     # hybrid 1.4 / 1.5 with a cross-reference stream
                     # that contains additional objects
@@ -829,17 +844,18 @@ class PDF::IO::Reader {
 
             my \ast = $.ind-obj($obj-num, $gen-num, :get-ast, :$eager);
 
-            with ast {
-                my \ind-obj = .value[2];
+            with ast -> IndObj $_ {
+                my \obj = .value[2];
 
                 # discard existing /Type /XRef and ObjStm objects.
-                with ind-obj<stream> {
+                with obj<stream> {
                     with .<dict><Type> -> \obj-type {
                         next if obj-type<name> ~~ 'XRef'|'ObjStm';
                     }
                 }
             }
             elsif $incremental {
+                # object hasn't been fetched, so cannot have been updated
                 next;
             }
 
@@ -887,7 +903,7 @@ class PDF::IO::Reader {
             && !($compress && stream-dict<Filter><name> ~~ 'LZWDecode');
 
             # fully stantiate object and adjust compression
-            my \object = self.ind-obj( obj-num, gen-num).object;
+            my PDF::COS \object = self.ind-obj( obj-num, gen-num).object;
             $compress ?? .compress !! .uncompress with object;
         }
     }

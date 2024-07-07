@@ -1,27 +1,29 @@
 use v6;
 use Test;
-plan 14;
+plan 21;
 
+use PDF::COS :IndObj;
 use PDF::IO::IndObj;
 use PDF::Grammar::PDF;
 use PDF::Grammar::PDF::Actions;
 
 my PDF::Grammar::PDF::Actions $actions .= new;
 
-my $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp(:bin).decode('latin-1');
+my Str:D $input = 't/pdf/ind-obj-ObjStm-Flate.in'.IO.slurp(:bin).decode('latin-1');
 PDF::Grammar::PDF.parse($input, :$actions, :rule<ind-obj>)
     // die "parse failed: $input";
-my %ast = $/.ast;
+my IndObj $ast = $/.ast;
 
-my $ind-obj = PDF::IO::IndObj.new( :$input, |%ast );
-is $ind-obj.obj-num, 5, '$.obj-num';
-is $ind-obj.gen-num, 0, '$.gen-num';
-my $object = $ind-obj.object;
-isa-ok $object, ::('PDF::COS::Stream');
-isa-ok $object, Hash;
-isa-ok $object.Length, Int, '$.Length';
-is $object.Length, 167, '$.Length';
-is $object.Type, 'ObjStm', '$.Type';
+for PDF::IO::IndObj.new( |$ast ), PDF::IO::IndObj.COERCE($ast) ->  PDF::IO::IndObj $ind-obj {
+    is $ind-obj.obj-num, 5, '$.obj-num';
+    is $ind-obj.gen-num, 0, '$.gen-num';
+    my $object = $ind-obj.object;
+    isa-ok $object, ::('PDF::COS::Stream');
+    isa-ok $object, Hash;
+    isa-ok $object.Length, Int, '$.Length';
+    is $object.Length, 167, '$.Length';
+    is $object.Type, 'ObjStm', '$.Type';
+}
 
 my PDF::COS $num-obj .= coerce( :real(4.2) );
 is-deeply $num-obj.content, 4.2, 'composed object $.content';
