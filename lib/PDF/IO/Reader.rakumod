@@ -125,7 +125,7 @@ class PDF::IO::Reader {
     has $.crypt is rw;
     has Rat $.compat;        #= cross reference stream mode
     method compat is rw {
-        Proxy.new: 
+        Proxy.new:
             FETCH => { $!compat // $!version // 1.4 },
             STORE => -> $, $!compat {}
         ;
@@ -158,8 +158,26 @@ class PDF::IO::Reader {
         }
     }
 
+    # further COS object native method overrides
     role NativeCos[$cos-node, $cos-ind-obj] {
-        # stub
+        method parse-ind-obj(Str:D $input) {
+            with $cos-ind-obj.parse($input) {
+                .ast.value;
+            }
+            else {
+                warn $input.raku;
+                Nil;
+            }
+        }
+        method parse-object(Str:D $input) {
+            with $cos-node.parse($input) {
+                .ast;
+            }
+            else {
+                warn $input.raku;
+                Nil;
+            }
+        }
     }
 
     submethod TWEAK(PDF::COS::Dict :$trailer) {
@@ -385,7 +403,24 @@ class PDF::IO::Reader {
         };
     }
 
-    #| follow the index. fetch either type-1, or type-2 objects:
+    method parse-ind-obj(Str:D $input) {
+        if PDF::Grammar::COS.subparse( $input, :$.actions, :rule<ind-obj-nibble> ) {
+            $/.ast.value;
+        }
+        else {
+            Nil;
+        }
+    }
+
+    method parse-object(Str:D $input) {
+        if PDF::Grammar::COS.subparse( trim($input), :$.actions, :rule<object> ) {
+            $/.ast;
+        }
+        else {
+            Nil;
+        }
+    }
+
     #| type-1: fetch as a top level object from the pdf
     #| type-2: dereference and extract from the containing object
     method !fetch-ind-obj(
@@ -409,14 +444,8 @@ class PDF::IO::Reader {
                 }
 
                 my Str $input = $!input.byte-str( $offset, $obj-len );
-                PDF::Grammar::COS.subparse( $input, :$.actions, :rule<ind-obj-nibble> )
+                $ind-obj = self.parse-ind-obj($input)
                     or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
-
-                $ind-obj = $/.ast.value;
-
-                $actual-obj-num = $ind-obj[0];
-                $actual-gen-num = $ind-obj[1];
-
                 self!fetch-stream-data($ind-obj, $!input, :$offset, :$obj-len)
                     if $ind-obj[2] ~~ StreamAstNode;
 
@@ -424,6 +453,9 @@ class PDF::IO::Reader {
                     .crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> )
                         if $encrypted;
                 }
+
+                $actual-obj-num = $ind-obj[0];
+                $actual-gen-num = $ind-obj[1];
             }
             when IndexType::Embedded {
                 my subset ObjStm of Hash where { .<Type> ~~ 'ObjStm' }
@@ -435,9 +467,9 @@ class PDF::IO::Reader {
                 $actual-gen-num = 0;
                 my $input = ind-obj-ref[1];
 
-                PDF::Grammar::COS.subparse( trim($input), :$.actions, :rule<object> )
+                my $ast = self.parse-object($input)
                     or die X::PDF::ObjStmObject::Parse.new( :$obj-num, :$input, :$ref-obj-num);
-                $ind-obj = [ $actual-obj-num, $actual-gen-num, $/.ast ];
+                $ind-obj = [ $actual-obj-num, $actual-gen-num, $ast ];
             }
             default {die "unhandled index type: $_"};
         }
@@ -459,7 +491,7 @@ class PDF::IO::Reader {
 
         $!lock.protect: {
             my $ind-obj;
-            my Bool $have-ast = True;    
+            my Bool $have-ast = True;
             with $idx<ind-obj> {
                 $ind-obj := $_;
                 $have-ast := False

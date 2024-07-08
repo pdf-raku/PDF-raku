@@ -32,17 +32,17 @@ role NativeWriter[$writer] {
 
 #| further overrides when native Cos objects are available
 role NativeCos[$cos-dict, $cos-array, $cos-ind-obj] {
-    my $buf = buf8.allocate(8192);
+    has buf8 $!buf = buf8.allocate(8192);
 
     method write-ind-obj($_) {
-        $cos-ind-obj.COERCE($_).Str(:$buf);;
+        $cos-ind-obj.COERCE($_).write(:$!buf);
     }
 
     method write-array($_) {
-        $cos-array.COERCE($_).Str(:$buf);
+        $cos-array.COERCE($_).write(:$!buf);
     }
     method write-dict($_) {
-        $cos-dict.COERCE($_).Str(:$buf);
+        $cos-dict.COERCE($_).write(:$!buf);
     }
 }
 
