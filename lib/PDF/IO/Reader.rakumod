@@ -109,6 +109,8 @@ class PDF::IO::Reader {
     use PDF::IO::Writer;
     use Hash::int;
     use JSON::Fast;
+    use Method::Also;
+
     subset ObjNumInt of UInt;
     subset GenNumInt of Int where 0..999;
     subset StreamAstNode of Pair:D where .key eq 'stream';
@@ -161,23 +163,40 @@ class PDF::IO::Reader {
     # further COS object native method overrides
     role NativeCos[$cos-node, $cos-ind-obj] {
         method parse-ind-obj(Str:D $input) {
-            with $cos-ind-obj.parse($input) {
-                .ast.value;
-            }
-            else {
-                warn $input.raku;
-                Nil;
-            }
+            $cos-ind-obj.parse($input)
         }
         method parse-object(Str:D $input) {
-            with $cos-node.parse($input) {
-                .ast;
+            $cos-node.parse($input)
+        }
+        my class CosScanActions {
+            has Bool $.get-offsets is rw = False; #| return ind-obj byte offsets in AST
+            method TOP($/) { make $<cos>.ast }
+            method cos($/) {
+                my @body = @<body>».ast;
+                make (:@body);
             }
-            else {
-                warn $input.raku;
-                Nil;
+            method body($/) {
+                my @objects = @<ind-obj>».ast;
+                my %body = :@objects;
+                %body<trailer> = .<trailer>.ast with $<index>;
+                make %body;
+            }
+            method ind-obj($/) {
+                my Str:D() $input = $/;
+                my $ind-obj = $cos-ind-obj.parse($input, :scan);
+                fail "Indirect Object parse failed at byte offset:{$/.from}" without $ind-obj;
+                my $ast = $ind-obj.ast;
+                $ast.value.push: $/.from
+                    if self.get-offsets;
+                make $ast;
+            }
+            method trailer($/) {
+                my $trailer = $cos-node.parse: $<dict>.Str;
+                fail "Trailer dictionary parse failed at byte offset:{$/.from}" without $trailer;
+                make $trailer.ast;
             }
         }
+        method scan-actions { CosScanActions.new }
     }
 
     submethod TWEAK(PDF::COS::Dict :$trailer) {
@@ -195,7 +214,7 @@ class PDF::IO::Reader {
         }
     }
 
-    method actions {
+    method actions is also<scan-actions> {
         PDF::Grammar::PDF::Actions.new: :lite;
     }
 
@@ -367,8 +386,8 @@ class PDF::IO::Reader {
         my (ObjNumInt $obj-num, GenNumInt $gen-num, $obj-raw) = @ind-obj;
 
         $obj-raw.value<encoded> //= do {
-            my UInt \from = $obj-raw.value<start>:delete;
-            my UInt \length = $.deref( $obj-raw.value<dict><Length> )
+            my UInt() $from = $obj-raw.value<start>:delete;
+            my UInt() $length = $.deref( $obj-raw.value<dict><Length> )
                 // die X::PDF::BadIndirectObject.new(
                        :$obj-num, :$gen-num, :$offset,
                        :details("Stream mandatory /Length field is missing")
@@ -377,12 +396,12 @@ class PDF::IO::Reader {
             with $obj-len {
                 die X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
-                    :details("Stream dictionary entry /Length {length} overlaps with neighbouring objects (maximum size here is {$obj-len - from} bytes)"),
-                ) if length > $_ - from;
+                    :details("Stream dictionary entry /Length $length overlaps with neighbouring objects (maximum size here is {$obj-len - $from} bytes)"),
+                ) if $length > $_ - $from;
             }
 
             # ensure stream is followed by an 'endstream' marker
-            my Str \tail = $input.byte-str( $offset + from + length, 20 );
+            my Str \tail = $input.byte-str( $offset + $from + $length, 20 );
 
             if tail ~~ m{<PDF::Grammar::COS::stream-tail>} {
                 warn X::PDF::BadIndirectObject.new(
@@ -393,32 +412,24 @@ class PDF::IO::Reader {
             else {
                 die X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
-                    :details("Unable to locate 'endstream' marker after consuming /Length {length} bytes")
+                    :details("Unable to locate 'endstream' marker after consuming /Length $length bytes")
                     );
             }
 
-            length
-                ?? $input.byte-str( $offset + from, length )
+            $length
+                ?? $input.byte-str( $offset + $from, $length )
                 !! '';
         };
     }
 
     method parse-ind-obj(Str:D $input) {
-        if PDF::Grammar::COS.subparse( $input, :$.actions, :rule<ind-obj-nibble> ) {
-            $/.ast.value;
-        }
-        else {
-            Nil;
-        }
+        PDF::Grammar::COS.subparse( $input, :$.actions, :rule<ind-obj-nibble> );
+        $/;
     }
 
     method parse-object(Str:D $input) {
-        if PDF::Grammar::COS.subparse( trim($input), :$.actions, :rule<object> ) {
-            $/.ast;
-        }
-        else {
-            Nil;
-        }
+        PDF::Grammar::COS.subparse( trim($input), :$.actions, :rule<object> );
+        $/;
     }
 
     #| type-1: fetch as a top level object from the pdf
@@ -444,7 +455,7 @@ class PDF::IO::Reader {
                 }
 
                 my Str $input = $!input.byte-str( $offset, $obj-len );
-                $ind-obj = self.parse-ind-obj($input)
+                $ind-obj = .ast.value given self.parse-ind-obj($input)
                     or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
                 self!fetch-stream-data($ind-obj, $!input, :$offset, :$obj-len)
                     if $ind-obj[2] ~~ StreamAstNode;
@@ -467,7 +478,7 @@ class PDF::IO::Reader {
                 $actual-gen-num = 0;
                 my $input = ind-obj-ref[1];
 
-                my $ast = self.parse-object($input)
+                my $ast = .ast given self.parse-object($input)
                     or die X::PDF::ObjStmObject::Parse.new( :$obj-num, :$input, :$ref-obj-num);
                 $ind-obj = [ $actual-obj-num, $actual-gen-num, $ast ];
             }
@@ -575,7 +586,7 @@ class PDF::IO::Reader {
          :$repair, #| scan the PDF, bypass any indices or stream lengths
          |c ) {
          $repair
-             ?? self!full-scan( PDF::Grammar::PDF, $.actions, :repair, |c )
+             ?? self!full-scan( PDF::Grammar::PDF, $.scan-actions, :repair, |c )
              !! self!load-index( PDF::Grammar::PDF, $.actions, |c );
      }
 
