@@ -47,10 +47,9 @@ class X::PDF::BadXRef::Entry is X::PDF::BadXRef {
 class X::PDF::BadXRef::Entry::Number is X::PDF::BadXRef::Entry {
     has UInt $.obj-num;
     has UInt $.gen-num;
-    has UInt $.actual-obj-num;
-    has UInt $.actual-gen-num;
+    has @.ind-obj;
     method details {
-        "Index entry was: $!obj-num $!gen-num R. actual object: $!actual-obj-num $!actual-gen-num R"
+        "Index entry was: $!obj-num $!gen-num R. actual object: @!ind-obj[0] @!ind-obj[1] R"
     }
 }
 
@@ -433,62 +432,57 @@ class PDF::IO::Reader {
     }
 
     #| type-1: fetch as a top level object from the pdf
+     multi method fetch-ind-obj(
+         :$type! where IndexType::External, :$offset!, :$end!,   # type-1
+         :$obj-num, :$gen-num, :$encrypted = True) {
+
+         die X::PDF::BadXRef::Entry.new: :details("Invalid cross-reference offset $offset for $obj-num $gen-num R")
+            unless $offset > 0;
+
+         my UInt $obj-len = do given $end - $offset {
+             when 0     { X::PDF::BadXRef::Entry.new: :details("Duplicate cross-reference destination (byte offset $offset) for $obj-num $gen-num R")}
+             when * < 0 { die X::PDF::BadXRef::Entry.new: :details("Attempt to fetch object $obj-num $gen-num R at byte offset $offset, past end of PDF ($end bytes)") }
+             default    { $_ }
+         }
+
+         my Str $input = $!input.byte-str( $offset, $obj-len );
+         my @ind-obj = .ast.value given self.parse-ind-obj($input)
+             or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
+
+         self!fetch-stream-data(@ind-obj, $!input, :$offset, :$obj-len)
+             if @ind-obj[2] ~~ StreamAstNode;
+
+         if $encrypted {
+             .crypt-ast( (:@ind-obj), :$obj-num, :$gen-num, :mode<decrypt> )
+                 with $!crypt;
+         }
+
+         die X::PDF::BadXRef::Entry::Number.new( :$obj-num, :$gen-num, :@ind-obj )
+            unless $obj-num == @ind-obj[0] && $gen-num == @ind-obj[1];
+
+         return @ind-obj;
+     }
+
     #| type-2: dereference and extract from the containing object
-    method !fetch-ind-obj(
-        :$type!, :$ind-obj is copy,
-        :$offset, :$end,                       # type-1
-        :$index, :$ref-obj-num, :$encrypted = True,  # type-2
-        :$obj-num,
-        :$gen-num) {
-        # stantiate the object
-        my ObjNumInt $actual-obj-num;
-        my GenNumInt $actual-gen-num;
+    multi method fetch-ind-obj(
+        :$type! where IndexType::Embedded,
+        :$index, :$ref-obj-num,  # type-2
+        :$obj-num, :$gen-num) {
 
-        given $type {
-            when IndexType::External {
-                die X::PDF::BadXRef::Entry.new: :details("Invalid cross-reference offset $offset for $obj-num $gen-num R")
-                    unless $offset > 0;
-                my UInt $obj-len = do given $end - $offset {
-                    when 0     { X::PDF::BadXRef::Entry.new: :details("Duplicate cross-reference destination (byte offset $offset) for $obj-num $gen-num R")}
-                    when * < 0 { die X::PDF::BadXRef::Entry.new: :details("Attempt to fetch object $obj-num $gen-num R at byte offset $offset, past end of PDF ($end bytes)") }
-                    default    { $_ }
-                }
+        my subset ObjStm of Hash where { .<Type> ~~ 'ObjStm' }
 
-                my Str $input = $!input.byte-str( $offset, $obj-len );
-                $ind-obj = .ast.value given self.parse-ind-obj($input)
-                    or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
-                self!fetch-stream-data($ind-obj, $!input, :$offset, :$obj-len)
-                    if $ind-obj[2] ~~ StreamAstNode;
+        my ObjStm \container-obj = $.ind-obj( $ref-obj-num, 0 ).object;
+        my \embedded-objects = container-obj.decoded;
+        my :($actual-obj-num, $input) := embedded-objects[$index];
 
-                with $!crypt {
-                    .crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> )
-                        if $encrypted;
-                }
+        my $ast = .ast given self.parse-object($input)
+            or die X::PDF::ObjStmObject::Parse.new( :$obj-num, :$input, :$ref-obj-num);
+        my @ind-obj := [ $actual-obj-num, 0, $ast ];
 
-                $actual-obj-num = $ind-obj[0];
-                $actual-gen-num = $ind-obj[1];
-            }
-            when IndexType::Embedded {
-                my subset ObjStm of Hash where { .<Type> ~~ 'ObjStm' }
-                my ObjStm \container-obj = $.ind-obj( $ref-obj-num, 0 ).object;
-                my \embedded-objects = container-obj.decoded;
+        die X::PDF::BadXRef::Entry::Number.new( :$obj-num, :gen-num(0), :@ind-obj )
+            unless $obj-num == @ind-obj[0] && $gen-num == 0;
 
-                my Array \ind-obj-ref = embedded-objects[$index];
-                $actual-obj-num = ind-obj-ref[0];
-                $actual-gen-num = 0;
-                my $input = ind-obj-ref[1];
-
-                my $ast = .ast given self.parse-object($input)
-                    or die X::PDF::ObjStmObject::Parse.new( :$obj-num, :$input, :$ref-obj-num);
-                $ind-obj = [ $actual-obj-num, $actual-gen-num, $ast ];
-            }
-            default {die "unhandled index type: $_"};
-        }
-
-        die X::PDF::BadXRef::Entry::Number.new( :$obj-num, :$actual-obj-num, :$gen-num, :$actual-gen-num )
-            unless $obj-num == $actual-obj-num && $gen-num == $actual-gen-num;
-
-        $ind-obj;
+         @ind-obj;
     }
 
     #| fetch and stantiate indirect objects. cache against the index
@@ -510,7 +504,7 @@ class PDF::IO::Reader {
             }
             else {
                 return unless $eager;
-                $idx<ind-obj> = $ind-obj := self!fetch-ind-obj(|$idx, :$obj-num, :$gen-num);
+                $idx<ind-obj> = $ind-obj := self.fetch-ind-obj(|$idx, :$obj-num, :$gen-num);
             }
 
             if $get-ast {
@@ -530,7 +524,7 @@ class PDF::IO::Reader {
     method get(ObjNumInt $obj-num, GenNumInt $gen-num) {
         my %idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
             // die "unable to find object: $obj-num $gen-num R";
-         self!fetch-ind-obj(|%idx, :!encrypted, :$obj-num, :$gen-num);
+         self.fetch-ind-obj(|%idx, :!encrypted, :$obj-num, :$gen-num);
     }
 
     #| utility method for basic deferencing, e.g.
@@ -904,7 +898,7 @@ class PDF::IO::Reader {
 
             if $incremental && $offset && $obj-num {
                 # check updated vs original PDF value.
-                my \original-ast = self!fetch-ind-obj(|%!ind-obj-idx{$obj-num * 1000 + $gen-num}, :$obj-num, :$gen-num);
+                my \original-ast = self.fetch-ind-obj(|%!ind-obj-idx{$obj-num * 1000 + $gen-num}, :$obj-num, :$gen-num);
                 # discard, if not updated
                 next if original-ast eqv ast.value;
             }

@@ -230,7 +230,7 @@ multi method write-content(List $_ ) {
 }
 
 multi method write-content($_ where Associative) {
-    my :($op, $args) := .kv; # needs Rakudo > 2020.12
+    my :($op, $args) := .kv;
     $args //= [];
     $.write-op($op, |@$args);
 }
