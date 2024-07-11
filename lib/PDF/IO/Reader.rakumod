@@ -147,7 +147,7 @@ class PDF::IO::Reader {
 
             # parse and load the trailer
             my $trailer = $buf.subbuf($bytes).decode("latin-1");
-            my $parse = PDF::Grammar::COS.subparse( $trailer.trim, :rule<trailer>, :$.actions );
+            my $parse = PDF::Grammar::COS.subparse( $trailer.trim, :rule<trailer>, actions => $.scan-actions );
             die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
                 unless $parse;
             my \index = $parse.ast;
@@ -160,14 +160,14 @@ class PDF::IO::Reader {
     }
 
     # further COS object native method overrides
-    role NativeCos[$cos-node, $cos-ind-obj] {
+    role NativeCOS[$cos-node, $cos-ind-obj] {
         method parse-ind-obj(Str:D $input) {
             $cos-ind-obj.parse($input)
         }
         method parse-object(Str:D $input) {
             $cos-node.parse($input)
         }
-        my class CosScanActions {
+        my class COSScanActions {
             has Bool $.get-offsets is rw = False; #| return ind-obj byte offsets in AST
             method TOP($/) { make $<cos>.ast }
             method cos($/) {
@@ -177,7 +177,7 @@ class PDF::IO::Reader {
             method body($/) {
                 my @objects = @<ind-obj>».ast;
                 my %body = :@objects;
-                %body<trailer> = .<trailer>.ast with $<index>;
+                %body ,= .<trailer>.ast with $<index>;
                 make %body;
             }
             method ind-obj($/) {
@@ -190,26 +190,24 @@ class PDF::IO::Reader {
                 make $ast;
             }
             method trailer($/) {
-                my $trailer = $cos-node.parse: $<dict>.Str
-                    // fail "Native trailer dictionary parse failed at byte offset:{$/.from}";
-                make $trailer.ast;
+                my $dict = $cos-node.parse: $<dict>.Str
+                   // fail "Native trailer dictionary parse failed at byte offset:{$/.from}";
+                make (:trailer($dict.ast))
             }
         }
-        method scan-actions { CosScanActions.new }
+        method scan-actions { COSScanActions.new }
     }
 
     submethod TWEAK(PDF::COS::Dict :$trailer) {
         self!install-trailer($_) with $trailer;
-        $!lock.protect: {
-            # Not thread-safe on older Rakudos
-            try {
-                require ::('PDF::Native::Reader');
-                self does NativeReader[::('PDF::Native::Reader').new];
-            }
-            try {
-                require ::('PDF::Native::Cos');
-                self does NativeCos[::('PDF::Native::Cos::CosNode'), ::('PDF::Native::Cos::CosIndObj'),];
-            }
+
+        try {
+            require ::('PDF::Native::Reader');
+            self does NativeReader[::('PDF::Native::Reader').new];
+        }
+        try {
+            require ::('PDF::Native::COS');
+            self does NativeCOS[::('PDF::Native::COS::COSNode'), ::('PDF::Native::COS::COSIndObj'), ];
         }
     }
 
