@@ -31,18 +31,24 @@ role NativeWriter[$writer] {
 }
 
 #| further overrides when native Cos objects are available
-role NativeCos[$cos-dict, $cos-array, $cos-ind-obj] {
-    has buf8 $!buf = buf8.allocate(8192);
+role NativeCos {
+    has buf8 $!buf = buf8.allocate(4096);
+    has ($!ind-obj, $!array, $!dict);
+
+    method init-cos(@class-map is raw, %type-map is raw)  {
+        $!ind-obj = @class-map[%type-map<ind-obj>];
+        $!array   = @class-map[%type-map<array>];
+        $!dict    = @class-map[%type-map<dict>];
+    }
 
     method write-ind-obj($_) {
-        $cos-ind-obj.COERCE($_).write(:$!buf);
+        $!ind-obj.COERCE($_).write(:$!buf);
     }
-
     method write-array($_) {
-        $cos-array.COERCE($_).write(:$!buf);
+        $!array.COERCE($_).write(:$!buf);
     }
     method write-dict($_) {
-        $cos-dict.COERCE($_).write(:$!buf);
+         $!dict.COERCE($_).write(:$!buf);
     }
 }
 
@@ -56,7 +62,11 @@ submethod TWEAK {
         }
         try {
             require ::('PDF::Native::Cos');
-            self does NativeCos[::('PDF::Native::Cos::CosDict'), ::('PDF::Native::Cos::CosArray'), ::('PDF::Native::Cos::CosIndObj')];
+            self does NativeCos;
+            self.init-cos(
+                ::("PDF::Native::Cos::@ClassMap"),
+                ::("PDF::Native::Cos::%TypeMap"),
+            );
         }
     }
 }

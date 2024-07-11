@@ -182,16 +182,16 @@ class PDF::IO::Reader {
             }
             method ind-obj($/) {
                 my Str:D() $input = $/;
-                my $ind-obj = $cos-ind-obj.parse($input, :scan);
-                fail "Indirect Object parse failed at byte offset:{$/.from}" without $ind-obj;
+                my $ind-obj = $cos-ind-obj.parse($input, :scan)
+                    // fail "Native indirect Object parse failed at byte offset:{$/.from}";
                 my $ast = $ind-obj.ast;
                 $ast.value.push: $/.from
                     if self.get-offsets;
                 make $ast;
             }
             method trailer($/) {
-                my $trailer = $cos-node.parse: $<dict>.Str;
-                fail "Trailer dictionary parse failed at byte offset:{$/.from}" without $trailer;
+                my $trailer = $cos-node.parse: $<dict>.Str
+                    // fail "Native trailer dictionary parse failed at byte offset:{$/.from}";
                 make $trailer.ast;
             }
         }
@@ -449,6 +449,9 @@ class PDF::IO::Reader {
          my @ind-obj = .ast.value given self.parse-ind-obj($input)
              or die X::PDF::BadIndirectObject::Parse.new( :$obj-num, :$gen-num, :$offset, :$input);
 
+         die X::PDF::BadXRef::Entry::Number.new( :$obj-num, :$gen-num, :@ind-obj )
+            unless $obj-num == @ind-obj[0] && $gen-num == @ind-obj[1];
+
          self!fetch-stream-data(@ind-obj, $!input, :$offset, :$obj-len)
              if @ind-obj[2] ~~ StreamAstNode;
 
@@ -457,16 +460,13 @@ class PDF::IO::Reader {
                  with $!crypt;
          }
 
-         die X::PDF::BadXRef::Entry::Number.new( :$obj-num, :$gen-num, :@ind-obj )
-            unless $obj-num == @ind-obj[0] && $gen-num == @ind-obj[1];
-
          return @ind-obj;
      }
 
     #| type-2: dereference and extract from the containing object
     multi method fetch-ind-obj(
         :$type! where IndexType::Embedded,
-        :$index, :$ref-obj-num,  # type-2
+        :$index!, :$ref-obj-num!,  # type-2
         :$obj-num, :$gen-num) {
 
         my subset ObjStm of Hash where { .<Type> ~~ 'ObjStm' }
@@ -479,8 +479,8 @@ class PDF::IO::Reader {
             or die X::PDF::ObjStmObject::Parse.new( :$obj-num, :$input, :$ref-obj-num);
         my @ind-obj := [ $actual-obj-num, 0, $ast ];
 
-        die X::PDF::BadXRef::Entry::Number.new( :$obj-num, :gen-num(0), :@ind-obj )
-            unless $obj-num == @ind-obj[0] && $gen-num == 0;
+        die X::PDF::BadXRef::Entry::Number.new( :$obj-num, :$gen-num, :@ind-obj )
+            unless $obj-num == @ind-obj[0] && $gen-num == @ind-obj[1];
 
          @ind-obj;
     }
