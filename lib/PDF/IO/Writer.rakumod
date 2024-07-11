@@ -60,14 +60,6 @@ submethod TWEAK {
             require ::('PDF::Native::Writer');
             self does NativeWriter[::('PDF::Native::Writer')];
         }
-        try {
-            require ::('PDF::Native::Cos');
-            self does NativeCos;
-            self.init-cos(
-                ::("PDF::Native::Cos::@ClassMap"),
-                ::("PDF::Native::Cos::%TypeMap"),
-            );
-        }
     }
 }
 
