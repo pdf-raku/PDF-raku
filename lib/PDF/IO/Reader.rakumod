@@ -380,6 +380,7 @@ class PDF::IO::Reader {
                               UInt:D :$obj-len,   #| upper bound for the end of the stream
         )
     {
+        my constant MinTrailingBytes = "\endstream endobj".codes;
         my (ObjNumInt $obj-num, GenNumInt $gen-num, $obj-raw) = @ind-obj;
         my UInt() $from = $obj-raw.value<start>:delete;
         my UInt() $length = $.deref( $obj-raw.value<dict><Length> )
@@ -388,18 +389,17 @@ class PDF::IO::Reader {
                    :details("Stream mandatory /Length field is missing")
         );
 
-        my constant MinCodes = "\endstream endobj".codes;
-        my $max-bytes = $obj-len - $from - MinCodes;
+        my $max-remaining-bytes = $obj-len - $from;
         die X::PDF::BadIndirectObject.new(
             :$obj-num, :$gen-num, :$offset,
-            :details("Stream dictionary entry /Length $length is too long for containing indirect object (maximum size here is $max-bytes bytes)"),
-        ) if $length > $max-bytes;
+            :details("Stream dictionary entry /Length $length is too long for containing indirect object (maximum size here is {$max-remaining-bytes - MinTrailingBytes} bytes)"),
+        ) if $length > $max-remaining-bytes - MinTrailingBytes;
 
         my $stream := $obj-raw.value<encoded> //= do {
             # ensure stream is followed by an 'endstream' marker
-            my Str \tail = $input.byte-str( $offset + $from + $length, 20 );
+            my Str \tail = $input.byte-str( $offset + $from + $length, $max-remaining-bytes - $length);
 
-            if tail ~~ m{<PDF::Grammar::COS::stream-tail>} {
+            if tail ~~ m{^<PDF::Grammar::COS::stream-tail>} {
                 warn X::PDF::BadIndirectObject.new(
                     :$obj-num, :$gen-num, :$offset,
                     :details("Ignoring {$/.from} bytes before 'endstream' marker")
