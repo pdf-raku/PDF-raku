@@ -376,27 +376,26 @@ class PDF::IO::Reader {
     #| load the data for a stream object. Cross check actual size versus expected /Length
     method !fetch-stream-data(@ind-obj,           #| primary object
                               $input,             #| associated input stream
-                              UInt :$offset,      #| offset of the object in the input stream
-                              UInt :$obj-len,     #| upper bound for the end of the stream
+                              UInt:D :$offset,    #| offset of the object in the input stream
+                              UInt:D :$obj-len,   #| upper bound for the end of the stream
         )
     {
         my (ObjNumInt $obj-num, GenNumInt $gen-num, $obj-raw) = @ind-obj;
+        my UInt() $from = $obj-raw.value<start>:delete;
+        my UInt() $length = $.deref( $obj-raw.value<dict><Length> )
+            // die X::PDF::BadIndirectObject.new(
+                   :$obj-num, :$gen-num, :$offset,
+                   :details("Stream mandatory /Length field is missing")
+        );
 
-        $obj-raw.value<encoded> //= do {
-            my UInt() $from = $obj-raw.value<start>:delete;
-            my UInt() $length = $.deref( $obj-raw.value<dict><Length> )
-                // die X::PDF::BadIndirectObject.new(
-                       :$obj-num, :$gen-num, :$offset,
-                       :details("Stream mandatory /Length field is missing")
-            );
+        my constant MinCodes = "\endstream endobj".codes;
+        my $max-bytes = $obj-len - $from - MinCodes;
+        die X::PDF::BadIndirectObject.new(
+            :$obj-num, :$gen-num, :$offset,
+            :details("Stream dictionary entry /Length $length is too long for containing indirect object (maximum size here is $max-bytes bytes)"),
+        ) if $length > $max-bytes;
 
-            with $obj-len {
-                die X::PDF::BadIndirectObject.new(
-                    :$obj-num, :$gen-num, :$offset,
-                    :details("Stream dictionary entry /Length $length overlaps with neighbouring objects (maximum size here is {$obj-len - $from} bytes)"),
-                ) if $length > $_ - $from;
-            }
-
+        my $stream := $obj-raw.value<encoded> //= do {
             # ensure stream is followed by an 'endstream' marker
             my Str \tail = $input.byte-str( $offset + $from + $length, 20 );
 
