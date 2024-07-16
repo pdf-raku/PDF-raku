@@ -390,10 +390,12 @@ class PDF::IO::Reader {
         );
 
         my $max-remaining-bytes = $obj-len - $from;
-        die X::PDF::BadIndirectObject.new(
-            :$obj-num, :$gen-num, :$offset,
-            :details("Stream dictionary entry /Length $length is too long for containing indirect object (maximum size here is {$max-remaining-bytes - MinTrailingBytes} bytes)"),
-        ) if $length > $max-remaining-bytes - MinTrailingBytes;
+        if $length > $max-remaining-bytes - MinTrailingBytes {
+            my $details := $max-remaining-bytes < MinTrailingBytes
+                ?? "Stream data is truncated"
+                !! "Stream dictionary entry /Length $length is too long for containing indirect object (maximum size here is {$max-remaining-bytes - MinTrailingBytes} bytes)";
+            die X::PDF::BadIndirectObject.new: :$obj-num, :$gen-num, :$offset, :$details;
+        }
 
         my $stream := $obj-raw.value<encoded> //= do {
             # ensure stream is followed by an 'endstream' marker
