@@ -231,7 +231,7 @@ multi method write-content(List $_ ) {
     .map({ $.write-content($_) }).join("\n");
 }
 
-multi method write-content($_ where Associative) {
+multi method write-content(Associative $_) {
     my :($op, $args) := .kv;
     $args //= [];
     $.write-op($op, |@$args);
@@ -239,22 +239,15 @@ multi method write-content($_ where Associative) {
 
 multi method write-content( Str $_ ) { $_ }
 
-#| BI <dict> - BeginImage
-multi method write-op('BI', $arg = :dict{}) {
-    my Hash $entries = $arg<dict>;
-    join( "\n",
-          "BI",
-          self!indented($entries.pairs.sort,
-                        -> $_ { [~] $.write-name( .key ), ' ', $.write( .value ) }
-                       ),
-        );
-}
 
 multi method write-op('comment', $_) { $.write-comment($_); }
 
-#| ID <bytes> - ImageData
-multi method write-op('ID', $image-data) {
-    "ID\n" ~ $image-data<encoded>;
+#| ID <dict> <bytes> - ImageData
+multi method write-op('ID', Associative $entries, Associative $image-data) {
+    my $dict = $entries<dict>;
+    $dict.pairs.sort.map(
+        -> $_ { [~] $.write-name( .key ), ' ', $.write( .value ) }
+    ).join ~ " ID\n" ~ $image-data<encoded>;
 }
 
 multi method write-op(Str:D $op, *@args) {
@@ -579,10 +572,3 @@ multi method write {
         die "nothing to write";
     }
 }
-
-#| handle indentation.
-method !indented(@lines, &sub) {
-    temp $!indent ~= '  ';
-    @lines ?? @lines.map({ $!indent ~ &sub($_) }).join("\n") !! ();
-}
-
