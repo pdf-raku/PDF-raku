@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.6.6  2024-07-23T05:02:13+12:00
+    - Improvements to stream parsing and validation
+    - Revised AST and writing for inline images.
+
 0.6.5  2024-07-12T08:01:54+12:00
     - Utilise PDF::Native::COS, where available, in PDF::IO::Reader
       for faster loader and copying of larger PDF files. This can give a
