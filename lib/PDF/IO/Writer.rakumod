@@ -244,10 +244,10 @@ multi method write-op('comment', $_) { $.write-comment($_); }
 
 #| ID <dict> <bytes> - ImageData
 multi method write-op('ID', Associative $entries, Associative $image-data) {
-    my $dict = $entries<dict>;
+    my Hash $dict = $entries<dict>;
     $dict.pairs.sort.map(
-        -> $_ { [~] $.write-name( .key ), ' ', $.write( .value ) }
-    ).join ~ " ID\n" ~ $image-data<encoded>;
+        -> $_ { [~] $.write-name( .key ), ' ', $.write( .value ), ' ' }
+    ).join ~ "ID\n" ~ $image-data<encoded>;
 }
 
 multi method write-op(Str:D $op, *@args) {
