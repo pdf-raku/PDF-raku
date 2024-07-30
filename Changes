@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+0.6.7  2024-07-30T14:47:27+12:00
+    - Fix inline-image test in t/write-ast.t
+
 0.6.6  2024-07-23T05:02:13+12:00
     - Improvements to stream parsing and validation
     - Revised AST and writing for inline images.

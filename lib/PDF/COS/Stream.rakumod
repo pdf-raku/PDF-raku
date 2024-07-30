@@ -142,4 +142,3 @@ multi method COERCE(Hash $dict, |c) {
     my $class := PDF::COS.load-dict: $params<dict>//{}, :base-class(self.WHAT);
     $class.new: |$params, |c;
 }
-
