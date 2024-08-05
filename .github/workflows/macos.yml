@@ -13,15 +13,10 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-latest
           - macOS-latest
-          - windows-latest
         raku-version:
           - 'latest'
           - '2022.07'
-        exclude:
-          - os: windows-latest
-            raku-version: 'latest'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
