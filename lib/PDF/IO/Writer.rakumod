@@ -30,30 +30,7 @@ role NativeWriter[$writer] {
     method write-entries($_)    { $writer.write-entries($_) }
 }
 
-#| further overrides when native Cos objects are available
-role NativeCos {
-    has buf8 $!buf = buf8.allocate(4096);
-    has ($!ind-obj, $!array, $!dict);
-
-    method init-cos(@class-map is raw, %type-map is raw)  {
-        $!ind-obj = @class-map[%type-map<ind-obj>];
-        $!array   = @class-map[%type-map<array>];
-        $!dict    = @class-map[%type-map<dict>];
-    }
-
-    method write-ind-obj($_) {
-        $!ind-obj.COERCE($_).write(:$!buf);
-    }
-    method write-array($_) {
-        $!array.COERCE($_).write(:$!buf);
-    }
-    method write-dict($_) {
-         $!dict.COERCE($_).write(:$!buf);
-    }
-}
-
 submethod TWEAK {
-
     $lock.protect: {
         # Not thread-safe on older Rakudos
         try {

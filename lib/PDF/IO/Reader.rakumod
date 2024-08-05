@@ -473,15 +473,14 @@ class PDF::IO::Reader {
         my ObjStm \container-obj = $.ind-obj( $ref-obj-num, 0 ).object;
         my \embedded-objects = container-obj.decoded;
         my :($actual-obj-num, $input) := embedded-objects[$index];
-
-        my $ast = .ast given self.parse-object($input)
-            or die X::PDF::ObjStmObject::Parse.new( :$obj-num, :$input, :$ref-obj-num);
-        my @ind-obj := [ $actual-obj-num, 0, $ast ];
-
+        my @ind-obj := [ $actual-obj-num, 0, Any ];
         die X::PDF::BadXRef::Entry::Number.new( :$obj-num, :$gen-num, :@ind-obj )
             unless $obj-num == @ind-obj[0] && $gen-num == @ind-obj[1];
 
-         @ind-obj;
+        @ind-obj[2] = .ast given self.parse-object($input)
+            or die X::PDF::ObjStmObject::Parse.new( :$obj-num, :$input, :$ref-obj-num);
+
+        @ind-obj;
     }
 
     #| fetch and stantiate indirect objects. cache against the index

@@ -170,6 +170,7 @@ method !incremental-save(IO::Handle:D $fh, Hash $body, :$diffs, :$in-place) {
 
     $fh.write: Pad;
     $writer.stream-body: $fh, $body, my @entries, :$offset;
+    $fh.close;
 
     if $in-place {
         # Input PDF updated; merge the updated entries in the index
@@ -179,8 +180,6 @@ method !incremental-save(IO::Handle:D $fh, Hash $body, :$diffs, :$in-place) {
         $.Size = $size;
         @entries = [];
     }
-
-    $fh.close;
 }
 
 method ast(|c) {
