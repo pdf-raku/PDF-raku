@@ -71,7 +71,7 @@ multi method coerce(DateTime $dt, |c) {
      $.required('PDF::COS::DateString').COERCE($dt);
 }
 
-my $resolve-lock = Lock.new;
+my constant $resolve-lock = Lock.new;
 method required(Str \mod-name) is hidden-from-backtrace {
     $resolve-lock.protect: {
         %loaded{mod-name}:exists
