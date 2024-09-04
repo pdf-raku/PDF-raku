@@ -183,7 +183,7 @@ class PDF::IO::Reader {
             method ind-obj($/) {
                 my Str:D() $input = $/;
                 my $ind-obj = $cos-ind-obj.parse($input, :scan)
-                    // fail "Native indirect Object parse failed at byte offset:{$/.from}";
+                    // die "Native indirect Object parse failed at byte offset:{$/.from}";
                 my $ast = $ind-obj.ast;
                 $ast.value.push: $/.from
                     if self.get-offsets;
@@ -191,7 +191,7 @@ class PDF::IO::Reader {
             }
             method trailer($/) {
                 my $dict = $cos-node.parse: $<dict>.Str
-                   // fail "Native trailer dictionary parse failed at byte offset:{$/.from}";
+                   // die "Native trailer dictionary parse failed at byte offset:{$/.from}";
                 make (:trailer($dict.ast))
             }
         }
