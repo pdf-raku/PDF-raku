@@ -5,6 +5,7 @@ unit class PDF::COS::DateString;
 use PDF::COS;
 also does PDF::COS;
 also is DateTime;
+use PDF::COS::TextString;
 
 use PDF::COS::Util :date-time-formatter;
 BEGIN our &formatter = &date-time-formatter;
@@ -20,19 +21,21 @@ our constant DateRegex = rx/^
             ]?
         $/;
 
-multi method new(Str $pdf-date! is copy) {
-    my constant BOM-UTF16-BE = "\xFE\xFF";
-    my constant BOM-UTF8 = "\xEF\xBB\xBF";
-    if $pdf-date.starts-with(BOM-UTF16-BE) {
-        $pdf-date = Buf.new($pdf-date.ords).decode('utf16be');
-    }
-    elsif $pdf-date.starts-with(BOM-UTF8) {
-        # PDF 2.0
-        $pdf-date = Buf.new($pdf-date.ords).decode('utf8');
-    }
+multi method COERCE(::?CLASS:D $_) { $_ }
+
+multi method COERCE(Str:D $obj where DateRegex, |c) {
+    self.new($obj, |c);
+}
+
+multi method COERCE(DateTime:D $dt, |c) {
+    my %args = <year month day hour minute second timezone>.map: {$_ => $dt."$_"() };
+    self.new: |%args, :&formatter;
+}
+
+multi method new(Str:D $date! where DateRegex) {
+    my PDF::COS::TextString:D() $pdf-date = $date;
     $pdf-date ~~ DateRegex
         or die "Date /$pdf-date/ not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
-
     my UInt \year  = +$<year>;
     my UInt \month = +( @<dd>[0] // 1 );
     my UInt \day   = +( @<dd>[1] // 1 );
@@ -51,16 +54,6 @@ multi method new(Str $pdf-date! is copy) {
 method content {
     my Str $literal = formatter( self );
     :$literal;
-}
-
-multi method COERCE(PDF::COS::DateString $_) { $_ }
-multi method COERCE(Str:D $obj, |c) {
-    self.new($obj, |c);
-}
-
-multi method COERCE(DateTime:D $dt, |c) {
-    my %args = <year month day hour minute second timezone>.map: {$_ => $dt."$_"() };
-    self.new: |%args, :&formatter;
 }
 
 =begin pod

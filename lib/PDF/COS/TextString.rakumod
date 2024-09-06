@@ -117,6 +117,8 @@ method content {
     $doc-enc //= self.&utf16-encode();
     $!type => $doc-enc;
 }
+multi method COERCE(::?CLASS:D $_) { $_ }
+
 multi method COERCE(Str:D $value, |c) {
     self.new: :$value, |c;
 }
