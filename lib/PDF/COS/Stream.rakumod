@@ -127,11 +127,9 @@ method compress {
     }
 }
 
-method gist {
-    my $rv = callsame();
-    $rv ~= "\n" ~ .encoded.Str.raku
-        with self;
-    $rv;
+multi method gist(::?CLASS:U:) { nextsame() }
+multi method gist(::?CLASS:D:) {
+    callsame() ~ "\n" ~ self.encoded.Str.raku
 }
 
 multi method COERCE(Hash $dict, |c) {
