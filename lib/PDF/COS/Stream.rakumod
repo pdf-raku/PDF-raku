@@ -37,35 +37,34 @@ submethod TWEAK(:$dict!) {
 }
 
 method encoded is rw {
-    Proxy.new(
-        FETCH => {
-            $!encoded //= self.encode( $_ )
-                with $!decoded;
-            self<Length> //= .codes with $!encoded;
-            $!encoded;
-        },
+    sub FETCH($) {
+        $!encoded //= self.encode( $_ )
+            with $!decoded;
+        self<Length> //= .codes with $!encoded;
+        $!encoded;
+    }
 
-        STORE => -> $, $stream {
-            $!decoded = Any;
-            self<Length> = .codes with $stream;
-            $!encoded = $stream;
-        },
-        )
+    sub STORE($, $stream) {
+        $!decoded = Any;
+        self<Length> = .codes with $stream;
+        $!encoded = $stream;
+    }
+
+    Proxy.new: :&FETCH, :&STORE;
 }
 
 method decoded is rw {
-    Proxy.new(
-        FETCH => {
-            $!decoded //= self.decode( $_ )
-                with $!encoded;
-            $!decoded;
-        },
-        STORE => -> $, $stream {
-            $!encoded = Any;
-            self<Length>:delete;
-            $!decoded = $stream;
-        }
-        );
+    sub FETCH($) {
+        $!decoded //= self.decode( $_ )
+            with $!encoded;
+        $!decoded;
+    }
+    sub STORE($, $stream) {
+        $!encoded = Any;
+        self<Length>:delete;
+        $!decoded = $stream;
+    }
+    Proxy.new: :&FETCH, :&STORE;
 }
 
 method edit-stream( Str :$prepend = '', Str :$append = '' ) {

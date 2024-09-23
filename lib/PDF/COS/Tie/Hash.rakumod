@@ -25,23 +25,24 @@ method rw-accessor(Attribute $att, Str :$key!) is rw {
     my $val;
     my int $got = 0;
 
-    Proxy.new(
-        FETCH => {
-            $got ||= do {
-                $val := (
-                    $att.cos.is-inherited
-                        ?? inherit(self, $key)
-                        !! self.AT-KEY($key, :check)
-                ) // $att.type;
-                1;
-            }
-            $val;
-        },
-        STORE => -> $, \v {
-            $val := self.ASSIGN-KEY($key, v, :check);
-            $got = 1;
+    sub FETCH($) {
+        $got ||= do {
+            $val := (
+                $att.cos.is-inherited
+                    ?? inherit(self, $key)
+                    !! self.AT-KEY($key, :check)
+            ) // $att.type;
+            1;
         }
-    );
+        $val;
+    }
+
+    sub STORE($, \v) {
+        $val := self.ASSIGN-KEY($key, v, :check);
+        $got = 1;
+    }
+
+    Proxy.new: :&FETCH, :&STORE;
 }
 
 method tie-init {

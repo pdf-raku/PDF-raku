@@ -216,17 +216,16 @@ class PDF::IO::Reader {
     }
 
     method trailer is rw {
-        Proxy.new(
-            FETCH => {
-                # vivify
-                self!install-trailer(PDF::COS::Dict.new: :reader(self))
-                    unless %!ind-obj-idx{0}:exists;
-                self.ind-obj(0, 0).object;
-            },
-            STORE => -> $, \obj {
-                self!install-trailer(obj);
-            },
-        );
+        sub FETCH($) {
+            # vivify
+            self!install-trailer(PDF::COS::Dict.new: :reader(self))
+                unless %!ind-obj-idx{0}:exists;
+            self.ind-obj(0, 0).object;
+        }
+        sub STORE($, \obj) {
+            self!install-trailer(obj);
+        }
+        Proxy.new: :&FETCH, :&STORE;
     }
 
     method !install-trailer(PDF::COS::Dict $object) {

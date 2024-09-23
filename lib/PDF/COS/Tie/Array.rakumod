@@ -13,19 +13,20 @@ method rw-accessor(Attribute $att) is rw {
     my $val;
     my int $got = 0;
 
-    Proxy.new(
-        FETCH => {
-            $got ||= do {
-                $val := self.AT-POS($pos, :check) // $att.type;
-                1;
-            }
-            $val;
-        },
-        STORE => -> $, \v {
-            $val := self.ASSIGN-POS($pos, v, :check);
-            $got = 1;
+    sub FETCH($) {
+        $got ||= do {
+            $val := self.AT-POS($pos, :check) // $att.type;
+            1;
         }
-    );
+        $val;
+    }
+
+    sub STORE($, \v) {
+        $val := self.ASSIGN-POS($pos, v, :check);
+        $got = 1;
+    }
+
+    Proxy.new: :&FETCH, :&STORE;
 }
 
 method tie-init {
