@@ -80,7 +80,7 @@ module PDF::COS::Util {
     }
 
     multi sub ast-coerce(DateTime:D $date-time!) {
-	my Str $literal = date-time-formatter($date-time);
+	my Str $literal = $date-time.&date-time-formatter;
 	:$literal
     }
     multi sub ast-coerce(Any:U) {Any}

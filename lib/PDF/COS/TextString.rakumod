@@ -79,30 +79,6 @@ constant %pdfdoc-enc = do {
     %enc;
 }
 
-method new( Str:D :$value! is copy, Bool :$bom is copy, |c ) {
-    given $value {
-        when PDF::COS::TextString {
-            return $_;
-        }
-        when .starts-with(BOM-UTF16-BE) {
-            $bom //= True;
-            $value = .substr(2).encode('latin-1').decode('utf16be');
-        }
-        when .starts-with(BOM-UTF8) {
-            # PDF 2.0
-            $bom //= True;
-            $value = .substr(3).encode('latin-1').decode('utf8');
-        }
-        when PDF::COS::ByteString {
-            # decode UTF-16BE / PDFDoc encoded byte string
-            $bom //= False;
-            $value = .ords.map({@pdfdoc-dec[$_] // ''}).join;
-        }
-    }
-
-    callwith(:$value, :$bom, |c); # dispatch to Str.new
-}
-
 our sub utf16-encode(Str $str --> Str) {
      BOM-UTF16-BE ~ $str.encode('utf16be').decode('latin-1');
 }
@@ -118,8 +94,20 @@ method content {
     $!type => $doc-enc;
 }
 multi method COERCE(::?CLASS:D $_) { $_ }
-
-multi method COERCE(Str:D $value, |c) {
-    self.new: :$value, |c;
+multi method COERCE(Str:D $_) { $_ }
+    when .starts-with(BOM-UTF16-BE) {
+        self.new: :bom. value => .substr(2).encode('latin-1').decode('utf16be');
+    }
+    when .starts-with(BOM-UTF8) {
+        # PDF 2.0
+        self.new: :bom, value = .substr(3).encode('latin-1').decode('utf8');
+    }
+    when PDF::COS::ByteString {
+        self.new: value = .ords.map({@pdfdoc-dec[$_] // ''}).join;
+    }
+    default {
+        self.new: value => $_;
+    }
 }
+
 

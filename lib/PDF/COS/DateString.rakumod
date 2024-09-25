@@ -34,8 +34,6 @@ multi method COERCE(DateTime:D $dt, |c) {
 
 multi method new(Str:D $date! where DateRegex) {
     my PDF::COS::TextString:D() $pdf-date = $date;
-    $pdf-date ~~ DateRegex
-        or die "Date /$pdf-date/ not in format: D:YYYYMMDDHHmmSS[+-Z]HH'mm'";
     my UInt \year  = +$<year>;
     my UInt \month = +( @<dd>[0] // 1 );
     my UInt \day   = +( @<dd>[1] // 1 );
