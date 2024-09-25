@@ -94,16 +94,16 @@ method content {
     $!type => $doc-enc;
 }
 multi method COERCE(::?CLASS:D $_) { $_ }
-multi method COERCE(Str:D $_) { $_ }
+multi method COERCE(Str:D $_) {
     when .starts-with(BOM-UTF16-BE) {
-        self.new: :bom. value => .substr(2).encode('latin-1').decode('utf16be');
+        self.new: :bom, value => .substr(2).encode('latin-1').decode('utf16be');
     }
     when .starts-with(BOM-UTF8) {
         # PDF 2.0
-        self.new: :bom, value = .substr(3).encode('latin-1').decode('utf8');
+        self.new: :bom, value => .substr(3).encode('latin-1').decode('utf8');
     }
     when PDF::COS::ByteString {
-        self.new: value = .ords.map({@pdfdoc-dec[$_] // ''}).join;
+        self.new: value => .ords.map({@pdfdoc-dec[$_] // ''}).join;
     }
     default {
         self.new: value => $_;

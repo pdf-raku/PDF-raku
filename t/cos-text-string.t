@@ -1,12 +1,12 @@
 use v6;
 use Test;
-plan 10;
+plan 9;
 
 use PDF::COS;
 use PDF::COS::ByteString;
 use PDF::COS::TextString;
 
-my PDF::COS::TextString $str .= new(:value<Writer>);
+my PDF::COS::TextString() $str = 'Writer';
 
 isa-ok $str, PDF::COS::TextString;
 is $str, "Writer", 'simple string value';
@@ -19,15 +19,14 @@ my $literal = [~] "\xFE\xFF", "\x[0]H", "\x[0]e", "\x[0]y", "\x[0]d", "\x[2]Y", 
    "\x[1]\x[8f]", "\x[0]l", "\x[0]i", "\x[0]y", "\x[0]e", "\x[0]v";
 is $encoded, $literal, 'utf16-encode';
 
-$str .= new(:value($encoded));
+$str = $encoded;
 
-isa-ok $str, PDF::COS::TextString;
 is $str, $name, 'simple string value';
 is-deeply $str.content.value, $literal, 'utf-8 string content';
 
 # PDFDoc encoding
 $encoded = "Registrant\x[90]s\n";
-$str .= new(:value($encoded));
+$str = $encoded;
 is $str, "Registrant’s\n", "pdfdoc encoded value";
 is $str.content.value, $encoded, 'pdfdoc encoded content';
 
