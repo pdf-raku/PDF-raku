@@ -61,7 +61,8 @@
     "PDF::IO::Serializer": "lib/PDF/IO/Serializer.rakumod",
     "PDF::IO::Str": "lib/PDF/IO/Str.rakumod",
     "PDF::IO::Util": "lib/PDF/IO/Util.rakumod",
-    "PDF::IO::Writer": "lib/PDF/IO/Writer.rakumod"
+    "PDF::IO::Writer": "lib/PDF/IO/Writer.rakumod",
+    "X::PDF": "lib/X/PDF.rakumod"
   },
   "resources": [
   ],

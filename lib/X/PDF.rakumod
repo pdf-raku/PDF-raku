@@ -1,0 +1,116 @@
+class X::PDF is Exception { }
+
+class X::PDF::BadJSON is X::PDF {
+    has Str $.input-file is required;
+    method message {"File doesn't contain a top-level 'cos' struct: $!input-file"}
+}
+
+class X::PDF::BadHeader is X::PDF {
+    has Str $.preamble is required;
+    method message {"Expected file header '%XXX-n.m', got: {$!preamble.&synopsis()}"}
+}
+
+class X::PDF::BadTrailer is X::PDF {
+    has Str $.tail is required;
+    method message {"Expected file trailer 'startxref ... \%\%EOF', got: {$!tail.&synopsis()}"}
+}
+
+class X::PDF::NoTrailer is X::PDF {
+    method message {"PDF file trailer not found"}
+}
+
+class X::PDF::BadXRef is X::PDF {}
+
+class X::PDF::BadXRef::Parse is X::PDF::BadXRef {
+    has Str $.xref is required;
+    method message {"Unable to parse index: {$!xref.&synopsis()}"}
+}
+
+class X::PDF::BadXRef::Entry is X::PDF::BadXRef {
+    has $.details;
+    method message {"Cross reference error: $.details. Please inform the author of the PDF and/or try opening this PDF with :repair"}
+}
+
+class X::PDF::BadXRef::Entry::Number is X::PDF::BadXRef::Entry {
+    has UInt $.obj-num;
+    has UInt $.gen-num;
+    has @.ind-obj;
+    method details {
+        "Index entry was: $!obj-num $!gen-num R. actual object: @!ind-obj[0] @!ind-obj[1] R"
+    }
+}
+
+class X::PDF::BadXRef::Section is X::PDF::BadXRef {
+    has UInt $.obj-count;
+    has UInt $.entry-count;
+    method message {"xref section size mismatch. Expected $!obj-count entries, got $!entry-count"}
+}
+
+class X::PDF::ParseError is X::PDF {
+    has Str $.input is required;
+    method message {"Unable to parse PDF document: {$!input.&synopsis()}"}
+}
+
+class X::PDF::BadIndirectObject is X::PDF {
+    has UInt $.obj-num;
+    has UInt $.gen-num;
+    has UInt $.offset  is required;
+    has Str  $.details is rw;
+    method message {
+        my Str $ind-ref = $!obj-num ?? "$!obj-num $!gen-num R " !! "";
+        "Error processing indirect object {$ind-ref}at byte offset $!offset:\n$!details"
+    }
+}
+
+class X::PDF::BadIndirectObject::Parse is X::PDF::BadIndirectObject {
+    has Str $.input is required;
+    method message {
+        $.details = "Unable to parse indirect object: " ~ $.input.&synopsis();
+        nextsame;
+    }
+}
+
+class X::PDF::ObjStmObject::Parse is X::PDF {
+    has Str $.input is required;
+    has UInt $.obj-num;
+    has UInt $.ref-obj-num;
+    method message {
+        "Error extracting embedded object $!obj-num 0 R from $!ref-obj-num 0 R; unable to parse object: " ~ $.input.&synopsis();
+    }
+}
+
+my sub substr($_, |c) {
+    .can('byte-str') ?? .byte-str(|c) !! .substr(|c);
+}
+
+my sub synopsis($input) {
+    my \desc = (
+        $input.chars < 60
+            ?? $input
+            !! [~] $input.&substr(0, 32), ' ... ', $input.&substr(*-20)
+    ).subst(/\n+/, ' ', :g);
+    desc.raku;
+}
+
+class X::PDF::Coerce
+    is X::PDF {
+	has $.obj is required;
+	has $.type is required;
+	method message {
+	    "unable to coerce object {$!obj.raku} of type {$!obj.WHAT.^name} to {$!type.WHAT.^name}"
+	}
+}
+
+class X::PDF::ObjStm is Exception {
+    has Str $.details;
+    has UInt $.obj-num;
+    has UInt $.gen-num;
+}
+
+class X::PDF::ObjStm::Decode is X::PDF::ObjStm {
+    method message { "Problem decoding /Type /ObjStm object: $.obj-num $.gen-num R\n$.details" }
+}
+
+class X::PDF::ObjStm::Encode is X::PDF::ObjStm {
+    method message { "Problem encoding /Type /ObjStm object: $.obj-num $.gen-num R\n$.details" }
+}
