@@ -33,6 +33,10 @@ has $!flush = False;
 has UInt $.Prev is entry; 
 
 submethod TWEAK(:$file, |c) is hidden-from-backtrace {
+    if PDF::COS.loader.?target-class -> $target-class {
+        die "Unable to mix {self.WHAT.raku} with {$target-class}"
+            unless self.isa($target-class);
+    }
     self!open-file($_, |c) with $file;
 }
 
@@ -119,9 +123,9 @@ method update(IO::Handle :$diffs, |c) {
     self.cb-finish;
 
     my $type = $.reader.type;
-    self!set-id( :$type );
+    self!set-id: :$type ;
 
-    my PDF::IO::Serializer $serializer .= new( :$.reader, :$type );
+    my PDF::IO::Serializer $serializer .= new: :$.reader, :$type;
     my Array $body = $serializer.body( :updates, |c );
     .crypt-ast('body', $body, :mode<encrypt>)
         with $!crypt;
@@ -270,4 +274,3 @@ method !set-id(Str :$type) {
     }
     $!id = Nil;
 }
-

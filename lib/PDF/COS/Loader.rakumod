@@ -69,5 +69,5 @@ multi method load-delegate( :$base-class!, |c ) {
     $base-class;
 }
 
-method pdf-class { PDF::COS.required('PDF') }
+method target-class { 'PDF' }
 
