@@ -22,7 +22,7 @@ method !object-key(UInt $obj-num, UInt $gen-num ) {
     my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
 
     my UInt $size = +@obj-key;
-    my $key = md5( Buf.new(@obj-key) );
+    my Buf $key = md5( Buf.new: @obj-key );
     $key.reallocate($size)
         if $size < OpenSSL::Digest::MD5_DIGEST_LENGTH;
     $key;
@@ -32,10 +32,10 @@ multi method crypt( Str $text, |c --> Str) {
     $.crypt( $text.encode("latin-1"), |c ).decode("latin-1");
 }
 
-multi method crypt( $bytes, UInt :$obj-num!, UInt :$gen-num! ) {
+multi method crypt( Blob $bytes, UInt :$obj-num!, UInt :$gen-num! --> Buf) {
     # Algorithm 3.1
 
-    my $obj-key = self!object-key( $obj-num, $gen-num );
+    my Buf $obj-key = self!object-key( $obj-num, $gen-num );
     PDF::IO::Crypt.rc4-crypt( $obj-key, $bytes );
 }
 

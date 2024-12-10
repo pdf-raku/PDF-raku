@@ -37,7 +37,7 @@ method !object-key(UInt $obj-num, UInt $gen-num ) {
     my uint8 @gen-bytes = pack-le($gen-num, 32);
     my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1], 0x73, 0x41, 0x6C, 0x54; # 'sAIT'
 
-    md5( Buf.new(@obj-key) );
+    md5( Buf.new: @obj-key );
 }
 
 multi method crypt( Str $text, |c) {
@@ -53,14 +53,12 @@ multi method crypt( $bytes, Str :$mode! where 'encrypt'|'decrypt',
 
 method encrypt( $key, $dec --> Buf) {
     my Buf $iv .= new( (^256).pick xx KeyLen );
-    my $enc = $iv;
-    $enc.append: self!aes-encrypt($key, $dec, :$iv );
-    $enc;
+    $iv.append: self!aes-encrypt($key, $dec, :$iv );
 }
 
-method decrypt( $key, $enc-iv) {
-    my Buf $iv .= new: $enc-iv[^KeyLen];
-    my @enc = +$enc-iv > KeyLen ?? $enc-iv[KeyLen .. *] !! [];
-    self!aes-decrypt($key, Buf.new(@enc), :$iv );
+method decrypt( $key, Blob $enc-iv) {
+    my Blob $iv .= new: $enc-iv[^KeyLen];
+    my $enc = +$enc-iv > KeyLen ?? $enc-iv.subbuf(KeyLen, *) !! [];
+    self!aes-decrypt($key, $enc, :$iv );
 }
 

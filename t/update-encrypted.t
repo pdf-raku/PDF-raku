@@ -24,7 +24,7 @@ my $decoded = "BT /F1 16 Tf  40 250 Td (new page added to an encrypted PDF) Tj E
     $Parent<Count>++;
 }
 
-$pdf.id = $id++;
+$pdf.id = $id;
 lives-ok { $pdf.update }, 'doc.update lives';
 
 lives-ok {$pdf = PDF.open: "t/update-encrypted.pdf"}, 'doc re-open lives';
