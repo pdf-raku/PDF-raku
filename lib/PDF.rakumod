@@ -33,9 +33,9 @@ has $!flush = False;
 has UInt $.Prev is entry; 
 
 submethod TWEAK(:$file, |c) is hidden-from-backtrace {
-    if PDF::COS.loader.?target-class -> $target-class {
+    given PDF::COS.loader.?target-class -> $target-class {
         die "Unable to mix {self.WHAT.raku} with {$target-class}"
-            unless self.isa($target-class);
+            unless $target-class === Nil || self.isa($target-class);
     }
     self!open-file($_, |c) with $file;
 }
