@@ -31,6 +31,7 @@ jobs:
         run: brew install openssl
       - name: Install Dependencies
         run: |
+          zef --force --verbose install JSON::Fast
           zef install --deps-only .
       - name: Run Tests
         run: zef --verbose test .
