@@ -26,9 +26,6 @@ jobs:
       - uses: Raku/setup-raku@v1
         with:
           raku-version: ${{ matrix.raku-version }}
-      - name: Install Libraries (MacOS)
-        if: matrix.os == 'macOS-latest'
-        run: brew install openssl
       - name: Install Dependencies
         run: |
           zef --force --verbose install JSON::Fast

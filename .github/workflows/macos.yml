@@ -24,7 +24,6 @@ jobs:
         with:
           raku-version: ${{ matrix.raku-version }}
       - name: Install Libraries (MacOS)
-        if: matrix.os == 'macOS-latest'
         run: brew install openssl
       - name: Install Dependencies
         run: |
