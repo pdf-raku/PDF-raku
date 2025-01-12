@@ -36,7 +36,7 @@ my $json-ast = $pdf-json.ast: :rebuild;
 is-json-equiv $json-ast, $ast, '$reader.open( "tmp/pdf-rewritten.json" )';
 
 $pdf-json.recompress: :compress;
-$pdf-json.save-as: 'tmp/pdf-compressed.pdf';
+$pdf-json.save-as: 'tmp/pdf-compressed.pdf'.IO, :stream;
 my PDF::IO::Reader $pdf-compressed .= new();
 $pdf-compressed.open: 'tmp/pdf-compressed.pdf';
 $ast = $pdf-compressed.ast;

@@ -15,18 +15,18 @@ use JSON::Fast;
 # use ISO_32000::Table_15-Entries_in_the_file_trailer_dictionary;
 # also does ISO_32000::Table_15-Entries_in_the_file_trailer_dictionary;
 
-has Int $.Size is entry;                              #| (Required; shall not be an indirect reference) greater than the highest object number defined in the file.
+has Int $.Size is entry;                              # (Required; shall not be an indirect reference) greater than the highest object number defined in the file.
 
 use PDF::COS::Type::Encrypt;
-has PDF::COS::Type::Encrypt $.Encrypt is entry;       #| (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
+has PDF::COS::Type::Encrypt $.Encrypt is entry;       # (Required if document is encrypted; PDF 1.1) The document’s encryption dictionary
 
 use PDF::COS::Type::Info;
-has PDF::COS::Type::Info $.Info is entry(:indirect);  #| (Optional; must be an indirect reference) The document’s information dictionary
+has PDF::COS::Type::Info $.Info is entry(:indirect);  # (Optional; must be an indirect reference) The document’s information dictionary
 has Str $.id;
-has Str @.ID is entry(:len(2));                       #| (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array
-                                                      #| of two byte-strings constituting a file identifier
+has Str @.ID is entry(:len(2));                       # (Required if an Encrypt entry is present; optional otherwise; PDF 1.1) An array
+                                                      # of two byte-strings constituting a file identifier
 
-has Hash $.Root is entry(:indirect);                  #| generic document root, as defined by subclassee, e.g.  PDF::Class, FDF
+has Hash $.Root is entry(:indirect);                  # generic document root, as defined by subclassee, e.g.  PDF::Class, FDF
 has $.crypt is rw;
 has $!flush = False;
 

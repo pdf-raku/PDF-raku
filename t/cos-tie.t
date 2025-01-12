@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 48;
+plan 50;
 
 use PDF::IO::Reader;
 use PDF::IO::Writer;
@@ -43,7 +43,9 @@ is $Pages<Type>, 'Pages', 'Pages<Type>';
 is-deeply $Pages.reader, $reader, 'root has deref - stickyness';
 
 # force an object to indirect
+nok $Pages<Count>.does(PDF::COS);
 $Pages<Count> = PDF::COS.coerce: $Pages<Count>;
+ok $Pages<Count>.does(PDF::COS);
 $Pages<Count>.is-indirect = True;
 is $Pages<Count>.obj-num, -1, 'set .is-indirect = True';
 $Pages<Count>.is-indirect = False;

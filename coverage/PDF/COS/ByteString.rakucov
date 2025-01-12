@@ -1,0 +1,18 @@
+* my subset ContentType of Str where 'literal'|'hex-string';
+  
+* role PDF::COS::ByteString[ContentType $type = 'literal'] {
+  
+      use PDF::COS :LatinStr;
+      also does PDF::COS;
+  
+*     method content {
+✱         my $value = self.fmt;
+*         $type => $value;
+      };
+*     multi method COERCE(LatinStr $v is raw) {
+*         self.coerce: |$type => $v;
+      }
+  }
+  
+x role PDF::COS::ByteString does PDF::COS::ByteString['literal'] { }
+  

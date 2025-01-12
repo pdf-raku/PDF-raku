@@ -23,3 +23,10 @@ my $content = $ind-obj.content;
 isa-ok $content, Pair;
 is-json-equiv $content, (:bool), '$.content';
 is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';
+
+$ind-obj.object = PDF::COS.coerce: $ind-obj.object;
+is $ind-obj.object.obj-num, -1, 'set .is-indirect = True';
+$content = $ind-obj.content;
+isa-ok $content, Pair;
+is-json-equiv $content, (:bool), '$.content';
+is-json-equiv $ind-obj.ast, $ast, 'ast regeneration';

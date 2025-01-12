@@ -5,6 +5,9 @@
   ],
   "build-depends": [
   ],
+  "test-depends": [
+      "Test::Coverage"
+  ],
   "depends": [
     "Compress::Zlib",
     "Hash::int",
