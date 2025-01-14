@@ -37,7 +37,7 @@ $info.CreationDate = DateTime.new( :year(2015), :month(12), :day(25) );
 $info.Author = 'PDF-Tools/t/00-helloworld.t';
 
 $pdf.id = $id++;
-lives-ok {$pdf.save-as("t/helloworld.pdf")}, 'save-as pdf';
+lives-ok {$pdf.save-as("t/helloworld.pdf".IO)}, 'save-as pdf IO';
 ok $pdf.ID, 'doc ID generated';
 my $pdf-id = $pdf.ID[0];
 my $upd-id = $pdf.ID[1];

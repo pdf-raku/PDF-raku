@@ -19,7 +19,7 @@
   
   has Hash @.DecodeParms is entry(:array-or-item);  #| (Optional) A parameter dictionary or an array of such dictionaries, used by the filters specified by Filter
   
-x my subset StrOrDict where Str|Hash;
+  my subset StrOrDict where Str|Hash;
   has StrOrDict $.F is entry;                       #| (Optional; PDF 1.2) The file containing the stream data. If this entry is present, the bytes between stream and endstream are ignored
   has PDF::COS::Name @.FFilter is entry(:array-or-item);       #| (Optional; PDF 1.2) The name of a filter to be applied in processing the data found in the stream’s external file, or an array of such names
   has Hash @.FDecodeParms is entry(:array-or-item); #| (Optional; PDF 1.2) A parameter dictionary, or an array of such dictionaries, used by the filters specified by FFilter.
@@ -128,8 +128,8 @@ x         $!encoded = Nil;
   }
   
 x multi method gist(::?CLASS:U:) { nextsame() }
-x multi method gist(::?CLASS:D:) {
-x     callsame() ~ "\n" ~ self.encoded.Str.raku
+* multi method gist(::?CLASS:D:) {
+*     callsame() ~ "\n" ~ self.encoded.Str.raku
   }
   
 * multi method COERCE(Hash $dict, |c) {

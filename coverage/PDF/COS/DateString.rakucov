@@ -8,7 +8,7 @@
   use PDF::COS::TextString;
   
   use PDF::COS::Util :date-time-formatter;
-x BEGIN our &formatter = &date-time-formatter;
+  BEGIN our &formatter = &date-time-formatter;
   
   our constant DateRegex = rx/^
               'D:'?
@@ -21,7 +21,7 @@ x BEGIN our &formatter = &date-time-formatter;
               ]?
           $/;
   
-x multi method COERCE(::?CLASS:D $_) { $_ }
+* multi method COERCE(::?CLASS:D $_) { $_ }
   
 * multi method COERCE(Str:D $obj where DateRegex, |c) {
 *     self.new($obj, |c);

@@ -43,8 +43,8 @@
   
   =end pod
   
-x constant BOM-UTF16-BE = "\xFE\xFF";
-x constant BOM-UTF8 = "\xEF\xBB\xBF";
+  constant BOM-UTF16-BE = "\xFE\xFF";
+  constant BOM-UTF8 = "\xEF\xBB\xBF";
   
   our constant @pdfdoc-dec = [
    "\0", "\x[1]", "\x[2]", "\x[3]", "\x[4]", "\x[5]", "\x[6]",
@@ -70,7 +70,7 @@ x constant BOM-UTF8 = "\xEF\xBB\xBF";
    "î", "ï", "ð", "ñ", "ò", "ó", "ô", "õ", "ö", "÷", "ø", "ù", "ú",
    "û", "ü", "ý", "þ", "ÿ"];
   
-x constant %pdfdoc-enc = do {
+  constant %pdfdoc-enc = do {
       my Str %enc{UInt};
 x     for 0 .. 255 {
           my $ch := @pdfdoc-dec[$_];
@@ -93,7 +93,7 @@ x     %enc;
 *     $doc-enc //= self.&utf16-encode();
 *     $!type => $doc-enc;
   }
-x multi method COERCE(::?CLASS:D $_) { $_ }
+* multi method COERCE(::?CLASS:D $_) { $_ }
 * multi method COERCE(Str:D $_) {
 *     when .starts-with(BOM-UTF16-BE) {
 *         self.new: :bom, value => .substr(2).encode('latin-1').decode('utf16be');

@@ -101,5 +101,3 @@ method is-owner {
     True;
 }
 
-method type { ($!str-f.type, $!stm-f.type).unique }
-

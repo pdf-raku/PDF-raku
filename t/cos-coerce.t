@@ -1,7 +1,8 @@
 use Test;
-plan 47;
+plan 60;
 
 use PDF::Grammar::Test :&is-json-equiv;
+use PDF::COS::Array;
 use PDF::COS::Bool;
 use PDF::COS::Name;
 use PDF::COS::ByteString;
@@ -26,12 +27,14 @@ my PDF::COS::Name() $name = 'Fred';
 is $name, 'Fred';
 does-ok $name, PDF::COS::Name;
 is-deeply $name.content, (:name<Fred>);
+is-deeply $name.COERCE($name), $name;
 lives-ok {$name = "abc\x[abc]"}, 'name coercement non-latin chars';
 is-deeply $name.content, (:name("abc\x[abc]"));
 
 my PDF::COS::TextString() $text = 'Hello';
 is $text, 'Hello';
 does-ok $text, PDF::COS::TextString;
+is-deeply $text.COERCE($text), $text;
 is-deeply $text.content, (:literal<Hello>);
 
 my $date-string = "D:20151225000000Z00'00'";
@@ -39,6 +42,7 @@ for $date-string, DateTime.new( :year(2015), :month(12), :day(25) ) -> $date-in 
     my PDF::COS::DateString() $date = $date-in;
     is $date, $date-string;
     does-ok $date, PDF::COS::DateString;
+    is-deeply $date.COERCE($date), $date;
     is-deeply $date.content, (:literal($date-string));
 }
 
@@ -46,6 +50,7 @@ my PDF::COS::Int() $int = 42;
 is $int, 42;
 does-ok $int, PDF::COS::Int;
 is-deeply $int.content, 42;
+isa-ok PDF::COS.coerce-to(42, PDF::COS::Int), PDF::COS::Int;
 lives-ok {$int = 99};
 dies-ok {$int = "oops"};
 
@@ -69,6 +74,18 @@ is-json-equiv $bool.so, False;
 does-ok $bool, PDF::COS::Bool;
 is-json-equiv $bool.content, (:!bool);
 
+my $bool2 = True;
+PDF::COS.coerce($bool2);
+ok $bool2;
+does-ok $bool2, PDF::COS::Bool;
+
+my $array-in = [42];
+$array-in.push: $array-in;
+my PDF::COS::Array() $array = $array-in;
+isa-ok  $array, "PDF::COS::Array";
+is-deeply PDF::COS::Array.COERCE($array), $array;
+is-deeply $array[1][0], 42;
+
 my PDF::COS::Type::Info() $info = %(:Title("You better work"));
 isa-ok $info, "PDF::COS::Dict";
 does-ok $info,  PDF::COS::Type::Info;
@@ -80,12 +97,14 @@ my $Length = $decoded.chars;
 
 my PDF::COS::Dict() $dict = { :$Length };
 is $dict<Length>, $Length;
+is-deeply $dict.COERCE($dict), $dict;
 
 my %stream = %( :dict{ :$Length }, :$decoded );
 
 my PDF::COS::Stream() $contents = %stream;
 is $contents.decoded, $decoded;
 is $contents.Length, $Length;
+is-deeply $contents.COERCE($contents), $contents;
 
 $contents = PDF::COS.coerce: :%stream;
 is $contents.decoded, $decoded;
@@ -97,3 +116,7 @@ sub coerce-dict-test(PDF::COS::Dict() $dict) {
 }
 
 coerce-dict-test( { :$Length});
+
+quietly {
+    isa-ok PDF::COS.coerce(-> {}), Block;
+}

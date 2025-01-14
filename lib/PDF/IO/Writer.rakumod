@@ -65,11 +65,6 @@ multi method write-body(List $_, |c ) {
     .map({ $.write-body( $_, |c )}).join: "\n";
 }
 
-multi method write-body( Hash $body, |c ) {
-    $!offset //= 0;
-    $.write-body( $body, |c );
-}
-
 #| write the body and return the index
 multi method write-body( Hash $body!, @idx = [], Bool :$write-xref = True --> Str ) {
     @idx.unshift: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };

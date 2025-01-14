@@ -80,7 +80,7 @@ x     $data;
   
 * method filter-class( Str $filter-name is copy ) {
   
-x     constant %Filters = %(
+      constant %Filters = %(
           ASCIIHexDecode => PDF::IO::Filter::ASCIIHex,
           ASCII85Decode  => PDF::IO::Filter::ASCII85,
           CCITTFaxDecode => Mu,
@@ -95,7 +95,7 @@ x     constant %Filters = %(
   
       # image object specific abbreviations :-
       # See [PDF 1.7 Table 94 – Additional Abbreviations in an Inline Image Object]
-x     constant %FilterAbbreviations = %(
+      constant %FilterAbbreviations = %(
           AHx => 'ASCIIHexDecode',
           A85 => 'ASCII85Decode',
           LZW => 'LZWDecode',

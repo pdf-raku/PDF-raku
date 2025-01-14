@@ -20,7 +20,7 @@ multi method encode(Blob $buf --> Blob) {
 
     constant NullChar = 'z'.ord;
     constant PadChar = '!'.ord;
-    constant EOD = ('~'.ord, '>'.ord); 
+    constant EOD = ('~'.ord, '>'.ord);
 
     my uint8 @a85;
     my int $i = 0;

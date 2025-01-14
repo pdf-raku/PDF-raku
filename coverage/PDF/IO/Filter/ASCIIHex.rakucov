@@ -7,7 +7,7 @@
   # in section 7.4.2.
   use PDF::IO::Blob;
   use PDF::IO::Util :pack;
-x BEGIN my uint8 @HexEnc = map *.ord, flat '0' .. '9', 'A' .. 'F';
+  BEGIN my uint8 @HexEnc = map *.ord, flat '0' .. '9', 'A' .. 'F';
   
   
 * multi method encode(Str $input, |c --> PDF::IO::Blob) {

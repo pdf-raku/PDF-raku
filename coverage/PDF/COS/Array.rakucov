@@ -27,7 +27,7 @@ x     %seen{$array} = self;
 * method new(List() :$array = [], |c) {
 *     $seen-lock.lock;
 *     with %seen{$array} -> $obj {
-x         $seen-lock.unlock;
+*         $seen-lock.unlock;
 x         $obj;
       }
 ✱     else {
@@ -37,5 +37,5 @@ x         $obj;
   }
   
 * method content { ast-coerce self; }
-x multi method COERCE(::?CLASS $array) { $array }
+* multi method COERCE(::?CLASS $array) { $array }
   

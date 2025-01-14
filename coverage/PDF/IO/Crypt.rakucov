@@ -22,7 +22,7 @@
   has Bool $.is-owner is rw;   #| authenticated against, or created by, owner
   
   # Taken from [PDF 32000 Algorithm 2: Standard Padding string]
-x  constant @Padding = array[uint8].new(
+   constant @Padding = array[uint8].new(
        0x28, 0xbf, 0x4e, 0x5e,
        0x4e, 0x75, 0x8a, 0x41,
        0x64, 0x00, 0x4e, 0x56,
@@ -149,7 +149,7 @@ x sub RC4(Blob, int32, Blob, Blob) is native(&gen-lib) { ... }
       #   RC4_INT data[256];
       # } RC4_KEY;
   
-x     constant RC4_INT = uint32;
+      constant RC4_INT = uint32;
 *     my \rc4 = Buf[RC4_INT].allocate(258);
 *     RC4_set_key(rc4, $key.bytes, $key);
 ✱     my buf8 $out .= allocate($in.bytes);

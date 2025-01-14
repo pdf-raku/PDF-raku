@@ -12,7 +12,7 @@
   use OpenSSL::Digest;
   use PDF::IO::Util :pack;
   
-x constant KeyLen = 16;
+  constant KeyLen = 16;
   
 * submethod TWEAK(UInt :$Length = 128, |c) {
 *     die "unsupported AES encryption key length: $Length"

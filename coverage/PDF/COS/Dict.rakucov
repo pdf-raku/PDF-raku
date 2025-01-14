@@ -46,5 +46,5 @@ x         $obj;
   }
   
 * method content { ast-coerce self; }
-x multi method COERCE(::?CLASS $dict) { $dict }
+* multi method COERCE(::?CLASS $dict) { $dict }
   

@@ -8,4 +8,4 @@
   
 * method defined { False }
 * method content { :null(Any) }
-x multi method ACCEPTS(Any:U) { True }
+* multi method ACCEPTS(Any:U) { True }

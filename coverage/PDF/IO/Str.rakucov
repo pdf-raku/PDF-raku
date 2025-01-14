@@ -20,19 +20,21 @@ x has Blob[uint8] $!ords;
 x     buf;
   }
 * multi method seek(UInt $n, SeekFromBeginning) {
-x     $!pos = min($n, $.codes);
+*     $!pos = min($n, $.codes);
   }
-* multi method seek(UInt $n, SeekFromCurrent) {
-*     $!pos = min($!pos + $n, $.codes);
+* multi method seek(Int $n, SeekFromCurrent) {
+*     $!pos = max(0, min($!pos + $n, $.codes));
   }
-x multi method seek(UInt $n, SeekFromEnd) {
-x     $!pos = max(0, $.codes - $n);
+* multi method seek(Int $n, SeekFromEnd) {
+*     $!pos = $n >= 0
+          ?? $.codes
+          !! max(0, $.codes + $n);
   }
-x method slurp {
-x     my \codes = $.codes;
-x     my \rest := $.ords.subbuf($!pos, codes - $!pos);
+* method slurp {
+*     my \codes = $.codes;
+*     my \rest := $.ords.subbuf($!pos, codes - $!pos);
 x     $!pos = codes;
-x     rest;
+*     rest;
   }
 * method eof { $!pos >= $.codes }
 * method close {}
@@ -40,7 +42,7 @@ x     rest;
 * multi method COERCE(Str:D $value!, |c) {
 *     self.bless( :$value, |c );
   }
-x multi method COERCE(::?CLASS:D $_) is default { $_ }
+* multi method COERCE(::?CLASS:D $_) is default { $_ }
 x multi method COERCE( Blob:D $_!, |c) {
       my $value = .decode: "latin-1";
 x     self.bless( :$value, |c );

@@ -1,0 +1,6 @@
+use Test::Coverage;
+
+plan 1;
+
+coverage-at-least 85; # percent
+source-with-coverage();

@@ -3,11 +3,11 @@
   use PDF::IO;
   also does PDF::IO;
   
-x method encoding{ 'latin-1' }
+* method encoding{ 'latin-1' }
 * method codes { self.bytes }
 * multi method Str { self.decode: "latin-1" }
 * multi method Stringy { self.decode: "latin-1" }
   
-x multi method COERCE(::?CLASS $_) is default { $_ }
+* multi method COERCE(::?CLASS $_) is default { $_ }
 * multi method COERCE(Blob $_) { self.new($_) }
   

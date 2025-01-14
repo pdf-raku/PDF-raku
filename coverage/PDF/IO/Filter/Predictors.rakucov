@@ -2,14 +2,14 @@
   
 * unit class PDF::IO::Filter::Predictors;
   
-x subset BPC of UInt where 1 | 2 | 4 | 8 | 16 | 32;
+  subset BPC of UInt where 1 | 2 | 4 | 8 | 16 | 32;
   
-x constant None = 1;
-x constant TIFF = 2;
-x constant PNG = 10;
-x constant PNG-Range = 10 .. 15;
+  constant None = 1;
+  constant TIFF = 2;
+  constant PNG = 10;
+  constant PNG-Range = 10 .. 15;
   
-x subset Predictor of Int where None | TIFF | PNG-Range;
+  subset Predictor of Int where None | TIFF | PNG-Range;
   
   use PDF::IO::Util :pack;
   # post prediction functions as described in the PDF 32000 spec, Table 9

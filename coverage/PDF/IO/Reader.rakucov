@@ -17,9 +17,9 @@
   use JSON::Fast;
   use Method::Also;
   
-x subset ObjNumInt of UInt;
-x subset GenNumInt of Int where 0..999;
-x subset StreamAstNode of Pair:D where .key eq 'stream';
+  subset ObjNumInt of UInt;
+  subset GenNumInt of Int where 0..999;
+  subset StreamAstNode of Pair:D where .key eq 'stream';
   
   has PDF::IO  $.input is rw;      #= raw PDF image (latin-1 encoding)
   has Str      $.file-name;
@@ -374,7 +374,7 @@ x      :$obj-num, :$gen-num, :$encrypted = True) {
       :$index!, :$ref-obj-num!,  # type-2
 x     :$obj-num, :$gen-num) {
   
-*     my subset ObjStm of Hash where { .<Type> ~~ 'ObjStm' }
+✱     my subset ObjStm of Hash where { .<Type> ~~ 'ObjStm' }
   
 *     my ObjStm \container-obj = $.ind-obj( $ref-obj-num, 0 ).object;
 *     my \embedded-objects = container-obj.decoded;
@@ -425,10 +425,10 @@ x             $ind-obj := $_;
   }
   
   #| raw fetch of an object, without indexing or decryption
-x method get(ObjNumInt $obj-num, GenNumInt $gen-num) {
-      my %idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
+* method get(ObjNumInt $obj-num, GenNumInt $gen-num) {
+✱     my %idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
           // die "unable to find object: $obj-num $gen-num R";
-x      self.fetch-ind-obj(|%idx, :!encrypted, :$obj-num, :$gen-num);
+*      self.fetch-ind-obj(|%idx, :!encrypted, :$obj-num, :$gen-num);
   }
   
   #| utility method for basic deferencing, e.g.
@@ -441,7 +441,7 @@ x      self.fetch-ind-obj(|%idx, :!encrypted, :$obj-num, :$gen-num);
 *             when Str   { $val{ $_ } }
 *             when UInt  { $val[ $_ ] }
 *             when Array { $val[ .[0] ] }
-x             default    {die "bad \$.deref arg: {.raku}"}
+*             default    {die "bad \$.deref arg: {.raku}"}
           };
       }
 *     $val = self!ind-deref($val)
@@ -494,7 +494,7 @@ x     $.ind-obj( obj-num, gen-num ).object;
   
 * method !locate-xref($input-bytes, $tail-bytes, $tail, $offset is copy) {
       my str $xref;
-x     constant SIZE = 4096;       # big enough to usually contain xref
+      constant SIZE = 4096;       # big enough to usually contain xref
   
 *     if $offset >= $input-bytes - $tail-bytes {
 *         $xref = $!input.byte-str( $offset, $tail-bytes )
@@ -540,7 +540,7 @@ x     $xref;
   
 ✱     my %ast = $parse.ast;
 ✱     my PDF::IO::IndObj $ind-obj .= new( |%ast, :input($xref), :reader(self) );
-*     my subset XRefLike of Hash where { .<Type> ~~ 'XRef' }
+✱     my subset XRefLike of Hash where { .<Type> ~~ 'XRef' }
 *     $dict = my XRefLike $ = $ind-obj.object;
       # we don't want to index these
 *     @discarded.push: $ind-obj.obj-num * 1000 + $ind-obj.gen-num;
@@ -600,7 +600,7 @@ x     $xref;
   
 *         self!set-trailer: $dict;
   
-x         enum ( :ObjNum(0), :Type(1),
+          enum ( :ObjNum(0), :Type(1),
                  :Offset(2), :GenNum(3),     # Type 1 (External) Objects
                  :RefObjNum(2), :Index(3)    # Type 2 (Embedded) Objects
                );

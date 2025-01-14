@@ -5,7 +5,7 @@
   use PDF::IO;
   also does PDF::IO;
   
-  has IO::Handle $.value is required handles <read close eof seek slurp-rest path>;
+  has IO::Handle $.value is required handles <read close eof seek slurp path>;
   has Str $!str;
   has UInt $.codes is rw;
   
@@ -29,7 +29,7 @@
 *     $!value.read( $length );
   }
   
-x multi method COERCE(::?CLASS $_) is default { $_ }
+* multi method COERCE(::?CLASS $_) is default { $_ }
 * multi method COERCE(IO::Handle:D $value!, |c ) {
 *     self.bless( :$value, |c );
   }

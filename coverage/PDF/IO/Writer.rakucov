@@ -65,11 +65,6 @@ x         nextsame;
 *     .map({ $.write-body( $_, |c )}).join: "\n";
   }
   
-x multi method write-body( Hash $body, |c ) {
-x     $!offset //= 0;
-x     $.write-body( $body, |c );
-  }
-  
   #| write the body and return the index
 * multi method write-body( Hash $body!, @idx = [], Bool :$write-xref = True --> Str ) {
 *     @idx.unshift: { :type(0), :offset(0), :gen-num(65535), :obj-num(0) };
@@ -259,7 +254,7 @@ x     .map({ $.write-comment($_) }).join: "\n";
       }
   }
   
-x constant MultiLineDictLineSize = 65;
+  constant MultiLineDictLineSize = 65;
   
 * method write-dict(Hash $dict) {
   

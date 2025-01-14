@@ -101,5 +101,3 @@ x     with $!str-f { .crypt($v, |c) } else { $v }
 *     True;
   }
   
-x method type { ($!str-f.type, $!stm-f.type).unique }
-  

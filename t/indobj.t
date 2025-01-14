@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 21;
+plan 23;
 
 use PDF::COS :IndObj;
 use PDF::IO::IndObj;
@@ -35,4 +35,5 @@ my $ind-obj2 = PDF::IO::IndObj.new( :object($num-obj), :obj-num(4), :gen-num(2) 
 is-deeply $ind-obj2.object, $num-obj, ':object constructor';
 is-deeply $ind-obj2.obj-num, 4, ':object constructor';
 is-deeply $ind-obj2.gen-num, 2, ':object constructor';
-
+is-deeply $ind-obj2.COERCE($ind-obj2), $ind-obj2;
+is-deeply $ind-obj2.ind-ref, 'ind-ref' => [ 4, 2 ];

@@ -18,9 +18,9 @@
 *     @buf.append: 0 xx padding;
 ✱     my $buf32 := unpack( @buf, 32);
   
-x     constant NullChar = 'z'.ord;
-x     constant PadChar = '!'.ord;
-x     constant EOD = ('~'.ord, '>'.ord); 
+      constant NullChar = 'z'.ord;
+      constant PadChar = '!'.ord;
+      constant EOD = ('~'.ord, '>'.ord);
   
       my uint8 @a85;
       my int $i = 0;

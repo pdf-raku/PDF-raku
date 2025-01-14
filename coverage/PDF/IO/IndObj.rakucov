@@ -19,7 +19,7 @@
 *     $!object.gen-num = $ind-obj[1];
   }
   
-x multi method COERCE( ::?CLASS:D $_ ) { $_ }
+* multi method COERCE( ::?CLASS:D $_ ) { $_ }
 * multi method COERCE( IndObj:D $_ ) { self.new: |$_ }
   
   #| recreate a PDF::Grammar::PDF / PDF::IO::Writer compatible ast from the object
@@ -28,7 +28,7 @@ x multi method COERCE( ::?CLASS:D $_ ) { $_ }
   }
   
   #| create ast for an indirect reference to this object
-x method ind-ref returns IndRef {
-x     :ind-ref[ $.obj-num, $.gen-num ]
+* method ind-ref returns IndRef {
+*     :ind-ref[ $.obj-num, $.gen-num ]
   }
   

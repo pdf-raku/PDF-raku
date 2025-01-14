@@ -9,7 +9,7 @@
   use PDF::COS::TextString;
   use X::PDF;
   our $warn;
-x method coerce($a is raw, $b is raw) { self.coerce-to($a, $b) }
+* method coerce($a is raw, $b is raw) { self.coerce-to($a, $b) }
   
   # strip enumerations
 * multi method coerce-to( Enumeration $_ is rw, PDF::COS $type) {

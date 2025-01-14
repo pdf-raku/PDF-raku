@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 25;
+plan 27;
 
 use PDF::COS::Stream;
 use PDF::IO::IndObj;
@@ -58,3 +58,10 @@ my PDF::COS $stream2 .= coerce( :stream{  :dict{ :Foo( :name<Bar> ) } } );
 is-json-equiv $stream2.content, (:dict{:Foo(:name<Bar>)}), 'stream without content';
 $stream2.decoded = 'ABC12345678';
 is-json-equiv $stream2.content, (:stream{ :dict{:Foo(:name<Bar>), :Length(11) }, :encoded<ABC12345678> }), 'stream with content';
+is-deeply $stream2.gist.lines, (
+    '{Foo => Bar, Length => 11}',
+    '"ABC12345678"'
+);
+
+$stream2.decoded = Nil;
+is-json-equiv $stream2.content, (:dict{:Foo(:name<Bar>) }), 'stream with content removed';

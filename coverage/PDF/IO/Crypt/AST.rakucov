@@ -2,7 +2,7 @@
   
 x unit role PDF::IO::Crypt::AST;
   
-x my subset EncryptionDictLike of Hash where (.<Filter>:exists) && (.<U>:exists) && (.<O>:exists) && (.<P>:exists);
+  my subset EncryptionDictLike of Hash where (.<Filter>:exists) && (.<U>:exists) && (.<O>:exists) && (.<P>:exists);
   
   #| encrypt/decrypt all strings/streams in a PDF body
 * multi method crypt-ast('body', Array $body, Str :$mode = 'decrypt') {
@@ -50,7 +50,7 @@ x     warn "read only '$key' {$ast.raku} in $obj-num $gen-num R";
   
   #| for JSON deserialization, e.g. { :int(42) } => :int(42)
   use PDF::Grammar :AST-Types;
-x BEGIN my %ast-types = AST-Types.enums;
+  BEGIN my %ast-types = AST-Types.enums;
 * multi method crypt-ast( Hash $h! where { .keys == 1 && (%ast-types{.keys[0]}:exists)}, |c) {
 *     $.crypt-ast( |$h.kv, |c )
   }

@@ -22,11 +22,13 @@ method read(UInt $n = $.codes - $!pos) {
 multi method seek(UInt $n, SeekFromBeginning) {
     $!pos = min($n, $.codes);
 }
-multi method seek(UInt $n, SeekFromCurrent) {
-    $!pos = min($!pos + $n, $.codes);
+multi method seek(Int $n, SeekFromCurrent) {
+    $!pos = max(0, min($!pos + $n, $.codes));
 }
-multi method seek(UInt $n, SeekFromEnd) {
-    $!pos = max(0, $.codes - $n);
+multi method seek(Int $n, SeekFromEnd) {
+    $!pos = $n >= 0
+        ?? $.codes
+        !! max(0, $.codes + $n);
 }
 method slurp {
     my \codes = $.codes;

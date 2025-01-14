@@ -5,7 +5,7 @@ unit class PDF::IO::Handle;
 use PDF::IO;
 also does PDF::IO;
 
-has IO::Handle $.value is required handles <read close eof seek slurp-rest path>;
+has IO::Handle $.value is required handles <read close eof seek slurp path>;
 has Str $!str;
 has UInt $.codes is rw;
 
