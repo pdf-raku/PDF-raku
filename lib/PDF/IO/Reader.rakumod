@@ -307,7 +307,7 @@ method !fetch-stream-data(@ind-obj,           #| primary object
         # ensure stream is followed by an 'endstream' marker
         my Str \tail = $input.byte-str( $offset + $from + $length, $max-remaining-bytes - $length);
 
-        if tail ~~ m{^<PDF::Grammar::COS::stream-tail>} {
+        if tail ~~ m{^<PDF::Grammar::COS::stream-tail> 'endobj'} {
             warn X::PDF::BadIndirectObject.new(
                 :$obj-num, :$gen-num, :$offset,
                 :details("Ignoring {$/.from} bytes before 'endstream' marker")
@@ -316,7 +316,7 @@ method !fetch-stream-data(@ind-obj,           #| primary object
         else {
             die X::PDF::BadIndirectObject.new(
                 :$obj-num, :$gen-num, :$offset,
-                :details("Unable to locate 'endstream' marker after consuming /Length $length bytes")
+                :details("Unable to locate 'endstream' 'endobj' sequence after consuming /Length $length bytes")
                 );
         }
 
