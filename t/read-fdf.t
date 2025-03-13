@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 9;
+plan 10;
 
 use PDF::IO::Reader;
 use PDF::COS::Dict;
@@ -22,6 +22,8 @@ is $trailer<FDF><F>, 'Document.pdf', '$trailer<FDF><F>';
 
 isa-ok $trailer<FDF><Fields>, Array, '$trailer<FDF><Fields>';
 is $trailer<FDF><Fields>[1]<T>, 'City', '$trailer<FDF><Fields>[1]<T>';
+
+lives-ok {$pdf-in.save-as('t/pdf/pdf-fdf.out')}, 'save-as() - lives';
 
 done-testing;
 

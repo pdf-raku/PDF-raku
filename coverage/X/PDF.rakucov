@@ -64,9 +64,9 @@ x     method message {"xref section size mismatch. Expected $!obj-count entries,
   
 * class X::PDF::BadIndirectObject::Parse is X::PDF::BadIndirectObject {
       has Str $.input is required;
-*     method message {
-*         $.details = "Unable to parse indirect object: " ~ $.input.&synopsis();
-*         nextsame;
+x     method message {
+x         $.details = "Unable to parse indirect object: " ~ $.input.&synopsis();
+x         nextsame;
       }
   }
   

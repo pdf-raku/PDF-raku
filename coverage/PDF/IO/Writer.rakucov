@@ -377,8 +377,8 @@ x             .rethrow();
 *     self.stream-body: $fh, $body, my @idx, :$write-xref;
   }
   
-x multi method stream-cos(IO::Handle:D $fh) {
-x     $.stream-cos($fh, $!ast<cos>);
+* multi method stream-cos(IO::Handle:D $fh) {
+*     $.stream-cos($fh, $!ast<cos>);
   }
   
 * multi method stream-body(IO::Handle:D $fh, @body, |c) {

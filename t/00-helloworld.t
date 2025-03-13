@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 11;
+plan 12;
 
 use PDF;
 use PDF::COS::Name;
@@ -50,4 +50,5 @@ ok PDF::Grammar::PDF.parse( $pdf.Str: :compat(v1.5) ), '$pdf.Str v1.5 serializat
 lives-ok {$pdf .= open: $pdf.Blob}, 'reserialize from Blob';
 is-deeply $pdf.Info.Author, $info.Author, 'Info intact';
 lives-ok {$pdf.Blob}, 'second reserialization';
+lives-ok {$pdf.save-as("tmp/helloworld.pdf".IO.open(:w, :bin))}, 'save-as pdf IO::Handle';
 done-testing;

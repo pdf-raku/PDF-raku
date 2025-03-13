@@ -112,7 +112,7 @@ method cb-finish {
 }
 #| perform an incremental save back to the opened input file, or write
 #| differences to the specified file
-method update(IO::Handle :$diffs, |c) {
+method update(IO::Handle :$diffs, |c) is hidden-from-backtrace {
 
     die "Newly encrypted PDF must be saved in full"
         if $!flush;
@@ -162,7 +162,7 @@ method update(IO::Handle :$diffs, |c) {
     }
 }
 
-method !incremental-save(IO::Handle:D $fh, Hash $body, :$diffs, :$in-place) {
+method !incremental-save(IO::Handle:D $fh, Hash $body, :$diffs, :$in-place) is hidden-from-backtrace {
     my constant Pad = "\n\n".encode('latin-1');
 
     my Hash $trailer = $body<trailer><dict>;
@@ -203,7 +203,7 @@ method !ast-writer(|c) {
     PDF::IO::Writer.new: :$ast;
 }
 
-multi method save-as(IO::Handle $ioh, |c) {
+multi method save-as(IO::Handle $ioh, |c) is hidden-from-backtrace {
     self!ast-writer(|c).stream-cos: $ioh;
 }
 

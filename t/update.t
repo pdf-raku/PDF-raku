@@ -35,7 +35,7 @@ my $catalog = $pdf<Root>;
 
 # firstly, write and analyse just the updates
 $pdf.id = $id++;
-lives-ok {$pdf.update(:prev(9999), :diffs("t/pdf/pdf.in-diffs".IO.open(:w)) ); }, 'update to PDF file - lives';
+lives-ok {$pdf.update(:prev(9999), :diffs("t/pdf/pdf.in-diffs".IO.open(:w, :bin)) ); }, 'update to PDF file - lives';
 $pdf.id = $id++;
 lives-ok { $pdf.update(:prev(9999), :diffs("tmp/pdf.in.json".IO.open(:w)) ) }, 'update to JSON file - lives';
 
