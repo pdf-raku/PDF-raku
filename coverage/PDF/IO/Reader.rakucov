@@ -449,11 +449,11 @@ x             $ind-obj := $_;
 x     $val;
   }
   
-x method !ind-deref(Pair $_! ) {
-x     return .value unless $_ ~~ IndRef;
-x     my ObjNumInt \obj-num = .value[0];
-x     my GenNumInt \gen-num = .value[1];
-x     $.ind-obj( obj-num, gen-num ).object;
+* method !ind-deref(Pair $_! ) {
+*     return .value unless $_ ~~ IndRef;
+*     my ObjNumInt \obj-num = .value[0];
+*     my GenNumInt \gen-num = .value[1];
+*     $.ind-obj( obj-num, gen-num ).object;
   }
   
 * method load-header() {

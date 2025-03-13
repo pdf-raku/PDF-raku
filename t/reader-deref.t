@@ -1,17 +1,16 @@
 use v6;
 use Test;
-plan 8;
+plan 9;
 
+use PDF::Grammar::Test :is-json-equiv;
 use PDF::IO::Reader;
 my PDF::IO::Reader $reader .= new;
 
-sub deref($val is rw, *@ops) is rw {
-    $reader.deref($val, |@ops);
-}
-
 $reader.open( 't/pdf/pdf.in' );
 
-is-deeply $reader.get(1, 0), [1, 0, :dict{:Outlines(:ind-ref([2, 0])), :Pages(:ind-ref([3, 0])), :Type(:name<Catalog>)}], 'raw get';
+is-deeply $reader.get(1, 0), [1, 0, :dict{:Outlines(:ind-ref[2, 0]), :Pages(:ind-ref[3, 0]), :Type(:name<Catalog>)}], 'raw get';
+
+is-json-equiv $reader.deref('ind-ref' => [1, 0]), {:Outlines(:ind-ref[2, 0]), :Pages(:ind-ref[3, 0]), :Type<Catalog>}, 'raw deref';
 
 my $catalog = $reader.trailer<Root>;
 

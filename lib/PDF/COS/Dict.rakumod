@@ -21,7 +21,7 @@ submethod TWEAK(:$dict!, :$seen-lock) {
     self.tie-init;
     my %entries := self.entries;
     my %alias := self.aliases;
-    # this may trigger cascading PDF::COS::Tie coercians
+    # this may trigger cascading PDF::COS::Tie coercions
     # e.g. native Array to PDF::COS::Array
     self{%alias{.key} // .key} = from-ast(.value) for $dict.pairs.sort;
     self.?cb-init;
