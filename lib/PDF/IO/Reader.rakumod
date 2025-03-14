@@ -658,7 +658,7 @@ method !load-index($grammar, $actions, |c) {
 }
 
 #| differentiate update xrefs from hybrid xrefs
-method revision-xrefs {
+method revision-xrefs is DEPRECATED {
     my UInt @updates;
     for @!xrefs {
         @updates.push: $_

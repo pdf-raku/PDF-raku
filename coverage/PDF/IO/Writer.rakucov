@@ -254,7 +254,7 @@ x     .map({ $.write-comment($_) }).join: "\n";
       }
   }
   
-  constant MultiLineDictLineSize = 65;
+  constant MultiLineDictWrap = 65;
   
 * method write-dict(Hash $dict) {
   
@@ -273,7 +273,7 @@ x     .map({ $.write-comment($_) }).join: "\n";
       my Bool $multi-line;
 *     for @entries {
 *         $len += .chars;
-*         if $len >= MultiLineDictLineSize {
+*         if $len >= MultiLineDictWrap {
 x             $multi-line = True;
 *             last;
           }

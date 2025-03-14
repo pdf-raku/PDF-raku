@@ -254,7 +254,7 @@ multi method write-comment(Str $_) {
     }
 }
 
-constant MultiLineDictLineSize = 65;
+constant MultiLineDictWrap = 65;
 
 method write-dict(Hash $dict) {
 
@@ -273,7 +273,7 @@ method write-dict(Hash $dict) {
     my Bool $multi-line;
     for @entries {
         $len += .chars;
-        if $len >= MultiLineDictLineSize {
+        if $len >= MultiLineDictWrap {
             $multi-line = True;
             last;
         }

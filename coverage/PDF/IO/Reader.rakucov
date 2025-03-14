@@ -658,7 +658,7 @@ x         repeat {
   }
   
   #| differentiate update xrefs from hybrid xrefs
-x method revision-xrefs {
+x method revision-xrefs is DEPRECATED {
       my UInt @updates;
 x     for @!xrefs {
 x         @updates.push: $_
