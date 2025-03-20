@@ -87,7 +87,7 @@ x                         $sample = 0;
               }
 *             @out[$j++ div $w-len; $k] = $v;
           }
-x         @out;
+          @out;
       }
   
 *     multi sub pack-raku(array $shaped, Array $W!)  {
@@ -108,7 +108,7 @@ x         @out;
                   }
               }
            }
-x 	 $out;
+  	 $out;
       }
   
       # Compute /W for a cross reference stream, etc
@@ -127,7 +127,7 @@ x             while $v {
 *                 $w++;
 *                 $v div= 256;
               }
-x             $w;
+              $w;
           }
       }
   }

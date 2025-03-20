@@ -75,7 +75,7 @@
       }
 *     $!crypt = $_
           with $reader.crypt;
-x     self;
+      self;
   }
   
 * method encrypt(PDF:D $doc: Str :$owner-pass!, Str :$user-pass = '', :$EncryptMetadata = True, |c ) {
@@ -101,7 +101,7 @@ x     self;
 *         ? (.input && .xrefs && .xrefs[0]);
       }
 ✱     else {
-x         False;
+          False;
       }
   }
   
@@ -255,7 +255,7 @@ x     with self.Encrypt {
 x         .permitted($flag);
       }
       else {
-x         True;
+          True;
       }
   }
   

@@ -118,7 +118,7 @@ x         @out[$n++] = $tag;
 * multi method encode($buf where Blob | Buf,
                       Predictor :$Predictor where None = None #| predictor function
       ) {
-x     $buf;
+      $buf;
   }
   
 * multi method decode($buf where Blob | Buf,
@@ -230,6 +230,6 @@ x                 die "bad PNG predictor tag: $_";
   }
   
 * multi method decode($buf, Predictor :$Predictor where {None} = None ) {
-x     $buf;
+      $buf;
   }
   

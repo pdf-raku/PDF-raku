@@ -28,7 +28,7 @@ x     %seen{$array} = self;
 *     $seen-lock.lock;
 *     with %seen{$array} -> $obj {
 *         $seen-lock.unlock;
-x         $obj;
+          $obj;
       }
 ✱     else {
 *         LEAVE $seen-lock.protect: { %seen{$array}:delete }

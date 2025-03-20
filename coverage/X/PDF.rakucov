@@ -66,7 +66,7 @@ x     method message {"xref section size mismatch. Expected $!obj-count entries,
       has Str $.input is required;
 x     method message {
 x         $.details = "Unable to parse indirect object: " ~ $.input.&synopsis();
-x         nextsame;
+          nextsame;
       }
   }
   

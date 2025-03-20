@@ -32,9 +32,9 @@ x                  if $seen{$object}++;
                       ?? inherit(self, $key)
                       !! self.AT-KEY($key, :check)
               ) // $att.type;
-x             1;
+              1;
           }
-*         $val;
+✱         $val;
       }
   
 *     sub STORE($, \v) {
@@ -79,7 +79,7 @@ x                    with self{alias}:delete;
 *         .tie($val, :$check);
       }
 ✱     else {
-x         $val;
+          $val;
       }
   }
   

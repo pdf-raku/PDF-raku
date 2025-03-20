@@ -56,7 +56,7 @@ x             die "Encryption scheme /$cf-entry /CFM is not 'V2', 'AESV2', or 'N
 *     die 'This PDF lacks an ID.  The document cannot be decrypted'
           unless $doc<ID>;
   
-*     my PDF::COS::Type::Encrypt() $encrypt = $doc<Encrypt>;
+✱     my PDF::COS::Type::Encrypt() $encrypt = $doc<Encrypt>;
   
 *     given $encrypt.V {
 *         when 1..3 {
@@ -98,6 +98,6 @@ x     with $!str-f { .crypt($v, |c) } else { $v }
 *     for $!stm-f, $!str-f {
 *         return False if .defined && ! .is-owner;
       }
-*     True;
+✱     True;
   }
   

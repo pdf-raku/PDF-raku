@@ -23,7 +23,7 @@ x         @out[$j++] = ord;
 *             $ind = 256;
 x             while $i <= n && input[$i] == ord && $ind > 129 {
 x                 $i++;
-*                 $ind--;
+✱                 $ind--;
               }
           }
           else {
@@ -68,7 +68,7 @@ x                 $i++;
                   #eod
 *                 die "unexpected end-of-data marker (0x80)"
                       unless $idx == n;
-x                 last;
+                  last;
               }
           }
       }

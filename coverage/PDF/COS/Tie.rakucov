@@ -83,7 +83,7 @@ x         $!of-att;
 *             die "missing required field: $.accessor-name"
                   if $.is-required;
           }
-*         $lval;
+✱         $lval;
       }
 *     method !tie-container($lval is raw, :$check) {
           # of-att typed array declaration, e.g.:
@@ -146,14 +146,14 @@ x             || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
                   }
               }
           }
-x         $lval;
+          $lval;
       }
 *     multi method tie($lval is rw, :$check) is rw {
 *         $Lock.protect: {
 *             $lval.obj-num //= -1
           } if $.is-indirect && $lval ~~ PDF::COS;
   
-x         $lval;
+          $lval;
       }
   
 *     multi method tie($lval is copy, :$check) is rw {
@@ -205,7 +205,7 @@ x                 warn "ignoring entry attribute: {arg.key}";
       }
 *     warn ':item-or-array should be used with arrays ("@" sigil)'
           if %opts<decont> && $att.type !~~ Positional[Mu];
-x     %opts;
+      %opts;
   }
   
 * multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {
@@ -233,14 +233,14 @@ x         unless @args && @args[0] ~~ UInt;
 *         $.^mixin($role);
 *         $.tie-init;
       }
-x     self;
+      self;
   }
   
   # apply ourselves, if we're a punned role
 * method induce($obj is raw) {
 *     $obj.mixin: self.^pun_source
           if self.^is_pun;
-x     $obj;
+      $obj;
   }
   
   #| indirect reference

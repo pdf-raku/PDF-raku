@@ -25,7 +25,7 @@
 ✱     my Buf $key = md5( Buf.new: @obj-key );
 *     $key.reallocate($size)
           if $size < OpenSSL::Digest::MD5_DIGEST_LENGTH;
-x     $key;
+      $key;
   }
   
 * multi method crypt( Str $text, |c --> Str) {

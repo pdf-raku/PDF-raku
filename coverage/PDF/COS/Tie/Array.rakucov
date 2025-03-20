@@ -16,9 +16,9 @@
 *     sub FETCH($) {
 *         $got ||= do {
 *             $val := self.AT-POS($pos, :check) // $att.type;
-x             1;
+              1;
           }
-x         $val;
+          $val;
       }
   
 *     sub STORE($, \v) {
@@ -53,7 +53,7 @@ x    my \class = self.WHAT;
 *         .tie($val, :$check);
       }
 ✱     else {
-x         $val;
+          $val;
       }
   }
   

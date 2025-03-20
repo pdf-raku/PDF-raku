@@ -76,7 +76,7 @@ x     for 0 .. 255 {
           my $ch := @pdfdoc-dec[$_];
 x         %enc{$ch.ord} = .chr if $ch;
       }
-x     %enc;
+      %enc;
   }
   
 * our sub utf16-encode(Str $str --> Str) {

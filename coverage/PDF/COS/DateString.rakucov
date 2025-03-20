@@ -33,7 +33,7 @@
   }
   
 * multi method new(Str:D $date! where DateRegex) {
-*     my PDF::COS::TextString:D() $pdf-date = $date;
+✱     my PDF::COS::TextString:D() $pdf-date = $date;
 *     my UInt \year  = +$<year>;
 *     my UInt \month = +( @<dd>[0] // 1 );
 *     my UInt \day   = +( @<dd>[1] // 1 );

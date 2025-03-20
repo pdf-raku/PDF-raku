@@ -24,7 +24,7 @@ x     PDF::COS::Null.new;
   }
   
 * multi method coerce-to( PDF::COS $obj, $ where $obj) {
-x     $obj;
+      $obj;
   }
   
 * multi method coerce-to( PDF::COS $obj is rw, PDF::COS $type, |c) {
@@ -33,7 +33,7 @@ x     $obj;
       }
 x     elsif $warn {
 x         warn X::PDF::Coerce.new: :$obj, :$type;
-*         $obj;
+✱         $obj;
       }
   }
   
@@ -54,6 +54,6 @@ x         warn X::PDF::Coerce.new: :$obj, :$type;
   
 * multi method coerce-to( Any:D $obj, $type) {
 *     warn X::PDF::Coerce.new( :$obj, :$type ) if $warn;
-x     $obj;
+      $obj;
   }
   

@@ -7,7 +7,7 @@
   use PDF::IO;
   use PDF::COS::Type::XRef;
   use PDF::IO::IndObj;
-x has PDF::IO() $.input;
+  has PDF::IO() $.input;
   has $.ast is rw;
   has UInt $.offset;
   has UInt $.prev;
@@ -47,7 +47,7 @@ x             self does NativeWriter[::('PDF::Native::Writer')];
 *         $.write( $_ );
       }
       else {
-x         nextsame;
+          nextsame;
       }
   }
   
@@ -111,7 +111,7 @@ x         die "don't know how to serialize body component: {$obj.raku}"
 *     @objects.map: -> $obj is rw {
 *         my \bytes = self!make-object($obj, @idx);
 *         $!offset += bytes.codes + 1;
-x         bytes;
+          bytes;
       }
   }
   
@@ -167,7 +167,7 @@ x             when 2 { $idx<index> }
 *     $!offset += xref-str.codes;
 *     $!prev = startxref;
   
-x     trailer;
+      trailer;
   }
   
   #| Build a PDF 1.4- Cross Reference Table
@@ -190,7 +190,7 @@ x     trailer;
 *     $!offset += xref-str.codes;
 *     $!prev = startxref;
   
-x     trailer;
+      trailer;
   }
   
 * method write-bool( $_ ) {
@@ -275,7 +275,7 @@ x     .map({ $.write-comment($_) }).join: "\n";
 *         $len += .chars;
 *         if $len >= MultiLineDictWrap {
 x             $multi-line = True;
-*             last;
+✱             last;
           }
       }
   
@@ -472,7 +472,7 @@ x     .fmt: '%d';
           }
 *         @xrefs.push: %( :$obj-first-num, :$obj-count, :@entries );
       }
-x     @xrefs;
+      @xrefs;
   }
   
 * method !write-xref-segments(List $_) {

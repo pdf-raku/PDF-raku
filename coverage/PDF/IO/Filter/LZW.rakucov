@@ -51,10 +51,10 @@ x             if $next-code == (1 +< $code-len) and $code-len < 12 {
 *         if $code == ClearTable {
 x             $code-len = InitialCodeLen;
 *             $next-code = EodMarker + 1;
-*             next;
+✱             next;
           }
 x         elsif $code == EodMarker {
-*             last;
+✱             last;
           }
           else {
 *             @table[$next-code] = @table[$code].clone;

@@ -17,7 +17,7 @@ x has Blob[uint8] $!ords;
 *     my \n = min($n, $.codes - $!pos);
 *     my \buf := Buf[uint8].new: $.subbuf($!pos, n);
 *     $!pos += n;
-x     buf;
+      buf;
   }
 * multi method seek(UInt $n, SeekFromBeginning) {
 *     $!pos = min($n, $.codes);
@@ -34,7 +34,7 @@ x     buf;
 *     my \codes = $.codes;
 *     my \rest := $.ords.subbuf($!pos, codes - $!pos);
 x     $!pos = codes;
-*     rest;
+✱     rest;
   }
 * method eof { $!pos >= $.codes }
 * method close {}

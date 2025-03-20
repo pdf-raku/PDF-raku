@@ -47,7 +47,7 @@
   }
   
 * method decode($? --> Array) {
-*     my PDF::IO() $bytes = callsame;
+✱     my PDF::IO() $bytes = callsame;
 *     my UInt:D \first = $.First;
 *     my UInt:D \n = $.N;
 *     my Str:D \object-index-str = $bytes.byte-str(0, first);

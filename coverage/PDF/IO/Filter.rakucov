@@ -40,7 +40,7 @@ x             %dict<DecodeParms> = $_ with .[i]
 *         $data = self!decode-item( $data, |%dict )
       }
   
-x     $data;
+      $data;
   }
   
 * method encode( $input, Hash :$dict ) {
@@ -75,7 +75,7 @@ x         default { die "bad filter: $_" }
 *         $data = self!encode-item( $data, |%dict )
       }
   
-x     $data;
+      $data;
   }
   
 * method filter-class( Str $filter-name is copy ) {
@@ -116,6 +116,6 @@ x     $data;
 *     X::NYI.new(:feature("PDF stream filter not implemented: '$filter-name'")).throw
           unless $filter-class.can('decode');
   
-x     $filter-class;
+      $filter-class;
   }
   

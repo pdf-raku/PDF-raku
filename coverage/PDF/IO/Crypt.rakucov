@@ -85,8 +85,8 @@ x                  UInt :V($version) = self.type eq 'AESV2' ?? 4 !! 2,
 ✱     my %dict = :$O, :$U, :P($permissions), :R($!revision), :V($version), :Filter<Standard>;
   
 *     if $version >= 4 {
-*         my PDF::COS::Name() $CFM = self.type;
-*         my PDF::COS::Name() $StdCF = 'StdCF';
+✱         my PDF::COS::Name() $CFM = self.type;
+✱         my PDF::COS::Name() $StdCF = 'StdCF';
 *         %dict<CF> = { :StdCF{ :$CFM } };
 *         %dict<StmF> = $StdCF;
 *         %dict<StrF> = $StdCF;
@@ -100,7 +100,7 @@ x                  UInt :V($version) = self.type eq 'AESV2' ?? 4 !! 2,
   
       # make it indirect. keep the trailer size to a minimum
 *     $enc.is-indirect = True;
-*     $enc;
+✱     $enc;
   }
   
 * method !load(PDF::COS::Dict :$doc!,
@@ -154,7 +154,7 @@ x sub RC4(Blob, int32, Blob, Blob) is native(&gen-lib) { ... }
 *     RC4_set_key(rc4, $key.bytes, $key);
 ✱     my buf8 $out .= allocate($in.bytes);
 *     RC4(rc4, $in.bytes, $in, $out);
-x     $out;
+      $out;
   }
   
 * method !do-iter-crypt(Blob $code, @pass, $n=0, $m=19) {
@@ -163,7 +163,7 @@ x     $out;
 ✱         my Buf $key .= new: $code.map( * +^ iter );
 *         $crypt = $.rc4-crypt($key, $crypt);
       }
-x     $crypt;
+      $crypt;
   }
   
 * method compute-user(@pass-padded, :$key! is rw) {
@@ -206,7 +206,7 @@ x         $n = $!key-bytes;
 *         $.rc4-crypt($key, $pass);
       }
   
-x     @computed;
+      @computed;
   }
   
 * method !auth-user-pass(@pass) {
@@ -256,7 +256,7 @@ x     elsif $!revision >= 3 {   # 2 (Revision 3 or greater)
 *         self!do-iter-crypt(key, $user);
       }
   
-x     @owner;
+      @owner;
   }
   
 * method !auth-owner-pass(@pass) {

@@ -69,7 +69,7 @@
 *         @xref[$i; 2] = $xref-index[$i; 3];
 *         $size = $obj-num + 1;
       }
-x     $size;
+      $size;
   }
   
   #= inverse of $.decode-index. calculates and sets $.Size and $.Index
@@ -102,7 +102,7 @@ x     $size;
               unless +$xref-idx == n;
       }
   
-*     $xref-idx;
+✱     $xref-idx;
   }
   
   #= an extra decoding stage - build index entries from raw decoded data
@@ -123,7 +123,7 @@ x     $size;
           }
       }
   
-x     @index;
+      @index;
   }
   
 * method decode-index($encoded = $.encoded) {

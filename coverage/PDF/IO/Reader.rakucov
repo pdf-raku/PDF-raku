@@ -88,7 +88,7 @@ x             %body ,= .<trailer>.ast with $<index>;
 x             make %body;
           }
 x         method ind-obj($/) {
-x             my Str:D() $input = $/;
+              my Str:D() $input = $/;
               my $ind-obj = $cos-ind-obj.parse($input, :scan)
 x                 // die "Native indirect Object parse failed at byte offset:{$/.from}";
               my $ast = $ind-obj.ast;
@@ -205,7 +205,7 @@ x         $_ !~~ 'Prev'|'Size'                    # Recomputed fields
                with $dict{k};
       }
   
-x     $trailer;
+      $trailer;
   }
   
   #| open the named PDF/FDF file
@@ -241,7 +241,7 @@ x     $trailer;
           }
      }
   
-x     ast;
+      ast;
   }
   
   # process a batch of indirect object updates
@@ -288,8 +288,8 @@ x                 die "unable to handle indirect object update of type: $_";
   {
       my constant MinTrailingBytes = "\endstream endobj".codes;
 *     my (ObjNumInt $obj-num, GenNumInt $gen-num, $obj-raw) = @ind-obj;
-*     my UInt() $from = $obj-raw.value<start>:delete;
-*     my UInt() $length = $.deref( $obj-raw.value<dict><Length> )
+✱     my UInt() $from = $obj-raw.value<start>:delete;
+✱     my UInt() $length = $.deref( $obj-raw.value<dict><Length> )
           // die X::PDF::BadIndirectObject.new(
                  :$obj-num, :$gen-num, :$offset,
                  :details("Stream mandatory /Length field is missing")
@@ -386,7 +386,7 @@ x     :$obj-num, :$gen-num) {
 *     @ind-obj[2] = .ast given self.parse-object($input)
           or die X::PDF::ObjStmObject::Parse.new( :$obj-num, :$input, :$ref-obj-num);
   
-x     @ind-obj;
+      @ind-obj;
   }
   
   #| fetch and stantiate indirect objects. cache against the index
@@ -446,7 +446,7 @@ x             $ind-obj := $_;
       }
 *     $val = self!ind-deref($val)
           if $val.isa(Pair);
-x     $val;
+      $val;
   }
   
 * method !ind-deref(Pair $_! ) {
@@ -514,7 +514,7 @@ x         repeat {
 *             $offset += $len;
           } until $xref ~~ /'%%EOF'/ || $offset >= $input-bytes;
       }
-x     $xref;
+      $xref;
   }
   
   #| load PDF 1.4- xref table followed by trailer
@@ -664,7 +664,7 @@ x     for @!xrefs {
 x         @updates.push: $_
               if !@updates || $_ > @updates.tail;
       }
-x     @updates;
+      @updates;
   }
   
   #| bypass any indices. directly parse and reconstruct index from objects.
@@ -700,7 +700,7 @@ x     @updates;
 *                     self!set-trailer( dict, :keys[<Root Encrypt Info ID>] );
 *                     self!setup-crypt(|c);
                       # discard existing /Type /XRef stream objects. These are specific to the input PDF
-*                     next;
+✱                     next;
                   }
               }
   
@@ -741,7 +741,7 @@ x     @updates;
           }
       }
   
-x     %ast;
+      %ast;
   }
   
   #| Get a list of indirect objects in the PDF
@@ -776,7 +776,7 @@ x                     die "unable to find object: $parent 0 R"
 *                 $seq = $entry<index>;
               }
 x             when IndexType::Free {
-x                 next;
+                  next;
               }
 x             default {
 x                 die "unknown ind-obj index <type> $obj-num $gen-num: {.raku}"
@@ -797,7 +797,7 @@ x                 die "unknown ind-obj index <type> $obj-num $gen-num: {.raku}"
           }
 x         elsif $incremental {
               # object hasn't been fetched, so cannot have been updated
-x             next;
+              next;
           }
   
 *         if $incremental && $offset && $obj-num {
@@ -882,6 +882,6 @@ x             next;
       else {
 *         $output-path.spurt: $writer.Blob;
       }
-x     $writer;
+      $writer;
   }
   
