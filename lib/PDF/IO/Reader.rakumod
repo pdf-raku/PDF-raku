@@ -215,13 +215,18 @@ multi method open( Str $!file-name where {!.does(PDF::IO)}, |c) is hidden-from-b
 
 #| deserialize a JSON dump
 multi method open(IO::Path $input-path  where .extension.lc eq 'json', |c ) is hidden-from-backtrace {
-    my \ast = from-json( $input-path.IO.slurp );
-    my \root = ast<cos> if ast.isa(Hash);
-    die X::PDF::BadJSON.new( :input-file($input-path.absolute) )
-        without root;
-    $!type = root<header><type> // 'PDF';
-    $!version = root<header><version> // 1.2;
-    for root<body>.list {
+    my Str $input-file = $input-path.absolute;
+    my \root = $input-path.IO.slurp.&from-json;
+    my \ast = root<cos> if root.isa(Hash);
+    die X::PDF::BadJSON.new( :$input-file )
+        without ast;
+    self.open-ast: ast, |c;
+}
+
+method open-ast(\ast is raw, Str :$input-file, |c) is hidden-from-backtrace {
+    $!type = ast<header><type> // 'PDF';
+    $!version = ast<header><version> // 1.2;
+    for ast<body>.list {
 
         for .<objects>.list.reverse {
             with .<ind-obj> -> $ind-obj {

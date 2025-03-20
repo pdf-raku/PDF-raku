@@ -1,9 +1,10 @@
 use v6;
 use Test;
-plan 10;
+plan 11;
 
 use PDF::IO::Reader;
 use PDF::IO::Str;
+use JSON::Fast;
 
 sub make-pdf( :$header='%PDF-1.3', :$length=46, :$xref-digit='0', :$eof='%%EOF', :$endobj = 'endobj') {
 
@@ -100,6 +101,9 @@ lives-ok { test-case( :repair ) }, 'good pdf :repair- lives';
 throws-like  { test-case( :repair, :endobj('bye!') ) }, X::PDF::ParseError, :message("Unable to parse PDF document: \"\\%PDF-1.3 \\%xyz 1 0 obj <<   /Auth ... startxref 693 \\%\\%EOF \""), ':repair - corrupted pdf';
 
 throws-like { PDF::IO::Reader.new.open("META6.json") }, X::PDF::BadJSON;
+
+my \ast = "t/pdf/samples/helloworld.json".IO.slurp.&from-json.<cos>;
+lives-ok { PDF::IO::Reader.new.open-ast(ast) }, 'open-ast() lives';
 
 done-testing;
  
