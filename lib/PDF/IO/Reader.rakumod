@@ -220,10 +220,10 @@ multi method open(IO::Path $input-path  where .extension.lc eq 'json', |c ) is h
     my \ast = root<cos> if root.isa(Hash);
     die X::PDF::BadJSON.new( :$input-file )
         without ast;
-    self.open-ast: ast, |c;
+    self.open: ast, |c;
 }
 
-method open-ast(\ast is raw, Str :$input-file, |c) is hidden-from-backtrace {
+multi method open(Associative \ast is raw, Str :$input-file, |c) is hidden-from-backtrace {
     $!type = ast<header><type> // 'PDF';
     $!version = ast<header><version> // 1.2;
     for ast<body>.list {

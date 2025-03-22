@@ -103,7 +103,7 @@ throws-like  { test-case( :repair, :endobj('bye!') ) }, X::PDF::ParseError, :mes
 throws-like { PDF::IO::Reader.new.open("META6.json") }, X::PDF::BadJSON;
 
 my \ast = "t/pdf/samples/helloworld.json".IO.slurp.&from-json.<cos>;
-lives-ok { PDF::IO::Reader.new.open-ast(ast) }, 'open-ast() lives';
+lives-ok { PDF::IO::Reader.new.open(ast) }, 'open(%ast) lives';
 
 done-testing;
  
