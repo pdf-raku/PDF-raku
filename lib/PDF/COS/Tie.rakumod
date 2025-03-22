@@ -7,8 +7,11 @@ my constant $Lock = Lock.new;
 #| generate an indirect reference to ourselves
 method ind-ref returns IndRef {
     given $.obj-num {
-        $_ && $_ > 0
-            ?? :ind-ref[ $_, $.gen-num ]
+        $_
+            ?? ($_ < 0
+                ?? die "indirect object has not been allocated"
+                !! :ind-ref[ $_, $.gen-num ]
+               )
             !! die "not an indirect object";
     }
 }
