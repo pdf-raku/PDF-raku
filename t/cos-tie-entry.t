@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 76;
+plan 80;
 
 use PDF::COS::Dict;
 use PDF::COS::Name;
@@ -30,6 +30,13 @@ use PDF::Grammar::Test :is-json-equiv;
     is $dict.keys, <IntReq>, '.keys';
     is $dict.IntReq, 42, "dict accessor sanity";
     is $dict.required-int, 42, "dict alias accessor";
+    is-deeply $dict.obj-num, Int;
+    dies-ok { $dict.ind-ref }, 'no obj-num';
+    $dict.obj-num = 12;
+    $dict.gen-num = 10;
+    is-deeply $dict.ind-ref, 'ind-ref' => [12, 10], 'allocated obj-num';
+    $dict.obj-num = -1;
+     dies-ok { $dict.ind-ref }, 'unallocated obj-num';
 
     lives-ok { $dict .= new( :dict{ :required-int(42) } ) }, 'dict construction from alias';
     is $dict.keys, <IntReq>, 'from alias .keys';
