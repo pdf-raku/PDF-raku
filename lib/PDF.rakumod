@@ -136,10 +136,7 @@ method update(IO::Handle :$diffs, |c) is hidden-from-backtrace {
         $diffs.print: to-json(%ast);
         $diffs.close;
     }
-    elsif ! +$body[0]<objects> {
-        # no updates that need saving
-    }
-    else {
+    elsif +$body[0]<objects> {
         my IO::Handle $fh;
         my Bool $in-place = False;
 
