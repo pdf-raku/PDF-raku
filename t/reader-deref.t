@@ -1,6 +1,6 @@
 use v6;
 use Test;
-plan 9;
+plan 10;
 
 use PDF::Grammar::Test :is-json-equiv;
 use PDF::IO::Reader;
@@ -31,5 +31,7 @@ for $reader.deref($Kids,[0]), $reader.deref($Kids, 0) -> $kid {
 ok $reader.deref($Pages,<Kids>,[0],<Parent>) === $Pages, '$Pages<Kids>[0]<Parent> === $Pages';
 
 dies-ok {  $reader.deref($Pages, -1) }
+
+is $reader.deref(42), 42;
 
 done-testing;

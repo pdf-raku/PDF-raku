@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+0.6.9  2025-04-02T07:10:03+13:00
+    - Tighten stream data parsing. Expect 'endstream' to be followed
+      by 'endobj'.
+    - Deprecate Reader revision-xrefs() method. Doesn't appear to be
+      currently used.
+    - Add Test::Coverage to the test suite (xt/coverage.rakutest).
+      Improve overall test coverage to > 85%
+
 0.6.8  2024-09-29T06:30:31+13:00
     - Create a compilation unit for X::PDF exceptions
 

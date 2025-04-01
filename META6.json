@@ -5,9 +5,6 @@
   ],
   "build-depends": [
   ],
-  "test-depends": [
-      "Test::Coverage"
-  ],
   "depends": [
     "Compress::Zlib",
     "Hash::int",
@@ -75,5 +72,5 @@
   ],
   "test-depends": [
   ],
-  "version": "0.6.8"
+  "version": "0.6.9"
 }

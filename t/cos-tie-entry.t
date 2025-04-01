@@ -36,7 +36,7 @@ use PDF::Grammar::Test :is-json-equiv;
     $dict.gen-num = 10;
     is-deeply $dict.ind-ref, 'ind-ref' => [12, 10], 'allocated obj-num';
     $dict.obj-num = -1;
-     dies-ok { $dict.ind-ref }, 'unallocated obj-num';
+    dies-ok { $dict.ind-ref }, 'unallocated obj-num';
 
     lives-ok { $dict .= new( :dict{ :required-int(42) } ) }, 'dict construction from alias';
     is $dict.keys, <IntReq>, 'from alias .keys';
