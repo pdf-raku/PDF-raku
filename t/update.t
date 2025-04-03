@@ -16,7 +16,7 @@ use JSON::Fast;
 sub name($name){ PDF::COS::Name.COERCE($name) };
 
 # ensure consistant document ID generation
-my $id = $*PROGRAM-NAME.fmt('%-16.16s');
+my $id = $*PROGRAM.basename.fmt('%-16.16s');
 
 my PDF $pdf .= open( 't/pdf/pdf.in' );
 

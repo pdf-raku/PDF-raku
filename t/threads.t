@@ -13,7 +13,7 @@ constant PAGES = 120;
 sub name($name){ PDF::COS::Name.COERCE($name) };
 
 # ensure consistent document ID generation
-my $id = $*PROGRAM-NAME.fmt('%-16.16s');
+my $id = $*PROGRAM.basename.fmt('%-16.16s');
 
 my PDF:D $pdf .= new;
 my $root      = $pdf.Root       = { :Type(name 'Catalog') };
