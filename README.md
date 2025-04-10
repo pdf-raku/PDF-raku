@@ -49,8 +49,7 @@ my PDF::COS::Dict $catalog = $pdf.Root = { :Type(/'Catalog') };
 my @MediaBox  = 0, 0, 250, 100;
 
 # define font /F1 as core-font Helvetica
-my %Resources = :Procset[ /'PDF', /'Text'],
-                :Font{
+my %Resources = :Font{
                     :F1{
                         :Type(/'Font'),
                         :Subtype(/'Type1'),
@@ -124,49 +123,38 @@ This module is based on the [PDF 32000-1:2008 1.7](https://opensource.adobe.com/
 
 The `examples/helloworld.pdf` file that we created above contains:
 ```
-%PDF-1.3
+%PDF-1.4
 %...(control characters)
-1 0 obj <<
-  /CreationDate (D:20151225000000Z00'00')
-  /Producer (Raku PDF)
->>
+1 0 obj
+<< /CreationDate (D:20151225000000Z00'00') /Producer (Raku PDF) >>
 endobj
 
-2 0 obj <<
-  /Type /Catalog
-  /Pages 3 0 R
->>
+2 0 obj
+<< /Type /Catalog /Pages 3 0 R >>
 endobj
 
-3 0 obj <<
+3 0 obj
+<<
   /Type /Pages
   /Count 1
   /Kids [ 4 0 R ]
   /MediaBox [ 0 0 250 100 ]
-  /Resources <<
-    /Font <<
-      /F1 6 0 R
-    >>
-    /Procset [ /PDF /Text ]
-  >>
+  /Resources << /Font << /F1 6 0 R >> >>
 >>
 endobj
 
-4 0 obj <<
-  /Type /Page
-  /Contents 5 0 R
-  /Parent 3 0 R
->>
+4 0 obj
+<< /Type /Page /Contents 5 0 R /Parent 3 0 R >>
 endobj
 
-5 0 obj <<
-  /Length 44
->> stream
+5 0 obj
+<< /Length 44 >> stream
 BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET
 endstream
 endobj
 
-6 0 obj <<
+6 0 obj
+<<
   /Type /Font
   /Subtype /Type1
   /BaseFont /Helvetica
@@ -177,23 +165,22 @@ endobj
 xref
 0 7
 0000000000 65535 f 
-0000000014 00000 n 
-0000000101 00000 n 
-0000000155 00000 n 
-0000000334 00000 n 
-0000000404 00000 n 
-0000000501 00000 n 
+0000000015 00000 n 
+0000000098 00000 n 
+0000000148 00000 n 
+0000000283 00000 n 
+0000000347 00000 n 
+0000000442 00000 n 
 trailer
 <<
-  /ID [ <d743a886fcdcf87b69c36548219ea941> <d743a886fcdcf87b69c36548219ea941> ]
+  /ID [ <2086649e71c387e1fd583111ee195fe5> <2086649e71c387e1fd583111ee195fe5> ]
   /Info 1 0 R
   /Root 2 0 R
   /Size 7
 >>
 startxref
-610
-%%EOF
-```
+549
+%%EOF```
 
 The PDF is composed of a series indirect objects, for example, the first object is:
 
