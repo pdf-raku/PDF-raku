@@ -185,10 +185,9 @@ startxref
 The PDF is composed of a series indirect objects, for example, the first object is:
 
 ```
-1 0 obj <<
-  /CreationDate (D:20151225000000Z00'00')
-  /Producer (Raku PDF)
->> endobj
+1 0 obj
+<< /CreationDate (D:20151225000000Z00'00') /Producer (Raku PDF)>>
+endobj
 ```
 
 It's an indirect object with object number `1` and generation number `0`, with a `<<` ... `>>` delimited dictionary containing the author and the date that the document was created. This PDF dictionary is roughly equivalent to the Raku hash:
@@ -200,13 +199,13 @@ The bottom of the PDF contains:
 ```
 trailer
 <<
-  /ID [ <d743a886fcdcf87b69c36548219ea941> <d743a886fcdcf87b69c36548219ea941> ]
+  /ID [ <2086649e71c387e1fd583111ee195fe5> <2086649e71c387e1fd583111ee195fe5> ]
   /Info 1 0 R
   /Root 2 0 R
   /Size 7
 >>
 startxref
-610
+549
 %%EOF
 ```
 
@@ -219,15 +218,15 @@ Immediately above the trailer is the cross reference table:
 xref
 0 7
 0000000000 65535 f 
-0000000014 00000 n 
-0000000101 00000 n 
-0000000155 00000 n 
-0000000334 00000 n 
-0000000404 00000 n 
-0000000501 00000 n 
+0000000015 00000 n 
+0000000098 00000 n 
+0000000148 00000 n 
+0000000283 00000 n 
+0000000347 00000 n 
+0000000442 00000 n 
 ```
 
-This indexes the indirect objects in the PDF by byte offset (generation number) for random access.
+This indexes the indirect objects in the PDF by byte offset (and generation number) for random access.
 
 We can quickly put PDF to work using the Raku REPL, to better explore the document:
 
@@ -301,7 +300,7 @@ use PDF::COS::Name;
 my PDF::IO::Reader $reader .= new;
 $reader.open: 'examples/helloworld.pdf';
 
-# objects can be directly fetched by object-number and generation-number:
+# Objects can be directly fetched by object-number and generation-number:
 my $page1 = $reader.ind-obj(4, 0).object;
 
 # Hashes and arrays are tied. This is usually more convenient for navigating
@@ -371,7 +370,7 @@ PDF::COS::Type::Encrypt | PDF::COS::Dict | PDF Encryption/Permissions dictionary
 PDF::COS::Type::Info | PDF::COS::Dict | Document Information Dictionary
 PDF::COS::Type::ObjStm | PDF::COS::Stream | PDF 1.5+ Object stream (packed indirect objects)
 PDF::COS::Type::XRef | PDF::COS::Stream | PDF 1.5+ Cross Reference stream
-PDF::COS::TextString | PDF::COS::ByteString | Implements the 'text-string' data-type
+PDF::COS::TextString | PDF::COS::ByteString | Implements PDF 'text-string' (Unicode) strings
 
 ## Further Reading
 
