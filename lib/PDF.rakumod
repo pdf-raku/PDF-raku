@@ -7,6 +7,7 @@ also is PDF::COS::Dict;
 
 use PDF::COS;
 use PDF::IO::Serializer;
+use PDF::IO::Crypt::PDF;
 use PDF::IO::Reader;
 use PDF::IO::Writer;
 use PDF::COS::Tie;
@@ -27,7 +28,7 @@ has Str @.ID is entry(:len(2));                       # (Required if an Encrypt 
                                                       # of two byte-strings constituting a file identifier
 
 has Hash $.Root is entry(:indirect);                  # generic document root, as defined by subclassee, e.g.  PDF::Class, FDF
-has $.crypt is rw;
+has PDF::IO::Crypt::PDF $.crypt is rw;
 has $!flush = False;
 
 has UInt $.Prev is entry; 
@@ -164,7 +165,7 @@ method !incremental-save(IO::Handle:D $fh, Hash $body, :$diffs, :$in-place) is h
 
     my Hash $trailer = $body<trailer><dict>;
     my UInt $prev = $trailer<Prev>;
-    my $size = $.reader.size;
+    my UInt $size = $.reader.size;
     my $compat = $.reader.compat;
     my PDF::IO::Writer $writer .= new: :$prev, :$size, :$compat;
     my $offset = $.reader.input.codes + Pad.bytes;
@@ -176,10 +177,9 @@ method !incremental-save(IO::Handle:D $fh, Hash $body, :$diffs, :$in-place) is h
     if $in-place {
         # Input PDF updated; merge the updated entries in the index
         $prev = $writer.prev;
-        my UInt $size = $writer.size;
-        $.reader.update-index( :@entries, :$prev, :$size);
+        $size = $writer.size;
+        $.reader.update-index: :@entries, :$prev, :$size;
         $.Size = $size;
-        @entries = [];
     }
 }
 
