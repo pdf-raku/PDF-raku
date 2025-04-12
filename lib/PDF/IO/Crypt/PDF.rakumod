@@ -18,6 +18,8 @@ submethod TWEAK(:$doc!, Str :$owner-pass, |c) {
         !! self!load( :$doc, |c)
 }
 
+method type { ($!stm-f.type, $!str-f.type).unique }
+
 #| generate encryption
 submethod !generate( Hash :$doc!, Bool :$aes, UInt :$V = $aes ?? 4 !! 2, |c ) {
     my $class = $aes
