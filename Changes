@@ -1,4 +1,8 @@
 {{$NEXT}}
+    - Don't encrypt /Contents hex-string entry of signature
+      dictionaries, as per PDF spec.
+    - Handle indirect object generation number up to the
+      specified implementation limit (65_535)
 
 0.6.9  2025-04-02T07:10:03+13:00
     - Tighten stream data parsing. Expect 'endstream' to be followed

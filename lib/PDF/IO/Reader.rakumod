@@ -17,13 +17,15 @@ use Hash::int;
 use JSON::Fast;
 use Method::Also;
 
+constant GenNumMax = 65_536;
+
 subset ObjNumInt of UInt;
-subset GenNumInt of Int where 0..999;
+subset GenNumInt of Int where 0 <= * < GenNumMax;
 subset StreamAstNode of Pair:D where .key eq 'stream';
 
 has PDF::IO  $.input is rw;      #= raw PDF image (latin-1 encoding)
 has Str      $.file-name;
-has          %!ind-obj-idx is Hash::int; # keys are: $obj-num*1000 + $gen-num
+has          %!ind-obj-idx is Hash::int; # keys are: $obj-num*GenNumMax + $gen-num
 has Bool     $.auto-deref is rw = True;
 has Rat      $.version is rw;
 has Str      $.type is rw;       #= 'PDF', 'FDF', etc...
@@ -151,9 +153,9 @@ method !setup-crypt(Str :$password = '') {
         my \enc-gen-num = enc.gen-num // -1;
 
         for %!ind-obj-idx.kv -> $k, Hash:D $idx {
-            my ObjNumInt $obj-num = $k div 1000
+            my ObjNumInt $obj-num = $k div GenNumMax
                 or next;
-            my GenNumInt $gen-num = $k mod 1000;
+            my GenNumInt $gen-num = $k mod GenNumMax;
 
             # skip the encryption dictionary, if it's an indirect object
             if $obj-num == enc-obj-num
@@ -162,12 +164,15 @@ method !setup-crypt(Str :$password = '') {
             }
             else {
                 # decrypt all objects that have already been loaded
-                with $idx<ind-obj> -> $ind-obj {
-                    die "too late to setup encryption: $obj-num $gen-num R"
+                without $idx<encrypted> {
+                    $_ = True;
+                    with $idx<ind-obj> -> $ind-obj {
+                        die "too late to setup encryption: $obj-num $gen-num R"
                         if $idx<type> != Free | External
                         || $ind-obj.isa(PDF::IO::IndObj);
 
-                    $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> );
+                        $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> );
+                    }
                 }
             }
         }
@@ -181,7 +186,7 @@ method !setup-crypt(Str :$password = '') {
                         my ObjNumInt $obj-num = .value[0];
                         my GenNumInt $gen-num = .value[1];
                         .<encrypted> = False
-                            with %!ind-obj-idx{$obj-num * 1000 + $gen-num}
+                            with %!ind-obj-idx{$obj-num * GenNumMax + $gen-num}
                     }
                 }
             }
@@ -231,7 +236,7 @@ multi method open(Associative \ast is raw, Str :$input-file, |c) is hidden-from-
         for .<objects>.list.reverse {
             with .<ind-obj> -> $ind-obj {
                 (my ObjNumInt $obj-num, my GenNumInt $gen-num) = $ind-obj.list;
-                my $k := $obj-num * 1000 + $gen-num;
+                my $k := $obj-num * GenNumMax + $gen-num;
                 %!ind-obj-idx{$k} = %(
                     :type(IndexType::External),
                     :$ind-obj,
@@ -259,7 +264,7 @@ method update-index( :@entries!, UInt :$!prev, UInt :$!size ) {
 
         my GenNumInt $gen-num = $entry<gen-num>;
         my UInt $type = $entry<type>;
-        my $k := $obj-num * 1000 + $gen-num;
+        my $k := $obj-num * GenNumMax + $gen-num;
 
         given $type {
             when IndexType::Free {
@@ -400,7 +405,7 @@ method ind-obj( ObjNumInt $obj-num!, GenNumInt $gen-num!,
                 Bool :$eager = True,     #| fetch object, if not already loaded
     ) {
 
-    my Hash $idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
+    my Hash $idx := %!ind-obj-idx{$obj-num * GenNumMax + $gen-num}
         // die "unable to find object: $obj-num $gen-num R";
 
     $!lock.protect: {
@@ -431,7 +436,7 @@ method ind-obj( ObjNumInt $obj-num!, GenNumInt $gen-num!,
 
 #| raw fetch of an object, without indexing or decryption
 method get(ObjNumInt $obj-num, GenNumInt $gen-num) {
-    my %idx := %!ind-obj-idx{$obj-num * 1000 + $gen-num}
+    my %idx := %!ind-obj-idx{$obj-num * GenNumMax + $gen-num}
         // die "unable to find object: $obj-num $gen-num R";
      self.fetch-ind-obj(|%idx, :!encrypted, :$obj-num, :$gen-num);
 }
@@ -548,7 +553,7 @@ method !load-xref-stream(Str $xref is copy, $dict is rw, UInt :$offset, :@discar
     my subset XRefLike of Hash where { .<Type> ~~ 'XRef' }
     $dict = my XRefLike $ = $ind-obj.object;
     # we don't want to index these
-    @discarded.push: $ind-obj.obj-num * 1000 + $ind-obj.gen-num;
+    @discarded.push: $ind-obj.obj-num * GenNumMax + $ind-obj.gen-num;
     $dict.decode-index;
 }
 
@@ -603,8 +608,6 @@ method !load-index($grammar, $actions, |c) {
             $!compat = 1.5 if $!compat < 1.5;
         }
 
-        self!set-trailer: $dict;
-
         enum ( :ObjNum(0), :Type(1),
                :Offset(2), :GenNum(3),     # Type 1 (External) Objects
                :RefObjNum(2), :Index(3)    # Type 2 (Embedded) Objects
@@ -617,12 +620,12 @@ method !load-index($grammar, $actions, |c) {
                 if $type == IndexType::Embedded {
                     my UInt      $index       := .[$i;Index];
                     my ObjNumInt $ref-obj-num := .[$i;RefObjNum];
-                    my $k := .[$i;ObjNum] * 1000;
+                    my $k := .[$i;ObjNum] * GenNumMax;
                     %!ind-obj-idx{$k} = %( :$type, :$index, :$ref-obj-num )
                         unless %!ind-obj-idx{$k}:exists;
                 }
                 elsif $type == IndexType::External {
-                    my $k := .[$i;ObjNum] * 1000 + .[$i;GenNum];
+                    my $k := .[$i;ObjNum] * GenNumMax + .[$i;GenNum];
                     my $offset = .[$i;Offset];
                     %!ind-obj-idx{$k} = %( :$type, :$offset )
                         unless %!ind-obj-idx{$k}:exists;
@@ -634,10 +637,11 @@ method !load-index($grammar, $actions, |c) {
         %!ind-obj-idx{$_}:delete for @discarded;
         $offset = do with $dict<Prev> { $_ } else { Int };
         $!size  = do with $dict<Size> { $_ } else { 1 };
+        self!set-trailer: $dict;
     }
 
     #| don't entirely trust /Size entry in trailer dictionary
-    my ObjNumInt \actual-size = max( %!ind-obj-idx.keys ) div 1000;
+    my ObjNumInt \actual-size = max( %!ind-obj-idx.keys ) div GenNumMax;
     $!size = actual-size + 1
         if $!size <= actual-size;
 
@@ -655,7 +659,7 @@ method !load-index($grammar, $actions, |c) {
             $i++ unless $i >= $n;
         } until .<end> > .<offset>;
         # cull, if freed
-        %!ind-obj-idx{.<obj-num>*1000 + .<gen-num>}:delete
+        %!ind-obj-idx{.<obj-num>*GenNumMax + .<gen-num>}:delete
             unless .<type>;
     }
 
@@ -709,7 +713,7 @@ method !full-scan( $grammar, $actions, Bool :$repair, |c) {
                 }
             }
 
-            my $k := $obj-num * 1000 + $gen-num;
+            my $k := $obj-num * GenNumMax + $gen-num;
             %!ind-obj-idx{$k} = %(
                 :type(IndexType::External),
                 :@ind-obj,
@@ -724,7 +728,7 @@ method !full-scan( $grammar, $actions, Bool :$repair, |c) {
                     for embedded-objects.kv -> $index, $_ {
                         my ObjNumInt $sub-obj-num = .[0];
                         my ObjNumInt $ref-obj-num = $obj-num;
-                        my $k := $sub-obj-num * 1000;
+                        my $k := $sub-obj-num * GenNumMax;
                         %!ind-obj-idx{$k} = %(
                             :type(IndexType::Embedded),
                             :$index,
@@ -759,8 +763,8 @@ method get-objects(
     my @object-refs;
     for %!ind-obj-idx.keys.sort {
         my Hash:D $entry = %!ind-obj-idx{$_};
-        my ObjNumInt $obj-num = $_ div 1000;
-        my GenNumInt $gen-num = $_ mod 1000;
+        my ObjNumInt $obj-num = $_ div GenNumMax;
+        my GenNumInt $gen-num = $_ mod GenNumMax;
 
         my UInt $seq = 0;
         my UInt $offset;
@@ -772,7 +776,7 @@ method get-objects(
             }
             when IndexType::Embedded {
                 my UInt $parent = $entry<ref-obj-num>;
-                with %!ind-obj-idx{$parent * 1000} {
+                with %!ind-obj-idx{$parent * GenNumMax} {
                     $offset = .<offset>;
                 }
                 else {
@@ -807,7 +811,7 @@ method get-objects(
 
         if $incremental && $offset && $obj-num {
             # check updated vs original PDF value.
-            my \original-ast = self.fetch-ind-obj(|%!ind-obj-idx{$obj-num * 1000 + $gen-num}, :$obj-num, :$gen-num);
+            my \original-ast = self.fetch-ind-obj(|%!ind-obj-idx{$obj-num * GenNumMax + $gen-num}, :$obj-num, :$gen-num);
             # discard, if not updated
             next if original-ast eqv ast.value;
         }
