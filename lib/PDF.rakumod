@@ -1,6 +1,6 @@
 #| this class represents the top level node in a PDF or FDF document,
 #| the trailer dictionary
-unit class PDF:ver<0.6.9>;
+unit class PDF:ver<0.6.10>;
 
 use PDF::COS::Dict;
 also is PDF::COS::Dict;
