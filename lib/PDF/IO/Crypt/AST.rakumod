@@ -2,7 +2,9 @@ use v6;
 
 unit role PDF::IO::Crypt::AST;
 
-my subset EncryptionDictLike of Hash where (.<Filter>:exists) && (.<U>:exists) && (.<O>:exists) && (.<P>:exists);
+my subset EncryptDictLike of Hash where (.<Filter>:exists) && (.<U>:exists) && (.<O>:exists) && (.<P>:exists);
+
+my subset SignatureDictLike of Hash where (.<Filter>:exists) && (.<Contents>:exists);
 
 #| encrypt/decrypt all strings/streams in a PDF body
 multi method crypt-ast('body', Array $body, Str :$mode = 'decrypt') {
@@ -23,10 +25,22 @@ multi method crypt-ast('array', Array $ast, |c) {
     $.crypt-ast($_, |c) for $ast.values
 }
 
-multi method crypt-ast('dict', Hash $ast, |c) {
-    unless $ast ~~ EncryptionDictLike {
-        $.crypt-ast(.value, |c) for $ast.pairs.sort;
+multi method crypt-ast('dict', EncryptDictLike $ast, |c) {
+    # skip encryption of the Encrypt dictionary
+}
+
+multi method crypt-ast('dict', SignatureDictLike $ast, |c) {
+    # skip encryption of the /Contents entry of a Signature
+    # dictionary, if it's a hex string.
+    for $ast.pairs.sort {
+        $.crypt-ast(.value, |c)
+            unless .key eq 'Contents' && .value ~~ :hex-string;
     }
+}
+
+multi method crypt-ast('dict', Hash $ast, |c) {
+    $.crypt-ast(.value, |c)
+        for $ast.pairs.sort;
 }
 
 multi method crypt-ast('stream', Hash $ast, |c) {
