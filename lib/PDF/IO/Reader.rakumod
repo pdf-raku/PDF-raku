@@ -495,11 +495,11 @@ multi method load-cos('FDF') {
      |c ) {
      $repair
          ?? self!full-scan( PDF::Grammar::PDF, $.scan-actions, :repair, |c )
-         !! self!load-via-xrefs( PDF::Grammar::PDF, $.actions, |c );
+         !! self!load-xrefs( PDF::Grammar::PDF, $.actions, |c );
  }
 
 multi method load-cos($type, |c) {
-    self!load-via-xrefs(PDF::Grammar::COS, $.actions, |c );
+    self!load-xrefs(PDF::Grammar::COS, $.actions, |c );
 }
 
 method !locate-xref($offset is copy) {
@@ -548,11 +548,14 @@ method !load-xref-stream(Str $xref is copy, $dict is rw, UInt :$offset, :@discar
     $dict.decode-index;
 }
 
-method !load-xref-section(UInt:D $offset, :@ends!) {
+method !load-xref-sections(UInt:D $offset, :@ends!, :%visited) {
     my UInt \tail-bytes = min(1024, $!input.codes);
     my array @obj-idx; # array of shaped arrays
     my UInt @discarded;
     my Hash $dict;
+    die "xref '/Prev' cycle detected in cross-reference tables: \@$offset"
+        if %visited{$offset}++;
+    @!xrefs.unshift: $offset;
     my Str \xref = self!locate-xref($offset);
     if xref ~~ m:s/^ xref/ {
         # traditional 1.4 cross reference index
@@ -578,6 +581,10 @@ method !load-xref-section(UInt:D $offset, :@ends!) {
            :RefObjNum(2), :Index(3)    # Type 2 (Embedded) Objects
          );
 
+    with $dict<Prev> -> $prev {
+        self!load-xref-sections($prev, :@ends, :%visited)
+    }
+
     for @obj-idx {
         for ^.elems -> $i {
             my $type := .[$i;Type];
@@ -586,30 +593,28 @@ method !load-xref-section(UInt:D $offset, :@ends!) {
                 my UInt      $index       := .[$i;Index];
                 my ObjNumInt $ref-obj-num := .[$i;RefObjNum];
                 my $k := .[$i;ObjNum] * GenNumMax;
-                %!ind-obj-idx{$k} = %( :$type, :$index, :$ref-obj-num )
-                    unless %!ind-obj-idx{$k}:exists;
+                %!ind-obj-idx{$k} = %( :$type, :$index, :$ref-obj-num );
             }
             elsif $type == IndexType::External {
                 my $k := .[$i;ObjNum] * GenNumMax + .[$i;GenNum];
                 my $offset = .[$i;Offset];
-                %!ind-obj-idx{$k} = %( :$type, :$offset )
-                    unless %!ind-obj-idx{$k}:exists;
+                %!ind-obj-idx{$k} = %( :$type, :$offset );
                 @ends.push: $offset;
             }
         }
     }
 
     %!ind-obj-idx{$_}:delete for @discarded;
-    $!size  = do with $dict<Size> { $_ } else { 1 };
+    $!size = do with $dict<Size> { $_ } else { 1 };
     self!set-trailer: $dict;
-    $dict<Prev> // Int;
 }
 
 #| scan indices, starting at PDF tail. objects can be loaded on demand,
 #| via the $.ind-obj() method.
-method !load-via-xrefs($grammar, $actions, |c) {
+method !load-xrefs($grammar, $actions, |c) {
     my UInt \tail-bytes = min(1024, $!input.codes);
     my Str $tail = $!input.byte-str(* - tail-bytes);
+    my UInt @ends;
     @!xrefs = [];
 
     $grammar.parse($tail, :$actions, :rule<postamble>)
@@ -623,16 +628,7 @@ method !load-via-xrefs($grammar, $actions, |c) {
     $!prev = $/.ast<startxref>;
     $!compat = $!version // 1.4;
 
-    my UInt @ends;
-    my UInt $offset = $!prev;
-    my UInt %offsets-seen;
-
-    while $offset.defined {
-        die "xref '/Prev' cycle detected in cross-reference tables: \@$offset"
-            if %offsets-seen{$offset}++;
-        @!xrefs.unshift: $offset;
-        $offset = self!load-xref-section: $offset, :@ends;
-    }
+    self!load-xref-sections: $!prev, :@ends;
 
     #| don't entirely trust /Size entry in trailer dictionary
     my ObjNumInt \actual-size = max( %!ind-obj-idx.keys ) div GenNumMax;
