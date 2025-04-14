@@ -482,22 +482,23 @@ method load-header() {
     }
 }
 
+#| Scan the PDF, bypass any indices or stream lengths
+multi method load-cos('PDF', :$repair! where .so, |c ) {
+    self!full-scan( PDF::Grammar::PDF, $.scan-actions, :repair, |c )
+}
+
+#| Regular PDF load via indirect object indices
+multi method load-cos('PDF', |c ) {
+    self!load-xrefs( PDF::Grammar::PDF, $.actions, |c );
+}
+
 #| Load input in FDF (Form Data Definition) format.
 #| Use full-scan mode, as these are not indexed.
 multi method load-cos('FDF') {
     self!full-scan(PDF::COS.required('PDF::Grammar::FDF'), $.actions);
 }
 
- #| Load a regular PDF file, repair or index mode
- multi method load-cos(
-     'PDF',
-     :$repair, #| scan the PDF, bypass any indices or stream lengths
-     |c ) {
-     $repair
-         ?? self!full-scan( PDF::Grammar::PDF, $.scan-actions, :repair, |c )
-         !! self!load-xrefs( PDF::Grammar::PDF, $.actions, |c );
- }
-
+#| Load of miscellaneous file in COS format
 multi method load-cos($type, |c) {
     self!load-xrefs(PDF::Grammar::COS, $.actions, |c );
 }
@@ -519,7 +520,7 @@ method !locate-xref($offset is copy) {
 }
 
 #| load PDF 1.4- xref table followed by trailer
-method load-xref-table(Str $xref is copy, $dict is rw, :$offset) {
+method load-xref-table(Str $xref, $dict is rw, :$offset) {
     my $parse = PDF::Grammar::COS.subparse( $xref, :rule<index>, :$.actions );
     die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
         unless $parse;
@@ -531,9 +532,8 @@ method load-xref-table(Str $xref is copy, $dict is rw, :$offset) {
     index<xref>».<entries>;
 }
 
-
 #| load a PDF 1.5+ XRef Stream
-method !load-xref-stream(Str $xref is copy, $dict is rw, UInt :$offset, :@discarded) {
+method !load-xref-stream(Str $xref, $dict is rw, UInt :$offset, :@discarded) {
     my $parse = PDF::Grammar::COS.subparse($xref, :$.actions, :rule<ind-obj>);
 
     die X::PDF::BadIndirectObject::Parse.new( :$offset, :input($xref))
@@ -587,19 +587,19 @@ method !load-xref-sections(UInt:D $offset, :@ends!, :%visited) {
 
     for @obj-idx {
         for ^.elems -> $i {
-            my $type := .[$i;Type];
-
-            if $type == IndexType::Embedded {
-                my UInt      $index       := .[$i;Index];
-                my ObjNumInt $ref-obj-num := .[$i;RefObjNum];
-                my $k := .[$i;ObjNum] * GenNumMax;
-                %!ind-obj-idx{$k} = %( :$type, :$index, :$ref-obj-num );
-            }
-            elsif $type == IndexType::External {
-                my $k := .[$i;ObjNum] * GenNumMax + .[$i;GenNum];
-                my $offset = .[$i;Offset];
-                %!ind-obj-idx{$k} = %( :$type, :$offset );
-                @ends.push: $offset;
+            given .[$i;Type] -> $type {
+                if $type == IndexType::Embedded {
+                    my UInt      $index       := .[$i;Index];
+                    my ObjNumInt $ref-obj-num := .[$i;RefObjNum];
+                    my $k := .[$i;ObjNum] * GenNumMax;
+                    %!ind-obj-idx{$k} = %( :$type, :$index, :$ref-obj-num );
+                }
+                elsif $type == IndexType::External {
+                    my $k := .[$i;ObjNum] * GenNumMax + .[$i;GenNum];
+                    my $offset = .[$i;Offset];
+                    %!ind-obj-idx{$k} = %( :$type, :$offset );
+                    @ends.push: $offset;
+                }
             }
         }
     }
@@ -642,15 +642,15 @@ method !load-xrefs($grammar, $actions, |c) {
 
     # mark end positions of external objects
     my int $i = 0;
-    my int $n = +@ends - 1;
-    for %!ind-obj-idx.values.grep(*<offset>).sort(*<offset>) {
+    my int $n = +@ends;
+    for %!ind-obj-idx.pairs.grep(*.value<offset>).sort(*.value<offset>) {
+        my $v := .value;
         repeat {
-            .<end> = @ends[$i];
-            $i++ unless $i >= $n;
-        } until .<end> > .<offset>;
+            $v<end> = @ends[$i];
+        } until $v<end> > $v<offset> || ++$i >= $n;
         # cull, if freed
-        %!ind-obj-idx{.<obj-num>*GenNumMax + .<gen-num>}:delete
-            unless .<type>;
+        %!ind-obj-idx{.key}:delete
+            unless $v<type>;
     }
 
     self!setup-crypt(|c);
