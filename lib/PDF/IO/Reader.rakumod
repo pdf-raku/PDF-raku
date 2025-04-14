@@ -495,35 +495,26 @@ multi method load-cos('FDF') {
      |c ) {
      $repair
          ?? self!full-scan( PDF::Grammar::PDF, $.scan-actions, :repair, |c )
-         !! self!load-index( PDF::Grammar::PDF, $.actions, |c );
+         !! self!load-via-xrefs( PDF::Grammar::PDF, $.actions, |c );
  }
 
 multi method load-cos($type, |c) {
-    self!load-index(PDF::Grammar::COS, $.actions, |c );
+    self!load-via-xrefs(PDF::Grammar::COS, $.actions, |c );
 }
 
-method !locate-xref($input-bytes, $tail-bytes, $tail, $offset is copy) {
+method !locate-xref($offset is copy) {
     my str $xref;
     constant SIZE = 4096;       # big enough to usually contain xref
+    my UInt:D $input-bytes := $!input.codes;
+    # scan for '%%EOF' marker at the end of the trailer
+    $xref = '';
+    my $n = 0;
+    repeat {
+        my UInt $len = min(SIZE * ++$n, $input-bytes - $offset);
+        $xref ~= $!input.byte-str( $offset, $len );
+        $offset += $len;
+    } until $xref.contains('%%EOF') || $offset >= $input-bytes;
 
-    if $offset >= $input-bytes - $tail-bytes {
-        $xref = $!input.byte-str( $offset, $tail-bytes )
-    }
-    elsif $input-bytes - $tail-bytes - $offset <= SIZE {
-        # xref abuts currently read $tail
-        my UInt $adjacent-bytes = min(SIZE, $input-bytes - $tail-bytes - $offset);
-        $xref = $!input.byte-str( $offset, $adjacent-bytes) ~ $tail;
-    }
-    else {
-        # scan for '%%EOF' marker at the end of the trailer
-        $xref = '';
-        my $n = 0;
-        repeat {
-            my UInt $len = min(SIZE * ++$n, $input-bytes - $offset);
-            $xref ~= $!input.byte-str( $offset, $len );
-            $offset += $len;
-        } until $xref ~~ /'%%EOF'/ || $offset >= $input-bytes;
-    }
     $xref;
 }
 
@@ -557,12 +548,68 @@ method !load-xref-stream(Str $xref is copy, $dict is rw, UInt :$offset, :@discar
     $dict.decode-index;
 }
 
+method !load-xref-section(UInt:D $offset, :@ends!) {
+    my UInt \tail-bytes = min(1024, $!input.codes);
+    my array @obj-idx; # array of shaped arrays
+    my UInt @discarded;
+    my Hash $dict;
+    my Str \xref = self!locate-xref($offset);
+    if xref ~~ m:s/^ xref/ {
+        # traditional 1.4 cross reference index
+        @obj-idx.append: self.load-xref-table( xref, $dict, :$offset);
+        with $dict<XRefStm> {
+            # hybrid 1.4 / 1.5 with a cross-reference stream
+            # that contains additional objects
+            my $xref-dict = {};
+            my Str \xref-stm = self!locate-xref($_);
+            @obj-idx.push: self!load-xref-stream(xref-stm, $xref-dict, :offset($_), :@discarded);
+        }
+        $!compat = 1.4 if $!compat > 1.4;
+    }
+    else {
+        # PDF 1.5+ cross reference stream.
+        # need to write index in same format for Adobe reader (issue #22)
+        @obj-idx.push: self!load-xref-stream(xref, $dict, :$offset, :@discarded);
+        $!compat = 1.5 if $!compat < 1.5;
+    }
+
+    enum ( :ObjNum(0), :Type(1),
+           :Offset(2), :GenNum(3),     # Type 1 (External) Objects
+           :RefObjNum(2), :Index(3)    # Type 2 (Embedded) Objects
+         );
+
+    for @obj-idx {
+        for ^.elems -> $i {
+            my $type := .[$i;Type];
+
+            if $type == IndexType::Embedded {
+                my UInt      $index       := .[$i;Index];
+                my ObjNumInt $ref-obj-num := .[$i;RefObjNum];
+                my $k := .[$i;ObjNum] * GenNumMax;
+                %!ind-obj-idx{$k} = %( :$type, :$index, :$ref-obj-num )
+                    unless %!ind-obj-idx{$k}:exists;
+            }
+            elsif $type == IndexType::External {
+                my $k := .[$i;ObjNum] * GenNumMax + .[$i;GenNum];
+                my $offset = .[$i;Offset];
+                %!ind-obj-idx{$k} = %( :$type, :$offset )
+                    unless %!ind-obj-idx{$k}:exists;
+                @ends.push: $offset;
+            }
+        }
+    }
+
+    %!ind-obj-idx{$_}:delete for @discarded;
+    $!size  = do with $dict<Size> { $_ } else { 1 };
+    self!set-trailer: $dict;
+    $dict<Prev> // Int;
+}
+
 #| scan indices, starting at PDF tail. objects can be loaded on demand,
 #| via the $.ind-obj() method.
-method !load-index($grammar, $actions, |c) {
+method !load-via-xrefs($grammar, $actions, |c) {
     my UInt \tail-bytes = min(1024, $!input.codes);
     my Str $tail = $!input.byte-str(* - tail-bytes);
-    my UInt %offsets-seen;
     @!xrefs = [];
 
     $grammar.parse($tail, :$actions, :rule<postamble>)
@@ -574,70 +621,17 @@ method !load-index($grammar, $actions, |c) {
         }
 
     $!prev = $/.ast<startxref>;
-    my UInt $offset = $!prev;
-    my UInt \input-bytes = $!input.codes;
-    my UInt @discarded;
-    my Hash $dict;
-    my UInt @ends;
-
     $!compat = $!version // 1.4;
 
+    my UInt @ends;
+    my UInt $offset = $!prev;
+    my UInt %offsets-seen;
+
     while $offset.defined {
-        my array @obj-idx; # array of shaped arrays
-        @!xrefs.unshift: $offset;
-        die "xref '/Prev' cycle detected \@$offset"
+        die "xref '/Prev' cycle detected in cross-reference tables: \@$offset"
             if %offsets-seen{$offset}++;
-        # see if our cross reference table is already contained in the current tail
-        my Str \xref = self!locate-xref(input-bytes, tail-bytes, $tail, $offset);
-        if xref ~~ m:s/^ xref/ {
-            # traditional 1.4 cross reference index
-            @obj-idx.append: self.load-xref-table( xref, $dict, :$offset);
-            with $dict<XRefStm> {
-                # hybrid 1.4 / 1.5 with a cross-reference stream
-                # that contains additional objects
-                my $xref-dict = {};
-                my Str \xref-stm = self!locate-xref(input-bytes, tail-bytes, $tail, $_);
-                @obj-idx.push: self!load-xref-stream(xref-stm, $xref-dict, :offset($_), :@discarded);
-            }
-            $!compat = 1.4 if $!compat > 1.4;
-        }
-        else {
-            # PDF 1.5+ cross reference stream.
-            # need to write index in same format for Adobe reader (issue #22)
-            @obj-idx.push: self!load-xref-stream(xref, $dict, :$offset, :@discarded);
-            $!compat = 1.5 if $!compat < 1.5;
-        }
-
-        enum ( :ObjNum(0), :Type(1),
-               :Offset(2), :GenNum(3),     # Type 1 (External) Objects
-               :RefObjNum(2), :Index(3)    # Type 2 (Embedded) Objects
-             );
-
-        for @obj-idx {
-            for ^.elems -> $i {
-                my $type := .[$i;Type];
-
-                if $type == IndexType::Embedded {
-                    my UInt      $index       := .[$i;Index];
-                    my ObjNumInt $ref-obj-num := .[$i;RefObjNum];
-                    my $k := .[$i;ObjNum] * GenNumMax;
-                    %!ind-obj-idx{$k} = %( :$type, :$index, :$ref-obj-num )
-                        unless %!ind-obj-idx{$k}:exists;
-                }
-                elsif $type == IndexType::External {
-                    my $k := .[$i;ObjNum] * GenNumMax + .[$i;GenNum];
-                    my $offset = .[$i;Offset];
-                    %!ind-obj-idx{$k} = %( :$type, :$offset )
-                        unless %!ind-obj-idx{$k}:exists;
-                    @ends.push: $offset;
-                }
-            }
-        }
-
-        %!ind-obj-idx{$_}:delete for @discarded;
-        $offset = do with $dict<Prev> { $_ } else { Int };
-        $!size  = do with $dict<Size> { $_ } else { 1 };
-        self!set-trailer: $dict;
+        @!xrefs.unshift: $offset;
+        $offset = self!load-xref-section: $offset, :@ends;
     }
 
     #| don't entirely trust /Size entry in trailer dictionary
@@ -647,7 +641,7 @@ method !load-index($grammar, $actions, |c) {
 
     # constrain indirect objects to a maximum end position
     @ends.append: @!xrefs;
-    @ends.push: input-bytes;
+    @ends.push: $!input.codes;
     @ends .= sort;
 
     # mark end positions of external objects
