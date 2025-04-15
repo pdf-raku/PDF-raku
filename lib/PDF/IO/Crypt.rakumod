@@ -12,7 +12,7 @@ use PDF::COS::Name;
 use PDF::COS::ByteString;
 
 has UInt $!revision;         #| encryption revision
-has Bool $!EncryptMetadata;
+has Bool $.EncryptMetadata;
 has uint8 @!owner-pass;      #| computed owner password
 has UInt $!key-bytes;        #| encryption key length
 has uint8 @!doc-id;          #| /ID entry in document root
@@ -33,7 +33,7 @@ has Bool $.is-owner is rw;   #| authenticated against, or created by, owner
      0x64, 0x53, 0x69, 0x7a,
    );
 
-sub format-pass(Str $pass) {
+sub format-pass(Str:D $pass) {
     my uint8 @pass-padded = flat $pass.NFKC.list, @Padding;
     @pass-padded[0..31];
 }

@@ -2,6 +2,11 @@
   
 x unit role PDF::IO::Crypt::AST;
   
+x method crypt {...}
+x method EncryptMetadata {...}
+  
+  my subset CatalogDictLike of Hash where (.<Type> ~~ Pair) && (.<Type><name> ~~ 'Catalog');
+  
   my subset EncryptDictLike of Hash where (.<Filter>:exists) && (.<U>:exists) && (.<O>:exists) && (.<P>:exists);
   
   my subset SignatureDictLike of Hash where (.<Filter>:exists) && (.<Contents>:exists);
@@ -25,6 +30,14 @@ x unit role PDF::IO::Crypt::AST;
 *     $.crypt-ast($_, |c) for $ast.values
   }
   
+* multi method crypt-ast('dict', CatalogDictLike $ast, |c) {
+*     for $ast.pairs.sort {
+*         $.crypt-ast(.value, |c)
+              unless .key eq 'Encrypt'
+x                || (.key eq 'Metadata' && ! $.EncryptMetadata);
+      }
+  }
+  
 * multi method crypt-ast('dict', EncryptDictLike $ast, |c) {
       # skip encryption of the Encrypt dictionary
   }
@@ -32,8 +45,8 @@ x unit role PDF::IO::Crypt::AST;
 * multi method crypt-ast('dict', SignatureDictLike $ast, |c) {
       # skip encryption of the /Contents entry of a Signature
       # dictionary, if it's a hex string.
-x     for $ast.pairs.sort {
-x         $.crypt-ast(.value, |c)
+*     for $ast.pairs.sort {
+*         $.crypt-ast(.value, |c)
               unless .key eq 'Contents' && .value ~~ :hex-string;
       }
   }

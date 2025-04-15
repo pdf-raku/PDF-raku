@@ -31,7 +31,7 @@ has Rat      $.version is rw;
 has Str      $.type is rw;       #= 'PDF', 'FDF', etc...
 has uint64   $.prev;             #= xref offset
 has uint     $.size is rw;       #= /Size entry in trailer dict ~ first free object number
-has uint64    @.xrefs = (0);     #= xref position for each revision in the file
+has uint64   @.xrefs = (0);      #= xref position for each revision in the file
 has $.crypt is rw;
 has Rat $.compat;        #= cross reference stream mode
 method compat is rw {
@@ -158,35 +158,16 @@ method !setup-crypt(Str :$password = '') {
             my GenNumInt $gen-num = $k mod GenNumMax;
 
             # skip the encryption dictionary, if it's an indirect object
-            if $obj-num == enc-obj-num
+            unless $obj-num == enc-obj-num
                 && $gen-num == enc-gen-num {
-                    $idx<encrypted> = False;
-            }
-            else {
                 # decrypt all objects that have already been loaded
                 without $idx<encrypted> {
-                    $_ = True;
                     with $idx<ind-obj> -> $ind-obj {
                         die "too late to setup encryption: $obj-num $gen-num R"
                         if $idx<type> != Free | External
                         || $ind-obj.isa(PDF::IO::IndObj);
 
                         $!crypt.crypt-ast( (:$ind-obj), :$obj-num, :$gen-num, :mode<decrypt> );
-                    }
-                }
-            }
-        }
-
-        # handle special case of not encrypting document meta-data
-        unless enc<EncryptMetadata> // True {
-            temp $.auto-deref = False;
-            with $doc.deref($doc<Root>) -> $catalog {
-                with $catalog<Metadata> {
-                    when IndRef {
-                        my ObjNumInt $obj-num = .value[0];
-                        my GenNumInt $gen-num = .value[1];
-                        .<encrypted> = False
-                            with %!ind-obj-idx{$obj-num * GenNumMax + $gen-num}
                     }
                 }
             }

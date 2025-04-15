@@ -1,6 +1,9 @@
-use v6;
-
 unit role PDF::IO::Crypt::AST;
+
+method crypt {...}
+method EncryptMetadata {...}
+
+my subset CatalogDictLike of Hash where (.<Type> ~~ Pair) && (.<Type><name> ~~ 'Catalog');
 
 my subset EncryptDictLike of Hash where (.<Filter>:exists) && (.<U>:exists) && (.<O>:exists) && (.<P>:exists);
 
@@ -23,6 +26,14 @@ multi method crypt-ast('ind-obj', Array $ast, |c) {
 
 multi method crypt-ast('array', Array $ast, |c) {
     $.crypt-ast($_, |c) for $ast.values
+}
+
+multi method crypt-ast('dict', CatalogDictLike $ast, |c) {
+    for $ast.pairs.sort {
+        $.crypt-ast(.value, |c)
+            unless .key eq 'Encrypt'
+               || (.key eq 'Metadata' && ! $.EncryptMetadata);
+    }
 }
 
 multi method crypt-ast('dict', EncryptDictLike $ast, |c) {
