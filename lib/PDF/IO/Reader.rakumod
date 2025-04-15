@@ -548,14 +548,11 @@ method !load-xref-stream(Str $xref, $dict is rw, UInt :$offset, :@discarded) {
     $dict.decode-index;
 }
 
-method !load-xref-sections(UInt:D $offset, :@ends!, :%visited) {
+method !load-xref-section(UInt:D $offset, :@ends!) {
     my UInt \tail-bytes = min(1024, $!input.codes);
     my array @obj-idx; # array of shaped arrays
     my UInt @discarded;
     my Hash $dict;
-    die "xref '/Prev' cycle detected in cross-reference tables: \@$offset"
-        if %visited{$offset}++;
-    @!xrefs.unshift: $offset;
     my Str \xref = self!locate-xref($offset);
     if xref ~~ m:s/^ xref/ {
         # traditional 1.4 cross reference index
@@ -581,32 +578,31 @@ method !load-xref-sections(UInt:D $offset, :@ends!, :%visited) {
            :RefObjNum(2), :Index(3)    # Type 2 (Embedded) Objects
          );
 
-    with $dict<Prev> -> $prev {
-        self!load-xref-sections($prev, :@ends, :%visited)
-    }
-
     for @obj-idx {
         for ^.elems -> $i {
-            given .[$i;Type] -> $type {
-                if $type == IndexType::Embedded {
-                    my UInt      $index       := .[$i;Index];
-                    my ObjNumInt $ref-obj-num := .[$i;RefObjNum];
-                    my $k := .[$i;ObjNum] * GenNumMax;
-                    %!ind-obj-idx{$k} = %( :$type, :$index, :$ref-obj-num );
-                }
-                elsif $type == IndexType::External {
-                    my $k := .[$i;ObjNum] * GenNumMax + .[$i;GenNum];
-                    my $offset = .[$i;Offset];
-                    %!ind-obj-idx{$k} = %( :$type, :$offset );
-                    @ends.push: $offset;
-                }
+            my $type := .[$i;Type];
+
+            if $type == IndexType::Embedded {
+                my UInt      $index       := .[$i;Index];
+                my ObjNumInt $ref-obj-num := .[$i;RefObjNum];
+                my $k := .[$i;ObjNum] * GenNumMax;
+                %!ind-obj-idx{$k} = %( :$type, :$index, :$ref-obj-num )
+                    unless %!ind-obj-idx{$k}:exists;
+            }
+            elsif $type == IndexType::External {
+                my $k := .[$i;ObjNum] * GenNumMax + .[$i;GenNum];
+                my $offset = .[$i;Offset];
+                %!ind-obj-idx{$k} = %( :$type, :$offset )
+                    unless %!ind-obj-idx{$k}:exists;
+                @ends.push: $offset;
             }
         }
     }
 
     %!ind-obj-idx{$_}:delete for @discarded;
-    $!size = do with $dict<Size> { $_ } else { 1 };
+    $!size  = do with $dict<Size> { $_ } else { 1 };
     self!set-trailer: $dict;
+    $dict<Prev> // Int;
 }
 
 #| scan indices, starting at PDF tail. objects can be loaded on demand,
@@ -614,7 +610,6 @@ method !load-xref-sections(UInt:D $offset, :@ends!, :%visited) {
 method !load-xrefs($grammar, $actions, |c) {
     my UInt \tail-bytes = min(1024, $!input.codes);
     my Str $tail = $!input.byte-str(* - tail-bytes);
-    my UInt @ends;
     @!xrefs = [];
 
     $grammar.parse($tail, :$actions, :rule<postamble>)
@@ -628,7 +623,16 @@ method !load-xrefs($grammar, $actions, |c) {
     $!prev = $/.ast<startxref>;
     $!compat = $!version // 1.4;
 
-    self!load-xref-sections: $!prev, :@ends;
+    my UInt @ends;
+    my UInt $offset = $!prev;
+    my UInt %offsets-seen;
+
+    while $offset.defined {
+        die "xref '/Prev' cycle detected in cross-reference tables: \@$offset"
+            if %offsets-seen{$offset}++;
+        @!xrefs.unshift: $offset;
+        $offset = self!load-xref-section: $offset, :@ends;
+    }
 
     #| don't entirely trust /Size entry in trailer dictionary
     my ObjNumInt \actual-size = max( %!ind-obj-idx.keys ) div GenNumMax;
