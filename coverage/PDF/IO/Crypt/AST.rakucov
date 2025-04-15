@@ -1,6 +1,4 @@
-✱ use v6;
-  
-x unit role PDF::IO::Crypt::AST;
+* unit role PDF::IO::Crypt::AST;
   
 x method crypt {...}
 x method EncryptMetadata {...}
@@ -45,8 +43,8 @@ x                || (.key eq 'Metadata' && ! $.EncryptMetadata);
 * multi method crypt-ast('dict', SignatureDictLike $ast, |c) {
       # skip encryption of the /Contents entry of a Signature
       # dictionary, if it's a hex string.
-*     for $ast.pairs.sort {
-*         $.crypt-ast(.value, |c)
+x     for $ast.pairs.sort {
+x         $.crypt-ast(.value, |c)
               unless .key eq 'Contents' && .value ~~ :hex-string;
       }
   }

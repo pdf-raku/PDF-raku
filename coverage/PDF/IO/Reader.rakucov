@@ -6,6 +6,7 @@
   use PDF::Grammar::PDF;
   use PDF::Grammar::PDF::Actions;
   use PDF::IO;
+  use PDF::IO::Crypt::PDF;
   use PDF::IO::IndObj;
   use PDF::IO::Serializer;
   use PDF::COS :IndRef, :IndObj;
@@ -17,7 +18,7 @@
   use JSON::Fast;
   use Method::Also;
   
-  constant GenNumMax = 65_536;
+  constant GenNumMax = 100_000;
   
   subset ObjNumInt of UInt;
   subset GenNumInt of Int where 0 <= * < GenNumMax;
@@ -32,7 +33,7 @@
   has uint64   $.prev;             #= xref offset
   has uint     $.size is rw;       #= /Size entry in trailer dict ~ first free object number
   has uint64   @.xrefs = (0);      #= xref position for each revision in the file
-  has $.crypt is rw;
+  has PDF::IO::Crypt::PDF $.crypt is rw;
   has Rat $.compat;        #= cross reference stream mode
 * method compat is rw {
 *     Proxy.new:
@@ -606,11 +607,11 @@ x             elsif $type == IndexType::External {
   
       my UInt @ends;
 ✱     my UInt $offset = $!prev;
-✱     my UInt %offsets-seen;
+✱     my UInt %visited;
   
 x     while $offset.defined {
 *         die "xref '/Prev' cycle detected in cross-reference tables: \@$offset"
-              if %offsets-seen{$offset}++;
+              if %visited{$offset}++;
 *         @!xrefs.unshift: $offset;
 *         $offset = self!load-xref-section: $offset, :@ends;
       }
