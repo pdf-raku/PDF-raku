@@ -11,7 +11,7 @@
   also does PDF::COS::Tie::Array;
   
   use PDF::COS::Util :&from-ast, :&ast-coerce;
-  my %seen{List} = (); #= to catch circular references
+✱ my %seen{List} = (); #= to catch circular references
 ✱ my Lock $seen-lock .= new;
   
 * submethod TWEAK(:$array!, :$seen-lock) {

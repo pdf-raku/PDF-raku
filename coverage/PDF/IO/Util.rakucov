@@ -79,7 +79,7 @@ x                         $sample = 0;
           my uint $i = 0;
   
 *         loop (my uint $j = 0; $j < $out-len;) {
-              my uint64 $v = 0;
+✱             my uint64 $v = 0;
 ✱             my $k = $j % $w-len;
 *             for 1 .. $W[$k] {
 *                 $v +<= 8;

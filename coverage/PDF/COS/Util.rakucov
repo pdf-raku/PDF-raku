@@ -19,7 +19,7 @@
           my $init;
 ✱         my $dict = $lock.protect: {
 *             %seen{$_hash} //= do {
-x                 $init = True;
+*                 $init = True;
 *                 %()
               }
           }
@@ -45,7 +45,7 @@ x                 $init = True;
           my $init;
 ✱ 	my $array = $lock.protect: {
 *             %seen{$_list} //= do {
-x                 $init = True;
+*                 $init = True;
 *                 [];
               }
           }

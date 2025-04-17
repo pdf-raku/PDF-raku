@@ -12,7 +12,7 @@
   also does PDF::COS::Tie::Hash;
   
   use PDF::COS::Util :&from-ast, :&ast-coerce;
-  my %seen{Hash} = (); #= to catch circular references
+✱ my %seen{Hash} = (); #= to catch circular references
 ✱ my Lock $seen-lock .= new;
   
 * submethod TWEAK(:$dict!, :$seen-lock) {

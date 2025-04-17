@@ -43,18 +43,12 @@ submethod TWEAK(:$file, |c) is hidden-from-backtrace {
 
 method id is rw {
     $!id //= do {
-        # From [PDF 32000 Section 14.4 File Identifiers:
-        #   "File identifiers shall be defined by the optional ID entry in a PDF file’s trailer dictionary.
-        # The ID entry is optional but should be used. The value of this entry shall be an array of two
-        # byte strings. The first byte string shall be a permanent identifier based on the contents of the
-        # file at the time it was originally created and shall not change when the file is incrementally
-        # updated. The second byte string shall be a changing identifier based on the file’s contents at
-        # the time it was last updated. When a file is first written, both identifiers shall be set to the
-        # same value. If both identifiers match when a file reference is resolved, it is very likely that
-        # the correct and unchanged file has been found. If only the first identifier matches, a different
-        # version of the correct file has been found."
+        # [PDF 32000-2 Section 14.4 File Identifiers] recommends computing the ID "using a
+        # message digest algorithm such as MD5" ... "using the following information
+        # • The current time;
+        # • A string representation of the PDF file’s location;
+        # • The size of the PDF file in bytes."
         #
-        # This section also includes a weird and expensive solution for generating the ID.
         # Contrary to this, just generate a random identifier.
 
         my Str $hex-string = Buf.new((^256).pick xx 16).decode("latin-1");
