@@ -163,6 +163,7 @@ method !setup-crypt(Str :$password = '') {
                 && $gen-num == enc-gen-num {
                 # decrypt all objects that have already been loaded
                 without $idx<encrypted> {
+                    $_ = True;
                     with $idx<ind-obj> -> $ind-obj {
                         die "too late to setup encryption: $obj-num $gen-num R"
                         if $idx<type> != Free | External
