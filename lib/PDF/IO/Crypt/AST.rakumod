@@ -3,7 +3,7 @@ unit role PDF::IO::Crypt::AST;
 method crypt {...}
 method EncryptMetadata {...}
 
-my subset CatalogDictLike of Hash where (.<Type> ~~ Pair) && (.<Type><name> ~~ 'Catalog');
+my subset MetadataDictLike of Hash where (.<Type> ~~ Pair) && (.<Type><name> ~~ 'Metadata');
 
 my subset EncryptDictLike of Hash where (.<Filter>:exists) && (.<U>:exists) && (.<O>:exists) && (.<P>:exists);
 
@@ -28,14 +28,6 @@ multi method crypt-ast('array', Array $ast, |c) {
     $.crypt-ast($_, |c) for $ast.values
 }
 
-multi method crypt-ast('dict', CatalogDictLike $ast, |c) {
-    for $ast.pairs.sort {
-        $.crypt-ast(.value, |c)
-            unless .key eq 'Encrypt'
-               || (.key eq 'Metadata' && ! $.EncryptMetadata);
-    }
-}
-
 multi method crypt-ast('dict', EncryptDictLike $ast, |c) {
     # skip encryption of the Encrypt dictionary
 }
@@ -55,9 +47,14 @@ multi method crypt-ast('dict', Hash $ast, |c) {
 }
 
 multi method crypt-ast('stream', Hash $ast, |c) {
+    my $dict = $ast<dict>;
+
+    return
+        if ! $.EncryptMetadata && $dict ~~ MetadataDictLike;
+
     $.crypt-ast($_, |c)
         for $ast.pairs;
-    $ast<dict><Length> = .codes
+    $dict<Length> = .codes
         with $ast<encoded>;
 }
 

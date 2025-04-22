@@ -89,7 +89,7 @@ for $test-v1, $test-v2, $test-v4-rc4, $test-identity {
     my $user-pass   = .<user-pass>;
     my $cipher-text = .<crypt>;
     my $case = .<case>;
-    my PDF::IO::Crypt::PDF $crypt .= new( :$doc );
+    my PDF::IO::Crypt::PDF:D $crypt .= new( :$doc );
     dies-ok  { $crypt.authenticate( 'blah' ) }, "$case - bad password" unless $case eq 'Identity';
     lives-ok { $crypt.authenticate( $user-pass ) }, "$case - user password";
     ok ! $crypt.is-owner, "$case - is not owner" unless $case eq 'Identity';

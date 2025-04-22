@@ -48,9 +48,9 @@ submethod TWEAK(:$doc!, Str :$owner-pass, |c) {
 method !generate(:$doc!,
                  Str  :$owner-pass!,
                  Str  :$user-pass = '',
-                 UInt :R($!revision) = self.type eq 'AESV2' ?? 4 !! 3,
-                 UInt :V($version) = self.type eq 'AESV2' ?? 4 !! 2,
                  Bool :$!EncryptMetadata = True,
+                 UInt :R($!revision) = self.type eq 'AESV2' || !$!EncryptMetadata ?? 4 !! 3,
+                 UInt :V($version) = self.type eq 'AESV2' ?? 4 !! 2,
                  UInt :$Length = $version > 1 ?? 128 !! 40,
                  Int  :P($permissions) = -64,  #| permissions mask
                  --> PDF::COS::Type::Encrypt
@@ -93,8 +93,14 @@ method !generate(:$doc!,
     }
 
     %dict<Length> = $Length unless $version == 1;
-    %dict<EncryptMetadata> = False
-        if $!revision >= 4 && ! $!EncryptMetadata;
+    unless $!EncryptMetadata {
+        if $!revision >= 4 {
+            %dict<EncryptMetadata> = False
+        }
+        else {
+            warn "ignoring :!EncryptMetadata for encryption revision < 4";
+        }
+    }
 
     my $enc = $doc.Encrypt = %dict;
 

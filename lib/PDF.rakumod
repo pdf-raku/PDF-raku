@@ -73,10 +73,7 @@ method !open-file(::?CLASS:D: $spec, Str :$type, |c) is hidden-from-backtrace {
     self;
 }
 
-method encrypt(PDF:D $doc: Str :$owner-pass!, Str :$user-pass = '', :$EncryptMetadata = True, |c ) {
-
-    die '.encrypt(:!EncryptMetadata, ...) is not yet supported'
-        unless $EncryptMetadata;
+method encrypt(PDF:D $doc: Str :$owner-pass!, Str :$user-pass = '', Bool :$EncryptMetadata = True, |c ) {
 
     with $.reader {
         with .crypt {
@@ -88,7 +85,7 @@ method encrypt(PDF:D $doc: Str :$owner-pass!, Str :$user-pass = '', :$EncryptMet
 
     $doc<Encrypt>:delete;
     $!flush = True;
-    $!crypt = PDF::COS.required('PDF::IO::Crypt::PDF').new: :$doc, :$owner-pass, :$user-pass, |c;
+    $!crypt = PDF::COS.required('PDF::IO::Crypt::PDF').new: :$doc, :$owner-pass, :$user-pass, :$EncryptMetadata, |c;
 }
 
 method !is-indexed {

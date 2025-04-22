@@ -1,4 +1,6 @@
 {{$NEXT}}
+    - Support /EncryptMetadata entry in encryption
+      dictionary
 
 0.6.10  2025-04-14T10:19:45+12:00
     - Don't encrypt /Contents hex-string entry of signature

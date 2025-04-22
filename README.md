@@ -351,7 +351,7 @@ PDF::IO::Crypt supports RC4 and AES encryption (revisions /R 2 - 4 and versions 
 
 To open an encrypted PDF document, specify either the user or owner password: `PDF.open( "enc.pdf", :password<ssh!>)`
 
-A document can be encrypted using the `encrypt` method: `$pdf.encrypt( :owner-pass<ssh1>, :user-pass<abc>, :aes )`
+A document can be encrypted using the `encrypt` method: `$pdf.encrypt( :owner-pass<ssh!>, :user-pass<abc>, :aes )`
    - `:aes` encrypts the document using stronger V4 AES encryption, introduced with PDF 1.6.
 
 Note that it's quite common to leave the user-password blank. This indicates that the document is readable by anyone, but may have restrictions on update, printing or copying of the PDF.

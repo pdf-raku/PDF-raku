@@ -11,14 +11,14 @@ use PDF::IO::Crypt::AESV2;
 
 has PDF::IO::Crypt $!stm-f; #| stream filter (/StmF)
 has PDF::IO::Crypt $!str-f; #| string filter (/StrF)
-has Bool $.EncryptMetadata is built;
 
 submethod TWEAK(:$doc!, Str :$owner-pass, |c) {
     $owner-pass
         ?? self!generate( :$doc, :$owner-pass, |c)
         !! self!load( :$doc, |c);
-    $!EncryptMetadata = $doc<EncryptMetadata> // True;
 }
+
+method EncryptMetadata { do with $!stm-f { .EncryptMetadata } // Bool }
 
 method type { ($!stm-f.type, $!str-f.type).unique }
 
