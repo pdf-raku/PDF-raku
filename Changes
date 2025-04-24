@@ -1,6 +1,9 @@
 {{$NEXT}}
-    - Support /EncryptMetadata entry in encryption
-      dictionary
+
+0.6.11  2025-04-25T08:06:09+12:00
+    - Add support for encrypt EncryptMetadata setting
+    - Handle reading indirect object generation numbers up to 5 digits,
+      as per cross-reference trailer syntax.
 
 0.6.10  2025-04-14T10:19:45+12:00
     - Don't encrypt /Contents hex-string entry of signature
