@@ -31,12 +31,13 @@ ind-obj-tests(
     );
 
 ind-obj-tests(
-    :ind-obj[29, 0, :dict{ P => :ind-ref[142, 0],
-                           S => :name<Link>,
-                           K => :array[ :ind-ref[207, 0],
-                                        :dict{Type => :name<OBJR>,
-                                              Pg => :ind-ref[216, 0],
-                                              Obj => :ind-ref[233, 0]},
+    :ind-obj[29, 0,
+             :dict{ P => :ind-ref[142, 0],
+                    S => :name<Link>,
+                    K => :array[ :ind-ref[207, 0],
+                                 :dict{ Type => :name<OBJR>,
+                                        Pg => :ind-ref[216, 0],
+                                        Obj => :ind-ref[233, 0]},
                                ]},
     ],
     :class(PDF::COS::Dict),
@@ -47,7 +48,7 @@ ind-obj-tests(
                     :Pg{ :ind-ref[ 216, 0 ] },
                     :Obj{ :ind-ref[ 233, 0 ] },
                   }
-                  ] },
+                ] },
     );
 
 use PDF::COS::Tie;

@@ -7,12 +7,11 @@ my constant $Lock = Lock.new;
 #| generate an indirect reference to ourselves
 method ind-ref returns IndRef {
     given $.obj-num {
-        $_
-            ?? ($_ < 0
-                ?? die "indirect object has not been allocated"
-                !! :ind-ref[ $_, $.gen-num ]
-               )
-            !! die "not an indirect object";
+        die "not an indirect object" unless .so;
+        die "indirect object has not been allocated"
+            if $_ < 0; 
+
+        :ind-ref[ $_, $.gen-num ]
     }
 }
 
@@ -131,11 +130,6 @@ my class COSAttr {
             || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
                 self!tie-container: $lval, :$check;
             }
-            elsif $lval.isa(array) && $!type ~~ Positional[Numeric] {
-                # assume numeric. not so easy to type-check atm
-                # https://github.com/rakudo/rakudo/issues/4485
-                # update: fixed as of Rakudo 2021.08
-            }
             else {
                 my \of-type = $!decont ?? $!type.of !! $!type;
                 unless $lval ~~ of-type {
@@ -151,7 +145,8 @@ my class COSAttr {
         }
         $lval;
     }
-    multi method tie($lval is rw, :$check) is rw {
+
+    multi method tie($lval is rw, :check($)) is rw {
         $Lock.protect: {
             $lval.obj-num //= -1
         } if $.is-indirect && $lval ~~ PDF::COS;

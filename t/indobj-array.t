@@ -51,6 +51,6 @@ $cs[1] = { :WhitePoint[1.0, 1.0, 1.0] };
 is $cs.Subtype, 'Lab', 'tied index [0]';
 is-json-equiv $cs.Dict, { :WhitePoint[1.0, 1.0, 1.0] }, 'tied index [1]';
 ok $cs.Dict ~~ ColorSpaceDict, 'tied index "does" attribute';
-is $cs.Dict.yay, 42, 'tied index "does" attribute';
+is $cs.Dict.yay, 42, 'tied index method call';
 lives-ok {$cs.Subtype = 'CalRGB'}, 'tied index assignment';
 is $cs.Subtype, 'CalRGB', 'tied index fetch';
