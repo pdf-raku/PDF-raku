@@ -169,7 +169,7 @@ method loader is rw handles <load-delegate> {
     $loader
 }
 
-multi method ACCEPTS(Any:D $v) is default {
-    self.defined ?? $v eqv self !! callsame();
+multi method ACCEPTS(Any:D: Any:D $v) is default {
+    $v eqv self;
 }
 
