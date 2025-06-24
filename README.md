@@ -180,7 +180,8 @@ trailer
 >>
 startxref
 549
-%%EOF```
+%%EOF
+```
 
 The PDF is composed of a series indirect objects, for example, the first object is:
 
