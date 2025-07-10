@@ -46,15 +46,15 @@ multi method crypt-ast('dict', Hash $ast, |c) {
         for $ast.pairs.sort;
 }
 
+multi method crypt-ast('stream', Hash $ast where .<dict> ~~ MetadataDictLike) {
+    nextsame if $.EncryptMetadata;
+}
+
 multi method crypt-ast('stream', Hash $ast, |c) {
-    my $dict = $ast<dict>;
-
-    return
-        if ! $.EncryptMetadata && $dict ~~ MetadataDictLike;
-
     $.crypt-ast($_, |c)
         for $ast.pairs;
-    $dict<Length> = .codes
+
+    $ast<dict><Length> = .codes
         with $ast<encoded>;
 }
 

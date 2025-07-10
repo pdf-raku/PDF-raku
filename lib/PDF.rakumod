@@ -205,8 +205,8 @@ multi method save-as(IO() $iop,
         $iop.spurt: to-json( $.ast: |c );
     }
     when $preserve && !$rebuild && !$!flush && self!is-indexed && $.reader.file-name.defined {
-        # copy the input PDF, then incrementally update it. This is faster
-        # and plays better with digitally signed documents.
+        # copy the input PDF, then incrementally update it. This is
+        # faster, and plays better with digitally signed documents.
         my $diffs = $iop.open(:a, :bin);
         given $.reader.file-name {
             .IO.copy: $iop
