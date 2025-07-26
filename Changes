@@ -1,5 +1,9 @@
 {{$NEXT}}
+
+0.6.12  2025-07-27T09:41:05+12:00
     - Adjust to OpenSSL v0.2.5+.
+    - Refactor handling of /EncryptMetadata in /Crypt
+      dictionary.
 
 0.6.11  2025-04-25T08:06:09+12:00
     - Add support for encrypt EncryptMetadata setting
