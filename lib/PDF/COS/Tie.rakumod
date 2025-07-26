@@ -9,7 +9,7 @@ method ind-ref returns IndRef {
     given $.obj-num {
         die "not an indirect object" unless .so;
         die "indirect object has not been allocated"
-            if $_ < 0; 
+            if $_ < 0;
 
         :ind-ref[ $_, $.gen-num ]
     }

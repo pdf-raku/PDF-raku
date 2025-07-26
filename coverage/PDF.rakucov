@@ -1,6 +1,6 @@
 * #| this class represents the top level node in a PDF or FDF document,
   #| the trailer dictionary
-* unit class PDF:ver<0.6.11>;
+* unit class PDF:ver<0.6.12>;
   
   use PDF::COS::Dict;
   also is PDF::COS::Dict;
@@ -205,8 +205,8 @@ x                  |c) {
 *         $iop.spurt: to-json( $.ast: |c );
       }
 *     when $preserve && !$rebuild && !$!flush && self!is-indexed && $.reader.file-name.defined {
-          # copy the input PDF, then incrementally update it. This is faster
-          # and plays better with digitally signed documents.
+          # copy the input PDF, then incrementally update it. This is
+          # faster, and plays better with digitally signed documents.
 ✱         my $diffs = $iop.open(:a, :bin);
 *         given $.reader.file-name {
 *             .IO.copy: $iop
