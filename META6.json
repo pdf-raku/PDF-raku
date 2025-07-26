@@ -10,7 +10,7 @@
     "Hash::int",
     "JSON::Fast",
     "Method::Also",
-    "OpenSSL",
+    "OpenSSL:ver<0.2.5+>",
     "PDF::Grammar:ver<0.3.2+>"
   ],
   "description": "Base classes for reading, manipulation and writing of PDF data",

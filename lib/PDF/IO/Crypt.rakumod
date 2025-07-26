@@ -194,17 +194,17 @@ method compute-user(@pass-padded, :$key! is rw) {
     $key = Buf.new: @input;
 
     for 1 .. $reps {
-        $key = md5($key);
-        $key.reallocate($n)
+        $key .= &md5();
+        $key .= subbuf(0, $n)
             unless $key.elems <= $n;
     }
 
-    my Buf $pass .= new: @Padding;
+    my Buf() $pass .= new: @Padding;
 
     my uint8 @computed = do if $!revision >= 3 {
         # Algorithm 3.5 steps 1 .. 5
         $pass.append: @!doc-id;
-        $pass = md5( $pass );
+        $pass .= &md5();
         self!do-iter-crypt($key, $pass);
     }
     else {
@@ -230,7 +230,7 @@ method !auth-user-pass(@pass) {
 
 method !compute-owner-key(@pass-padded) {
     # Algorithm 3.7 steps 1 .. 4
-    my Buf $key .= new: @pass-padded;   # 1
+    my Blob $key .= new: @pass-padded;   # 1
 
     my uint $n = 5;
     my uint $reps = 1;
@@ -241,8 +241,8 @@ method !compute-owner-key(@pass-padded) {
     }
 
     for 1..$reps {
-        $key = md5($key);
-        $key.reallocate($n)
+        $key .= &md5();
+        $key .= subbuf(0, $n)
             unless $key.elems <= $n;
     }
 
@@ -251,7 +251,7 @@ method !compute-owner-key(@pass-padded) {
 
 method compute-owner(@owner-pass, @user-pass) {
     # Algorithm 3.3
-    my Buf \key = self!compute-owner-key( @owner-pass );    # Steps 1..4
+    my Blob \key = self!compute-owner-key( @owner-pass );    # Steps 1..4
 
     my Buf $user .= new: @user-pass;
 
@@ -267,8 +267,8 @@ method compute-owner(@owner-pass, @user-pass) {
 
 method !auth-owner-pass(@pass) {
     # Algorithm 3.7
-    my Buf \key = self!compute-owner-key( @pass );    # 1
-    my Buf $user-pass .= new: @!owner-pass;
+    my Blob \key = self!compute-owner-key( @pass );    # 1
+    my Blob $user-pass .= new: @!owner-pass;
     if $!revision == 2 {      # 2 (Revision 2 only)
         $user-pass = $.rc4-crypt(key, $user-pass);
     }
