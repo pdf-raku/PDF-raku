@@ -1,4 +1,5 @@
 {{$NEXT}}
+    - Deprecate Hash to Stream dictionary coercement
 
 0.6.12  2025-07-27T09:41:05+12:00
     - Adjust to OpenSSL v0.2.5+.
