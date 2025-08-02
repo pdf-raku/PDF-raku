@@ -60,9 +60,9 @@ method id is rw {
 method open($spec, |c) is hidden-from-backtrace {
     self.new!open-file: $spec, |c;
 }
-method !open-file(::?CLASS:D: $spec, Str :$type, |c) is hidden-from-backtrace {
-    my PDF::IO::Reader $reader .= new: :trailer(self);
-    self.reader = $reader;
+method !open-file(::?CLASS:D $trailer: $spec, Str :$type, |c) is hidden-from-backtrace {
+    my PDF::IO::Reader $reader .= new: :$trailer;
+    $trailer.reader = $reader;
     $reader.open($spec, |c);
     with $type {
         die "PDF file has wrong type: " ~ $reader.type
@@ -70,7 +70,7 @@ method !open-file(::?CLASS:D: $spec, Str :$type, |c) is hidden-from-backtrace {
     }
     $!crypt = $_
         with $reader.crypt;
-    self;
+    $trailer;
 }
 
 method encrypt(PDF:D $doc: Str :$owner-pass!, Str :$user-pass = '', Bool :$EncryptMetadata = True, |c ) {
@@ -231,20 +231,6 @@ multi method save-as(IO() $iop,
 #| stringify to the serialized PDF
 method Str(|c) {
     self!ast-writer(|c).write;
-}
-
-# permissions check, e.g: $doc.permitted( PermissionsFlag::Modify )
-method permitted(UInt $flag --> Bool) is DEPRECATED('please use PDF::Class.permitted') {
-
-    return True
-        if $!crypt.?is-owner;
-
-    with self.Encrypt {
-        .permitted($flag);
-    }
-    else {
-        True;
-    }
 }
 
 method Blob(|c) returns Blob {
