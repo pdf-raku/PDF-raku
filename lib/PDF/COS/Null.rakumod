@@ -8,4 +8,5 @@ also does PDF::COS;
 
 method defined { False }
 method content { :null(Any) }
+multi method COERCE(Any:U) is default { self.new }
 multi method ACCEPTS(Any:U) { True }

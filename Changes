@@ -1,5 +1,8 @@
 {{$NEXT}}
     - Deprecate Hash to Stream dictionary coercement
+    - Remove deprecated PDF permitted() method.
+    - Give PDF::Class::Loader precedence over PDF::Lite::Loader
+    - Refactor PDF::COS::Null coercement
 
 0.6.12  2025-07-27T09:41:05+12:00
     - Adjust to OpenSSL v0.2.5+.

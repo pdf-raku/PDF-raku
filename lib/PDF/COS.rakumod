@@ -32,13 +32,8 @@ multi method COERCE(Enumeration $_) is default {
 
 # low precedence fallback
 multi method COERCE($v is raw) {
-    if !$v.defined && self.isa("PDF::COS::Null") {
-        self.new;
-    }
-    else {
-        warn "failed to coerce {$v.raku} to {self.WHAT.raku}";
-        $v;
-    }
+    warn "failed to coerce {$v.raku} to {self.WHAT.raku}";
+    $v;
 }
 
 proto method coerce(|) {*}
@@ -163,10 +158,17 @@ method !coercer {
 }
 
 method loader is rw handles <load-delegate> {
-    unless $loader.can('load-delegate') {
-        $loader = $.required('PDF::COS::Loader');
+    sub FETCH($) {
+        $loader = $.required('PDF::COS::Loader')
+            if $loader === Any;
+        $loader;
     }
-    $loader
+    sub STORE($, $l) {
+        $loader = $l
+            unless $loader.isa('PDF::Class::Loader')
+            &&     $l.isa('PDF::Lite::Loader');
+    }
+    Proxy.new: :&FETCH, :&STORE;
 }
 
 multi method ACCEPTS(Any:D: Any:D $v) is default {
