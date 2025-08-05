@@ -18,15 +18,15 @@
 ✱ my Lock $lock .= new;
   
   #| optional override role to apply when PDF::Native is available
-x role NativeWriter[$writer] {
+* role NativeWriter[$writer] {
       # load some native faster alternatives
   
-x     method write-bool($_)       { $writer.write-bool($_) }
-x     method write-hex-string($_) { $writer.write-hex-string($_) }
-x     method write-literal($_)    { $writer.write-literal($_) }
-x     method write-name($_)       { $writer.write-name($_) }
-x     method write-int($_)        { $writer.write-int($_) }
-x     method write-real($_)       { $writer.write-real($_) }
+*     method write-bool($_)       { $writer.write-bool($_) }
+*     method write-hex-string($_) { $writer.write-hex-string($_) }
+*     method write-literal($_)    { $writer.write-literal($_) }
+*     method write-name($_)       { $writer.write-name($_) }
+*     method write-int($_)        { $writer.write-int($_) }
+*     method write-real($_)       { $writer.write-real($_) }
 x     method write-entries($_)    { $writer.write-entries($_) }
   }
   
@@ -35,7 +35,7 @@ x     method write-entries($_)    { $writer.write-entries($_) }
           # Not thread-safe on older Rakudos
 *         try {
 *             require ::('PDF::Native::Writer');
-x             self does NativeWriter[::('PDF::Native::Writer')];
+*             self does NativeWriter[::('PDF::Native::Writer')];
           }
       }
   }
@@ -193,8 +193,8 @@ x             when 2 { $idx<index> }
       trailer;
   }
   
-* method write-bool( $_ ) {
-*     .so ?? 'true' !! 'false';
+x method write-bool( $_ ) {
+x     .so ?? 'true' !! 'false';
   }
   
   #| inverter for PDF::Grammar::Content::Actions
@@ -301,8 +301,8 @@ x         ('if')
   }
   
   
-* method write-hex-string( Str $_ ) {
-*     [~] ('<',
+x method write-hex-string( Str $_ ) {
+x     [~] ('<',
            slip(.encode("latin-1").map(*.fmt('%02x'))),
            '>');
   }
@@ -317,10 +317,10 @@ x         ('if')
 *     join(' ', .[0], .[1], 'R');
   }
   
-* method write-int(Int $_) {.fmt: '%d'}
+x method write-int(Int $_) {.fmt: '%d'}
   
-* method write-literal( Str $_ ) {
-*     '('
+x method write-literal( Str $_ ) {
+x     '('
       ~ .trans(["\b",  "\f",  "\n",  "\r",  "\r\n",   "\t",  '(',   ')',  '\\']
             => ['\\b', '\\f', '\\n', '\\r', '\\r\\n', '\\t', '\\(', '\\)', '\\\\'])
       ~ ')';
@@ -410,10 +410,10 @@ x multi method write-real( Int $_ ) {
 x     .fmt: '%d';
   }
   
-* multi method write-real( Numeric $_ ) {
-✱     my Str $num = .fmt('%.5f');
-*     $num ~~ s/(\.\d*?)0+$/$0/;
-*     $num.ends-with('.') ?? $num.chop !! $num;
+x multi method write-real( Numeric $_ ) {
+      my Str $num = .fmt('%.5f');
+x     $num ~~ s/(\.\d*?)0+$/$0/;
+x     $num.ends-with('.') ?? $num.chop !! $num;
   }
   
 * method write-stream(% (:%dict!, :$encoded = $.input.stream-data( :stream($_) )) ) {
@@ -468,7 +468,7 @@ x     .fmt: '%d';
 *             @entries[$_;0] = $offset;
 *             @entries[$_;1] = $gen-num;
 *             @entries[$_;2] = $type;
-*             $i++;
+x             $i++;
           }
 *         @xrefs.push: %( :$obj-first-num, :$obj-count, :@entries );
       }

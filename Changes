@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.6.13  2025-08-05T17:34:05+12:00
     - Deprecate Hash to Stream dictionary coercement
     - Remove deprecated PDF permitted() method.
     - Give PDF::Class::Loader precedence over PDF::Lite::Loader

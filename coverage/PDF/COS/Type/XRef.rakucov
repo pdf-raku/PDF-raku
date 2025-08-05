@@ -54,20 +54,20 @@
 *     nextwith( PDF::IO::Blob.new: buf );
   }
   
-* sub pack-xref-stream-raku($xref-index where .shape[1] ~~ 4, @xref, @index) {
+x sub pack-xref-stream-raku($xref-index where .shape[1] ~~ 4, @xref, @index) {
       my $size = -1;
-✱     my $n = +$xref-index;
-*     for ^$n -> $i {
-✱         my $obj-num = $xref-index[$i; 0];
-*         given $obj-num <=> $size {
-*             when More { @index.push( $obj-num, 0 ) }
-*             when Less { die "/XRef /Index is not sorted by ascending obj-num" }
+      my $n = +$xref-index;
+x     for ^$n -> $i {
+          my $obj-num = $xref-index[$i; 0];
+x         given $obj-num <=> $size {
+x             when More { @index.push( $obj-num, 0 ) }
+x             when Less { die "/XRef /Index is not sorted by ascending obj-num" }
           }
-*         @index.tail++;
-*         @xref[$i; 0] = $xref-index[$i; 1];
-*         @xref[$i; 1] = $xref-index[$i; 2];
-*         @xref[$i; 2] = $xref-index[$i; 3];
-*         $size = $obj-num + 1;
+x         @index.tail++;
+x         @xref[$i; 0] = $xref-index[$i; 1];
+x         @xref[$i; 1] = $xref-index[$i; 2];
+x         @xref[$i; 2] = $xref-index[$i; 3];
+x         $size = $obj-num + 1;
       }
       $size;
   }
@@ -107,19 +107,19 @@
   
   #= an extra decoding stage - build index entries from raw decoded data
   
-* sub unpack-xref-stream-raku(\decoded where .shape[1] ~~ 3, \index) {
-✱     my uint64 @index[+decoded;4];
+x sub unpack-xref-stream-raku(\decoded where .shape[1] ~~ 3, \index) {
+      my uint64 @index[+decoded;4];
       my uint $i = 0;
-*     for index.list -> $obj-num is rw, \num-entries {
-*         die "/XRef stream content overflow"
+x     for index.list -> $obj-num is rw, \num-entries {
+x         die "/XRef stream content overflow"
               if $i + num-entries > +decoded;
-*         for ^num-entries {
-*             @index[$i;0] = $obj-num;
-*             @index[$i;1] = decoded[$i;0];
-*             @index[$i;2] = decoded[$i;1];
-*             @index[$i;3] = decoded[$i;2];
-*             $obj-num++;
-*             $i++;
+x         for ^num-entries {
+x             @index[$i;0] = $obj-num;
+x             @index[$i;1] = decoded[$i;0];
+x             @index[$i;2] = decoded[$i;1];
+x             @index[$i;3] = decoded[$i;2];
+x             $obj-num++;
+x             $i++;
           }
       }
   

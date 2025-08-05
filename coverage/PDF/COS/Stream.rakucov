@@ -127,15 +127,15 @@ x         $!encoded = Nil;
       }
   }
   
-x multi method gist(::?CLASS:U:) { nextsame() }
 * multi method gist(::?CLASS:D:) {
 *     callsame() ~ "\n" ~ self.encoded.Str.raku
   }
   
-* multi method COERCE(Hash $dict, |c) {
-✱     my $params = <dict encoded decoded>.first({ $dict{$_}:exists })
-          ?? $dict
-          !! %( :$dict );
-✱     my $class := PDF::COS.load-dict: $params<dict>//{}, :base-class(self.WHAT);
-*     $class.new: |$params, |c;
+* multi method COERCE(Associative $_ where {.<dict>|.<encoded>|.<decoded>}, |c) {
+✱     my $class := PDF::COS.load-dict: .<dict>//{}, :base-class(self.WHAT);
+*     $class.new: |$_, |c;
+  }
+x multi method COERCE(Associative $dict, |c) is DEPRECATED('COERCE({:$dict, :$encoded, :$decoded})') {
+      my $class := PDF::COS.load-dict: $dict, :base-class(self.WHAT);
+x     $class.new: :$dict, |c;
   }

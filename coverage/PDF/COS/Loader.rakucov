@@ -69,5 +69,5 @@ x             $handler-class = $base-class;
       $base-class;
   }
   
-* method target-class { 'PDF' }
+x method target-class { 'PDF' }
   

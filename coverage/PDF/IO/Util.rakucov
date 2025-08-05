@@ -14,7 +14,7 @@ x         try ((require ::('PDF::Native')) !=== Nil)
           my constant Packer = 'PDF::Native::Buf';
 *         try {
 *             require ::(Packer);
-x             ::(Packer)::('&'~$sub-name);
+*             ::(Packer)::('&'~$sub-name);
           }
       }
       #= network (big-endian) ordered byte packing and unpacking
@@ -40,7 +40,7 @@ x             ::(Packer)::('&'~$sub-name);
 *         $bits <= 8 ?? uint8 !! ($bits > 16 ?? uint32 !! uint16)
       }
 *     multi sub resample( $nums! is copy, UInt $bits!, UInt $ where $bits) {
-*         $nums ~~ Blob
+x         $nums ~~ Blob
               ?? $nums
               !! Blob[ of($bits) ].new: $nums
       }
@@ -72,39 +72,39 @@ x                         $sample = 0;
       }
       #| variable resampling, e.g. to decode/encode:
       #|   obj 123 0 << /Type /XRef /W [1, 3, 1] ... >>
-*     multi sub unpack-raku( $nums!, Array $W!)  {
-✱         my uint $w-len = +$W;
-✱         my $out-len = (+$nums * $w-len) div $W.sum;
-✱         my uint64 @out[$out-len div $w-len; $w-len];
+x     multi sub unpack-raku( $nums!, Array $W!)  {
+          my uint $w-len = +$W;
+          my $out-len = (+$nums * $w-len) div $W.sum;
+          my uint64 @out[$out-len div $w-len; $w-len];
           my uint $i = 0;
   
-*         loop (my uint $j = 0; $j < $out-len;) {
-✱             my uint64 $v = 0;
-✱             my $k = $j % $w-len;
-*             for 1 .. $W[$k] {
-*                 $v +<= 8;
-*                 $v += $nums[$i++];
+x         loop (my uint $j = 0; $j < $out-len;) {
+              my uint64 $v = 0;
+              my $k = $j % $w-len;
+x             for 1 .. $W[$k] {
+x                 $v +<= 8;
+x                 $v += $nums[$i++];
               }
-*             @out[$j++ div $w-len; $k] = $v;
+x             @out[$j++ div $w-len; $k] = $v;
           }
           @out;
       }
   
-*     multi sub pack-raku(array $shaped, Array $W!)  {
-✱         my buf8 $out .= allocate($W.sum * +$shaped);
-✱         my blob64 $in .= new: $shaped;
-✱         my uint64 $in-len = +$in;
+x     multi sub pack-raku(array $shaped, Array $W!)  {
+          my buf8 $out .= allocate($W.sum * +$shaped);
+          my blob64 $in .= new: $shaped;
+          my uint64 $in-len = +$in;
           my int64 $j = -1;
-✱         my uint $w-len = +$W;
+          my uint $w-len = +$W;
   
-*         loop (my size_t $i = 0; $i < $in-len;) {
-*             for ^$w-len -> uint $wi {
-✱                 my uint64 $v = $in[$i++];
-✱                 my $n = $W[$wi];
-*                 $j += $n;
-*                 loop (my $k = 0; $k < $n; $k++) {
-*                     $out[$j - $k] = $v;
-*                     $v +>= 8;
+x         loop (my size_t $i = 0; $i < $in-len;) {
+x             for ^$w-len -> uint $wi {
+                  my uint64 $v = $in[$i++];
+                  my $n = $W[$wi];
+x                 $j += $n;
+x                 loop (my $k = 0; $k < $n; $k++) {
+x                     $out[$j - $k] = $v;
+x                     $v +>= 8;
                   }
               }
            }
@@ -112,20 +112,20 @@ x                         $sample = 0;
       }
   
       # Compute /W for a cross reference stream, etc
-*     sub packing-widths-raku($shaped, UInt:D $n) {
-✱         my uint64 @max[$n];
-*         for $shaped.pairs {
-✱             my $v = .value;
-*             given @max[.key[1]] {
-*                 $_ = $v if $v > $_
+x     sub packing-widths-raku($shaped, UInt:D $n) {
+          my uint64 @max[$n];
+x         for $shaped.pairs {
+              my $v = .value;
+x             given @max[.key[1]] {
+x                 $_ = $v if $v > $_
               }
           }
   
-*         @max.map: -> $v is copy {
-✱             my $w = 0; # length 0 is permitted
+x         @max.map: -> $v is copy {
+              my $w = 0; # length 0 is permitted
 x             while $v {
-*                 $w++;
-*                 $v div= 256;
+x                 $w++;
+x                 $v div= 256;
               }
               $w;
           }

@@ -32,9 +32,11 @@
   #| we don't reference count anything else at the moment.
 * multi method ref-count($) { }
   
-✱ my subset DictIndObj of Pair where {.key eq 'ind-obj'
-                                      && .value[2] ~~ Pair
-                                      && .value[2].key eq 'dict'}
+✱ my subset DictIndObj of Pair where {
+*     .key eq 'ind-obj'
+      && .value[2] ~~ Pair
+      && .value[2].key eq 'dict'
+  }
   
 ✱ my subset LazyObj of Pair where {.key eq 'copy'}
   

@@ -46,66 +46,66 @@ x         STORE => -> $, $!compat {}
   my enum IndexType <Free External Embedded>;
   
   # faster native method overrides
-x role NativeReader[$native-reader] {
+* role NativeReader[$native-reader] {
       #| load PDF 1.4- xref table followed by trailer
-x     method load-xref-table(Str $xref is copy, $dict is rw, :$offset) {
+*     method load-xref-table(Str $xref is copy, $dict is rw, :$offset) {
           # fast load of the xref segments
-          my $buf = $xref.encode("latin-1");
-          my array $entries = $native-reader.read-xref($buf)
+✱         my $buf = $xref.encode("latin-1");
+✱         my array $entries = $native-reader.read-xref($buf)
               // die X::PDF::BadXRef::Parse.new( :$offset, :$xref );
-          my $bytes = $native-reader.xref-bytes;
+✱         my $bytes = $native-reader.xref-bytes;
   
           # parse and load the trailer
-          my $trailer = $buf.subbuf($bytes).decode("latin-1");
-          my $parse = PDF::Grammar::COS.subparse( $trailer.trim, :rule<trailer>, actions => $.scan-actions );
-x         die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
+✱         my $trailer = $buf.subbuf($bytes).decode("latin-1");
+✱         my $parse = PDF::Grammar::COS.subparse( $trailer.trim, :rule<trailer>, actions => $.scan-actions );
+*         die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
               unless $parse;
-x         my \index = $parse.ast;
-x         $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
+*         my \index = $parse.ast;
+*         $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
   
-          my uint64 @seg[+$entries div 4;4] Z= @$entries;
+✱         my uint64 @seg[+$entries div 4;4] Z= @$entries;
   
-x         [@seg, ];
+*         [@seg, ];
       }
   }
   
   # further COS object native method overrides
-x role NativeCOS[$cos-node, $cos-ind-obj] {
-x     method parse-ind-obj(Str:D $input) {
-x         $cos-ind-obj.parse($input)
+* role NativeCOS[$cos-node, $cos-ind-obj] {
+*     method parse-ind-obj(Str:D $input) {
+*         $cos-ind-obj.parse($input)
       }
-x     method parse-object(Str:D $input) {
-x         $cos-node.parse($input)
+*     method parse-object(Str:D $input) {
+*         $cos-node.parse($input)
       }
-x     my class COSScanActions {
+*     my class COSScanActions {
           has Bool $.get-offsets is rw = False; #| return ind-obj byte offsets in AST
-x         method TOP($/) { make $<cos>.ast }
-x         method cos($/) {
-              my @body = @<body>».ast;
-x             make (:@body);
+*         method TOP($/) { make $<cos>.ast }
+*         method cos($/) {
+✱             my @body = @<body>».ast;
+*             make (:@body);
           }
-x         method body($/) {
-              my @objects = @<ind-obj>».ast;
-              my %body = :@objects;
-x             %body ,= .<trailer>.ast with $<index>;
-x             make %body;
+*         method body($/) {
+✱             my @objects = @<ind-obj>».ast;
+✱             my %body = :@objects;
+*             %body ,= .<trailer>.ast with $<index>;
+*             make %body;
           }
-x         method ind-obj($/) {
+*         method ind-obj($/) {
               my Str:D() $input = $/;
-              my $ind-obj = $cos-ind-obj.parse($input, :scan)
+✱             my $ind-obj = $cos-ind-obj.parse($input, :scan)
 x                 // die "Native indirect Object parse failed at byte offset:{$/.from}";
-              my $ast = $ind-obj.ast;
-x             $ast.value.push: $/.from
+✱             my $ast = $ind-obj.ast;
+*             $ast.value.push: $/.from
                   if self.get-offsets;
-x             make $ast;
+*             make $ast;
           }
-x         method trailer($/) {
-              my $dict = $cos-node.parse: $<dict>.Str
+*         method trailer($/) {
+✱             my $dict = $cos-node.parse: $<dict>.Str
 x                // die "Native trailer dictionary parse failed at byte offset:{$/.from}";
-x             make (:trailer($dict.ast))
+*             make (:trailer($dict.ast))
           }
       }
-x     method scan-actions { COSScanActions.new }
+*     method scan-actions { COSScanActions.new }
   }
   
 * submethod TWEAK(PDF::COS::Dict :$trailer) {
@@ -113,11 +113,11 @@ x     method scan-actions { COSScanActions.new }
   
 *     try {
 *         require ::('PDF::Native::Reader');
-x         self does NativeReader[::('PDF::Native::Reader').new];
+*         self does NativeReader[::('PDF::Native::Reader').new];
       }
 *     try {
 *         require ::('PDF::Native::COS');
-x         self does NativeCOS[::('PDF::Native::COS::COSNode'), ::('PDF::Native::COS::COSIndObj'), ];
+*         self does NativeCOS[::('PDF::Native::COS::COSNode'), ::('PDF::Native::COS::COSIndObj'), ];
       }
   }
   
@@ -319,13 +319,13 @@ x                 :details("Ignoring {$/.from} bytes before 'endstream' marker")
       };
   }
   
-* method parse-ind-obj(Str:D $input) {
-*     PDF::Grammar::COS.subparse( $input, :$.actions, :rule<ind-obj-nibble> );
+x method parse-ind-obj(Str:D $input) {
+x     PDF::Grammar::COS.subparse( $input, :$.actions, :rule<ind-obj-nibble> );
 x     $/;
   }
   
-* method parse-object(Str:D $input) {
-*     PDF::Grammar::COS.subparse( trim($input), :$.actions, :rule<object> );
+x method parse-object(Str:D $input) {
+x     PDF::Grammar::COS.subparse( trim($input), :$.actions, :rule<object> );
 x     $/;
   }
   
@@ -503,16 +503,16 @@ x     repeat {
   }
   
   #| load PDF 1.4- xref table followed by trailer
-* method load-xref-table(Str $xref, $dict is rw, :$offset) {
-✱     my $parse = PDF::Grammar::COS.subparse( $xref, :rule<index>, :$.actions );
-*     die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
+x method load-xref-table(Str $xref, $dict is rw, :$offset) {
+      my $parse = PDF::Grammar::COS.subparse( $xref, :rule<index>, :$.actions );
+x     die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
           unless $parse;
   
-*     my \index = $parse.ast;
+x     my \index = $parse.ast;
   
-*     $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
+x     $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
   
-*     index<xref>».<entries>;
+x     index<xref>».<entries>;
   }
   
   #| load a PDF 1.5+ XRef Stream
