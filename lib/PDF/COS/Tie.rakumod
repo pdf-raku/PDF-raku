@@ -123,7 +123,15 @@ my class COSAttr {
             }
         }
     }
-    multi method tie($lval is rw where !($lval ~~ $!type), :$check) is rw {
+    multi method tie($lval is rw where $lval ~~ $!type, :check($)) is rw {
+        $Lock.protect: {
+            $lval.obj-num //= -1
+        } if $.is-indirect && $lval ~~ PDF::COS;
+
+        $lval;
+    }
+
+    multi method tie($lval is rw, :$check) is rw {
         $Lock.protect: {
 
             if ($!type ~~ Positional[Mu] && $lval ~~ List)
@@ -143,14 +151,6 @@ my class COSAttr {
                 }
             }
         }
-        $lval;
-    }
-
-    multi method tie($lval is rw, :check($)) is rw {
-        $Lock.protect: {
-            $lval.obj-num //= -1
-        } if $.is-indirect && $lval ~~ PDF::COS;
-
         $lval;
     }
 
