@@ -87,6 +87,16 @@ my class COSAttr {
         }
         $lval;
     }
+    multi method tie(PDF::COS $lval where $lval ~~ $!type) is rw {
+        $Lock.protect: {
+            $lval.obj-num //= -1
+        } if $!is-indirect;
+        nextsame;
+    }
+    multi method tie($lval is rw where $lval ~~ $!type) is rw {
+        $lval;
+    }
+
     method !tie-container($lval is raw, :$check) {
         # of-att typed array declaration, e.g.:
         #     has PDF::Catalog @.Kids is entry(:indirect);
@@ -111,44 +121,38 @@ my class COSAttr {
                 }
             }
 
-            for v {
-                unless $_ ~~ of-type | IndRef {
-                    ($att.cos.coerce)($_, of-type);
-                    if $check {
-                        die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
-                        unless $_ ~~ of-type;
+            $Lock.protect: {
+                for v {
+                    unless $_ ~~ of-type | IndRef {
+                        ($att.cos.coerce)($_, of-type);
+                        if $check {
+                            die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
+                                unless $_ ~~ of-type;
+
+                            .reader //= reader if .defined;
+                        }
                     }
-                    .reader //= reader if .defined;
                 }
             }
         }
-    }
-    multi method tie(PDF::COS $lval is rw where $lval ~~ $!type) is rw {
-        $Lock.protect: {
-            $lval.obj-num //= -1
-        } if $!is-indirect;
-        $lval;
-    }
-    multi method tie($lval is rw where $lval ~~ $!type) is rw {
         $lval;
     }
 
+    multi method tie(List $lval is rw where $!type ~~ Positional[Mu], :$check) is rw {
+        self!tie-container: $lval, :$check;
+    }
+    multi method tie(Hash $lval is rw where $!type ~~ Associative[Mu], :$check) is rw {
+        self!tie-container: $lval, :$check;
+    }
     multi method tie($lval is rw, :$check) is rw {
         $Lock.protect: {
-
-            if ($!type ~~ Positional[Mu] && $lval ~~ List)
-            || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
-                self!tie-container: $lval, :$check;
-            }
-            else {
-                my \of-type = $!decont ?? $!type.of !! $!type;
-                unless $lval ~~ of-type {
-                    ($.coerce)($lval, of-type);
-                    if $check {
-                        with $lval {
-                            die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.^name}"
-                                unless $_ ~~ of-type;
-                        }
+            my \of-type = $!decont ?? $!type.of !! $!type;
+            unless $lval ~~ of-type {
+                ($.coerce)($lval, of-type);
+                if $check {
+                    with $lval {
+                        die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.^name}"
+                            unless $_ ~~ of-type;
                     }
                 }
             }
@@ -195,7 +199,7 @@ sub cos-attr-opts($entry, Attribute $att) {
         }
         else {
             warn "ignoring entry trait attribute: {arg.raku}"
-            unless arg ~~ Bool;
+                unless arg ~~ Bool;
         }
     }
     with %opts<key>:delete {
@@ -271,7 +275,6 @@ multi method deref($value where Hash | List, :$pos!) {
 
 #| simple value. no need to coerce
 multi method deref($value) { $value }
-
 
 =begin pod
 
