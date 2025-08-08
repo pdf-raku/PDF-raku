@@ -123,11 +123,13 @@ my class COSAttr {
             }
         }
     }
-    multi method tie($lval is rw where $lval ~~ $!type, :check($)) is rw {
+    multi method tie(PDF::COS $lval is rw where $lval ~~ $!type) is rw {
         $Lock.protect: {
             $lval.obj-num //= -1
-        } if $.is-indirect && $lval ~~ PDF::COS;
-
+        } if $!is-indirect;
+        $lval;
+    }
+    multi method tie($lval is rw where $lval ~~ $!type) is rw {
         $lval;
     }
 
