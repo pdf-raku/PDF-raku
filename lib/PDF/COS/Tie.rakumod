@@ -91,7 +91,7 @@ my class COSAttr {
         $Lock.protect: {
             $lval.obj-num //= -1
         } if $!is-indirect;
-        nextsame;
+        $lval;
     }
     multi method tie($lval is rw where $lval ~~ $!type) is rw {
         $lval;
@@ -138,10 +138,10 @@ my class COSAttr {
         $lval;
     }
 
-    multi method tie(List $lval is rw where $!type ~~ Positional[Mu], :$check) is rw {
+    multi method tie(List $lval where $!type ~~ Positional[Mu], :$check) {
         self!tie-container: $lval, :$check;
     }
-    multi method tie(Hash $lval is rw where $!type ~~ Associative[Mu], :$check) is rw {
+    multi method tie(Hash $lval where $!type ~~ Associative[Mu], :$check) {
         self!tie-container: $lval, :$check;
     }
     multi method tie($lval is rw, :$check) is rw {
