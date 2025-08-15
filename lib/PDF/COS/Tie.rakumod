@@ -249,9 +249,9 @@ method induce($obj is raw) {
 
 #| indirect reference
 multi method deref(IndRef $ind-ref!) {
-    my (Int $obj-num, Int $gen-num, $reader) = $ind-ref.value.list;
+    my :(Int $obj-num, Int $gen-num, $reader = $.reader) := $ind-ref.value.list;
 
-    with $reader // $.reader {
+    with $reader {
         .auto-deref
             ?? .ind-obj( $obj-num, $gen-num ).object
             !! $ind-ref;

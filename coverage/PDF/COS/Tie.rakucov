@@ -87,6 +87,16 @@ x         $!of-att;
           }
 ✱         $lval;
       }
+*     multi method tie(PDF::COS $lval where $lval ~~ $!type) is rw {
+*         $Lock.protect: {
+*             $lval.obj-num //= -1
+          } if $!is-indirect;
+          $lval;
+      }
+*     multi method tie($lval is rw where $lval ~~ $!type) is rw {
+          $lval;
+      }
+  
 *     method !tie-container($lval is raw, :$check) {
           # of-att typed array declaration, e.g.:
           #     has PDF::Catalog @.Kids is entry(:indirect);
@@ -111,33 +121,15 @@ x         $!of-att;
                   }
               }
   
-*             for v {
-*                 unless $_ ~~ of-type | IndRef {
-*                     ($att.cos.coerce)($_, of-type);
-*                     if $check {
-x                         die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
-                          unless $_ ~~ of-type;
-                      }
-*                     .reader //= reader if .defined;
-                  }
-              }
-          }
-      }
-*     multi method tie($lval is rw where !($lval ~~ $!type), :$check) is rw {
-*         $Lock.protect: {
-  
-*             if ($!type ~~ Positional[Mu] && $lval ~~ List)
-x             || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
-*                 self!tie-container: $lval, :$check;
-              }
-✱             else {
-*                 my \of-type = $!decont ?? $!type.of !! $!type;
-*                 unless $lval ~~ of-type {
-*                     ($.coerce)($lval, of-type);
-*                     if $check {
-*                         with $lval {
-*                             die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.^name}"
+*             $Lock.protect: {
+*                 for v {
+*                     unless $_ ~~ of-type | IndRef {
+*                         ($att.cos.coerce)($_, of-type);
+*                         if $check {
+x                             die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {of-type.^name}"
                                   unless $_ ~~ of-type;
+  
+x                             .reader //= reader if .defined;
                           }
                       }
                   }
@@ -146,11 +138,25 @@ x             || ($!type ~~ Associative[Mu] && $lval ~~ Hash) {
           $lval;
       }
   
-*     multi method tie($lval is rw, :check($)) is rw {
+*     multi method tie(List $lval where $!type ~~ Positional[Mu], :$check) {
+*         self!tie-container: $lval, :$check;
+      }
+*     multi method tie(Hash $lval where $!type ~~ Associative[Mu], :$check) {
+*         self!tie-container: $lval, :$check;
+      }
+*     multi method tie($lval is rw, :$check) is rw {
 *         $Lock.protect: {
-*             $lval.obj-num //= -1
-          } if $.is-indirect && $lval ~~ PDF::COS;
-  
+*             my \of-type = $!decont ?? $!type.of !! $!type;
+*             unless $lval ~~ of-type {
+*                 ($.coerce)($lval, of-type);
+*                 if $check {
+*                     with $lval {
+*                         die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.^name}"
+                              unless $_ ~~ of-type;
+                      }
+                  }
+              }
+          }
           $lval;
       }
   
@@ -193,7 +199,7 @@ x                 warn "ignoring entry attribute: {arg.key}";
           }
 ✱         else {
 *             warn "ignoring entry trait attribute: {arg.raku}"
-              unless arg ~~ Bool;
+                  unless arg ~~ Bool;
           }
       }
 *     with %opts<key>:delete {
@@ -243,9 +249,9 @@ x         unless @args && @args[0] ~~ UInt;
   
   #| indirect reference
 * multi method deref(IndRef $ind-ref!) {
-*     my (Int $obj-num, Int $gen-num, $reader) = $ind-ref.value.list;
+*     my :(Int $obj-num, Int $gen-num, $reader = $.reader) := $ind-ref.value.list;
   
-*     with $reader // $.reader {
+*     with $reader {
 *         .auto-deref
               ?? .ind-obj( $obj-num, $gen-num ).object
               !! $ind-ref;
@@ -269,7 +275,6 @@ x         die "indirect reference without associated reader: $obj-num $gen-num R
   
   #| simple value. no need to coerce
 x multi method deref($value) { $value }
-  
   
   =begin pod
   

@@ -135,21 +135,20 @@ method !make-trailer-stream( Hash $trailer, @idx is copy) {
             if !$!size || $!size <= $_;
     }
 
-    for ^$n -> $i {
-        my $idx := @idx[$i];
-        my UInt $type := $idx<type>;
-        my $obj-num := $idx<obj-num>;
-        @xref-index[$i;0] = $obj-num;
-        @xref-index[$i;1] = $type;
-        @xref-index[$i;2] = do given $type {
-            when 0 { $!size }
-            when 1 { $idx<offset> }
-            when 2 { $idx<ref-obj-num> }
-        }
-        @xref-index[$i;3] = do given $type {
-            when 0 { $idx<gen-num> + 1 }
-            when 1 { $idx<gen-num> }
-            when 2 { $idx<index> }
+    multi deref2(0, $)  { $!size }
+    multi deref2(1, $_) { .<offset> }
+    multi deref2(2, $_) { .<ref-obj-num,> }
+
+    multi deref3(0, $_) { .<gen-num> + 1 }
+    multi deref3(1, $_) { .<gen-num> }
+    multi deref3(2, $_) { .<index> }
+
+    for @idx.kv -> $i, $idx {
+        @xref-index[$i;0] = $idx<obj-num>;
+        given $idx<type> {
+            @xref-index[$i;1] = $_;
+            @xref-index[$i;2] = .&deref2($idx);
+            @xref-index[$i;3] = .&deref3($idx);
         }
     }
 
