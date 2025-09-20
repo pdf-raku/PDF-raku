@@ -69,8 +69,8 @@ method decoded is rw {
 
 method edit-stream( Str :$prepend = '', Str :$append = '' ) {
     for $prepend, $append {
-        if /<- [\x0 .. \xFF]>/ {
-           die "illegal non-latin hex byte in stream-edit: U+" ~ (~$/).ord.base(16)
+        if /<- [\x0..\xFF \n]>/ {
+           die "illegal non-latin hex byte in stream-edit: {$/.Str.uniname} U+" ~ (~$/).ord.base(16)
         }
     }
     $.decoded = $prepend ~ ($!decoded // '') ~ $append;

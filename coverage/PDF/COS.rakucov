@@ -1,7 +1,6 @@
 ✱ use v6;
   
   our $loader;
-  our %loaded;
   
   #| Raku bindings to the Carousel Object System (http://jimpravetz.com/blog/2012/12/in-defense-of-cos/)
 * unit role PDF::COS;
@@ -66,16 +65,28 @@
 *      $.required('PDF::COS::DateString').COERCE($dt);
   }
   
-  my constant $resolve-lock = Lock.new;
-* method required(Str \mod-name) is hidden-from-backtrace {
-*     $resolve-lock.protect: {
-*         %loaded{mod-name}:exists
-x             ?? %loaded{mod-name}
-*             !! %loaded{mod-name} = do given ::(mod-name) {
-*                 $_ ~~ Failure ?? do {.so; (require ::(mod-name))} !! $_;
-              }
+✱ my $resolution-cache = {};
+  
+* sub add-to-cache(Str:D $pkg, Mu \result --> Mu) is raw {
+x     loop {
+          # Another thread has already added this package, do nothing
+*         return result if (my $old-cache := ⚛$resolution-cache){$pkg}:exists;
+✱         my $new-cache = $old-cache.clone;
+*         $new-cache{$pkg} := result;
+*         return result if cas($resolution-cache, $old-cache, $new-cache) === $old-cache;
       }
   }
+  
+* sub resolve-package-slow-path(Str:D $pkg) is raw {
+*     $pkg.&add-to-cache: do require ::($pkg);
+  }
+  
+* method required(Str:D $pkg) is raw {
+*     (my $cache := ⚛$resolution-cache){$pkg}:exists
+x         ?? $cache{$pkg}
+          !! resolve-package-slow-path($pkg)
+  }
+  
 * method !add-role($obj is rw, Str $role-name, Str $param?) {
 ✱     my $role = $.required($role-name);
 *     $role = $role.^parameterize($_) with $param;

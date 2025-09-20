@@ -467,7 +467,7 @@ x     $num.ends-with('.') ?? $num.chop !! $num;
 *             @entries[$_;0] = $offset;
 *             @entries[$_;1] = $gen-num;
 *             @entries[$_;2] = $type;
-x             $i++;
+*             $i++;
           }
 *         @xrefs.push: %( :$obj-first-num, :$obj-count, :@entries );
       }
