@@ -36,8 +36,8 @@ my role COSAttrHOW {
         my &accessor = sub (\obj) is rw { obj.rw-accessor( self, :$key ); }
         &accessor.set_name( $key );
         try $package.^add_method($key, &accessor);
-        if self.cos.alias {
-            try $package.^add_method(self.cos.alias, &accessor);
+        if self.cos.alias -> $alias {
+            try $package.^add_method($alias, &accessor);
         }
     }
 }
@@ -165,12 +165,10 @@ my class COSAttr {
     }
 
     method raku {
-        my $sigil;
-        my $type;
-        given $!type {
-            when Positional[Mu]  { $type := $!type.of; $sigil := '@' }
-            when Associative[Mu] { $type := $!type.of; $sigil := '%' }
-            default              { $type := $!type;    $sigil := '$' }
+        my :($sigil, $type) := do given $!type {
+            when Positional[Mu]  { ($!type.of, '@') }
+            when Associative[Mu] { ($!type.of, '%') }
+            default              { ($!type, '$') }
         }
         my $alias = do with $!alias { ' (' ~ $_ ~ ')' } // '';
         [~] ($type.raku, ' ', $sigil, '.', $!accessor-name, $alias);
