@@ -21,7 +21,7 @@ multi method encode($buf where Blob | Buf,
                     BPC  :$BitsPerComponent = 8, #| number of bits per color
     ) {
     my uint $bit-mask = 2 ** $BitsPerComponent  -  1;
-    my \nums := unpack( $buf, $BitsPerComponent );
+    my \nums := $buf.&unpack($BitsPerComponent );
     my uint $len = +nums;
     my uint @output;
     my uint $idx = 0;
@@ -39,7 +39,7 @@ multi method encode($buf where Blob | Buf,
         }
     }
 
-    pack( @output, $BitsPerComponent);
+    @output.&pack($BitsPerComponent);
 }
 
 multi method encode($buf is copy where Blob | Buf,
@@ -128,7 +128,7 @@ multi method decode($buf where Blob | Buf,
                     UInt :$BitsPerComponent = 8, #| number of bits per color
     ) {
     my uint $bit-mask = 2 ** $BitsPerComponent  -  1;
-    my \nums = unpack( $buf, $BitsPerComponent );
+    my \nums = $buf.&unpack($BitsPerComponent );
     my int $len = +nums;
     my uint $idx = 0;
     my uint @output;
@@ -146,7 +146,7 @@ multi method decode($buf where Blob | Buf,
         }
     }
 
-    pack( @output, $BitsPerComponent);
+    @output.&pack($BitsPerComponent);
 }
 
 multi method decode($buf is copy where Blob | Buf,  #| input stream

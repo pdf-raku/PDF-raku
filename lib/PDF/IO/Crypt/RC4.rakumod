@@ -17,8 +17,8 @@ method !object-key(UInt $obj-num, UInt $gen-num ) {
     die "encryption has not been authenticated"
         unless $.key;
 
-    my uint8 @obj-bytes = pack-le($obj-num, 32);
-    my uint8 @gen-bytes = pack-le($gen-num, 32);
+    my uint8 @obj-bytes = $obj-num.&pack-le(32);
+    my uint8 @gen-bytes = $gen-num.&pack-le(32);
     my uint8 @obj-key = flat $.key.list, @obj-bytes[0 .. 2], @gen-bytes[0 .. 1];
 
     my UInt $size = +@obj-key;

@@ -67,7 +67,7 @@ method !generate(:$doc!,
     $!key-bytes = $Length +> 3;
     my $id = $doc<ID> // [$doc.id];
     @!doc-id = $id[0].ords;
-    my uint8 @p8 = pack-le($permissions, 32);
+    my uint8 @p8 = $permissions.&pack-le(32);
     @!permissions = @p8;
 
     my uint8 @owner-pass = format-pass($owner-pass);
@@ -126,7 +126,7 @@ method !load(PDF::COS::Dict :$doc!,
     else {
         die 'This PDF lacks an ID.  The document cannot be decrypted'
     }
-    @!permissions = pack-le($permissions, 32);
+    @!permissions = $permissions.&pack-le(32);
     @!owner-pass = $owner-pass.ords;
     @user-pass = $user-pass.ords;
 

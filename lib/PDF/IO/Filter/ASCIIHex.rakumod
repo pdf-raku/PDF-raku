@@ -15,7 +15,7 @@ multi method encode(Str $input, |c --> PDF::IO::Blob) {
 }
 multi method encode(Blob $input --> PDF::IO::Blob) {
 
-    my uint8 @buf = [ unpack( $input, 4).map: {@HexEnc[$_]} ];
+    my uint8 @buf = $input.&unpack(4).map: {@HexEnc[$_]};
     @buf.push: '>'.ord;
 
     PDF::IO::Blob.new( @buf );

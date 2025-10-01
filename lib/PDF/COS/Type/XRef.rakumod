@@ -1,5 +1,3 @@
-use v6;
-
 # /Type /XRef - cross reference stream, introduced with PDF 1.5
 # see [PDF 32000 Section 7.5.8 Cross-Reference Streams]
 unit class PDF::COS::Type::XRef;
@@ -49,7 +47,7 @@ method encode(array[uint64] $xref = $.decoded --> Blob) {
     # /W resize to widest byte-widths, if needed
     my @W = packing-widths($xref, 3);
     self<W> = @W;
-    my \buf := pack( $xref, @W,);
+    my \buf := $xref.&pack(@W);
 
     nextwith( PDF::IO::Blob.new: buf );
 }
@@ -77,8 +75,8 @@ method encode-index(array[uint64] $xref-index) {
     my UInt @index;
     my $n = +$xref-index;
     my uint64 @xref[$n;3];
-    my &xref-packer := native-delegate('pack-xref-stream') // &pack-xref-stream-raku;
-    my $size = &xref-packer($xref-index, @xref, @index);
+    my &encode := native-delegate('pack-xref-stream') // &pack-xref-stream-raku;
+    my $size = $xref-index.&encode(@xref, @index);
     self<Size> = $size;
     self<Index> = @index;
 
@@ -94,7 +92,7 @@ method decode($? --> array[uint64]) {
         // die "missing mandatory /XRef param: /W";
     die "missing mandatory /XRef param: /Size" without $.Size;
 
-    my array $xref-idx = unpack( $buf, W );
+    my array $xref-idx = $buf.&unpack(W);
 
     if self<Index> -> \index {
         my \n = [+] index[1, 3 ... *];
@@ -129,8 +127,8 @@ sub unpack-xref-stream-raku(\decoded where .shape[1] ~~ 3, \index) {
 method decode-index($encoded = $.encoded) {
     my Array \index = self<Index> // [ 0, $.Size ];
     my array[uint64] \decoded = $.decode( $encoded );
-    my &xref-unpacker := native-delegate('unpack-xref-stream') // &unpack-xref-stream-raku;
-    &xref-unpacker(decoded, index);
+    my &unpack := native-delegate('unpack-xref-stream') // &unpack-xref-stream-raku;
+    decoded.&unpack(index);
 }
 
 
