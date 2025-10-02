@@ -44,7 +44,7 @@ multi method encode(Blob \input --> PDF::IO::Blob) {
 }
 
 multi method encode(Str \input ) {
-    $.encode( input.encode("latin-1") )
+    $.encode: input.encode("latin-1");
 }
 
 multi method decode(Blob \input, Bool :$eod = True --> PDF::IO::Blob) {
@@ -80,6 +80,6 @@ multi method decode(Blob \input, Bool :$eod = True --> PDF::IO::Blob) {
 }
 
 multi method decode(Str \input ) {
-    $.decode( input.encode("latin-1") )
+    $.decode: input.encode("latin-1");
 }
 

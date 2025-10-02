@@ -72,10 +72,10 @@ sub pack-xref-stream-raku($xref-index where .shape[1] ~~ 4, @xref, @index) {
 
 #= inverse of $.decode-index. calculates and sets $.Size and $.Index
 method encode-index(array[uint64] $xref-index) {
+    state &encode = INIT native-delegate('pack-xref-stream') // &pack-xref-stream-raku;
     my UInt @index;
     my $n = +$xref-index;
     my uint64 @xref[$n;3];
-    my &encode := native-delegate('pack-xref-stream') // &pack-xref-stream-raku;
     my $size = $xref-index.&encode(@xref, @index);
     self<Size> = $size;
     self<Index> = @index;
@@ -125,9 +125,9 @@ sub unpack-xref-stream-raku(\decoded where .shape[1] ~~ 3, \index) {
 }
 
 method decode-index($encoded = $.encoded) {
+    state &unpack = INIT native-delegate('unpack-xref-stream') // &unpack-xref-stream-raku;
     my Array \index = self<Index> // [ 0, $.Size ];
     my array[uint64] \decoded = $.decode( $encoded );
-    my &unpack := native-delegate('unpack-xref-stream') // &unpack-xref-stream-raku;
     decoded.&unpack(index);
 }
 

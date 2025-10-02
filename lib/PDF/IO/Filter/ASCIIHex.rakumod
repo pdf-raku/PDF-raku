@@ -11,7 +11,7 @@ BEGIN my uint8 @HexEnc = map *.ord, flat '0' .. '9', 'A' .. 'F';
 
 
 multi method encode(Str $input, |c --> PDF::IO::Blob) {
-    $.encode( $input.encode("latin-1"), |c)
+    $.encode: $input.encode("latin-1"), |c;
 }
 multi method encode(Blob $input --> PDF::IO::Blob) {
 
@@ -22,7 +22,7 @@ multi method encode(Blob $input --> PDF::IO::Blob) {
 }
 
 multi method decode(Blob $input, |c) {
-    $.decode( $input.decode("latin-1"), |c);
+    $.decode: $input.decode("latin-1"), |c;
 }
 multi method decode(Str $input, Bool :$eod = False --> PDF::IO::Blob) {
 

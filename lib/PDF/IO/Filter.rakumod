@@ -21,7 +21,7 @@ method decode( $input, Hash :$dict ) {
 }
 
 method !decode-item( $input, Str :$Filter, :%DecodeParms) {
-    $.filter-class( $Filter ).decode( $input, |%DecodeParms);
+    $.filter-class( $Filter ).decode: $input, |%DecodeParms;
 }
 
 # object may have an array of filters [PDF 32000 spec Table 5]
@@ -118,4 +118,3 @@ method filter-class( Str $filter-name is copy ) {
 
     $filter-class;
 }
-
