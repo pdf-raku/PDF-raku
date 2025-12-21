@@ -187,41 +187,38 @@ method !ast-writer(|c) {
     PDF::IO::Writer.new: :$ast;
 }
 
-multi method save-as(IO::Handle $ioh, |c) is hidden-from-backtrace {
+multi method save-as(IO::Handle:D $ioh, :preserve($), :rebuild($), :stream($), |c) is hidden-from-backtrace {
     self!ast-writer(|c).stream-cos: $ioh;
 }
 
-multi method save-as(IO() $iop,
-                 Bool :$preserve = True,
-                 Bool :$rebuild = False,
-                 Bool :$stream,
-                 |c) {
-    when $iop.extension.lc eq 'json' {
+multi method save-as(IO() $_ where .extension.lc eq 'json', :preserve($), :rebuild($), :stream($), |c) {
         # save as JSON
-        $iop.spurt: to-json( $.ast: |c );
+    .spurt: to-json( $.ast: |c );
+}
+
+multi method save-as(IO() $iop,
+                 Bool :preserve($) where .so && !$!flush && self!is-indexed && $.reader.file-name.defined = True,
+                 Bool :rebuild($) where !.so,
+                 :stream($), |c) {
+    # copy the input PDF, then incrementally update it. This is
+    # faster, and plays better with digitally signed documents.
+    my $diffs = $iop.open(:a, :bin);
+    given $.reader.file-name {
+        .IO.copy: $iop
+            unless $iop.path eq $_;
     }
-    when $preserve && !$rebuild && !$!flush && self!is-indexed && $.reader.file-name.defined {
-        # copy the input PDF, then incrementally update it. This is
-        # faster, and plays better with digitally signed documents.
-        my $diffs = $iop.open(:a, :bin);
-        given $.reader.file-name {
-            .IO.copy: $iop
-                unless $iop.path eq $_;
-        }
-        $.update: :$diffs, |c;
-    }
-    default {
-        # full save
-        if $stream {
-            # wont work for in-place update
-            my $ioh = $iop.open(:w, :bin);
-            self!ast-writer(|c).stream-cos($ioh);
-            $ioh.close;
-        }
-        else {
-            $iop.spurt: self!ast-writer(|c).Blob;
-        }
-    }
+    $.update: :$diffs, |c;
+}
+
+multi method save-as(IO() $iop, :stream($)! where .so, :preserve($), :rebuild($), |c) {
+    # wont work for in-place update
+    my $ioh = $iop.open(:w, :bin);
+    self!ast-writer(|c).stream-cos($ioh);
+    $ioh.close;
+}
+
+multi method save-as(IO() $iop, :preserve($), :rebuild($), :stream($), |c) {
+    $iop.spurt: self!ast-writer(|c).Blob;
 }
 
 #| stringify to the serialized PDF
