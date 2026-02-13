@@ -58,7 +58,7 @@ my class COSAttr {
     has Bool $.decont = False;
     has Str  $.accessor-name;
     has Str  $.alias;
-    has Code $.coerce = sub ($lval is rw, Mu $type) { PDF::COS.coerce($lval, $type) };
+    has &.coerce = -> $lval is rw, Mu $type { PDF::COS.coerce($lval, $type) };
     has UInt $.length;
     has $.default;
     my class CosOfAttr is Attribute does COSAttrHOW {}
@@ -68,10 +68,12 @@ my class COSAttr {
         # anonymous attribute for individual items in an array or hash
         unless $!of-att.defined {
             $Lock.protect: {
-                without $!of-att {
-                    my $type := $!type.of;
-                    $_ = CosOfAttr.new( :name('@!' ~ $.accessor-name), :$type, :package<?> );
-                    .cos = $.clone(:!decont, :$type);
+                given $!type.of -> $type {
+                    without $!of-att {
+                        my $name := '@!' ~ $.accessor-name;
+                        $_ = CosOfAttr.new: :$name, :$type, :package<?>;
+                        .cos = $.clone: :!decont, :$type;
+                    }
                 }
             }
         }
@@ -87,10 +89,10 @@ my class COSAttr {
         }
         $lval;
     }
-    multi method tie(PDF::COS $lval where $lval ~~ $!type) is rw {
+    multi method tie(PDF::COS $lval where $!is-indirect && $lval ~~ $!type) is rw {
         $Lock.protect: {
             $lval.obj-num //= -1
-        } if $!is-indirect;
+        };
         $lval;
     }
     multi method tie($lval is rw where $lval ~~ $!type) is rw {
@@ -148,7 +150,7 @@ my class COSAttr {
         $Lock.protect: {
             my \of-type = $!decont ?? $!type.of !! $!type;
             unless $lval ~~ of-type {
-                ($.coerce)($lval, of-type);
+                (&.coerce)($lval, of-type);
                 if $check {
                     with $lval {
                         die "{.WHAT.^name}.$.accessor-name: {.gist} not of type: {$!type.^name}"
@@ -226,7 +228,7 @@ multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
 
 method lvalue($_) is rw {
     when PDF::COS  { $_ }
-    when Hash | List | DateTime { $.coerce($_, :$.reader) }
+    when Hash | List | DateTime { &.coerce($_, :$.reader) }
     default        { $_ }
 }
 

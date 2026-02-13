@@ -50,7 +50,7 @@ my PDF::COS::Int() $int = 42;
 is $int, 42;
 does-ok $int, PDF::COS::Int;
 is-deeply $int.content, 42;
-isa-ok PDF::COS.coerce-to(42, PDF::COS::Int), PDF::COS::Int;
+isa-ok PDF::COS.coerce(42, PDF::COS::Int), PDF::COS::Int;
 lives-ok {$int = 99};
 dies-ok {$int = "oops"};
 
