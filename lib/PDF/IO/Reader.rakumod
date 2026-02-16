@@ -22,7 +22,7 @@ constant GenNumMax = 100_000;
 
 subset ObjNumInt of UInt;
 subset GenNumInt of Int where 0 <= * < GenNumMax;
-subset StreamAstNode of Pair:D where .key eq 'stream';
+subset StreamAstNode of Associative:D where .<stream>:exists;
 
 has PDF::IO  $.input is rw;      #= raw PDF image (latin-1 encoding)
 has Str      $.file-name;
@@ -822,7 +822,7 @@ method recompress(Bool:D :$compress = True) {
 
         my ObjNumInt \obj-num = .[0];
         my GenNumInt \gen-num = .[1];
-        my \stream-dict = .[2].value<dict>;
+        my \stream-dict = .[2]<stream><dict>;
         my Bool \is-compressed = stream-dict<Filter>:exists;
 
         next if $compress == is-compressed
@@ -853,7 +853,7 @@ method ast(::CLASS:D $reader: Bool :$rebuild, |c ) {
 #| dump to json
 multi method save-as( Str $output-path where m:i/'.json' $/, |c ) {
     my \ast = $.ast(|c);
-    $output-path.IO.spurt( to-json( ast ) );
+    $output-path.IO.spurt: ast.&to-json;
 }
 
 #| write to PDF/FDF

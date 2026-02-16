@@ -1,4 +1,7 @@
 {{$NEXT}}
+    - Make PDF::IO::Reader recompress() method work correctly with JSON
+      reserialized data. This fixes pdf-rewriter --compress and --uncompress
+      options to work on JSON input.
 
 0.6.14  2025-09-20T17:14:59+12:00
     - Replace COS required() method with lock-free implementation;

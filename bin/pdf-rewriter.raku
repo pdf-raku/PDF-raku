@@ -61,7 +61,7 @@ sub MAIN(
     }
 
     with $compress {
-        note $_ ?? "compressing ..." !! "uncompressing ...";
+        note ($_ ?? '' !! 'un' ) ~ "compressing ...";
         $reader.recompress(:compress($_));
     }
     elsif $decrypt {
