@@ -210,11 +210,11 @@ x                  :stream($), |c) {
 *     $.update: :$diffs, |c;
   }
   
-x multi method save-as(IO() $iop, :stream($)! where .so, :preserve($), :rebuild($), |c) {
+* multi method save-as(IO() $iop, :stream($)! where .so, :preserve($), :rebuild($), |c) {
       # wont work for in-place update
-      my $ioh = $iop.open(:w, :bin);
-x     self!ast-writer(|c).stream-cos($ioh);
-x     $ioh.close;
+✱     my $ioh = $iop.open(:w, :bin);
+*     self!ast-writer(|c).stream-cos($ioh);
+*     $ioh.close;
   }
   
 * multi method save-as(IO() $iop, :preserve($), :rebuild($), :stream($), |c) {
