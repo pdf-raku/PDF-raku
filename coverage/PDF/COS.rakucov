@@ -37,14 +37,7 @@
   
   proto method coerce(|) {*}
   proto method coerce-to($,$) {*}
-* multi method coerce($a is raw, $b is raw) { self.coerce-to($a, $b) }
-* multi method coerce-to(Mu $obj is rw, Mu $type ) {
-*     self!coercer.coerce-to( $obj, $type )
-  }
-* multi method coerce-to(Mu $obj, Mu $type ) {
-*     self!coercer.coerce( $obj, $type )
-  }
-  
+* multi method coerce($a is raw, $b is raw) { self!coercer.coerce($a, $b) }
 * multi method coerce(PDF::COS $val!) { $val }
   
 ✱ my subset AST-Node of Associative:D where {

@@ -21,7 +21,7 @@ x         default { die "bad filter: {.raku}" }
   }
   
 * method !decode-item( $input, Str :$Filter, :%DecodeParms) {
-*     $.filter-class( $Filter ).decode( $input, |%DecodeParms);
+*     $.filter-class( $Filter ).decode: $input, |%DecodeParms;
   }
   
   # object may have an array of filters [PDF 32000 spec Table 5]
@@ -118,4 +118,3 @@ x         default { die "bad filter: $_" }
   
       $filter-class;
   }
-  

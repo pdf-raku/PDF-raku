@@ -18,16 +18,18 @@
   }
   
 * multi method encode(Blob $_, :$Predictor, |c --> PDF::IO::Blob) {
-*     PDF::IO::Blob.new: compress($Predictor ?? predictor-class.encode( $_, :$Predictor, |c ) !! $_);
+*     PDF::IO::Blob.new: .&compress
+          given $Predictor ?? predictor-class.encode( $_, :$Predictor, |c ) !! $_;
   }
+  
 * multi method encode(Str $_, |c) {
-*     $.encode( .encode('latin-1'), |c );
+*     $.encode: .encode('latin-1'), |c;
   }
   
 * multi method decode(Blob $_, :$Predictor, |c --> PDF::IO::Blob) {
 *     PDF::IO::Blob.new: ($Predictor ?? predictor-class.decode( $_, :$Predictor, |c ) !! $_)
-          given uncompress( $_ );
+          given .&uncompress;
   }
 * multi method decode(Str $_, |c) {
-*     $.decode( .encode('latin-1'), |c);
+*     $.decode: .encode('latin-1'), |c;
   }

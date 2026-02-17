@@ -16,7 +16,7 @@
 *     my UInt \padding = -$buf % 4;
 ✱     my uint8 @buf = $buf.list;
 *     @buf.append: 0 xx padding;
-✱     my $buf32 := unpack( @buf, 32);
+✱     my $buf32 := @buf.&unpack(32);
   
       constant NullChar = 'z'.ord;
       constant PadChar = '!'.ord;
@@ -78,7 +78,7 @@ x             $i += 5;
 *         (@buf32[$n] *= 85) += .value - 33;
       }
   
-*     $buf = pack(@buf32, 32);
+*     $buf = @buf32.&pack(32);
 *     $buf .= subbuf(0, * - $padding - 1)
           if $padding;
   
