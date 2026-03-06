@@ -29,7 +29,9 @@ Classes/roles in this module include:
 
 ## Example Usage
 
-To create a one page PDF that displays 'Hello, World!'.
+Higher level modules such as [PDF::Lite](https://pdf-raku.github.io/PDF-Lite-raku) or [PDF::API6](https://pdf-raku.github.io/PDF-API6) are recommended for PDF general manipulation.
+
+But is it possible to use this module directly. For example, to create a one page PDF that displays 'Hello, World!'.
 
 ```
 #!/usr/bin/env raku
