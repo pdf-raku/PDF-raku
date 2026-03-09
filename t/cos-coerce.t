@@ -1,5 +1,5 @@
 use Test;
-plan 72;
+plan 11;
 
 use PDF::Grammar::Test :&is-json-equiv;
 use PDF::COS::Array;
@@ -15,115 +15,137 @@ use PDF::COS::Type::Info;
 use PDF::COS::Dict;
 use PDF::COS::Stream;
 
-my PDF::COS::ByteString() $string = "Test\n";
-is $string, "Test\n";
-does-ok $string, PDF::COS::ByteString;
-is-deeply $string.content, (:literal("Test\n"));
+subtest 'byte strings', {
+    my PDF::COS::ByteString() $string = "Test\n";
+    is $string, "Test\n";
+    does-ok $string, PDF::COS::ByteString;
+    is-deeply $string.content, (:literal("Test\n"));
 
-lives-ok {$string = "abc"}, 'byte-string coercement latin chars';
-quietly dies-ok {$string = "\x[abc]"}, 'byte-string coercement non-latin chars';
-
-my PDF::COS::Name() $name = 'Fred';
-is $name, 'Fred';
-does-ok $name, PDF::COS::Name;
-is-deeply $name.content, (:name<Fred>);
-is-deeply $name.COERCE($name), $name;
-lives-ok {$name = "abc\x[abc]"}, 'name coercement non-latin chars';
-is-deeply $name.content, (:name("abc\x[abc]"));
-
-my $text-ascii = 'Hello';
-my $text-utf8  = "ï»¿Hello";
-my $text-utf16 = "þÿ\0H\0e\0l\0l\0o";
-for $text-ascii, $text-utf8, $text-utf16 -> $text-in {
-    my PDF::COS::TextString() $text = $text-in;
-    is $text, 'Hello';
-    does-ok $text, PDF::COS::TextString;
-    is-deeply $text.COERCE($text), $text;
-    # UTF-8 (PDF 2.0) is accepted as input, but downgraded to UTF-16 on output
-    my $literal = $text-in eq $text-utf8 ?? $text-utf16 !! $text-in;
-    is-deeply $text.content, (:$literal);
+    lives-ok {$string = "abc"}, 'byte-string coercement latin chars';
+    quietly dies-ok {$string = "\x[abc]"}, 'byte-string coercement non-latin chars';
 }
 
-my $date-string = "D:20151225000000Z00'00'";
-my $date-string-with-bom = "ï»¿D:20151225000000Z00'00'";
-for $date-string, $date-string-with-bom, DateTime.new( :year(2015), :month(12), :day(25) ) -> $date-in {
-    my PDF::COS::DateString() $date = $date-in;
-    is $date, $date-string;
-    does-ok $date, PDF::COS::DateString;
-    is-deeply $date.COERCE($date), $date;
-    is-deeply $date.content, (:literal($date-string));
+subtest 'names', {
+    my PDF::COS::Name() $name = 'Fred';
+    is $name, 'Fred';
+    does-ok $name, PDF::COS::Name;
+    is-deeply $name.content, (:name<Fred>);
+    is-deeply $name.COERCE($name), $name;
+    lives-ok {$name = "abc\x[abc]"}, 'name coercement non-latin chars';
+    is-deeply $name.content, (:name("abc\x[abc]"));
 }
 
-my PDF::COS::Int() $int = 42;
-is $int, 42;
-does-ok $int, PDF::COS::Int;
-is-deeply $int.content, 42;
-isa-ok PDF::COS.coerce(42, PDF::COS::Int), PDF::COS::Int;
-lives-ok {$int = 99};
-dies-ok {$int = "oops"};
+subtest 'text-strings', {
+    my $text-ascii = 'Hello';
+    my $text-utf8  = "ï»¿Hello";
+    my $text-utf16 = "þÿ\0H\0e\0l\0l\0o";
+    for $text-ascii, $text-utf16, $text-utf8 -> $text-in {
+        my PDF::COS::TextString() $text = $text-in;
+        is $text, 'Hello';
+        does-ok $text, PDF::COS::TextString;
+        is-deeply $text.COERCE($text), $text;
+        # UTF-8 (PDF 2.0) is accepted as input, but downgraded to UTF-16 on output
+        my $literal = $text-in eq $text-utf8 ?? $text-utf16 !! $text-in;
+        is-deeply $text.content, (:$literal);
+    }
+}
 
-my PDF::COS::Real() $real = 4.2;
-is $real, 4.2;
-does-ok $real, PDF::COS::Real;
-is-deeply $real.content, 4.2;
+subtest 'date-strings', {
+    my $date-string-ascii = "D:20151225000000Z00'00'";
+    my $date-string-utf16 = "þÿ" ~ $date-string-ascii.comb.map({0.chr ~ $_}).join;
+    my $date-string-utf8 = "ï»¿" ~ $date-string-ascii;
+    for $date-string-ascii,  $date-string-utf16, $date-string-utf8, DateTime.new( :year(2015), :month(12), :day(25) ) -> $date-in {
+        my PDF::COS::DateString() $date = $date-in;
+        is $date, $date-string-ascii;
+        does-ok $date, PDF::COS::DateString;
+        is-deeply $date.COERCE($date), $date;
+        # An encoded date is accepted as input, but converted to ASCII on output
+        is-deeply $date.content, (:literal($date-string-ascii));
+    }
+}
 
-my PDF::COS::Null() $null = Any;
-nok $null.defined;
-isa-ok $null, PDF::COS::Null;
-is-deeply $null.content, (:null(Any));
+subtest 'numerics', {
+    my PDF::COS::Int() $int = 42;
+    is $int, 42;
+    does-ok $int, PDF::COS::Int;
+    is-deeply $int.content, 42;
+    isa-ok PDF::COS.coerce(42, PDF::COS::Int), PDF::COS::Int;
+    lives-ok {$int = 99};
+    dies-ok {$int = "oops"};
 
-my PDF::COS::Bool() $bool = True;
-is-json-equiv $bool, True;
-does-ok $bool, PDF::COS::Bool;
-is-json-equiv $bool.content, (:bool);
+    my PDF::COS::Real() $real = 4.2;
+    is $real, 4.2;
+    does-ok $real, PDF::COS::Real;
+    is-deeply $real.content, 4.2;
+}
 
-$bool = False;
-is-json-equiv $bool.so, False;
-does-ok $bool, PDF::COS::Bool;
-is-json-equiv $bool.content, (:!bool);
+subtest 'null', {
+    my PDF::COS::Null() $null = Any;
+    nok $null.defined;
+    isa-ok $null, PDF::COS::Null;
+    is-deeply $null.content, (:null(Any));
+}
 
-my $bool2 = True;
-PDF::COS.coerce($bool2);
-ok $bool2;
-does-ok $bool2, PDF::COS::Bool;
+subtest 'bool', {
+    my PDF::COS::Bool() $bool = True;
+    is-json-equiv $bool, True;
+    does-ok $bool, PDF::COS::Bool;
+    is-json-equiv $bool.content, (:bool);
 
-my $array-in = [42];
-$array-in.push: $array-in;
-my PDF::COS::Array() $array = $array-in;
-isa-ok  $array, "PDF::COS::Array";
-is-deeply PDF::COS::Array.COERCE($array), $array;
-is-deeply $array[1][0], 42;
+    $bool = False;
+    is-json-equiv $bool.so, False;
+    does-ok $bool, PDF::COS::Bool;
+    is-json-equiv $bool.content, (:!bool);
 
-my PDF::COS::Type::Info() $info = %(:Title("You better work"));
-isa-ok $info, "PDF::COS::Dict";
-does-ok $info,  PDF::COS::Type::Info;
-is $info.Title, "You better work";
-does-ok $info.Title, PDF::COS::TextString;
+    my $bool2 = True;
+    PDF::COS.coerce($bool2);
+    ok $bool2;
+    does-ok $bool2, PDF::COS::Bool;
+}
 
-my $decoded = "BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET";
-my $Length = $decoded.chars;
+subtest 'arrays', {
+    my $array-in = [42];
+    $array-in.push: $array-in;
+    my PDF::COS::Array() $array = $array-in;
+    isa-ok  $array, "PDF::COS::Array";
+    is-deeply PDF::COS::Array.COERCE($array), $array;
+    is-deeply $array[1][0], 42;
+}
 
-my PDF::COS::Dict() $dict = { :$Length };
-is $dict<Length>, $Length;
-is-deeply $dict.COERCE($dict), $dict;
+subtest 'dict sub-types', {
+    my PDF::COS::Type::Info() $info = %(:Title("You better work"));
+    isa-ok $info, "PDF::COS::Dict";
+    does-ok $info,  PDF::COS::Type::Info;
+    is $info.Title, "You better work";
+    does-ok $info.Title, PDF::COS::TextString;
+}
 
-my %stream = %( :dict{ :$Length }, :$decoded );
+subtest 'streams', {
+    my $decoded = "BT /F1 24 Tf  15 25 Td (Hello, world!) Tj ET";
+    my $Length = $decoded.chars;
 
-my PDF::COS::Stream() $contents = %stream;
-is $contents.decoded, $decoded;
-is $contents.Length, $Length;
-is-deeply $contents.COERCE($contents), $contents;
-
-$contents = PDF::COS.coerce: :%stream;
-is $contents.decoded, $decoded;
-is $contents.Length, $Length;
-
-sub coerce-dict-test(PDF::COS::Dict() $dict) {
-    isa-ok($dict, PDF::COS::Dict);
+    my PDF::COS::Dict() $dict = { :$Length };
     is $dict<Length>, $Length;
-}
+    is-deeply $dict.COERCE($dict), $dict;
 
-coerce-dict-test( { :$Length});
+    my %stream = %( :dict{ :$Length }, :$decoded );
+
+    my PDF::COS::Stream() $contents = %stream;
+    is $contents.decoded, $decoded;
+    is $contents.Length, $Length;
+    is-deeply $contents.COERCE($contents), $contents;
+
+    $contents = PDF::COS.coerce: :%stream;
+    is $contents.decoded, $decoded;
+    is $contents.Length, $Length;
+
+    sub coerce-dict-test(PDF::COS::Dict() $dict) {
+        isa-ok($dict, PDF::COS::Dict);
+        is $dict<Length>, $Length;
+    }
+
+    coerce-dict-test( { :$Length});
+}
 
 quietly {
     isa-ok PDF::COS.coerce(-> {}), Block;
