@@ -79,19 +79,22 @@ x         %enc{$ch.ord} = .chr if $ch;
       %enc;
   }
   
-* our sub utf16-encode(Str $str --> Str) {
-*      BOM-UTF16-BE ~ $str.encode('utf16be').decode('latin-1');
+* our sub utf16-encode(Str $str --> Str) is export(:utf16-encode) {
+*     BOM-UTF16-BE ~ $str.encode('utf16be').decode('latin-1');
   }
   
-* our sub pdfdoc-encode(Str $str --> Str) {
+* our sub utf8-encode(Str $str --> Str) is export(:utf8-encode) {
+*     BOM-UTF8 ~ $str.encode('utf-8').decode('latin-1');
+  }
+  
+* our sub pdfdoc-encode(Str $str --> Str) is export(:pdfdoc-encode) {
 *     $str.ords.map({%pdfdoc-enc{$_} // return Nil}).join;
   }
   
 * method content {
 ✱     my $doc-enc = self.&pdfdoc-encode()
           unless $!bom;
-*     $doc-enc //= self.&utf16-encode();
-*     $!type => $doc-enc;
+*     $!type => $doc-enc // self.&utf16-encode();
   }
 * multi method COERCE(::?CLASS:D $_) { $_ }
 * multi method COERCE(Str:D $_) {
@@ -109,5 +112,3 @@ x         %enc{$ch.ord} = .chr if $ch;
 *         self.new: value => $_;
       }
   }
-  
-  

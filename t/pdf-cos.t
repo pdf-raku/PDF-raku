@@ -21,8 +21,17 @@ class COS::JAR
     use PDF::COS::Tie::Hash;
     use PDF::COS::Tie::Array;
     use PDF::COS::Name;
-    use PDF::COS::TextString;
+    use PDF::COS::TextString :&pdfdoc-encode, :&utf8-encode;
     use PDF::COS::Stream;
+
+    class JarTextString is PDF::COS::TextString {
+        # prefer utf-8 (PDF 2.0), over utf-16 (PDF 1.x)
+        method content {
+            my $doc-enc = self.&pdfdoc-encode()
+                unless self.bom;
+            self.type => $doc-enc // self.&utf8-encode();
+        }
+    }
 
     role Class does PDF::COS::Tie::Hash {
         has PDF::COS::Name $.Name is entry;
@@ -30,8 +39,8 @@ class COS::JAR
         has PDF::COS::Stream $.Source is entry;
         has PDF::COS::Stream $.Object is entry;
         # Unicode strings
-        has PDF::COS::TextString $.Author is entry;
-        has PDF::COS::TextString $.Description is entry;
+        has JarTextString $.Author is entry;
+        has JarTextString $.Description is entry;
     }
 
     role Manifest does PDF::COS::Tie::Hash {
@@ -65,7 +74,7 @@ KTHXBYE
 
 my PDF::COS::Stream() $Source = { :$decoded, :dict{ :Filter<FlateDecode> } };
 
-my $Description = "Moon phases: \x1f311\x1f313\x1f315\x1f317";
+my $Description = "Moon phases: 🌑🌓🌕🌗";
 
 $jar.Root.Classes.push: { :Name( :name<MAIN> ), :$Source, :Author("Heydər Əliyev"), :$Description};
 $jar.id = $id++;
@@ -80,7 +89,15 @@ is $jar.type, 'JAR', 'read type';
 is-deeply $jar.Root.reader, $jar.reader, 'root reader';
 is $jar.Root.Language, 'LOLCODE', 'read accessor';
 is $jar.Root.Classes[0].Author, "Heydər Əliyev", 'text string latinish';
-is $jar.Root.Classes[0].Description, $Description, 'text string with utf-16 surrogates';
+is $jar.Root.Classes[0].Description, $Description, 'text string with utf-8';
+
+subtest 're-read as raw PDF', {
+    my PDF $pdf;
+    lives-ok { $pdf .= open: "t/lolcode.cjar" }, "open";
+    my PDF::COS::TextString() $author = $pdf<Root><Classes>[0].<Author>;
+    is $author, "Heydər Əliyev", "text-string";
+    is-deeply $pdf<Root><Classes>[0].<Source>.decoded.Str.lines, $decoded.lines, "stream";
+}
 
 done-testing;
 

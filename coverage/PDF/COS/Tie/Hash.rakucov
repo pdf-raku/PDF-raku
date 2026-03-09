@@ -17,7 +17,7 @@
 *              $seen //= my %{Hash};
 *              die "cyclical inheritance hierarchy"
 x                  if $seen{$object}++;
-*              inherit($_, $key, :$seen);
+*              .&inherit($key, :$seen);
              }
   }
   
@@ -29,12 +29,12 @@ x                  if $seen{$object}++;
 *         $got ||= do {
 *             $val := (
                   $att.cos.is-inherited
-                      ?? inherit(self, $key)
+                      ?? self.&inherit($key)
                       !! self.AT-KEY($key, :check)
               ) // $att.type;
               1;
           }
-✱         $val;
+          $val;
       }
   
 *     sub STORE($, \v) {

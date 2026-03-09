@@ -1,14 +1,13 @@
 use v6;
 use Test;
-plan 80;
+plan 5;
 
 use PDF::COS::Dict;
 use PDF::COS::Name;
 use PDF::COS::TextString;
 use PDF::Grammar::Test :is-json-equiv;
 
-{
-    # basic tests
+subtest 'basic tests', {
     class TestDict
     is PDF::COS::Dict {
         use PDF::COS::Tie;
@@ -90,8 +89,7 @@ use PDF::Grammar::Test :is-json-equiv;
     dies-ok { $dict.X = 'Y';}, 'name subset invalid';
 }
 
-{
-    # container tests
+subtest 'container tests', {
     class TestDict2
     is PDF::COS::Dict {
         use PDF::COS::Tie;
@@ -133,8 +131,7 @@ use PDF::Grammar::Test :is-json-equiv;
     does-ok $dict.Neg, Associative;
 }
 
-{
-    # coercement tests
+subtest 'coercement tests', {
     my role MyRole {};
     class TestDict3
         is PDF::COS::Dict {
@@ -149,8 +146,7 @@ use PDF::Grammar::Test :is-json-equiv;
     does-ok $dict.Coerced, MyRole, 'coercement';
 }
 
-{
-    # inheritance tests
+subtest 'inheritance tests', {
     class Node
         is PDF::COS::Dict {
         use PDF::COS::Tie;
@@ -184,8 +180,7 @@ use PDF::Grammar::Test :is-json-equiv;
 }
 
 
-{
-    # role mixin tests
+subtest 'role mixin tests', {
     use PDF::COS::Dict;
     use PDF::COS::Tie;
     use PDF::COS::Tie::Array;

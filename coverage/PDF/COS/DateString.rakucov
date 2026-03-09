@@ -23,8 +23,8 @@
   
 * multi method COERCE(::?CLASS:D $_) { $_ }
   
-* multi method COERCE(Str:D $obj where DateRegex, |c) {
-*     self.new($obj, |c);
+* multi method COERCE(Str:D $ds, |c) {
+*     self.new($ds, |c);
   }
   
 * multi method COERCE(DateTime:D $dt, |c) {
@@ -32,8 +32,7 @@
 *     self.new: |%args, :&formatter;
   }
   
-* multi method new(Str:D $date! where DateRegex) {
-✱     my PDF::COS::TextString:D() $pdf-date = $date;
+* multi method new(Str:D $ where PDF::COS::TextString.COERCE($_) ~~ DateRegex)  {
 *     my UInt \year  = +$<year>;
 *     my UInt \month = +( @<dd>[0] // 1 );
 *     my UInt \day   = +( @<dd>[1] // 1 );

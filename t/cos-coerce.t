@@ -139,12 +139,11 @@ subtest 'streams', {
     is $contents.decoded, $decoded;
     is $contents.Length, $Length;
 
-    sub coerce-dict-test(PDF::COS::Dict() $dict) {
+    given %( :$Length ) -> PDF::COS::Dict() $dict {
         isa-ok($dict, PDF::COS::Dict);
         is $dict<Length>, $Length;
     }
 
-    coerce-dict-test( { :$Length});
 }
 
 quietly {

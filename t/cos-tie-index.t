@@ -1,11 +1,10 @@
 use v6;
 use Test;
-plan 24;
+plan 2;
 
 use PDF::COS::Array;
 
-{
-    # basic class tests
+subtest 'basic class tests', {
     my role MyRole {};
     my class TestArray
     is PDF::COS::Array {
@@ -42,8 +41,7 @@ use PDF::COS::Array;
     dies-ok {$array.I3},  'required field';
 }
 
-{
-    # role coercement tests
+subtest 'role coercement tests', {
     use PDF::COS::Tie::Array;
     use PDF::COS::Name;
     my role TestArray
