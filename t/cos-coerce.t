@@ -1,5 +1,5 @@
 use Test;
-plan 64;
+plan 72;
 
 use PDF::Grammar::Test :&is-json-equiv;
 use PDF::COS::Array;
@@ -31,11 +31,18 @@ is-deeply $name.COERCE($name), $name;
 lives-ok {$name = "abc\x[abc]"}, 'name coercement non-latin chars';
 is-deeply $name.content, (:name("abc\x[abc]"));
 
-my PDF::COS::TextString() $text = 'Hello';
-is $text, 'Hello';
-does-ok $text, PDF::COS::TextString;
-is-deeply $text.COERCE($text), $text;
-is-deeply $text.content, (:literal<Hello>);
+my $text-ascii = 'Hello';
+my $text-utf8  = "ï»¿Hello";
+my $text-utf16 = "þÿ\0H\0e\0l\0l\0o";
+for $text-ascii, $text-utf8, $text-utf16 -> $text-in {
+    my PDF::COS::TextString() $text = $text-in;
+    is $text, 'Hello';
+    does-ok $text, PDF::COS::TextString;
+    is-deeply $text.COERCE($text), $text;
+    # UTF-8 (PDF 2.0) is accepted as input, but downgraded to UTF-16 on output
+    my $literal = $text-in eq $text-utf8 ?? $text-utf16 !! $text-in;
+    is-deeply $text.content, (:$literal);
+}
 
 my $date-string = "D:20151225000000Z00'00'";
 my $date-string-with-bom = "ï»¿D:20151225000000Z00'00'";
