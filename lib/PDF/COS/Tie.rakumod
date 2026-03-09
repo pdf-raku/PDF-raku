@@ -29,7 +29,6 @@ my class COSAttr {...}
 my role COSAttrHOW {
     #| override standard Attribute method for generating accessors
     has COSAttr $.cos is rw handles<tie raku>;
-    method tied is rw is DEPRECATED("Please use .cos()") { $.cos }
 
     method compose(Mu $package) {
         my $key = self.cos.accessor-name;

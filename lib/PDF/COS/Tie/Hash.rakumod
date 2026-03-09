@@ -17,7 +17,7 @@ sub inherit($object, Str $key, :$seen is copy) {
              $seen //= my %{Hash};
              die "cyclical inheritance hierarchy"
                  if $seen{$object}++;
-             inherit($_, $key, :$seen);
+             .&inherit($key, :$seen);
            }
 }
 
@@ -29,7 +29,7 @@ method rw-accessor(Attribute $att, Str :$key!) is rw {
         $got ||= do {
             $val := (
                 $att.cos.is-inherited
-                    ?? inherit(self, $key)
+                    ?? self.&inherit($key)
                     !! self.AT-KEY($key, :check)
             ) // $att.type;
             1;

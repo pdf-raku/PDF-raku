@@ -27,14 +27,13 @@ multi method coerce-to( PDF::COS $obj, $ where $obj) {
     $obj;
 }
 
-multi method coerce-to( PDF::COS $obj is rw, PDF::COS $type, |c) {
-    if $obj ~~ PDF::COS::ByteString && $type ~~ PDF::COS::TextString | PDF::COS::DateString {
-        $obj = $type.COERCE: $obj, |c ;
-    }
-    elsif $warn {
-        warn X::PDF::Coerce.new: :$obj, :$type;
-        $obj;
-    }
+multi method coerce-to( PDF::COS::ByteString $obj is rw, PDF::COS $type where PDF::COS::TextString | PDF::COS::DateString, |c) {
+    $obj = $type.COERCE: $obj, |c ;
+}
+
+multi method coerce-to( PDF::COS $obj, PDF::COS $type) {
+    warn X::PDF::Coerce.new: :$obj, :$type if $warn;
+    $obj;
 }
 
 multi method coerce-to($obj is rw, PDF::COS $class, |c) {

@@ -1,5 +1,5 @@
 use Test;
-plan 60;
+plan 64;
 
 use PDF::Grammar::Test :&is-json-equiv;
 use PDF::COS::Array;
@@ -38,7 +38,8 @@ is-deeply $text.COERCE($text), $text;
 is-deeply $text.content, (:literal<Hello>);
 
 my $date-string = "D:20151225000000Z00'00'";
-for $date-string, DateTime.new( :year(2015), :month(12), :day(25) ) -> $date-in {
+my $date-string-with-bom = "ï»¿D:20151225000000Z00'00'";
+for $date-string, $date-string-with-bom, DateTime.new( :year(2015), :month(12), :day(25) ) -> $date-in {
     my PDF::COS::DateString() $date = $date-in;
     is $date, $date-string;
     does-ok $date, PDF::COS::DateString;
