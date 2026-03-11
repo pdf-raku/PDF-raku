@@ -24,7 +24,7 @@ class COS::JAR
     use PDF::COS::TextString :&pdfdoc-encode, :&utf8-encode;
     use PDF::COS::Stream;
 
-    class JarTextString is PDF::COS::TextString {
+    class Text is PDF::COS::TextString {
         # prefer utf-8 (PDF 2.0), over utf-16 (PDF 1.x)
         method content {
             my $doc-enc = self.&pdfdoc-encode()
@@ -39,8 +39,8 @@ class COS::JAR
         has PDF::COS::Stream $.Source is entry;
         has PDF::COS::Stream $.Object is entry;
         # Unicode strings
-        has JarTextString $.Author is entry;
-        has JarTextString $.Description is entry;
+        has Text $.Author is entry;
+        has Text $.Description is entry;
     }
 
     role Manifest does PDF::COS::Tie::Hash {
@@ -91,12 +91,14 @@ is $jar.Root.Language, 'LOLCODE', 'read accessor';
 is $jar.Root.Classes[0].Author, "Heydər Əliyev", 'text string latinish';
 is $jar.Root.Classes[0].Description, $Description, 'text string with utf-8';
 
-subtest 're-read as raw PDF', {
-    my PDF $pdf;
-    lives-ok { $pdf .= open: "t/lolcode.cjar" }, "open";
-    my PDF::COS::TextString() $author = $pdf<Root><Classes>[0].<Author>;
-    is $author, "Heydər Əliyev", "text-string";
-    is-deeply $pdf<Root><Classes>[0].<Source>.decoded.Str.lines, $decoded.lines, "stream";
+subtest "re-open files via PDF", {
+    for  "t/lolcode.cjar", "tmp/lolcode.cjar.json" -> $file {
+        my PDF $pdf;
+        lives-ok { $pdf .= open: $file }, "open $file";
+        my PDF::COS::TextString() $author = $pdf<Root><Classes>[0].<Author>;
+        is $author, "Heydər Əliyev", "text-string";
+        is-deeply $pdf<Root><Classes>[0].<Source>.decoded.Str.lines, $decoded.lines, "stream";
+    }
 }
 
 done-testing;

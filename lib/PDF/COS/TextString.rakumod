@@ -72,7 +72,7 @@ our constant @pdfdoc-dec = [
 
 constant %pdfdoc-enc = do {
     my Str %enc{UInt};
-    for 0 .. 255 {
+    for 1 .. 255 {
         my $ch := @pdfdoc-dec[$_];
         %enc{$ch.ord} = .chr if $ch;
     }
@@ -96,19 +96,25 @@ method content {
         unless $!bom;
     $!type => $doc-enc // self.&utf16-encode();
 }
+
 multi method COERCE(::?CLASS:D $_) { $_ }
 multi method COERCE(Str:D $_) {
-    when .starts-with(BOM-UTF16-BE) {
-        self.new: :bom, value => .substr(2).encode('latin-1').decode('utf16be');
+    my Bool $bom = False;
+    my $value = do {
+        when .starts-with(BOM-UTF16-BE) {
+            $bom = True;
+            .substr(2).encode('latin-1').decode('utf16be');
+        }
+        when .starts-with(BOM-UTF8) {  # PDF 2.0
+            $bom = True;
+            .substr(3).encode('latin-1').decode('utf8');
+        }
+        when PDF::COS::ByteString {
+            .ords.map({@pdfdoc-dec[$_] // ''}).join;
+        }
+        default {
+            $_;
+        }
     }
-    when .starts-with(BOM-UTF8) {
-        # PDF 2.0
-        self.new: :bom, value => .substr(3).encode('latin-1').decode('utf8');
-    }
-    when PDF::COS::ByteString {
-        self.new: value => .ords.map({@pdfdoc-dec[$_] // ''}).join;
-    }
-    default {
-        self.new: value => $_;
-    }
+    self.new: :$bom, :$value;
 }
