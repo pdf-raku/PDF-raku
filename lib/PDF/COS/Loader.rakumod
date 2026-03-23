@@ -53,7 +53,7 @@ method find-delegate( Str $type!, $subtype?, :$base-class! ) {
         }
     }
 
-    note "No handler class {self.class-paths[0]}::{$subclass}"
+    warn "No handler class {self.class-paths[0]}::{$subclass}"
         if !$resolved && $.warn;
 
     self.install-delegate( $subclass, $handler-class );
