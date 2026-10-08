@@ -2,8 +2,8 @@
   
 * unit class PDF::IO::Crypt::PDF;
   
-  use PDF::IO::Crypt::AST;
-  also does PDF::IO::Crypt::AST;
+✱ use PDF::IO::Crypt::AST;
+x also does PDF::IO::Crypt::AST;
   
   use PDF::IO::Crypt;
   use PDF::IO::Crypt::RC4;
@@ -94,7 +94,7 @@ x     with $!str-f { .crypt($v, |c) } else { $v }
 * method authenticate( $pass ) {
 *     .authenticate($pass) with $!str-f;
 *     unless $!str-f === $!stm-f {
-*         .authenticate($pass) with $!stm-f
+x         .authenticate($pass) with $!stm-f
       }
   }
   

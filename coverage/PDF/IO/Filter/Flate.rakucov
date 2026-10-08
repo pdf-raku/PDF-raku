@@ -2,7 +2,7 @@
   
 * unit class PDF::IO::Filter::Flate;
   
-  use PDF::COS;
+✱ use PDF::COS;
   use PDF::IO::Filter::Predictors;
   use Compress::Zlib;
   use PDF::IO::Blob;

@@ -44,12 +44,11 @@ multi method new(Str:D $ where PDF::COS::TextString.COERCE($_) ~~ DateRegex)  {
         !! '';
 
     my Str \iso-date = sprintf "%04d-%02d-%02dT%02d:%02d:%02d%s", year, month, day, hour, min, sec, tz;
-
     nextwith( iso-date, :&formatter );
 }
 
 method content {
-    my Str $literal = formatter( self );
+    my Str $literal = self.&formatter;
     :$literal;
 }
 

@@ -13,7 +13,7 @@ x method EncryptMetadata {...}
 * multi method crypt-ast('body', Array $body, Str :$mode = 'decrypt') {
 *     for $body.values {
 *         $.crypt-ast(.key, .value, :$mode)
-              for .<objects>.values;
+*             for .<objects>.values;
       }
   }
   

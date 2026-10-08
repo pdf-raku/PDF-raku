@@ -2,8 +2,8 @@
   
 * unit role PDF::COS::Name;
   
-  use PDF::COS;
-  also does PDF::COS;
+✱ use PDF::COS;
+x also does PDF::COS;
   
 * method content { :name(self.fmt) }
   proto method COERCE($){*}

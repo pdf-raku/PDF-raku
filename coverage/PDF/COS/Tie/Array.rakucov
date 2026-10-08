@@ -2,8 +2,8 @@
   
 * unit role PDF::COS::Tie::Array;
   
-  use PDF::COS::Tie :COSArrayAttrHOW;
-  also does PDF::COS::Tie;
+✱ use PDF::COS::Tie :COSArrayAttrHOW;
+x also does PDF::COS::Tie;
   
   has Attribute @.index is rw;    #| for typed indices
   has Attribute %.entries;
@@ -18,7 +18,7 @@
 *             $val := self.AT-POS($pos, :check) // $att.type;
               1;
           }
-          $val;
+✱         $val;
       }
   
 *     sub STORE($, \v) {
@@ -30,7 +30,7 @@ x         $got = 1;
   }
   
 * method tie-init {
-x    my \class = self.WHAT;
+*    my \class = self.WHAT;
   
 *    for class.^attributes.grep(COSArrayAttrHOW) -> \att {
 *        @!index[att.index] //= (%!entries{att.cos.accessor-name} = att);
@@ -40,7 +40,7 @@ x    my \class = self.WHAT;
 * method check {
 *     self.AT-POS($_, :check)
           for ^max(@!index, self);
-      self
+✱     self
   }
   
   #| for array lookups, typically $foo[42]
@@ -52,8 +52,8 @@ x    my \class = self.WHAT;
 *     with $.index[$pos] // $.of-att {
 *         .tie($val, :$check);
       }
-✱     else {
-          $val;
+      else {
+✱         $val;
       }
   }
   

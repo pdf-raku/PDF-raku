@@ -1,7 +1,7 @@
 * unit class PDF::COS::Type::ObjStm;
   
-  use PDF::COS::Stream;
-  also is PDF::COS::Stream;
+✱ use PDF::COS::Stream;
+x also is PDF::COS::Stream;
   
   use PDF::COS;
   use PDF::Grammar::PDF;

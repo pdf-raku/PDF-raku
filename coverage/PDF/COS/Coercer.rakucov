@@ -1,6 +1,6 @@
 * unit class PDF::COS::Coercer;
   
-  use PDF::COS;
+✱ use PDF::COS;
   use PDF::COS::Tie::Array;
   use PDF::COS::Tie::Hash;
   use PDF::COS::ByteString;
@@ -33,7 +33,7 @@ x     PDF::COS::Null.new;
   
 * multi method coerce-to( PDF::COS $obj, PDF::COS $type) {
 *     warn X::PDF::Coerce.new: :$obj, :$type if $warn;
-      $obj;
+✱     $obj;
   }
   
 * multi method coerce-to($obj is rw, PDF::COS $class, |c) {
@@ -53,6 +53,6 @@ x     PDF::COS::Null.new;
   
 * multi method coerce-to( Any:D $obj, $type) {
 *     warn X::PDF::Coerce.new( :$obj, :$type ) if $warn;
-      $obj;
+✱     $obj;
   }
   

@@ -1,7 +1,7 @@
 * unit class PDF::IO::Blob does Blob[uint8] is repr('VMArray');
   
-  use PDF::IO;
-  also does PDF::IO;
+✱ use PDF::IO;
+x also does PDF::IO;
   
 * method encoding{ 'latin-1' }
 * method codes { self.bytes }

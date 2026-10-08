@@ -2,7 +2,7 @@
   
 * unit role PDF::IO;
   
-  use PDF::COS;
+✱ use PDF::COS;
   # a poor man's polymorphism: allow pdf input from IO handles or strings
   # could be obseleted by cat-strings, when available
   

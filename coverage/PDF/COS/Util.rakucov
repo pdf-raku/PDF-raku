@@ -2,7 +2,7 @@
   
 * module PDF::COS::Util {
   
-      use PDF::COS;
+✱     use PDF::COS;
   
       proto sub to-ast(|) is export(:to-ast) {*};
 *     multi sub to-ast(Pair $p!) {$p}
@@ -62,10 +62,10 @@
 ✱ 	my Str $tz-sign = 'Z';
   
 * 	if $offset-min < 0 {
-x 	    $tz-sign = '-';
-* 	    $offset-min = - $offset-min;
+* 	    $tz-sign = '-';
+* 	    $offset-min .= abs;
   	}
-x 	elsif $offset-min > 0 {
+  	elsif $offset-min > 0 {
 * 	    $tz-sign = '+';
   	}
   
@@ -99,7 +99,7 @@ x     multi sub ast-coerce(Enumeration $_) is default { ast-coerce(.value) }
   
       #| for JSON deserialization, e.g. { :int(42) } => :int(42)
       use PDF::Grammar:ver(v0.1.0+) :AST-Types;
-      BEGIN my %ast-types = AST-Types.enums;
+✱     BEGIN my %ast-types = AST-Types.enums;
 *     multi sub from-ast( Hash $h! where { .keys == 1 && (%ast-types{.keys[0]}:exists)} ) {
 *         from-ast( |$h )
       }

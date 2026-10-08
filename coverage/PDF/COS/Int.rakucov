@@ -2,8 +2,8 @@
   
 * unit role PDF::COS::Int;
   
-  use PDF::COS;
-  also does PDF::COS;
+✱ use PDF::COS;
+x also does PDF::COS;
   
   use PDF::COS::Util :&flag-is-set;
 x method flag-is-set(uint $flag-num) is DEPRECATED returns Bool {

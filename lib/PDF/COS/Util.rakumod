@@ -63,7 +63,7 @@ module PDF::COS::Util {
 
 	if $offset-min < 0 {
 	    $tz-sign = '-';
-	    $offset-min = - $offset-min;
+	    $offset-min .= abs;
 	}
 	elsif $offset-min > 0 {
 	    $tz-sign = '+';

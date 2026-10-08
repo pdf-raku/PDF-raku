@@ -2,7 +2,7 @@
   
 * unit class PDF::IO::IndObj;
   
-  use PDF::COS :IndRef, :IndObj;
+✱ use PDF::COS :IndRef, :IndObj;
   has $.object handles <content obj-num gen-num>;
   
   #| construct by wrapping a pre-existing PDF::COS

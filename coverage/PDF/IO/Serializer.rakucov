@@ -2,7 +2,7 @@
   
 * unit class PDF::IO::Serializer;
   
-  use PDF::COS;
+✱ use PDF::COS;
   use PDF::COS::Stream;
   use PDF::COS::Util :&to-ast;
   use PDF::COS::Type::ObjStm;
@@ -12,7 +12,7 @@
   has UInt %!ref-count{Any};
   has Bool $.renumber = True;
   has $.reader;
-✱ has Str $.type = $!reader.?type // 'PDF';
+  has Str $.type = $!reader.?type // 'PDF';
   
   #| Reference count hashes. Could be derivate class of PDF::COS::Dict or PDF::COS::Stream.
   
@@ -32,7 +32,7 @@
   #| we don't reference count anything else at the moment.
 * multi method ref-count($) { }
   
-✱ my subset DictIndObj of Pair where {
+  my subset DictIndObj of Pair where {
 *     .key eq 'ind-obj'
       && .value[2] ~~ Pair
       && .value[2].key eq 'dict'
@@ -83,8 +83,8 @@
 * multi method body(
       Bool :$updates! where .so,
       :$*compress,
-*     :$!size = $!reader.size;
-*     :$prev = $!reader.prev;
+      :$!size = $!reader.size;
+      :$prev = $!reader.prev;
   ) {
       # disable auto-deref to keep all analysis and freeze stages lazy. if it hasn't been
       # loaded, it hasn't been updated
@@ -177,8 +177,8 @@
           # already an indirect object
 *         :$ind-ref
       }
-✱     else {
-          my $stream;
+      else {
+✱         my $stream;
 *         if $object.isa(PDF::COS::Stream) {
 *             with $*compress {
 *                 $_ ?? $object.compress !! $object.uncompress
@@ -191,12 +191,12 @@
 ✱         my $node-value := do with $stream {
 ✱             my $encoded = .Str;
 *             $node = :stream{
-*                 :$dict,
+                  :$dict,
                   :$encoded,
               };
 *             $node.value<dict>;
           }
-✱         else {
+          else {
 *             $node = :$dict;
 *             $node.value;
           }
@@ -219,8 +219,8 @@
           # already an indirect object
 *         :$ind-ref
       }
-✱     else {
-          my Array $array;
+      else {
+✱         my Array $array;
 ✱         my $node = :$array;
   
           # register prior to traversing the object; in case there are cyclical references
@@ -248,7 +248,7 @@
               :$crypt,
       ) {
 *     $!type //= ($!reader.?type
-x                 // do given $trailer<Root> {
+                  // do given $trailer<Root> {
 x                        .defined && .<FDF> ?? 'FDF' !! 'PDF'
                      });
 ✱     my Array $body = self.body($trailer, :$compress );

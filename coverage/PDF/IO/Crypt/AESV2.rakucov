@@ -2,11 +2,11 @@
   
 * unit class PDF::IO::Crypt::AESV2;
   
-  use PDF::IO::Crypt;
-  also is PDF::IO::Crypt;
+✱ use PDF::IO::Crypt;
+x also is PDF::IO::Crypt;
   
   use PDF::IO::Crypt::AST;
-  also does PDF::IO::Crypt::AST;
+x also does PDF::IO::Crypt::AST;
   
   use OpenSSL::CryptTools;
   use OpenSSL::Digest;
@@ -45,7 +45,7 @@
   }
   
 * multi method crypt( $bytes, Str :$mode! where 'encrypt'|'decrypt',
-x                     UInt :$obj-num!, UInt :$gen-num! ) {
+                      UInt :$obj-num!, UInt :$gen-num! ) {
   
 ✱     my $obj-key = self!object-key( $obj-num, $gen-num );
 *     self."$mode"( $obj-key, $bytes);

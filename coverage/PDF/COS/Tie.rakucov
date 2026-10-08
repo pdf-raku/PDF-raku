@@ -1,6 +1,6 @@
 * unit role PDF::COS::Tie;
   
-  use PDF::COS :IndRef;
+✱ use PDF::COS :IndRef;
   has Attribute $.of-att is rw;      #| default attribute
   my constant $Lock = Lock.new;
   
@@ -19,12 +19,12 @@
 * method link {
 *     given $.obj-num {
 *         .defined && $_ > 0
-x             ?? :ind-ref[ $_, $.gen-num, $.reader ]
+              ?? :ind-ref[ $_, $.gen-num, $.reader ]
               !! self;
       }
   }
   
-x my class COSAttr {...}
+* my class COSAttr {...}
   
 * my role COSAttrHOW {
       #| override standard Attribute method for generating accessors
@@ -42,7 +42,7 @@ x my class COSAttr {...}
   }
   
 * my role COSDictAttrHOW does COSAttrHOW is export(:COSDictAttrHOW) {
-      has Bool $.entry = True;
+✱     has Bool $.entry = True;
   }
   
 * my role COSArrayAttrHOW does COSAttrHOW is export(:COSArrayAttrHOW) {
@@ -50,7 +50,7 @@ x my class COSAttr {...}
   }
   
 * my class COSAttr {
-      has $.type;
+✱     has $.type;
       has Bool $.is-required = False;
       has Bool $.is-indirect = False;
       has Bool $.is-inherited = False;
@@ -76,7 +76,7 @@ x my class COSAttr {...}
                   }
               }
           }
-x         $!of-att;
+*         $!of-att;
       }
   
 *     multi method tie(IndRef $lval is rw) is rw { $lval } # undereferenced - don't know it's type yet
@@ -92,10 +92,10 @@ x         $!of-att;
 *         $Lock.protect: {
 *             $lval.obj-num //= -1
           };
-          $lval;
+✱         $lval;
       }
 *     multi method tie($lval is rw where $lval ~~ $!type) is rw {
-          $lval;
+✱         $lval;
       }
   
 *     method !tie-container($lval is raw, :$check) {
@@ -110,7 +110,7 @@ x         $!of-att;
 *             die "conflicting types for {$att.name} {$att.type.gist} {$!type.of.gist}"
                   unless $!type.of ~~ $att.type;
           }
-✱         else {
+          else {
 *             $att = self.of-att;
 *             my \of-type = $att.type;
 *             my \v = $lval.values;
@@ -136,7 +136,7 @@ x                             .reader //= reader if .defined;
                   }
               }
           }
-          $lval;
+✱         $lval;
       }
   
 *     multi method tie(List $lval where $!type ~~ Positional[Mu], :$check) {
@@ -158,14 +158,14 @@ x                             .reader //= reader if .defined;
                   }
               }
           }
-          $lval;
+✱         $lval;
       }
   
 *     multi method tie($lval is copy, :$check) is rw {
 *         $.tie($lval, :$check);
       }
   
-x     method raku {
+*     method raku {
 x         my :($sigil, $type) := do given $!type {
 x             when Positional[Mu]  { ($!type.of, '@') }
 x             when Associative[Mu] { ($!type.of, '%') }
@@ -196,7 +196,7 @@ x         [~] ($type.raku, ' ', $sigil, '.', $!accessor-name, $alias);
 x                 warn "ignoring entry attribute: {arg.key}";
               }
           }
-✱         else {
+          else {
 *             warn "ignoring entry trait attribute: {arg.raku}"
                   unless arg ~~ Bool;
           }
@@ -208,7 +208,7 @@ x                 warn "ignoring entry attribute: {arg.key}";
       }
 *     warn ':item-or-array should be used with arrays ("@" sigil)'
           if %opts<decont> && $att.type !~~ Positional[Mu];
-      %opts;
+✱     %opts;
   }
   
 * multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {
@@ -219,7 +219,7 @@ x                 warn "ignoring entry attribute: {arg.key}";
 * multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
 ✱     my @args = $index.list;
 *     die "index trait requires a UInt argument, e.g. 'is index(1)'"
-x         unless @args && @args[0] ~~ UInt;
+          unless @args && @args[0] ~~ UInt;
 *     $att does COSArrayAttrHOW;
 *     $att.index = @args.shift;
 *     $att.cos .= new: |cos-attr-opts(@args, $att);
@@ -243,7 +243,7 @@ x         unless @args && @args[0] ~~ UInt;
 * method induce($obj is raw) {
 *     $obj.mixin: self.^pun_source
           if self.^is_pun;
-      $obj;
+✱     $obj;
   }
   
   #| indirect reference
@@ -273,7 +273,7 @@ x         die "indirect reference without associated reader: $obj-num $gen-num R
   }
   
   #| simple value. no need to coerce
-x multi method deref($value) { $value }
+* multi method deref($value) { $value }
   
   =begin pod
   

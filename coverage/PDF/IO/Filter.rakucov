@@ -2,7 +2,7 @@
   
 * unit class PDF::IO::Filter;
   
-  use PDF::IO::Filter::ASCIIHex;
+✱ use PDF::IO::Filter::ASCIIHex;
   use PDF::IO::Filter::ASCII85;
   use PDF::IO::Filter::Flate;
   use PDF::IO::Filter::RunLength;
@@ -40,7 +40,7 @@ x             %dict<DecodeParms> = $_ with .[i]
 *         $data = self!decode-item( $data, |%dict )
       }
   
-      $data;
+✱     $data;
   }
   
 * method encode( $input, Hash :$dict ) {
@@ -75,7 +75,7 @@ x         default { die "bad filter: $_" }
 *         $data = self!encode-item( $data, |%dict )
       }
   
-      $data;
+✱     $data;
   }
   
 * method filter-class( Str $filter-name is copy ) {
@@ -116,5 +116,5 @@ x         default { die "bad filter: $_" }
 *     X::NYI.new(:feature("PDF stream filter not implemented: '$filter-name'")).throw
           unless $filter-class.can('decode');
   
-      $filter-class;
+✱     $filter-class;
   }

@@ -2,8 +2,8 @@
   
   #| Stream - base class for specific stream objects, e.g. Type::ObjStm, Type::XRef, ...
 * unit class PDF::COS::Stream ;
-  use PDF::COS::Dict;
-  also is PDF::COS::Dict;
+✱ use PDF::COS::Dict;
+x also is PDF::COS::Dict;
   
   use PDF::COS::Tie;
   use PDF::COS::Name;
@@ -41,11 +41,11 @@
 *         $!encoded //= self.encode( $_ )
               with $!decoded;
 *         self<Length> //= .codes with $!encoded;
-x         $!encoded;
+*         $!encoded;
       }
   
 *     sub STORE($, $stream) {
-x         $!decoded = Any;
+*         $!decoded = Any;
 *         self<Length> = .codes with $stream;
 *         $!encoded = $stream;
       }
@@ -57,10 +57,10 @@ x         $!decoded = Any;
 *     sub FETCH($) {
 *         $!decoded //= self.decode( $_ )
               with $!encoded;
-x         $!decoded;
+*         $!decoded;
       }
 *     sub STORE($, $stream) {
-x         $!encoded = Any;
+*         $!encoded = Any;
 *         self<Length>:delete;
 *         $!decoded = $stream;
       }
@@ -92,21 +92,21 @@ x         $!encoded = Any;
 *     with encoded {
 *         stream => %( $dict, :encoded(.Str) );
       }
-✱     else {
-x         $dict;   # no content - downgrade to dict
+      else {
+*         $dict;   # no content - downgrade to dict
       }
   }
   
 * method uncompress {
       my Bool $uncompressed;
 *     with self<Filter> {
-x         CATCH { when X::NYI {} }
+*         CATCH { when X::NYI {} }
 *         $.decoded();
 *         $uncompressed = True;
       }
   
 *     if $uncompressed {
-x         $!encoded = Nil;
+*         $!encoded = Nil;
 *         self<Filter>:delete;
 *         self<DecodeParms>:delete;
 *         self<Length> = $!decoded.codes;
@@ -135,7 +135,7 @@ x         $!encoded = Nil;
 ✱     my $class := PDF::COS.load-dict: .<dict>//{}, :base-class(self.WHAT);
 *     $class.new: |$_, |c;
   }
-x multi method COERCE(Associative $dict, |c) is DEPRECATED('COERCE({:$dict, :$encoded, :$decoded})') {
+* multi method COERCE(Associative $dict, |c) is DEPRECATED('COERCE({:$dict, :$encoded, :$decoded})') {
       my $class := PDF::COS.load-dict: $dict, :base-class(self.WHAT);
 x     $class.new: :$dict, |c;
   }

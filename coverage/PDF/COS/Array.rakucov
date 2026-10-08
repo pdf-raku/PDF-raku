@@ -2,20 +2,20 @@
   
 * unit class PDF::COS::Array;
   
-  also is Array;
+* also is Array;
   
   use PDF::COS;
   use PDF::COS::Tie::Array;
   
-  also does PDF::COS;
-  also does PDF::COS::Tie::Array;
+x also does PDF::COS;
+x also does PDF::COS::Tie::Array;
   
   use PDF::COS::Util :&from-ast, :&ast-coerce;
 ✱ my %seen{List} = (); #= to catch circular references
 ✱ my Lock $seen-lock .= new;
   
 * submethod TWEAK(:$array!, :$seen-lock) {
-x     %seen{$array} = self;
+*     %seen{$array} = self;
 *     .unlock with $seen-lock;
 *     self.tie-init;
       # this may trigger cascading PDF::COS::Tie coercians
@@ -30,7 +30,7 @@ x     %seen{$array} = self;
 *         $seen-lock.unlock;
           $obj;
       }
-✱     else {
+      else {
 *         LEAVE $seen-lock.protect: { %seen{$array}:delete }
 *         self.bless(:$array, :$seen-lock, |c);
       }

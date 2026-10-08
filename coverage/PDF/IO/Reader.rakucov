@@ -1,6 +1,6 @@
 * unit class PDF::IO::Reader;
   
-  use PDF::COS;
+✱ use PDF::COS;
   use PDF::Grammar:ver<0.2.1+>;
   use PDF::Grammar::COS;
   use PDF::Grammar::PDF;
@@ -21,12 +21,12 @@
   constant GenNumMax = 100_000;
   
   subset ObjNumInt of UInt;
-  subset GenNumInt of Int where 0 <= * < GenNumMax;
-  subset StreamAstNode of Associative:D where .<stream>:exists;
+✱ subset GenNumInt of Int where 0 <= * < GenNumMax;
+✱ subset StreamAstNode of Associative:D where .<stream>:exists;
   
   has PDF::IO  $.input is rw;      #= raw PDF image (latin-1 encoding)
   has Str      $.file-name;
-✱ has          %!ind-obj-idx is Hash::int; # keys are: $obj-num*GenNumMax + $gen-num
+  has          %!ind-obj-idx is Hash::int; # keys are: $obj-num*GenNumMax + $gen-num
   has Bool     $.auto-deref is rw = True;
   has Rat      $.version is rw;
   has Str      $.type is rw;       #= 'PDF', 'FDF', etc...
@@ -41,71 +41,71 @@
 x         STORE => -> $, $!compat {}
       ;
   }
-✱ has Lock $!lock .= new;
+  has Lock $!lock .= new;
   
   my enum IndexType <Free External Embedded>;
   
   # faster native method overrides
-* role NativeReader[$native-reader] {
+x role NativeReader[$native-reader] {
       #| load PDF 1.4- xref table followed by trailer
-*     method load-xref-table(Str $xref is copy, $dict is rw, :$offset) {
+x     method load-xref-table(Str $xref is copy, $dict is rw, :$offset) {
           # fast load of the xref segments
-✱         my $buf = $xref.encode("latin-1");
-✱         my array $entries = $native-reader.read-xref($buf)
+          my $buf = $xref.encode("latin-1");
+          my array $entries = $native-reader.read-xref($buf)
               // die X::PDF::BadXRef::Parse.new( :$offset, :$xref );
-✱         my $bytes = $native-reader.xref-bytes;
+          my $bytes = $native-reader.xref-bytes;
   
           # parse and load the trailer
-✱         my $trailer = $buf.subbuf($bytes).decode("latin-1");
-✱         my $parse = PDF::Grammar::COS.subparse( $trailer.trim, :rule<trailer>, actions => $.scan-actions );
-*         die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
+          my $trailer = $buf.subbuf($bytes).decode("latin-1");
+          my $parse = PDF::Grammar::COS.subparse( $trailer.trim, :rule<trailer>, actions => $.scan-actions );
+x         die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
               unless $parse;
-*         my \index = $parse.ast;
-*         $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
+x         my \index = $parse.ast;
+x         $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
   
-✱         my uint64 @seg[+$entries div 4;4] Z= @$entries;
+          my uint64 @seg[+$entries div 4;4] Z= @$entries;
   
-*         [@seg, ];
+x         [@seg, ];
       }
   }
   
   # further COS object native method overrides
-* role NativeCOS[$cos-node, $cos-ind-obj] {
-*     method parse-ind-obj(Str:D $input) {
-*         $cos-ind-obj.parse($input)
+x role NativeCOS[$cos-node, $cos-ind-obj] {
+x     method parse-ind-obj(Str:D $input) {
+x         $cos-ind-obj.parse($input)
       }
-*     method parse-object(Str:D $input) {
-*         $cos-node.parse($input)
+x     method parse-object(Str:D $input) {
+x         $cos-node.parse($input)
       }
-*     my class COSScanActions {
+x     my class COSScanActions {
           has Bool $.get-offsets is rw = False; #| return ind-obj byte offsets in AST
-*         method TOP($/) { make $<cos>.ast }
-*         method cos($/) {
-✱             my @body = @<body>».ast;
-*             make (:@body);
+x         method TOP($/) { make $<cos>.ast }
+x         method cos($/) {
+              my @body = @<body>».ast;
+x             make (:@body);
           }
-*         method body($/) {
-✱             my @objects = @<ind-obj>».ast;
-✱             my %body = :@objects;
-*             %body ,= .<trailer>.ast with $<index>;
-*             make %body;
+x         method body($/) {
+              my @objects = @<ind-obj>».ast;
+              my %body = :@objects;
+x             %body ,= .<trailer>.ast with $<index>;
+x             make %body;
           }
-*         method ind-obj($/) {
+x         method ind-obj($/) {
               my Str:D() $input = $/;
-✱             my $ind-obj = $cos-ind-obj.parse($input, :scan)
+              my $ind-obj = $cos-ind-obj.parse($input, :scan)
 x                 // die "Native indirect Object parse failed at byte offset:{$/.from}";
-✱             my $ast = $ind-obj.ast;
-*             $ast.value.push: $/.from
+              my $ast = $ind-obj.ast;
+x             $ast.value.push: $/.from
                   if self.get-offsets;
-*             make $ast;
+x             make $ast;
           }
-*         method trailer($/) {
-✱             my $dict = $cos-node.parse: $<dict>.Str
+x         method trailer($/) {
+              my $dict = $cos-node.parse: $<dict>.Str
 x                // die "Native trailer dictionary parse failed at byte offset:{$/.from}";
-*             make (:trailer($dict.ast))
+x             make (:trailer($dict.ast))
           }
       }
-*     method scan-actions { COSScanActions.new }
+x     method scan-actions { COSScanActions.new }
   }
   
 * submethod TWEAK(PDF::COS::Dict :$trailer) {
@@ -113,11 +113,11 @@ x                // die "Native trailer dictionary parse failed at byte offset:{
   
 *     try {
 *         require ::('PDF::Native::Reader');
-*         self does NativeReader[::('PDF::Native::Reader').new];
+x         self does NativeReader[::('PDF::Native::Reader').new];
       }
 *     try {
 *         require ::('PDF::Native::COS');
-*         self does NativeCOS[::('PDF::Native::COS::COSNode'), ::('PDF::Native::COS::COSIndObj'), ];
+x         self does NativeCOS[::('PDF::Native::COS::COSNode'), ::('PDF::Native::COS::COSIndObj'), ];
       }
   }
   
@@ -160,7 +160,7 @@ x         self!install-trailer(obj);
   
               # skip the encryption dictionary, if it's an indirect object
 *             unless $obj-num == enc-obj-num
-x                 && $gen-num == enc-gen-num {
+                  && $gen-num == enc-gen-num {
                   # decrypt all objects that have already been loaded
 *                 without $idx<encrypted> {
 *                     $_ = True;
@@ -180,8 +180,8 @@ x                 && $gen-num == enc-gen-num {
   #| [PDF 32000 Table 15] Entries in the file trailer dictionary
 * method !set-trailer (
       Hash $dict,
-*     Array :$keys = [ $dict.keys.grep: {
-x         $_ !~~ 'Prev'|'Size'                    # Recomputed fields
+      Array :$keys = [ $dict.keys.grep: {
+*         $_ !~~ 'Prev'|'Size'                    # Recomputed fields
              |'Type'|'DecodeParms'|'Filter'|'Index'|'W'|'Length'|'XRefStm' # Unwanted, From XRef Streams
       } ],
       ) {
@@ -193,7 +193,7 @@ x         $_ !~~ 'Prev'|'Size'                    # Recomputed fields
                with $dict{k};
       }
   
-      $trailer;
+✱     $trailer;
   }
   
   #| open the named PDF/FDF file
@@ -234,7 +234,7 @@ x         $_ !~~ 'Prev'|'Size'                    # Recomputed fields
           }
      }
   
-      ast;
+✱     ast;
   }
   
   # process a batch of indirect object updates
@@ -251,7 +251,7 @@ x         $_ !~~ 'Prev'|'Size'                    # Recomputed fields
   
 *         given $type {
 *             when IndexType::Free {
-*                 %!ind-obj-idx{$k}:delete;
+x                 %!ind-obj-idx{$k}:delete;
               }
 *             when IndexType::External {
 ✱                 my $ind-obj = $entry<ind-obj>;
@@ -319,20 +319,20 @@ x                 :details("Ignoring {$/.from} bytes before 'endstream' marker")
       };
   }
   
-x method parse-ind-obj(Str:D $input) {
-x     PDF::Grammar::COS.subparse( $input, :$.actions, :rule<ind-obj-nibble> );
-x     $/;
+* method parse-ind-obj(Str:D $input) {
+*     PDF::Grammar::COS.subparse( $input, :$.actions, :rule<ind-obj-nibble> );
+*     $/;
   }
   
-x method parse-object(Str:D $input) {
-x     PDF::Grammar::COS.subparse( trim($input), :$.actions, :rule<object> );
-x     $/;
+* method parse-object(Str:D $input) {
+*     PDF::Grammar::COS.subparse( trim($input), :$.actions, :rule<object> );
+*     $/;
   }
   
   #| type-1: fetch as a top level object from the pdf
 *  multi method fetch-ind-obj(
        :$type! where IndexType::External, :$offset!, :$end!,   # type-1
-x      :$obj-num, :$gen-num, :$encrypted = True) {
+       :$obj-num, :$gen-num, :$encrypted = True) {
   
 *      die X::PDF::BadXRef::Entry.new: :details("Invalid cross-reference offset $offset for $obj-num $gen-num R")
           unless $offset > 0;
@@ -365,7 +365,7 @@ x      :$obj-num, :$gen-num, :$encrypted = True) {
 * multi method fetch-ind-obj(
       :$type! where IndexType::Embedded,
       :$index!, :$ref-obj-num!,  # type-2
-x     :$obj-num, :$gen-num) {
+      :$obj-num, :$gen-num) {
   
 ✱     my subset ObjStm of Hash where { .<Type> ~~ 'ObjStm' }
   
@@ -392,14 +392,14 @@ x     :$obj-num, :$gen-num) {
           // die "unable to find object: $obj-num $gen-num R";
   
 *     $!lock.protect: {
-          my $ind-obj;
-          my Bool $have-ast = True;
+✱         my $ind-obj;
+✱         my Bool $have-ast = True;
 *         with $idx<ind-obj> {
-x             $ind-obj := $_;
+*             $ind-obj := $_;
 *             $have-ast := False
                   if $ind-obj.isa(PDF::IO::IndObj);
           }
-✱         else {
+          else {
 *             return unless $eager;
 *             $idx<ind-obj> = $ind-obj := self.fetch-ind-obj(|$idx, :$obj-num, :$gen-num);
           }
@@ -419,9 +419,11 @@ x             $ind-obj := $_;
   
   #| raw fetch of an object, without indexing or decryption
 * method get(ObjNumInt $obj-num, GenNumInt $gen-num) {
-✱     my %idx := %!ind-obj-idx{$obj-num * GenNumMax + $gen-num}
-          // die "unable to find object: $obj-num $gen-num R";
-*      self.fetch-ind-obj(|%idx, :!encrypted, :$obj-num, :$gen-num);
+*     $!lock.protect: {
+✱         my %idx := %!ind-obj-idx{$obj-num * GenNumMax + $gen-num}
+              // die "unable to find object: $obj-num $gen-num R";
+*         self.fetch-ind-obj(|%idx, :!encrypted, :$obj-num, :$gen-num);
+      }
   }
   
   #| utility method for basic deferencing, e.g.
@@ -439,7 +441,7 @@ x             $ind-obj := $_;
       }
 *     $val = self!ind-deref($val)
           if $val.isa(Pair);
-      $val;
+✱     $val;
   }
   
 * method !ind-deref(Pair $_! ) {
@@ -493,26 +495,26 @@ x             $ind-obj := $_;
       # scan for '%%EOF' marker at the end of the trailer
 x     $xref = '';
 ✱     my $n = 0;
-x     repeat {
+*     repeat {
 ✱         my UInt $len = min(SIZE * ++$n, $input-bytes - $offset);
 *         $xref ~= $!input.byte-str( $offset, $len );
 *         $offset += $len;
       } until $xref.contains('%%EOF') || $offset >= $input-bytes;
   
-      $xref;
+✱     $xref;
   }
   
   #| load PDF 1.4- xref table followed by trailer
-x method load-xref-table(Str $xref, $dict is rw, :$offset) {
-      my $parse = PDF::Grammar::COS.subparse( $xref, :rule<index>, :$.actions );
-x     die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
+* method load-xref-table(Str $xref, $dict is rw, :$offset) {
+✱     my $parse = PDF::Grammar::COS.subparse( $xref, :rule<index>, :$.actions );
+*     die X::PDF::BadXRef::Parse.new( :$offset, :$xref )
           unless $parse;
   
-x     my \index = $parse.ast;
+*     my \index = $parse.ast;
   
-x     $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
+*     $dict = PDF::COS.coerce( |index<trailer>, :reader(self) );
   
-x     index<xref>».<entries>;
+*     index<xref>».<entries>;
   }
   
   #| load a PDF 1.5+ XRef Stream
@@ -572,7 +574,7 @@ x     index<xref>».<entries>;
 *                 %!ind-obj-idx{$k} = %( :$type, :$index, :$ref-obj-num )
                       unless %!ind-obj-idx{$k}:exists;
               }
-x             elsif $type == IndexType::External {
+              elsif $type == IndexType::External {
 ✱                 my $k := .[$i;ObjNum] * GenNumMax + .[$i;GenNum];
 ✱                 my $offset = .[$i;Offset];
 *                 %!ind-obj-idx{$k} = %( :$type, :$offset )
@@ -596,7 +598,7 @@ x             elsif $type == IndexType::External {
 *     @!xrefs = [];
   
 *     $grammar.parse($tail, :$actions, :rule<postamble>)
-*         or do {
+          or do {
 *             CATCH { default {die X::PDF::BadTrailer.new( :$tail ); } }
               # unable to find 'startxref'
               # see if the PDF can be loaded sequentially
@@ -608,9 +610,9 @@ x             elsif $type == IndexType::External {
   
       my UInt @ends;
 ✱     my UInt $offset = $!prev;
-✱     my UInt %visited;
+      my UInt %visited;
   
-x     while $offset.defined {
+*     while $offset.defined {
 *         die "xref '/Prev' cycle detected in cross-reference tables: \@$offset"
               if %visited{$offset}++;
 *         @!xrefs.unshift: $offset;
@@ -628,13 +630,13 @@ x     while $offset.defined {
 *     @ends .= sort;
   
       # mark end positions of external objects
-      my int $i = 0;
+✱     my int $i = 0;
 ✱     my int $n = +@ends;
 *     for %!ind-obj-idx.pairs.grep(*.value<offset>).sort(*.value<offset>) {
 ✱         my $v := .value;
-x         repeat {
+*         repeat {
 *             $v<end> = @ends[$i];
-*         } until $v<end> > $v<offset> || ++$i >= $n;
+          } until $v<end> > $v<offset> || ++$i >= $n;
           # cull, if freed
 *         %!ind-obj-idx{.key}:delete
               unless $v<type>;
@@ -721,13 +723,13 @@ x         @updates.push: $_
 *             self!set-trailer( trailer.content<dict> );
 *             self!setup-crypt(|c);
           }
-✱         else {
+          else {
 *             die X::PDF::NoTrailer.new
                   unless self.trailer;
           }
       }
   
-      %ast;
+✱     %ast;
   }
   
   #| Get a list of indirect objects in the PDF
@@ -735,7 +737,7 @@ x         @updates.push: $_
   #| - sift /XRef and /ObjStm objects,
 * method get-objects(
       Bool :$incremental = False,     #| only return updated objects
-*     Bool :$eager = ! $incremental,  #| fetch uncached objects
+      Bool :$eager = ! $incremental,  #| fetch uncached objects
       ) {
       my @object-refs;
 *     for %!ind-obj-idx.keys.sort {
@@ -781,9 +783,9 @@ x                 die "unknown ind-obj index <type> $obj-num $gen-num: {.raku}"
                   }
               }
           }
-x         elsif $incremental {
+          elsif $incremental {
               # object hasn't been fetched, so cannot have been updated
-              next;
+✱             next;
           }
   
 *         if $incremental && $offset && $obj-num {
@@ -845,7 +847,7 @@ x         elsif $incremental {
 *     .crypt-ast('body', $body, :mode<encrypt>)
           with $reader.crypt;
 *     :cos{
-*         :header{ :$.type, :$!version },
+          :header{ :$.type, :$!version },
           :$body,
       }
   }
@@ -868,6 +870,6 @@ x         elsif $incremental {
       else {
 *         $output-path.spurt: $writer.Blob;
       }
-      $writer;
+✱     $writer;
   }
   

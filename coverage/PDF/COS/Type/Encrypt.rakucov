@@ -3,8 +3,8 @@
   # /Encrypt - trailer encryption info
 * unit role PDF::COS::Type::Encrypt;
   
-  use PDF::COS::Tie::Hash;
-  also does PDF::COS::Tie::Hash;
+✱ use PDF::COS::Tie::Hash;
+x also does PDF::COS::Tie::Hash;
   
   # use ISO_32000::Table_20-Entries_common_to_all_encryption_dictionaries;
   # also does ISO_32000::Table_20Entries_common_to_all_encryption_dictionaries;

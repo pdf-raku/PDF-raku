@@ -2,8 +2,8 @@
   
 * unit role PDF::COS::Bool;
   
-  use PDF::COS;
-  also does PDF::COS;
+✱ use PDF::COS;
+x also does PDF::COS;
   
 * method content { :bool(?self) };
   proto method COERCE($) {*}

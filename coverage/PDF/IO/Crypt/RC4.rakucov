@@ -2,11 +2,11 @@
   
 * unit class PDF::IO::Crypt::RC4;
   
-  use PDF::IO::Crypt;
-  also is PDF::IO::Crypt;
+✱ use PDF::IO::Crypt;
+x also is PDF::IO::Crypt;
   
   use PDF::IO::Crypt::AST;
-  also does PDF::IO::Crypt::AST;
+x also does PDF::IO::Crypt::AST;
   
   use PDF::IO::Util :pack;
   use OpenSSL::Digest;
@@ -25,7 +25,7 @@
 ✱     my Blob $key = md5( Buf.new: @obj-key );
 *     $key .= subbuf(0, $size)
           if $size < MD5_DIGEST_LENGTH;
-      $key;
+✱     $key;
   }
   
 * multi method crypt( Str $text, |c --> Str) {

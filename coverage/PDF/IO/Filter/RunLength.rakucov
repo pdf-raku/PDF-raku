@@ -4,24 +4,24 @@
   
   # Maintainer's Note: RunLengthDecode is described in the PDF 32000 spec
   # in section 7.4.5.
-  use PDF::IO::Blob;
+✱ use PDF::IO::Blob;
   
 * multi method encode(Blob \input --> PDF::IO::Blob) {
       my uint8 @out;
 *     my \n = input.elems - 1;
       my int $i = 0;
-✱     my int $j = 0;
+      my int $j = 0;
   
 *     while $i <= n {
 ✱         my uint $ind = 0;
 ✱         my $ind-pos = $j++;
 *         my \ord = input[$i++];
-x         @out[$j++] = ord;
+*         @out[$j++] = ord;
   
 *         if $i > n || ord == input[$i] {
               # run of repeated bytes
 *             $ind = 256;
-x             while $i <= n && input[$i] == ord && $ind > 129 {
+*             while $i <= n && input[$i] == ord && $ind > 129 {
 x                 $i++;
 ✱                 $ind--;
               }
@@ -49,7 +49,7 @@ x                 $i++;
   
 * multi method decode(Blob \input, Bool :$eod = True --> PDF::IO::Blob) {
   
-      my int $idx = 0;
+✱     my int $idx = 0;
       my uint8 @out;
 *     my \n = input.elems;
   
@@ -68,7 +68,7 @@ x                 $i++;
                   #eod
 *                 die "unexpected end-of-data marker (0x80)"
                       unless $idx == n;
-                  last;
+✱                 last;
               }
           }
       }

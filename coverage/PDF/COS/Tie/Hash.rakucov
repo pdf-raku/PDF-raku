@@ -2,8 +2,8 @@
   
 * unit role PDF::COS::Tie::Hash;
   
-  use PDF::COS::Tie :COSDictAttrHOW;
-  also does PDF::COS::Tie;
+✱ use PDF::COS::Tie :COSDictAttrHOW;
+x also does PDF::COS::Tie;
   
   has Str %.aliases;
   has Attribute %.entries;
@@ -13,10 +13,10 @@
   #| resolve a heritable property by dereferencing /Parent entries
 * sub inherit($object, Str $key, :$seen is copy) {
 *     $object.AT-KEY($key, :check)
-*         // do with $object.AT-KEY('Parent', :check) {
+          // do with $object.AT-KEY('Parent', :check) {
 *              $seen //= my %{Hash};
 *              die "cyclical inheritance hierarchy"
-x                  if $seen{$object}++;
+                   if $seen{$object}++;
 *              .&inherit($key, :$seen);
              }
   }
@@ -34,7 +34,7 @@ x                  if $seen{$object}++;
               ) // $att.type;
               1;
           }
-          $val;
+✱         $val;
       }
   
 *     sub STORE($, \v) {
@@ -46,16 +46,16 @@ x         $got = 1;
   }
   
 * method tie-init {
-x    my \class = self.WHAT;
+*    my \class = self.WHAT;
 *    for class.^attributes.grep(COSDictAttrHOW) -> \att {
 *        given att.cos {
 *            my \key  = .accessor-name;
 *            %!entries{key} //= att;
 *            %!required-entries{key} = True if .is-required;
 *            with .alias -> \alias {
-x                %!aliases{alias} = key;
+*                %!aliases{alias} = key;
 *                self{key} //= $_
-x                    with self{alias}:delete;
+                     with self{alias}:delete;
              }
          }
      }
@@ -65,7 +65,7 @@ x                    with self{alias}:delete;
 *     self.AT-KEY($_, :check)
           for unique(self.keys.Slip, %!required-entries.keys.sort.Slip);
 *     self.?cb-check();
-      self
+✱     self
   }
   
   #| for hash lookups, typically $foo<bar>
@@ -78,8 +78,8 @@ x                    with self{alias}:delete;
 *     with %!entries{$key} // $.of-att {
 *         .tie($val, :$check);
       }
-✱     else {
-          $val;
+      else {
+✱         $val;
       }
   }
   

@@ -2,7 +2,7 @@
   
 * unit class PDF::IO::Crypt;
   
-  use OpenSSL:ver(v0.1.4+);
+✱ use OpenSSL:ver(v0.1.4+);
   use OpenSSL::Digest;
   
   use PDF::COS::Dict;
@@ -49,10 +49,10 @@
                    Str  :$owner-pass!,
                    Str  :$user-pass = '',
                    Bool :$!EncryptMetadata = True,
-*                  UInt :R($!revision) = self.type eq 'AESV2' || !$!EncryptMetadata ?? 4 !! 3,
-x                  UInt :V($version) = self.type eq 'AESV2' ?? 4 !! 2,
-*                  UInt :$Length = $version > 1 ?? 128 !! 40,
-*                  Int  :P($permissions) = -64,  #| permissions mask
+                   UInt :R($!revision) = self.type eq 'AESV2' || !$!EncryptMetadata ?? 4 !! 3,
+                   UInt :V($version) = self.type eq 'AESV2' ?? 4 !! 2,
+                   UInt :$Length = $version > 1 ?? 128 !! 40,
+                   Int  :P($permissions) = -64,  #| permissions mask
                    --> PDF::COS::Type::Encrypt
       ) {
   
@@ -98,7 +98,7 @@ x                  UInt :V($version) = self.type eq 'AESV2' ?? 4 !! 2,
 *             %dict<EncryptMetadata> = False
           }
           else {
-*             warn "ignoring :!EncryptMetadata for encryption revision < 4";
+x             warn "ignoring :!EncryptMetadata for encryption revision < 4";
           }
       }
   
@@ -160,7 +160,7 @@ x sub RC4(Blob, int32, Blob, Blob) is native(&gen-lib) { ... }
 *     RC4_set_key(rc4, $key.bytes, $key);
 ✱     my buf8 $out .= allocate($in.bytes);
 *     RC4(rc4, $in.bytes, $in, $out);
-      $out;
+✱     $out;
   }
   
 * method !do-iter-crypt(Blob $code, @pass, $n=0, $m=19) {
@@ -169,7 +169,7 @@ x sub RC4(Blob, int32, Blob, Blob) is native(&gen-lib) { ... }
 ✱         my Buf $key .= new: $code.map( * +^ iter );
 *         $crypt = $.rc4-crypt($key, $crypt);
       }
-      $crypt;
+✱     $crypt;
   }
   
 * method compute-user(@pass-padded, :$key! is rw) {
@@ -184,10 +184,10 @@ x sub RC4(Blob, int32, Blob, Blob) is native(&gen-lib) { ... }
           if $!revision >= 4 && ! $!EncryptMetadata;
   
 ✱     my uint $n = 5;
-      my uint $reps = 1;
+✱     my uint $reps = 1;
   
 *     if $!revision >= 3 {                        # 8
-x         $n = $!key-bytes;
+*         $n = $!key-bytes;
 *         $reps = 51;
       }
   
@@ -212,7 +212,7 @@ x         $n = $!key-bytes;
 *         $.rc4-crypt($key, $pass);
       }
   
-      @computed;
+✱     @computed;
   }
   
 * method !auth-user-pass(@pass) {
@@ -233,10 +233,10 @@ x         $n = $!key-bytes;
 ✱     my Blob $key .= new: @pass-padded;   # 1
   
 ✱     my uint $n = 5;
-      my uint $reps = 1;
+✱     my uint $reps = 1;
   
 *     if $!revision >= 3 {                # 3
-x         $n = $!key-bytes;
+*         $n = $!key-bytes;
 *         $reps = 51;
       }
   
@@ -246,7 +246,7 @@ x         $n = $!key-bytes;
               unless $key.elems <= $n;
       }
   
-x     $key;                               # 4
+*     $key;                               # 4
   }
   
 * method compute-owner(@owner-pass, @user-pass) {
@@ -258,11 +258,11 @@ x     $key;                               # 4
 ✱     my uint8 @owner = do if $!revision == 2 {      # 2 (Revision 2 only)
 *         $.rc4-crypt(key, $user);
       }
-x     elsif $!revision >= 3 {   # 2 (Revision 3 or greater)
+      elsif $!revision >= 3 {   # 2 (Revision 3 or greater)
 *         self!do-iter-crypt(key, $user);
       }
   
-      @owner;
+✱     @owner;
   }
   
 * method !auth-owner-pass(@pass) {
@@ -272,7 +272,7 @@ x     elsif $!revision >= 3 {   # 2 (Revision 3 or greater)
 *     if $!revision == 2 {      # 2 (Revision 2 only)
 *         $user-pass = $.rc4-crypt(key, $user-pass);
       }
-x     elsif $!revision >= 3 {   # 2 (Revision 3 or greater)
+      elsif $!revision >= 3 {   # 2 (Revision 3 or greater)
 *         $user-pass = self!do-iter-crypt(key, $user-pass, 19, 0);
       }
 *     $.is-owner = True;

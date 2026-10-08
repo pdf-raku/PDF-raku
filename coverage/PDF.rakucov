@@ -1,9 +1,9 @@
 * #| this class represents the top level node in a PDF or FDF document,
   #| the trailer dictionary
-* unit class PDF:ver<0.6.15>;
+* unit class PDF:ver<0.6.16>;
   
-  use PDF::COS::Dict;
-  also is PDF::COS::Dict;
+✱ use PDF::COS::Dict;
+x also is PDF::COS::Dict;
   
   use PDF::COS;
   use PDF::IO::Serializer;
@@ -66,7 +66,7 @@
       }
 *     $!crypt = $_
           with $reader.crypt;
-      $trailer;
+✱     $trailer;
   }
   
 * method encrypt(PDF:D $doc: Str :$owner-pass!, Str :$user-pass = '', Bool :$EncryptMetadata = True, |c ) {
@@ -88,8 +88,8 @@
 *     with $.reader {
 *         ? (.input && .xrefs && .xrefs[0]);
       }
-✱     else {
-          False;
+      else {
+✱         False;
       }
   }
   
@@ -124,8 +124,8 @@
 *         $diffs.print: to-json(%ast);
 *         $diffs.close;
       }
-*     elsif +$body[0]<objects> {
-          my IO::Handle $fh;
+      elsif +$body[0]<objects> {
+✱         my IO::Handle $fh;
 ✱         my Bool $in-place = False;
   
 *         do with $diffs {
@@ -199,7 +199,7 @@
 * multi method save-as(IO() $iop,
                    Bool :preserve($) where .so && !$!flush && self!is-indexed && $.reader.file-name.defined = True,
                    Bool :rebuild($) where !.so,
-x                  :stream($), |c) {
+                   :stream($), |c) {
       # copy the input PDF, then incrementally update it. This is
       # faster, and plays better with digitally signed documents.
 ✱     my $diffs = $iop.open(:a, :bin);
@@ -236,7 +236,7 @@ x                  :stream($), |c) {
 *     with $obj<ID> {
 *         .[1] = $.id; # Update modification ID
       }
-✱     else {
+      else {
 *         $_ = [ $.id xx 2 ]; # Initialize creation and modification IDs
       }
 *     $!id = Nil;

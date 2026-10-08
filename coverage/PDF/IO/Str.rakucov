@@ -2,9 +2,9 @@
   
 * unit class PDF::IO::Str;
   
-  use PDF::IO;
-  also does PDF::IO;
-  also is Str;
+✱ use PDF::IO;
+x also does PDF::IO;
+x also is Str;
   
   has $!pos = 0;
 x has Blob[uint8] $!ords;
@@ -17,7 +17,7 @@ x has Blob[uint8] $!ords;
 *     my \n = min($n, $.codes - $!pos);
 *     my \buf := Buf[uint8].new: $.subbuf($!pos, n);
 *     $!pos += n;
-      buf;
+✱     buf;
   }
 * multi method seek(UInt $n, SeekFromBeginning) {
 *     $!pos = min($n, $.codes);
@@ -33,7 +33,7 @@ x has Blob[uint8] $!ords;
 * method slurp {
 *     my \codes = $.codes;
 *     my \rest := $.ords.subbuf($!pos, codes - $!pos);
-x     $!pos = codes;
+*     $!pos = codes;
 ✱     rest;
   }
 * method eof { $!pos >= $.codes }
@@ -43,7 +43,7 @@ x     $!pos = codes;
 *     self.bless( :$value, |c );
   }
 * multi method COERCE(::?CLASS:D $_) is default { $_ }
-x multi method COERCE( Blob:D $_!, |c) {
+* multi method COERCE( Blob:D $_!, |c) {
       my $value = .decode: "latin-1";
 x     self.bless( :$value, |c );
   }

@@ -5,7 +5,7 @@
   
   # Maintainer's Note: LZW is described in the PDF 32000 spec
   # in section 7.4.4
-  use PDF::COS;
+✱ use PDF::COS;
   use PDF::IO::Util;
   use PDF::IO::Filter::Predictors;
   use PDF::IO::Blob;
@@ -31,29 +31,29 @@ x     die "LZW encoding is not implemented.";
   }
 * multi method decode(Blob $in, :$Predictor, :$EarlyChange = 1, |c --> Blob) {
   
-      my int32 $next-code = 258;
+✱     my int32 $next-code = 258;
 ✱     my int32 $code-len = InitialCodeLen;
 ✱     my @table = map *.Array, (^DictSize);
       my uint8 @out;
 ✱     my int32 $i = 0;
-      my int32 $inputBuf = 0;
+✱     my int32 $inputBuf = 0;
 ✱     my int32 $inputBits = 0;
   
 *     loop {
 ✱         my int32 $code = getCode($in, $i, $inputBuf, $inputBits, $code-len);
   
-x         unless $EarlyChange {
+*         unless $EarlyChange {
 x             if $next-code == (1 +< $code-len) and $code-len < 12 {
-*                 $code-len++;
+x                 $code-len++;
               }
           }
   
 *         if $code == ClearTable {
-x             $code-len = InitialCodeLen;
+*             $code-len = InitialCodeLen;
 *             $next-code = EodMarker + 1;
 ✱             next;
           }
-x         elsif $code == EodMarker {
+          elsif $code == EodMarker {
 ✱             last;
           }
           else {
@@ -66,7 +66,7 @@ x         elsif $code == EodMarker {
   
 *         if $EarlyChange {
 *             if $next-code == (1 +< $code-len) and $code-len < 12 {
-*                 $code-len++;
+x                 $code-len++;
               }
           }
       }
@@ -74,7 +74,7 @@ x         elsif $code == EodMarker {
 ✱     my $out = buf8.new: @out;
   
 *     if $Predictor {
-*         $out = $.predictor-class.decode( $out, :$Predictor, |c );
+x         $out = $.predictor-class.decode( $out, :$Predictor, |c );
       }
   
 *    PDF::IO::Blob.new: $out;
@@ -82,7 +82,7 @@ x         elsif $code == EodMarker {
   
 * sub getCode(Blob $in, $i is rw, $inputBuf is rw, $inputBits is rw, $nextBits) {
   
-x     while $inputBits < $nextBits {
+*     while $inputBits < $nextBits {
 ✱         my $v := $in[$i++] // return EodMarker;
 *         $inputBuf = ($inputBuf +< 8) + $v;
 *         $inputBits += 8;

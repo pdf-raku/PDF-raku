@@ -3,7 +3,7 @@
 * role PDF::COS::ByteString[ContentType $type = 'literal'] {
   
       use PDF::COS :LatinStr;
-      also does PDF::COS;
+x     also does PDF::COS;
   
 *     method content {
 ✱         my $value = self.fmt;
@@ -14,5 +14,5 @@
       }
   }
   
-x role PDF::COS::ByteString does PDF::COS::ByteString['literal'] { }
+* role PDF::COS::ByteString does PDF::COS::ByteString['literal'] { }
   

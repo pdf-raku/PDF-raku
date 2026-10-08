@@ -2,7 +2,7 @@
   
 * unit class PDF::IO::Filter::ASCII85;
   
-  use PDF::IO::Util :pack;
+✱ use PDF::IO::Util :pack;
   use PDF::IO::Blob;
   
   # Maintainer's Note: ASCII85Decode is described in the PDF 32000 spec
@@ -64,7 +64,7 @@ x             $i += 5;
       }
   
 *     die "invalid ASCII85 encoded character: {$0.Str.raku}"
-*         if $str ~~ /(<-[\!..\u\z]>)/;
+          if $str ~~ /(<-[\!..\u\z]>)/;
   
 ✱     my $padding = -$str.codes % 5;
 ✱     my Blob $buf = ($str ~ ('u' x $padding)).encode('latin-1');
@@ -72,7 +72,7 @@ x             $i += 5;
       my uint32 @buf32;
 *     @buf32[+$buf div 5 - 1] = 0; # preallocate
   
-      my int $n = -1;
+✱     my int $n = -1;
 *     for $buf.pairs {
 *         @buf32[++$n] = 0 if .key %% 5;
 *         (@buf32[$n] *= 85) += .value - 33;
