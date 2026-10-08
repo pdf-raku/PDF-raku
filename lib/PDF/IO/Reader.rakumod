@@ -419,9 +419,11 @@ method ind-obj( ObjNumInt $obj-num!, GenNumInt $gen-num!,
 
 #| raw fetch of an object, without indexing or decryption
 method get(ObjNumInt $obj-num, GenNumInt $gen-num) {
-    my %idx := %!ind-obj-idx{$obj-num * GenNumMax + $gen-num}
-        // die "unable to find object: $obj-num $gen-num R";
-     self.fetch-ind-obj(|%idx, :!encrypted, :$obj-num, :$gen-num);
+    $!lock.protect: {
+        my %idx := %!ind-obj-idx{$obj-num * GenNumMax + $gen-num}
+            // die "unable to find object: $obj-num $gen-num R";
+        self.fetch-ind-obj(|%idx, :!encrypted, :$obj-num, :$gen-num);
+    }
 }
 
 #| utility method for basic deferencing, e.g.

@@ -12,7 +12,7 @@ use PDF::COS::Util :&flag-is-set;
 use PDF::COS::Tie;
 use PDF::COS::Name;
 has PDF::COS::Name $.Filter is entry(:required);      #| (Required) The name of the preferred security handler for this document. Typically, it is the name of the security handler that was used to encrypt the document. If SubFilter is not present, only this security handler should be used when opening the document. If it is present, consumer applications can use any security handler that implements the format specified by SubFilter.
-                                                      #| 'Standard' is the name of the built-in password-based security handler.
+                                                      # 'Standard' is the name of the built-in password-based security handler.
 
 has PDF::COS::Name $.SubFilter is entry;               #| Optional; PDF 1.3) A name that completely specifies the format and interpretation of the contents of the encryption dictionary. It is needed to allow security handlers other than the one specified by Filter to decrypt the document. If this entry is absent, other security handlers should not be allowed to decrypt the document.
                                                       #| Note: This entry was introduced in PDF 1.3 to support the use of public-key cryptography in PDF files; however, it was not incorporated into the PDF Reference until the fourth edition (PDF 1.5).

@@ -1,7 +1,6 @@
 use v6;
 
 # /Info - Trailer entry
-
 unit role PDF::COS::Type::Info;
 
 use PDF::COS::Tie::Hash;
