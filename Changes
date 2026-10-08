@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.6.16  2026-10-09T08:12:52+13:00
+    - Protect PDF::IO::Reader get() method. It's not inherently thread-safe.
+    - Allow date-strings with Unicode BOMs.
+
 0.6.15  2026-02-18T07:16:47+13:00
     - Make PDF::IO::Reader recompress() method work correctly with JSON
       input data. This fixes pdf-rewriter --compress and --uncompress
