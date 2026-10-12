@@ -11,15 +11,15 @@ use PDF::COS::Type::Encrypt;
 use PDF::COS::Name;
 use PDF::COS::ByteString;
 
-has UInt $!revision;         #| encryption revision
+has UInt $!revision;         #= encryption revision
 has Bool $.EncryptMetadata;
-has uint8 @!owner-pass;      #| computed owner password
-has UInt $!key-bytes;        #| encryption key length
-has uint8 @!doc-id;          #| /ID entry in document root
-has uint8 @user-pass;        #| computed user password
-has uint8 @!permissions;     #| permissions, unpacked as uint8
-has $.key is rw;             #| encryption key
-has Bool $.is-owner is rw;   #| authenticated against, or created by, owner
+has uint8 @!owner-pass;      #= computed owner password
+has UInt $!key-bytes;        #= encryption key length
+has uint8 @!doc-id;          #= /ID entry in document root
+has uint8 @user-pass;        #= computed user password
+has uint8 @!permissions;     #= permissions, unpacked as uint8
+has $.key is rw;             #= encryption key
+has Bool $.is-owner is rw;   #= authenticated against, or created by, owner
 
 # Taken from [PDF 32000 Algorithm 2: Standard Padding string]
  constant @Padding = array[uint8].new(
@@ -52,7 +52,7 @@ method !generate(:$doc!,
                  UInt :R($!revision) = self.type eq 'AESV2' || !$!EncryptMetadata ?? 4 !! 3,
                  UInt :V($version) = self.type eq 'AESV2' ?? 4 !! 2,
                  UInt :$Length = $version > 1 ?? 128 !! 40,
-                 Int  :P($permissions) = -64,  #| permissions mask
+                 Int  :P($permissions) = -64,  #= permissions mask
                  --> PDF::COS::Type::Encrypt
     ) {
 

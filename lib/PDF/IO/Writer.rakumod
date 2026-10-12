@@ -197,7 +197,6 @@ method write-bool( $_ ) {
 }
 
 #| inverter for PDF::Grammar::Content::Actions
-
 multi method write-content(List $_ ) {
     .map({ $.write-content($_) }).join("\n");
 }

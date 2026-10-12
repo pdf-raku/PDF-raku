@@ -78,7 +78,7 @@ role NativeCOS[$cos-node, $cos-ind-obj] {
         $cos-node.parse($input)
     }
     my class COSScanActions {
-        has Bool $.get-offsets is rw = False; #| return ind-obj byte offsets in AST
+        has Bool $.get-offsets is rw = False; #= return ind-obj byte offsets in AST
         method TOP($/) { make $<cos>.ast }
         method cos($/) {
             my @body = @<body>».ast;
@@ -273,10 +273,10 @@ multi method open(PDF::IO() $!input!, |c) is hidden-from-backtrace {
 }
 
 #| load the data for a stream object. Cross check actual size versus expected /Length
-method !fetch-stream-data(@ind-obj,           #| primary object
-                          $input,             #| associated input stream
-                          UInt:D :$offset,    #| offset of the object in the input stream
-                          UInt:D :$obj-len,   #| upper bound for the end of the stream
+method !fetch-stream-data(@ind-obj,           #= primary object
+                          $input,             #= associated input stream
+                          UInt:D :$offset,    #= offset of the object in the input stream
+                          UInt:D :$obj-len,   #= upper bound for the end of the stream
     )
 {
     my constant MinTrailingBytes = "\endstream endobj".codes;
@@ -384,8 +384,8 @@ multi method fetch-ind-obj(
 
 #| fetch and stantiate indirect objects. cache against the index
 method ind-obj( ObjNumInt $obj-num!, GenNumInt $gen-num!,
-                Bool :$get-ast = False,  #| get ast data, not formulated objects
-                Bool :$eager = True,     #| fetch object, if not already loaded
+                Bool :$get-ast = False,  #= get ast data, not formulated objects
+                Bool :$eager = True,     #= fetch object, if not already loaded
     ) {
 
     my Hash $idx := %!ind-obj-idx{$obj-num * GenNumMax + $gen-num}
@@ -736,8 +736,8 @@ method !full-scan( $grammar, $actions, Bool :$repair, |c) {
 #| - preserve input order
 #| - sift /XRef and /ObjStm objects,
 method get-objects(
-    Bool :$incremental = False,     #| only return updated objects
-    Bool :$eager = ! $incremental,  #| fetch uncached objects
+    Bool :$incremental = False,     #= only return updated objects
+    Bool :$eager = ! $incremental,  #= fetch uncached objects
     ) {
     my @object-refs;
     for %!ind-obj-idx.keys.sort {

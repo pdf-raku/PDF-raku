@@ -1,7 +1,7 @@
 unit role PDF::COS::Tie;
 
 use PDF::COS :IndRef;
-has Attribute $.of-att is rw;      #| default attribute
+has Attribute $.of-att is rw;      #= default attribute
 my constant $Lock = Lock.new;
 
 #| generate an indirect reference to ourselves
@@ -26,8 +26,8 @@ method link {
 
 my class COSAttr {...}
 
+#| override standard Attribute method for generating accessors
 my role COSAttrHOW {
-    #| override standard Attribute method for generating accessors
     has COSAttr $.cos is rw handles<tie raku>;
 
     method compose(Mu $package) {

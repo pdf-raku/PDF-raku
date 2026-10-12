@@ -5,7 +5,7 @@ unit role PDF::COS::Tie::Array;
 use PDF::COS::Tie :COSArrayAttrHOW;
 also does PDF::COS::Tie;
 
-has Attribute @.index is rw;    #| for typed indices
+has Attribute @.index is rw;    #= for typed indices
 has Attribute %.entries;
 
 method rw-accessor(Attribute $att) is rw {

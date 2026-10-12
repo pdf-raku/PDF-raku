@@ -7,15 +7,14 @@ use PDF::COS::Stream;
 use PDF::COS::Util :&to-ast;
 use PDF::COS::Type::ObjStm;
 
-has UInt $.size is rw = 1;      #| first free object number
-has Array %!objects-idx{Any};   #| unique objects index
+has UInt $.size is rw = 1;      #= first free object number
+has Array %!objects-idx{Any};   #= unique objects index
 has UInt %!ref-count{Any};
 has Bool $.renumber = True;
 has $.reader;
 has Str $.type = $!reader.?type // 'PDF';
 
 #| Reference count hashes. Could be derivate class of PDF::COS::Dict or PDF::COS::Stream.
-
 multi method ref-count(Hash $dict) {
     unless %!ref-count{$dict}++ { # already encountered
         $.ref-count($dict{$_}) for $dict.keys.sort
@@ -243,7 +242,7 @@ multi method freeze($other) { to-ast $other  }
 method ast(
     PDF::COS $trailer!,
     Numeric :$version=1.4,
-    Str     :$!type,     #| e.g. 'PDF', 'FDF;
+    Str     :$!type,     #= e.g. 'PDF', 'FDF;
     Bool    :$compress,
             :$crypt,
     ) {

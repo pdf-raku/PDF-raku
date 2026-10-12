@@ -9,8 +9,8 @@ use PDF::IO::Crypt;
 use PDF::IO::Crypt::RC4;
 use PDF::IO::Crypt::AESV2;
 
-has PDF::IO::Crypt $!stm-f; #| stream filter (/StmF)
-has PDF::IO::Crypt $!str-f; #| string filter (/StrF)
+has PDF::IO::Crypt $!stm-f; #= stream filter (/StmF)
+has PDF::IO::Crypt $!str-f; #= string filter (/StrF)
 
 submethod TWEAK(:$doc!, Str :$owner-pass, |c) {
     $owner-pass
