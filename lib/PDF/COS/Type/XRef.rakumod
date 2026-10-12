@@ -14,15 +14,15 @@ use PDF::COS::Name;
 ##    use ISO_32000::Table_17-Additional_entries_specific_to_a_cross-reference_stream_dictionary;
 ##    also does ISO_32000::Table_17-Additional_entries_specific_to_a_cross-reference_stream_dictionary;
 
-has PDF::COS::Name $.Type is entry(:required) where 'XRef';   #| (Required) The type of PDF object that this dictionary describes; shall be XRef for a cross-reference stream.
+has PDF::COS::Name $.Type is entry(:required) where 'XRef';   #= (Required) The type of PDF object that this dictionary describes; shall be XRef for a cross-reference stream.
 
-has UInt $.Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
-has UInt @.Index is entry;            #| (Optional) An array containing a pair of integers for each subsection in this section. The first integer is the first object number in the subsection; the second integer is the number of entries in the subsection
-has UInt $.Prev is entry;             #| (Present only if the file has more than one cross-reference stream; not meaningful in hybrid-reference files) The byte offset from the beginning of the file to the beginning of the previous cross-reference stream. This entry has the same function as the Prev entry in the trailer dictionary (
-has UInt @.W is entry(:required);     #| (Required) An array of integers, each representing the size of the fields in a single cross-reference entry.
+has UInt $.Size is entry(:required);  #= (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
+has UInt @.Index is entry;            #= (Optional) An array containing a pair of integers for each subsection in this section. The first integer is the first object number in the subsection; the second integer is the number of entries in the subsection
+has UInt $.Prev is entry;             #= (Present only if the file has more than one cross-reference stream; not meaningful in hybrid-reference files) The byte offset from the beginning of the file to the beginning of the previous cross-reference stream. This entry has the same function as the Prev entry in the trailer dictionary (
+has UInt @.W is entry(:required);     #= (Required) An array of integers, each representing the size of the fields in a single cross-reference entry.
 
 # See [PDF 1.7 TABLE 19 Additional entries in a hybrid-reference file’s trailer dictionary]
-has UInt $.XRefStm is entry;          #| (Optional) The byte offset from the beginning of the file of a cross-reference stream.
+has UInt $.XRefStm is entry;          #= (Optional) The byte offset from the beginning of the file of a cross-reference stream.
 
 method first-obj-num is rw { self<Index>[0] }
 method next-obj-num is rw { self<Size> }

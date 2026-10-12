@@ -17,7 +17,7 @@ module PDF::IO::Util {
             ::(Packer)::('&'~$sub-name);
         }
     }
-    #= network (big-endian) ordered byte packing and unpacking
+    #| network (big-endian) ordered byte packing and unpacking
     our &pack is export(:pack) = INIT native-delegate('pack') // &pack-raku;
     our &unpack is export(:pack) = INIT native-delegate('unpack') // &unpack-raku;
     our &packing-widths is export(:pack) = INIT native-delegate('packing-widths') // &packing-widths-raku;
@@ -32,7 +32,7 @@ module PDF::IO::Util {
     multi sub pack-raku( $nums!, 32) { blob8.new: flat $nums.list.map: { ($_ +> 24, $_ +> 16, $_ +> 8, $_) } }
     multi sub pack-raku( $nums!, UInt $n) { $nums.&resample($n, 8); }
 
-    #= little-endian ordered packing
+    #| little-endian ordered packing
     proto sub pack-le( $, $ --> Blob) is export(:pack,:pack-raku) {*};
     multi sub pack-le( $nums!, 32) { blob8.new: flat $nums.list.map: { ($_, $_ +> 8, $_ +> 16, $_ +> 24) } }
 
