@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.6.17  2026-10-13T07:47:52+13:00
+    - Fix source declarand pre/post-documentation. This now works
+      properly in Rakudo 2026.09.
+
 0.6.16  2026-10-09T08:12:52+13:00
     - Protect PDF::IO::Reader get() method. It's not inherently thread-safe.
     - Allow date-strings with Unicode BOMs.
