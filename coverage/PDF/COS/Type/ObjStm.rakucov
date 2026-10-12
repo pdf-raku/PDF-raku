@@ -14,10 +14,10 @@ x also is PDF::COS::Stream;
   ##    use ISO_32000::Table_16-Additional_entries_specific_to_an_object_stream_dictionary;
   ##    also does ISO_32000::Table_16-Additional_entries_specific_to_an_object_stream_dictionary;
   
-  has PDF::COS::Name $.Type is entry( :required ) where 'ObjStm'; #| (Required) The type of PDF object that this dictionary describes; is ObjStm for an object stream.
-  has UInt $.N is entry(:required);             #| (Required) The number of compressed objects in the stream.
-  has UInt $.First is entry(:required);         #| (Required) The byte offset (in the decoded stream) of the first compressed object.
-  has PDF::COS::Type::ObjStm $.Extends is entry;      #| (Optional) A reference to an object stream, of which the current object stream is considered an extension
+  has PDF::COS::Name $.Type is entry( :required ) where 'ObjStm'; #= (Required) The type of PDF object that this dictionary describes; is ObjStm for an object stream.
+  has UInt $.N is entry(:required);             #= (Required) The number of compressed objects in the stream.
+  has UInt $.First is entry(:required);         #= (Required) The byte offset (in the decoded stream) of the first compressed object.
+  has PDF::COS::Type::ObjStm $.Extends is entry;      #= (Optional) A reference to an object stream, of which the current object stream is considered an extension
   
 * method cb-init {
 *     self<Type> //= PDF::COS::Name.COERCE: 'ObjStm';

@@ -15,10 +15,10 @@
   # post prediction functions as described in the PDF 32000 spec, Table 9
   
 * multi method encode($buf where Blob | Buf,
-                      Predictor :$Predictor! where TIFF, #| predictor function
-                      UInt :$Columns = 1,          #| number of samples per row
-                      UInt :$Colors = 1,           #| number of colors per sample
-                      BPC  :$BitsPerComponent = 8, #| number of bits per color
+                      Predictor :$Predictor! where TIFF, #= predictor function
+                      UInt :$Columns = 1,          #= number of samples per row
+                      UInt :$Colors = 1,           #= number of colors per sample
+                      BPC  :$BitsPerComponent = 8, #= number of bits per color
       ) {
 ✱     my uint $bit-mask = 2 ** $BitsPerComponent  -  1;
 *     my \nums := $buf.&unpack($BitsPerComponent );
@@ -43,10 +43,10 @@
   }
   
 * multi method encode($buf is copy where Blob | Buf,
-                      Predictor :$Predictor! where PNG-Range, #| predictor function
-                      UInt :$Columns = 1,          #| number of samples per row
-                      UInt :$Colors = 1,           #| number of colors per sample
-                      BPC  :$BitsPerComponent = 8, #| number of bits per color
+                      Predictor :$Predictor! where PNG-Range, #= predictor function
+                      UInt :$Columns = 1,          #= number of samples per row
+                      UInt :$Colors = 1,           #= number of colors per sample
+                      BPC  :$BitsPerComponent = 8, #= number of bits per color
       ) {
   
 ✱     my uint $bpc = $BitsPerComponent;
@@ -116,16 +116,16 @@
   }
   
 * multi method encode($buf where Blob | Buf,
-                      Predictor :$Predictor where None = None #| predictor function
+                      Predictor :$Predictor where None = None #= predictor function
       ) {
 ✱     $buf;
   }
   
 * multi method decode($buf where Blob | Buf,
-                      Predictor :$Predictor! where TIFF, #| predictor function
-                      UInt :$Columns = 1,          #| number of samples per row
-                      UInt :$Colors = 1,           #| number of colors per sample
-                      UInt :$BitsPerComponent = 8, #| number of bits per color
+                      Predictor :$Predictor! where TIFF, #= predictor function
+                      UInt :$Columns = 1,          #= number of samples per row
+                      UInt :$Colors = 1,           #= number of colors per sample
+                      UInt :$BitsPerComponent = 8, #= number of bits per color
       ) {
 ✱     my uint $bit-mask = 2 ** $BitsPerComponent  -  1;
 *     my \nums = $buf.&unpack($BitsPerComponent );
@@ -149,11 +149,11 @@
 *     @output.&pack($BitsPerComponent);
   }
   
-* multi method decode($buf is copy where Blob | Buf,  #| input stream
-                      Predictor :$Predictor! where PNG-Range, #| predictor function
-                      UInt :$Columns = 1,          #| number of samples per row
-                      UInt :$Colors = 1,           #| number of colors per sample
-                      BPC :$BitsPerComponent = 8,  #| number of bits per color
+* multi method decode($buf is copy where Blob | Buf,  #= input stream
+                      Predictor :$Predictor! where PNG-Range, #= predictor function
+                      UInt :$Columns = 1,          #= number of samples per row
+                      UInt :$Colors = 1,           #= number of colors per sample
+                      BPC :$BitsPerComponent = 8,  #= number of bits per color
       ) {
   
 ✱     my uint $bpc = $BitsPerComponent;
