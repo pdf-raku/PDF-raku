@@ -36,7 +36,8 @@ my role COSAttrHOW {
         &accessor.set_name( $key );
         try $package.^add_method($key, &accessor);
         if self.cos.alias -> $alias {
-            try $package.^add_method($alias, &accessor);
+            try $package.^add_method($alias, &accessor)
+                unless $package.can($alias);
         }
     }
 }
