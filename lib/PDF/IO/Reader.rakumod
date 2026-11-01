@@ -575,7 +575,7 @@ method !load-xref-section(UInt:D $offset, :@ends!) {
                     unless %!ind-obj-idx{$k}:exists;
             }
             elsif $type == IndexType::External {
-                my $k := .[$i;ObjNum] * GenNumMax + .[$i;GenNum];
+                my $k := .[$i;ObjNum] * GenNumMax  +  .[$i;GenNum];
                 my $offset = .[$i;Offset];
                 %!ind-obj-idx{$k} = %( :$type, :$offset )
                     unless %!ind-obj-idx{$k}:exists;

@@ -71,11 +71,11 @@ method push($val) {
 }
 
 multi method COERCE(PDF::COS::Tie::Array:D $array) {
-    self.induce: $array;
+    self.possess: $array;
 }
 multi method COERCE(List:D $array is raw, |c) {
     my Array:U $class := PDF::COS.load-array($array);
-    self.induce: $class.new(:$array, |c);
+    self.possess: $class.new(:$array, |c);
 }
 multi method COERCE(Seq:D $seq is raw, |c) {
     self.COERCE($seq.Array, |c);

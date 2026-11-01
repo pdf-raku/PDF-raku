@@ -36,7 +36,7 @@ my role COSAttrHOW {
         &accessor.set_name( $key );
         try $package.^add_method($key, &accessor);
         if self.cos.alias -> $alias {
-            try $package.^add_method($alias, &accessor)
+            $package.^add_method($alias, &accessor)
                 unless $package.can($alias);
         }
     }
@@ -68,8 +68,8 @@ my class COSAttr {
         # anonymous attribute for individual items in an array or hash
         unless $!of-att.defined {
             $Lock.protect: {
-                given $!type.of -> $type {
-                    without $!of-att {
+                without $!of-att {
+                    given $!type.of -> $type {
                         my $name := '@!' ~ $.accessor-name;
                         $_ = CosOfAttr.new: :$name, :$type, :package<?>;
                         .cos = $.clone: :!decont, :$type;
@@ -178,18 +178,18 @@ my class COSAttr {
 }
 
 sub cos-attr-opts($entry, Attribute $att) {
-
-    my constant %Args = %(
-        :inherit<is-inherited>, :required<is-required>, :indirect<is-indirect>,
-        :coerce<coerce>, :len<length>, :alias<alias>, :array-or-item<decont>,
-        :key<key>, :default<default>
-    );
-
-    my %opts = type => $att.type, accessor-name => $att.name.subst(/^(\$|\@|\%)'!'/, '');
+    my $type = $att.type;
+    my $accessor-name =  $att.name.subst(/^(\$|\@|\%)'!'/, '');
+    my %opts = :$type, :$accessor-name;
 
     for $entry.list -> \arg {
         if arg ~~ Pair {
             my \val = arg.value;
+            my constant %Args = %(
+                :inherit<is-inherited>, :required<is-required>, :indirect<is-indirect>,
+                :coerce<coerce>, :len<length>, :alias<alias>, :array-or-item<decont>,
+                :key<key>, :default<default>
+            );
             with %Args{arg.key} {
                 %opts{$_} = val;
             }
@@ -208,22 +208,22 @@ sub cos-attr-opts($entry, Attribute $att) {
         %opts<accessor-name> = $_;
     }
     warn ':item-or-array should be used with arrays ("@" sigil)'
-        if %opts<decont> && $att.type !~~ Positional[Mu];
+        if %opts<decont> && $type !~~ Positional[Mu];
     %opts;
 }
 
 multi trait_mod:<is>(Attribute $att, :$entry!) is export(:DEFAULT) {
     $att does COSDictAttrHOW;
-    $att.cos .= new: |cos-attr-opts($entry, $att);
+    $att.cos .= new: |$entry.&cos-attr-opts($att);
 }
 
 multi trait_mod:<is>(Attribute $att, :$index! ) is export(:DEFAULT) {
     my @args = $index.list;
     die "index trait requires a UInt argument, e.g. 'is index(1)'"
-        unless @args && @args[0] ~~ UInt;
+        unless @args && @args[0] ~~ UInt:D;
     $att does COSArrayAttrHOW;
     $att.index = @args.shift;
-    $att.cos .= new: |cos-attr-opts(@args, $att);
+    $att.cos .= new: |@args.&cos-attr-opts($att);
 }
 
 method lvalue($_) is rw {
@@ -240,8 +240,8 @@ method mixin(Any:D: $role is raw) {
     self;
 }
 
-# apply ourselves, if we're a punned role
-method induce($obj is raw) {
+# apply original role, if punned
+method possess($obj is raw) {
     $obj.mixin: self.^pun_source
         if self.^is_pun;
     $obj;

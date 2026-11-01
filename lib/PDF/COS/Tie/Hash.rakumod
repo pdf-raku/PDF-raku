@@ -93,9 +93,9 @@ method ASSIGN-KEY($key, $val, :$check) {
 }
 
 multi method COERCE(PDF::COS::Tie::Hash $hash) {
-    self.induce: $hash;
+    self.possess: $hash;
 }
 multi method COERCE(Hash $dict is raw, |c) {
     my Hash:U $class := PDF::COS.load-dict($dict);
-    self.induce: $class.new(:$dict, |c);
+    self.possess: $class.new(:$dict, |c);
 }
