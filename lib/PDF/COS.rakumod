@@ -163,8 +163,7 @@ method !coercer {
 
 method loader is rw handles <load-delegate> {
     sub FETCH($) {
-        $loader = $.required('PDF::COS::Loader')
-            if $loader === Any;
+        $loader.&cas(Any, $.required('PDF::COS::Loader'));
         $loader;
     }
     sub STORE($, $l) {
