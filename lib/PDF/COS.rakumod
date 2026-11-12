@@ -10,18 +10,15 @@ has $.reader is rw;
 has Int $.obj-num is rw;
 has Int $.gen-num is rw;
 method is-indirect is rw returns Bool {
-    Proxy.new(
-        FETCH => { ? self.obj-num },
-        STORE => -> \p, Bool \indirect {
-            if indirect {
-                # Ensure this object is indirect. Serializer will renumber
-                $!obj-num //= -1;
-            }
-            else {
-                $!obj-num = Nil;
-            }
-        },
-    );
+    sub FETCH($) { ? self.obj-num }
+    multi sub STORE($, \is-indirect where .so) {
+        # Flag as indirect. Serializer will renumber
+        $!obj-num //= -1;
+    }
+    multi sub STORE($,$) {
+        $!obj-num = Nil;
+    }
+    Proxy.new: :&FETCH, :&STORE;
 }
 
 # high precedence rule to strip enumerations

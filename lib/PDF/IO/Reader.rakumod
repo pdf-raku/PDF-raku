@@ -34,7 +34,7 @@ has uint64   $.prev;             #= xref offset
 has uint     $.size is rw;       #= /Size entry in trailer dict ~ first free object number
 has uint64   @.xrefs = (0);      #= xref position for each revision in the file
 has PDF::IO::Crypt::PDF $.crypt is rw;
-has Rat $.compat;        #= cross reference stream mode
+has Rat $.compat;        #= compatibility level (1.5+ for cross reference streams)
 method compat is rw {
     Proxy.new:
         FETCH => { $!compat // $!version // 1.4 },
@@ -211,6 +211,7 @@ multi method open(IO::Path $input-path  where .extension.lc eq 'json', |c ) is h
     self.open: ast, |c;
 }
 
+#| Load an in-memory PDF-AST structure
 multi method open(Associative \ast is raw, Str :$input-file, |c) is hidden-from-backtrace {
     $!type = ast<header><type> // 'PDF';
     $!version = ast<header><version> // 1.2;
@@ -237,7 +238,13 @@ multi method open(Associative \ast is raw, Str :$input-file, |c) is hidden-from-
     ast;
 }
 
-# process a batch of indirect object updates
+#| open an existing PDF::IO stream
+multi method open(PDF::IO() $!input!, |c) is hidden-from-backtrace {
+    $.load-header( );
+    $.load-cos( $.type, |c );
+}
+
+#| process a batch of indirect object updates
 method update-index( :@entries!, UInt :$!prev, UInt :$!size ) {
     @!xrefs.push: $!prev;
 
@@ -265,11 +272,6 @@ method update-index( :@entries!, UInt :$!prev, UInt :$!size ) {
             }
         }
     }
-}
-
-multi method open(PDF::IO() $!input!, |c) is hidden-from-backtrace {
-    $.load-header( );
-    $.load-cos( $.type, |c );
 }
 
 #| load the data for a stream object. Cross check actual size versus expected /Length
@@ -549,13 +551,13 @@ method !load-xref-section(UInt:D $offset, :@ends!) {
             my Str \xref-stm = self!locate-xref($_);
             @obj-idx.push: self!load-xref-stream(xref-stm, $xref-dict, :offset($_), :@discarded);
         }
-        $!compat = 1.4 if $!compat > 1.4;
+        $!compat .= &min(1.4);
     }
     else {
         # PDF 1.5+ cross reference stream.
         # need to write index in same format for Adobe reader (issue #22)
         @obj-idx.push: self!load-xref-stream(xref, $dict, :$offset, :@discarded);
-        $!compat = 1.5 if $!compat < 1.5;
+        $!compat .= &max(1.5);
     }
 
     enum ( :ObjNum(0), :Type(1),

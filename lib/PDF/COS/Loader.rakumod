@@ -16,7 +16,7 @@ method install-delegate( Str $subclass, $class-def ) is rw {
     $lock.protect: { %handler{$subclass} = $class-def; }
 }
 
-method find-delegate( Str $type!, $subtype?, :$base-class! ) {
+method find-delegate( Str:D $type!, $subtype?, :$base-class! ) {
 
     my Str $subclass = $type;
     $subclass ~= '::' ~ $_
