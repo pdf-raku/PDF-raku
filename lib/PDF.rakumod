@@ -196,10 +196,13 @@ multi method save-as(IO() $_ where .extension.lc eq 'json', :preserve($), :rebui
     .spurt: to-json( $.ast: |c );
 }
 
-multi method save-as(IO() $iop,
-                 Bool :preserve($) where .so && !$!flush && self!is-indexed && $.reader.file-name.defined = True,
-                 Bool :rebuild($) where !.so,
-                 :stream($), |c) {
+multi method save-as(
+    IO() $iop,
+    Bool :preserve($) where .so = True,
+    Bool :rebuild($) where !.so,
+    :stream($),
+    |c where !$!flush && self!is-indexed && $.reader.file-name.defined,
+) {
     # copy the input PDF, then incrementally update it. This is
     # faster, and plays better with digitally signed documents.
     my $diffs = $iop.open(:a, :bin);
