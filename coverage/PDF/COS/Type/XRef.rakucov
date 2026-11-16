@@ -14,15 +14,15 @@ x also is PDF::COS::Stream;
   ##    use ISO_32000::Table_17-Additional_entries_specific_to_a_cross-reference_stream_dictionary;
   ##    also does ISO_32000::Table_17-Additional_entries_specific_to_a_cross-reference_stream_dictionary;
   
-  has PDF::COS::Name $.Type is entry(:required) where 'XRef';   #| (Required) The type of PDF object that this dictionary describes; shall be XRef for a cross-reference stream.
+  has PDF::COS::Name $.Type is entry(:required) where 'XRef';   #= (Required) The type of PDF object that this dictionary describes; shall be XRef for a cross-reference stream.
   
-  has UInt $.Size is entry(:required);  #| (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
-  has UInt @.Index is entry;            #| (Optional) An array containing a pair of integers for each subsection in this section. The first integer is the first object number in the subsection; the second integer is the number of entries in the subsection
-  has UInt $.Prev is entry;             #| (Present only if the file has more than one cross-reference stream; not meaningful in hybrid-reference files) The byte offset from the beginning of the file to the beginning of the previous cross-reference stream. This entry has the same function as the Prev entry in the trailer dictionary (
-  has UInt @.W is entry(:required);     #| (Required) An array of integers, each representing the size of the fields in a single cross-reference entry.
+  has UInt $.Size is entry(:required);  #= (Required) The number one greater than the highest object number used in this section or in any section for which this is an update. It is equivalent to the Size entry in a trailer dictionary.
+  has UInt @.Index is entry;            #= (Optional) An array containing a pair of integers for each subsection in this section. The first integer is the first object number in the subsection; the second integer is the number of entries in the subsection
+  has UInt $.Prev is entry;             #= (Present only if the file has more than one cross-reference stream; not meaningful in hybrid-reference files) The byte offset from the beginning of the file to the beginning of the previous cross-reference stream. This entry has the same function as the Prev entry in the trailer dictionary (
+  has UInt @.W is entry(:required);     #= (Required) An array of integers, each representing the size of the fields in a single cross-reference entry.
   
   # See [PDF 1.7 TABLE 19 Additional entries in a hybrid-reference file’s trailer dictionary]
-  has UInt $.XRefStm is entry;          #| (Optional) The byte offset from the beginning of the file of a cross-reference stream.
+  has UInt $.XRefStm is entry;          #= (Optional) The byte offset from the beginning of the file of a cross-reference stream.
   
 * method first-obj-num is rw { self<Index>[0] }
 * method next-obj-num is rw { self<Size> }
@@ -52,22 +52,22 @@ x also is PDF::COS::Stream;
 *     nextwith( PDF::IO::Blob.new: buf );
   }
   
-x sub pack-xref-stream-raku($xref-index where .shape[1] ~~ 4, @xref, @index) {
-      my $size = -1;
-      my $n = +$xref-index;
-x     for ^$n -> $i {
-          my $obj-num = $xref-index[$i; 0];
-x         given $obj-num <=> $size {
-x             when More { @index.push( $obj-num, 0 ) }
-x             when Less { die "/XRef /Index is not sorted by ascending obj-num" }
+* sub pack-xref-stream-raku($xref-index where .shape[1] ~~ 4, @xref, @index) {
+✱     my $size = -1;
+✱     my $n = +$xref-index;
+*     for ^$n -> $i {
+✱         my $obj-num = $xref-index[$i; 0];
+*         given $obj-num <=> $size {
+*             when More { @index.push( $obj-num, 0 ) }
+*             when Less { die "/XRef /Index is not sorted by ascending obj-num" }
           }
-x         @index.tail++;
-x         @xref[$i; 0] = $xref-index[$i; 1];
-x         @xref[$i; 1] = $xref-index[$i; 2];
-x         @xref[$i; 2] = $xref-index[$i; 3];
-x         $size = $obj-num + 1;
+*         @index.tail++;
+*         @xref[$i; 0] = $xref-index[$i; 1];
+*         @xref[$i; 1] = $xref-index[$i; 2];
+*         @xref[$i; 2] = $xref-index[$i; 3];
+*         $size = $obj-num + 1;
       }
-      $size;
+✱     $size;
   }
   
   #= inverse of $.decode-index. calculates and sets $.Size and $.Index
@@ -105,23 +105,23 @@ x         $size = $obj-num + 1;
   
   #= an extra decoding stage - build index entries from raw decoded data
   
-x sub unpack-xref-stream-raku(\decoded where .shape[1] ~~ 3, \index) {
-      my uint64 @index[+decoded;4];
-      my uint $i = 0;
-x     for index.list -> $obj-num is rw, \num-entries {
-x         die "/XRef stream content overflow"
+* sub unpack-xref-stream-raku(\decoded where .shape[1] ~~ 3, \index) {
+✱     my uint64 @index[+decoded;4];
+✱     my uint $i = 0;
+*     for index.list -> $obj-num is rw, \num-entries {
+*         die "/XRef stream content overflow"
               if $i + num-entries > +decoded;
-x         for ^num-entries {
-x             @index[$i;0] = $obj-num;
-x             @index[$i;1] = decoded[$i;0];
-x             @index[$i;2] = decoded[$i;1];
-x             @index[$i;3] = decoded[$i;2];
-x             $obj-num++;
-x             $i++;
+*         for ^num-entries {
+*             @index[$i;0] = $obj-num;
+*             @index[$i;1] = decoded[$i;0];
+*             @index[$i;2] = decoded[$i;1];
+*             @index[$i;3] = decoded[$i;2];
+*             $obj-num++;
+*             $i++;
           }
       }
   
-      @index;
+✱     @index;
   }
   
 * method decode-index($encoded = $.encoded) {

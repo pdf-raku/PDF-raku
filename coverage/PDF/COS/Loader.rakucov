@@ -16,7 +16,7 @@ x method handler is DEPRECATED {%handler} # Not thread-safe
 *     $lock.protect: { %handler{$subclass} = $class-def; }
   }
   
-* method find-delegate( Str $type!, $subtype?, :$base-class! ) {
+* method find-delegate( Str:D $type!, $subtype?, :$base-class! ) {
   
 ✱     my Str $subclass = $type;
 *     $subclass ~= '::' ~ $_

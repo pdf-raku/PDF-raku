@@ -14,6 +14,7 @@ use Test;
 
 use PDF;
 
+#| Hypothetical JAR archive format
 class COS::JAR
     is PDF {
 
@@ -21,10 +22,13 @@ class COS::JAR
     use PDF::COS::Tie::Hash;
     use PDF::COS::Tie::Array;
     use PDF::COS::Name;
+    use PDF::COS::DateString;
     use PDF::COS::TextString :&pdfdoc-encode, :&utf8-encode;
     use PDF::COS::Stream;
 
+    #| Unicode strings
     class Text is PDF::COS::TextString {
+        # PDFDoc encoding, when possible, otherwise
         # prefer utf-8 (PDF 2.0), over utf-16 (PDF 1.x)
         method content {
             my $doc-enc = self.&pdfdoc-encode()
@@ -33,16 +37,18 @@ class COS::JAR
         }
     }
 
+    #| Archived source and compiled object
     role Class does PDF::COS::Tie::Hash {
         has PDF::COS::Name $.Name is entry;
         has Class @.Subclasses is entry(:indirect);
         has PDF::COS::Stream $.Source is entry;
-        has PDF::COS::Stream $.Object is entry;
-        # Unicode strings
+        has PDF::COS::Stream $.Object is entry(:required);
         has Text $.Author is entry;
         has Text $.Description is entry;
+        has PDF::COS::DateString $.Date is entry;
     }
 
+    #| Root manifest for the archive
     role Manifest does PDF::COS::Tie::Hash {
         has PDF::COS::Name $.Language is entry;
         has Str $.Version is entry;
@@ -52,7 +58,7 @@ class COS::JAR
     has Manifest $.Root is entry(:indirect);
     method type {'JAR'}
 
-    # only accept %JAR files
+    # only accept files with %JAR-xx headers
     method open(|c) { nextwith( :type<JAR>, |c); }
 }
 
