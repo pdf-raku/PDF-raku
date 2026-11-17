@@ -6,7 +6,7 @@
   "build-depends": [
   ],
   "depends": [
-    "Compress::Zlib",
+    "Compress::Zlib:ver<2.0.0+>:auth<zef:apogee>",
     "Hash::int",
     "JSON::Fast",
     "Method::Also",
